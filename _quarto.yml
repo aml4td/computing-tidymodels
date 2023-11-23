@@ -1,0 +1,62 @@
+project:
+  type: book
+
+## Global options that can be re-defined in each qmd file
+format:
+  html:
+    toc: true
+    theme: [simplex, includes/aml4td.scss]
+    mainfont: 'Libre Franklin'
+    highlight-style: arrow
+    code-link: true
+    code-block-bg: "#f9fafd"
+    code-block-border-left: "#e1e7f6"
+    fig-width: 6
+    fig-height: 4.25
+    fig-align: center
+    tbl-cap-location: bottom
+    fig-cap-location: bottom
+    keep-md: false
+
+execute:
+  freeze: auto
+  keep-md: false
+  # turn these on during development
+  # message: false
+  # warning: false
+  echo: false
+
+
+## Define book style and declare qmd files to process
+book:
+  title: "Tidymodels Computing Supplement"
+  author: 
+  - name: Max Kuhn
+    orcid: 0000-0003-2402-136X
+    email: mxkuhn@gmail.com
+  date: last-modified
+  date-format: YYYY-MM-DD
+  site-url: https://tidymodels.aml4td.org
+  repo-url: https://github.com/aml4td/computing-tidymodels/
+  sharing: [twitter, facebook, linkedin]  
+  sidebar:
+      style: "docked"
+      title: " "
+  reader-mode: true
+  bread-crumbs: false
+  chapters:
+  - index.qmd
+  - chapters/news.qmd
+  - chapters/contributing.qmd  
+  - chapters/introduction.qmd
+  - chapters/whole-game.qmd
+  - part: "Preparation"
+  - part: "Optmization"
+  - part: "Classification"  
+  - part: "Regression"  
+  - part: "Characterization"  
+  - part: "Finalization"  
+
+bibliography: includes/references.bib
+csl: includes/chicago-author-date-inline.csl
+

@@ -1,0 +1,145 @@
+```{r}
+#| label: preface-setup
+#| include: false
+source("R/_common.R")
+```
+
+# Preface  {.unnumbered}
+
+This is a computing supplement to the main website that uses the tidymodels framework for modeling. The structure is similar to the website, but the content here shows how to use this software (and sometimes others) for each topic. 
+
+We also want these materials to be reusable and open. The sources are in the source [GitHub repository](https://github.com/aml4td/computing-tidymodels) with a Creative Commons license attached (see below).
+
+To cite this work, we suggest: 
+
+```{r}
+#| label: citation
+#| echo: false
+#| results: asis
+
+cite <- glue::glue("
+@online{aml4td.tidymodels,
+  Author = {Kuhn, M and Johnson, K},
+  title = {{Tidymodels Computing Supplement to Applied Machine Learning for Tabular Data}},
+  year = {2023},
+  url = { https://tidymodels.aml4td.org},
+  urldate = {[Sys.Date()]}
+}
+", .open = "[", .close = "]")
+
+cite <- paste("```{bib}", cite, "```", sep = "\n")
+cat(cite)
+```
+
+## License {.unnumbered}
+
+ <p xmlns:cc="http://creativecommons.org/ns#" >This work is licensed under <a href="http://creativecommons.org/licenses/by-sa/4.0/?ref=chooser-v1" target="_blank" rel="license noopener noreferrer" style="display:inline-block;">CC BY-SA 4.0<img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/sa.svg?ref=chooser-v1"></a></p> 
+
+## Intended Audience {.unnumbered}
+
+Readers should have used R before but do not have to be experts. If you are new to R, we suggest taking a look at _R for Data Science_. 
+
+You do not have to be a modeling expert either. We hope that you have used a linear or logistic regression before and understand basic statistical concepts such as correlation, variability, probabilities, etc. 
+
+## How can I ask questions? 
+
+If you have questions about the content, it is probably best to ask on a public forum, like [cross-validated](https://stats.stackexchange.com/) or [Posit Community](https://community.rstudio.com/c/ml/15). You'll most likely get a faster answer there if you take the time to ask the questions in the best way possible.   
+
+If you want a direct answer from us, you should follow what I call [_Yihui's Rule_](https://yihui.org/en/2017/08/so-gh-email/): add an issue to GitHub (labeled as "Discussion") first. It may take some time for us to get back to you. 
+
+If you think there is a bug, please [file an issue](https://github.com//aml4td/computing-tidymodels/issues). 
+
+## Can I contribute?  {.unnumbered}
+
+There is a [contributing page](chapters/contributing.html) with details on how to get up and running to compile the materials (there are a lot of software dependencies) and suggestions on how to help. 
+
+If you just want to fix a typo, you can make a pull request to alter the appropriate `.qmd` file. 
+
+Please feel free to improve the quality of this content by submitting **pull requests**. A merged PR will make you appear in the contributor list. 
+
+## Computing Notes {.unnumbered}
+
+```{r}
+#| label: preface-versions
+#| include: false
+
+get_pkg_depends <- function() {
+  info <- read.dcf("DESCRIPTION")
+  pkgs <- strsplit(info[, "Imports"], "\\n")[[1]]
+  pkgs <- purrr::map_chr(pkgs, ~ gsub(",", "", .x))
+  pkgs <- strsplit(pkgs, " ")
+  pkgs <- purrr::map_chr(pkgs, ~ .x[1])
+  pkgs
+}
+
+make_matrix <- function(x, cols = 3) {
+  remainder <- length(x) %% cols
+  padding <- cols - remainder
+  if (padding > 0) {
+    x <- c(x, rep(" ", padding))
+  }
+  matrix(x, ncol = 3, byrow = TRUE)
+}
+
+write_pkg_list <- function() {
+  pkgs <- get_pkg_depends()
+  excld <- c("sessioninfo", "tinytex", "cli", "devtools", "doParallel",
+             "kableExtra", "knitr", "pak", "renv", "BiocParallel",  "magick",  
+             "rsvg",  "pillar",  "jsonlite",  "gifski",  "future",  "text2vec",  
+             "tibble",  "waldo",  "xfun",  "yaml")
+  pkgs <- pkgs[!(pkgs %in% excld)]
+  loaded <-
+    purrr::map(pkgs,
+               ~ try(
+                 suppressPackageStartupMessages(
+                   library(.x, character.only = TRUE, quietly = TRUE)
+                 ),
+                 silent = TRUE
+               )
+    )
+  # Write to repo root
+  nm <- paste0("session-info-", Sys.info()["user"], "-", Sys.info()["machine"], ".txt")
+  # sessioninfo::session_info(to_file = nm)
+  # Save for text
+  si <-
+    sessioninfo::session_info()$packages %>%
+    tibble::as_tibble() %>%
+    dplyr::filter(package %in% pkgs)
+  pkgs <- purrr::map2_chr(si$package, si$loadedversion, ~ paste0("`", .x, "` (", .y, ")"))
+  make_matrix(pkgs)
+}
+```
+
+[Quarto](https://quarto.org/) was used to compile and render the materials
+
+```{r}
+#| label: quarto-info
+#| echo: false
+#| comment: ""
+
+quarto_check <- function(){
+  file_out <- tempfile("temp-quarto.txt")
+  system2(command = "quarto", args = "check", stderr=file_out)
+  res <- readLines(file_out)
+  res <- purrr::map_chr(res, cli::ansi_strip)
+  rms <- c("(|)", "(/)", "(\\)", "(/)", "(-)", "/Users", "Path:", "Install with")
+  for (pat in rms) {
+    res <- res[!grepl(pat, res, fixed = TRUE)]
+  }
+  res <- res[res != ""]
+  invisible(res)
+}
+cat(quarto_check(), sep = "\n")
+```
+
+[`r R.version.string`](https://en.wikipedia.org/wiki/R_(programming_language)) was used for the majority of the computations. [torch](https://en.wikipedia.org/wiki/Torch_(machine_learning)) `r torch:::torch_version` was also used. The versions of the primary R modeling and visualization packages used here are: 
+
+```{r}
+#| label: write-pkg-versions
+#| echo: false
+#| comment: " "
+#| results: asis
+
+knitr::kable(write_pkg_list())
+```
+

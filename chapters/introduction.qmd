@@ -1,0 +1,115 @@
+---
+knitr:
+  opts_chunk:
+    cache.path: "../_cache/introduction/"
+---
+
+# Introduction {#sec-introduction}
+
+```{r}
+#| label: introduction-silent-setup
+#| include: false
+
+knitr::opts_chunk$set(
+    comment = "#>",
+    collapse = TRUE,
+    fig.align = 'center',
+    fig.path = "../figures/",
+    fig.width = 10,
+    fig.height = 6,
+    cache.path = "../_cache/introduction/",
+    out.width = "95%",
+    dev = 'svg',
+    dev.args = list(bg = "transparent"),
+    tidy = FALSE,
+    echo = TRUE
+  )
+
+options(digits = 4, width = 84)
+options(dplyr.print_min = 6, dplyr.print_max = 6)
+options(cli.width = 85)
+options(crayon.enabled = FALSE)
+options(pillar.advice = FALSE, pillar.min_title_chars = Inf)
+
+source("../R/_common.R")
+```
+
+tidymodels is a framework for creating statistical and machine learning models in R. The framework consists of a set of tightly coupled R packages that are designed in the same way. The project began in late 2016. 
+
+The main tidymodels resources are:
+
+- [`tidymodels.org`](https://www.tidymodels.org/): a website with reference materials, articles, and searchable lists of functions.
+
+- _Tidy Modeling with R_ ([`tmwr.org`](https://www.tmwr.org/)): a long-form book.
+
+- [`workshops.tidymodels.org`](https:/workshops.tidymodels.org/): our currently training materials.
+
+We'll reference these and other resources as needed. 
+
+## Installation
+
+tidymodels is built in R so you'll need to install that. We used `r R.version.string` for these notes. To install R, you can go to [CRAN](https://cran.r-project.org/)^[The Comprehensive R Archive Network] to download it for your operating system. If you are comfortable at the command line, the [rig](https://github.com/r-lib/rig) application is an excellent way to install and manage R versions. 
+
+You probably want to use an integrated development environment (IDE); it will make your life much better. We use the RStudio IDE, which can be downloaded [here](https://posit.co/downloads/). Other applications are [Visual Studio](https://code.visualstudio.com/docs/languages/r) and [emacs](https://ess.r-project.org). 
+
+To use tidymodels, you need to install multiple packages. The core packages are bundled into a "verse" package called `r pkg(tidymodels)`. When you install that, you get the primary packages as well as some tidyverse packages such as  `r pkg(dplyr)` and `r pkg(ggplot2)`.
+
+To install it, you can use 
+
+```r
+install.packages("tidymodels")
+```
+
+We suggest using the `r pkg(pak)` package for installation. To do this, first install that and then use it for further installations: 
+
+```{r}
+#| label: introduction-installs
+#| eval: false
+install.packages("pak")
+
+# check that it is installed then use it to install tidymodels
+if (require(pak)) {
+  pak::pak("tidymodels")
+}
+
+```
+
+## Loading tidymodels
+
+Once you do that, load `r pkg(tidymodels)`: 
+
+```{r}
+#| label: introduction-tidymodels
+library(tidymodels)
+```
+
+The default output shows the packages that are automatically attached. There are a lot of functions in tidy models, but by loading this meta-package, you don't have to remember which functions come from which packages. 
+
+Note the lines at the bottom that messages like   : 
+
+> `dplyr::filter()`  masks `stats::filter()`
+
+This means that two packages, `r pkg(dplyr)` and `r pkg(stats, cran = FALSE)`, have functions with the same name (`filter()`)^[The syntax `foo::bar()` means that the function `bar()` is inside of the package `r pkg(foo)` When used together, this is often referred to as "calling the function by its namespace.". You can do this in your code, and developers often do. However, it's fairly ugly.  ]. If you were to type `filter` at an R prompt, the function that you get corresponds to the one in the most recently loaded package. That's not ideal.
+
+To handle this, we have a function called `tidymodels_prefer()`. When you use this, it prioritizes functions from the tidy models and tidyverse groups so that you get those ^[Unfortunately, this is not a guarantee but it does work most of the time.] If you want to see the specific conflicts and how we resolve them, see this output: 
+<details>
+```{r}
+#| label: introduction-prefer
+tidymodels_prefer(quiet = FALSE)
+```
+</details>
+
+If you want to know more about _why_ tidymodels exists, we've written a bit about this in the [tidymodels book](https://www.tmwr.org/software-modeling). The second chapter describes how [tidyverse principles can be used for modeling](https://www.tmwr.org/tidyverse). 
+
+## Package Versions and Reproducability
+
+We will do our best to use versions of our packages corresponding to the CRAN versions. We can't always do that, and, for many packages, a version number ending with a value in the 9000 range (e.g., version "1.1.4.9001") means that it was a development version of the package. 
+
+At the end of each session, we'll show which packages were loaded and used: 
+
+```{r}
+#| label: introduction-si
+
+sessioninfo::session_info()
+```
+

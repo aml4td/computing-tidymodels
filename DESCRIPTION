@@ -1,0 +1,63 @@
+Type: Quarto
+Package: aml4td.tidymodels
+Title: tidymodels computing supplement
+Version: 0.0.1.9000
+Authors@R: c(
+    person("Max", "Kuhn", , "mxkuhn@gmail.com", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0003-2402-136X"))
+  )
+Description: Sources to build books.
+License: CC BY-SA (see license file)
+Imports: 
+    brulee (>= 0.2.0),
+    cli,
+    Cubist,
+    devtools,
+    dials,
+    doParallel,
+    dplyr,
+    e1071,
+    ggplot2,
+    gt,
+    hardhat (>= 1.2.0.9000),
+    jsonlite,
+    kableExtra,
+    knitr,
+    modeldata (>= 1.1.0),
+    modeldatatoo,
+    pak,
+    parallel,
+    parsnip,
+    patchwork,
+    pillar,
+    probably (>= 0.1.0.9007),
+    purrr,
+    ragg,
+    recipes,
+    rsample,
+    rstudioapi,
+    rules,
+    sessioninfo,
+    splines2,
+    stopwords,
+    textrecipes,
+    tibble,
+    tidymodels,
+    tidyr,
+    tinytex,
+    torch (>= 0.9.0),
+    tune,
+    usethis,
+    workflows,
+    workflowsets,
+    yardstick (>= 1.1.0.9000),
+    yaml
+Suggests: 
+    testthat (>= 3.0.0)
+Remotes:
+    tidymodels/textrecipes
+Config/testthat/edition: 3
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.2
