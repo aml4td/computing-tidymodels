@@ -42,7 +42,7 @@ The main tidymodels resources are:
 
 - _Tidy Modeling with R_ ([`tmwr.org`](https://www.tmwr.org/)): a long-form book.
 
-- [`workshops.tidymodels.org`](https:/workshops.tidymodels.org/): our currently training materials.
+- [`workshops.tidymodels.org`](https:/workshops.tidymodels.org/): the current (and past) training materials.
 
 We'll reference these and other resources as needed. 
 
@@ -103,7 +103,7 @@ If you want to know more about _why_ tidymodels exists, we've written a bit abou
 
 ## Package Versions and Reproducability
 
-We will do our best to use versions of our packages corresponding to the CRAN versions. We can't always do that, and, for many packages, a version number ending with a value in the 9000 range (e.g., version "1.1.4.9001") means that it was a development version of the package. 
+We will do our best to use versions of our packages corresponding to the CRAN versions. We can't always do that, and, for many packages, a version number ending with a value in the 9000 range (e.g., version "1.1.4.9001") means that it was a development version of the package and was most likely installed from a GitHub repository. 
 
 At the end of each session, we'll show which packages were loaded and used: 
 
