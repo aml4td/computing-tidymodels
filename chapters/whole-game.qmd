@@ -325,7 +325,7 @@ resampled_ratios
 resampled_ratios$stats[[1]]
 ```
 
-`rsample::int_pctl()` can consume these results and produce an interval for each item column^[You can see another example using `rsample::`int_pctl()` on [tidymodels.org](https://www.tidymodels.org/learn/statistics/bootstrap/).]. 
+`rsample::int_pctl()` can consume these results and produce an interval for each item column^[You can see another example using `rsample::int_pctl()` on [tidymodels.org](https://www.tidymodels.org/learn/statistics/bootstrap/).]. 
 
 ```{r}
 #| label: delivery-bootstrap-intervals
