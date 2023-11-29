@@ -39,7 +39,7 @@ source("../R/_common.R")
 req_pkg <- c("brulee", "Cubist", "patchwork", "scales", "splines2", "tidymodels")
 ```
 
-For this chapter, you'll need `r pkg_list(req_pkg)`. You can install them via: 
+You'll need `r pkg_list(req_pkg)` for this chapter. You can install them via: 
 
 ```{r}
 #| label: whole-game-installs
@@ -67,7 +67,7 @@ tidymodels_prefer()
 
 ## The Data
 
-The data set is pre-compiled into a binary format R uses (called "RData format" here). It is in the `RData` directory. There is also a `csv` version in the `delimited` directory. 
+The data set is pre-compiled into a binary format R uses (called "RData format" here). It is in the `RData` directory. A `csv` version is also in the `delimited` directory. 
 
 ::: {.callout-note}
 
@@ -154,7 +154,7 @@ It uses random numbers so we will set the random number seed before using it.
 
 We are using random numbers (actually [pseudo-random numbers](https://en.wikipedia.org/wiki/Pseudorandomness)). We want to get the same "random" values every time we run the same code for reproducibility. To do that, we use the `set.seed()` function and give it an integer value. The value itself doesn't matter. 
 
-The random number stream is like a river. If we want to see the same things in your journey down the river, you must get in at the same exact spot. The seed is like the location where you start a journey (that is always the same). 
+The random number stream is like a river. If you want to see the same things in your journey down the river, you must get in at the same exact spot. The seed is like the location where you start a journey (that is always the same). 
 
 :::
 
@@ -187,7 +187,7 @@ delivery_test  <- testing(delivery_split)
 delivery_val   <- validation(delivery_split)
 ```
 
-We will mostly work with the training set of `r format(nrow(delivery_train), big.mark = ",")` deliveries. That's what we'll use to explore the data, fit models, and so on. 
+We will mostly work with the training set of `r format(nrow(delivery_train), big.mark = ",")` deliveries. We'll use that to explore the data, fit models, and so on. 
 
 ## Exploratory Data Analysis
 
@@ -255,7 +255,7 @@ delivery_time_day <-
 
 The methods that we used to compute the effects of the `item_*` columns are more complicated. We must make probabilistic assumptions about the data if we want to get something like a confidence interval. Alternatively, we could specify the empirical distribution function via the bootstrap resampling method. This helps us estimate the standard error of some statistic and use that to compute an interval.
 
-First, we make a function that takes some data and [computes our statistics of interest](https://rsample.tidymodels.org/reference/int_pctl.html#arguments). It assumes `x` is the entire data set with the delivery time column and each of the item columns.
+First, we make a function that takes some data and [computes our statistics of interest](https://rsample.tidymodels.org/reference/int_pctl.html#arguments). It assumes `x` is the entire data set with the delivery time column and each item column.
 
 ```{r}
 #| label: delivery-time-ratios
@@ -295,7 +295,7 @@ A value of 1.07 means that there is a 7% increase in the delivery time when that
 
 A tidymodels function called `int_pctl()` can take a collection of bootstrap samples of a data set, compute their statistics, and use the results to produce confidence intervals (we'll use 90% intervals). To use it, we'll resample the training set using the `bootstraps()` function and then use a `mutate()` to compute the fold differences. 
  
-We are using random numbers again so let's reset the seed^[Why are we doing this again? Didn't we already "jump in the river?" Yes. If we were executing all of the code here in the exact order (with no typos or commands in-between), we would have reproducible pseudo-random numbers. That's usually not how interactive data analysis goes, though. Therefore, we (re)set the seed each time we use randomness.]. 
+We are using random numbers again, so let's reset the seed^[Why are we doing this again? Didn't we already "jump in the river?" Yes. If we were executing all of the code here in the exact order (with no typos or commands in between), we would have reproducible pseudo-random numbers. That's usually not how interactive data analysis goes, though. Therefore, we (re)set the seed each time we use randomness.]. 
  
 ```{r}
 #| label: delivery-bootstraps
@@ -325,7 +325,7 @@ resampled_ratios
 resampled_ratios$stats[[1]]
 ```
 
-`rsample::int_pctl()` can consume these results and produce an interval for each item column^[You can see another example using `rsample::int_pctl()` on [tidymodels.org](https://www.tidymodels.org/learn/statistics/bootstrap/).]. 
+`rsample::int_pctl()` can consume these results and produce an interval for each item column^[You can see another example of bootstrap intervals at [tidymodels.org](https://www.tidymodels.org/learn/statistics/bootstrap/).]. 
 
 ```{r}
 #| label: delivery-bootstrap-intervals
@@ -365,7 +365,7 @@ resampled_intervals %>%
 
 ## Model Development
 
-The analyses in this section defines a model pipeline, fits it to the training set, and then measures performance using the validation set. We'll review the three evaluated models and describe how those computations were done.
+The analyses in this section define a model pipeline, fit it to the training set, and then measure performance using the validation set. We'll review the three evaluated models and describe how those computations were done.
 
 Before we get started, we need to specify how to measure model effectiveness. The materials use the mean absolute error (MAE). To specify this _performance metric_, you can use the `yardstick::metric_set()` function and give it the function names for specific metrics (like the `yardstick::mae()` function): 
 
@@ -410,13 +410,13 @@ spline_rec <-
   step_dummy(all_factor_predictors()) 
 ```
 
-The first argument to step functions is the variables that should be affected by the function. We can use any `r pkg(dplyr)` [selector](https://dplyr.tidyverse.org/reference/select.html) such as `everything()` and/or the bare column names. Here, we want to change every factor column that was the role of "predictor". To do this, recipes have an [extended set of selector functions](https://recipes.tidymodels.org/reference/selections.html) for this purpose. 
+The first argument to step functions is the variables that should be affected by the function. We can use any `r pkg(dplyr)` [selector](https://dplyr.tidyverse.org/reference/select.html) such as `everything()` and/or the bare column names. Here, we want to change every factor column that was the role of "predictor". For this purpose, recipes have an [extended set of selector functions](https://recipes.tidymodels.org/reference/selections.html). 
 
 Once the recipe is processed, this step will record which columns were captured by `all_factor_predictors()`, retain their factor levels, then convert them to a set of 0/1 indicators for each predictor/level. 
 
 Unlike base R's formula method, the resulting columns are named rationally. By default, it uses the pattern `{column name}_{level}` for the new features. So, the column `day` will not exist after this step. It is replaced with columns such as `day_Thursday` and so on. 
 
-The next recipe step probably is not needed for this data set but automatically using it is not problematic. What happens if there is a factor level that occurs very infrequently? It is possible that this will only be observed in the validation or test set. `step_dummy()` will make a column for that factor level since it knows it exists but the training set will have all zeros for this column; it has zero variance. We can screen these out using `step_zv()` ('zv' = zero-variance): 
+The next recipe step is probably unnecessary for this data set but automatically using it is not problematic. What happens if there is a factor level that occurs very infrequently? It is possible that this will only be observed in the validation or test set. `step_dummy()` will make a column for that factor level since it knows it exists but the training set will have all zeros for this column; it has zero variance. We can screen these out using `step_zv()` ('zv' = zero-variance): 
 
 ```{r}
 #| label: recipe-zv
@@ -493,7 +493,7 @@ lin_reg_wflow <-
   add_recipe(spline_rec)
 ```
 
-To fit all of this to the training set, we can use the `fit()` function. This executes the recipe on the data set then passes the appropriate data to `stats::lm()`: 
+We can use the `fit()` function to fit the workflow to the training set. This executes the recipe on the data set then passes the appropriate data to `stats::lm()`: 
 
 ```{r}
 #| label: lm-fit
@@ -512,7 +512,7 @@ lin_reg_fit
 
 </details>
 
-One helpful function is `tidy()`. It is designed to return the object results in a rational, helpful way. In our case, the `tidy()` method for an `lm` object gives us a nice data frame back with information on the fitted coefficients: 
+One helpful function is `tidy()`. It is designed to return the object results rationally, helpfully. In our case, the `tidy()` method for an `lm` object gives us a nice data frame back with information on the fitted coefficients: 
 
 ```{r}
 #| label: lm-tidy
@@ -522,7 +522,7 @@ tidy(lin_reg_fit)
 
 Unlike the `summary()` method for `lm` objects, this object can immediately be used in plots or tables. 
 
-Another valuable supporting function is `augment()`. It can take a model object and data set and attach the prediction columns to the data frame. Essentially, this is an upgraded version of `predict()`. Let' predict the validation set: 
+Another valuable supporting function is `augment()`. It can take a model object and data set and attach the prediction columns to the data frame. Essentially, this is an upgraded version of `predict()`. Let's predict the validation set: 
 
 ```{r}
 #| label: lm-augment
@@ -558,7 +558,7 @@ delivery_rs
 
 This packages the training and validation sets together in a way that it knows when to use each data set appropriately. 
 
-Since we are treating this as if it were resampling, we can use the `fit_resamples()` function to do a lot of the manual work that we just showed. We'll add a _control object_ to the mix to specify that we want to retain the validation set predictions (and our original workflow).  
+Since we are treating this as if it were resampling, we can use the `fit_resamples()` function to do much of the manual work we just showed. We'll add a _control object_ to the mix to specify that we want to retain the validation set predictions (and our original workflow).  
 
 ```{r}
 #| label: lm-resample
@@ -784,7 +784,7 @@ autoplot(nnet_res, metric = "mae")
 
 `tune::collect_predictions()` will automatically return the out-of-sample predictions for every candidate model (e.g., every tuning parameter value.). We might not want them all; it has an argument called `parameters` that can be used to filter the results. 
 
-`probably::cal_plot_regression()` automatically selects the best tuning parameter combination based on the _first_ metric in the metric set object. It plots a single set of predictions. For example, here is the calibration plot for the optimal number of hidden units: 
+`probably::cal_plot_regression()` automatically shows the results for each tuning parameter combination. For example: 
 
 ```{r}
 #| label: nnet-cal-plot
@@ -795,9 +795,7 @@ autoplot(nnet_res, metric = "mae")
 cal_plot_regression(nnet_res, alpha = 1 / 3)
 ```
 
-Note that the facet title shows the same configuration code (``r best_hidden_units$.config[1]``) as the one given by `select_best()`.
-
-There are two options if we need a model fit on the training set. If the numerically best parameter is best (i.e., smallest MAE), then `tune::fit_best()` is the easiest approach. Alternatively, you can choose the exact tuning parameter values you desire and _splice_ them into the model to replace the current values of `tune()`. To do this, there is a `finalize_workflow()` function. It takes a data frame with one row and columns for each tuning parameter. Here's an example where we decide that 10 hidden units is best: 
+There are two options if we need a model fit on the training set. If the numerically best parameter is best (i.e., smallest MAE), then `tune::fit_best()` is the easiest approach. Alternatively, you can choose the exact tuning parameter values you desire and _splice_ them into the model to replace the current values of `tune()`. To do this, there is a `finalize_workflow()` function. It takes a data frame with one row and columns for each tuning parameter. Here's an example where we decide that 10 hidden units are best: 
 
 ```{r}
 #| label: nnet-final-fit
@@ -854,7 +852,7 @@ As you'll see in a minute, the function `probably::cal_apply()` calibrates new p
  
 ## Test Set Results
 
-As with `best_fit()`, there are two ways to go about predicting the test set.
+As with `best_fit()`, there are two ways to predict the test set.
 
 The more manual approach is to fit the model on the training set, use `predict()` or `augment()` to compute the test set predictions, calibrate them with our object, then use our metric to compute performance. If we had not already fit the model, the pre-calibration code is: 
 
@@ -925,5 +923,3 @@ lin_reg_test_pred_cal %>%
 ## Conclusion
 
 This has been an abbreviated, high-level introduction to using tidymodels. Future chapters will go into much more detail on these subjects and illustrate additional features and functions as needed. 
-
-
