@@ -1,0 +1,248 @@
+---
+knitr:
+  opts_chunk:
+    cache.path: "../_cache/initial-data-splitting/"
+---
+
+# Initial Data Splitting {#sec-initial-data-splitting}
+
+We'll illustrate how to conduct an initial split of your data into different partitions (used for different purposes). 
+
+## Requirements
+
+```{r}
+#| label: initial-data-splitting-knitr-setup
+#| include: false
+
+knitr::opts_chunk$set(
+    comment = "#>",
+    collapse = TRUE,
+    fig.align = 'center',
+    fig.path = "../figures/",
+    fig.width = 10,
+    fig.height = 6,
+    out.width = "95%",
+    dev = 'svg',
+    dev.args = list(bg = "transparent"),
+    tidy = FALSE,
+    echo = TRUE
+  )
+
+options(digits = 4, width = 84)
+options(dplyr.print_min = 6, dplyr.print_max = 6)
+options(cli.width = 85)
+options(crayon.enabled = FALSE)
+options(pillar.advice = FALSE, pillar.min_title_chars = Inf, pillar.sigfig = 4)
+
+source("../R/_common.R")
+req_pkg <- c("caret", "tidymodels")
+```
+
+`r pkg_list(req_pkg)`
+
+```{r}
+#| label: initial-data-splitting-installs
+#| eval: false
+#| echo: true
+req_pkg <- c("caret", "tidymodels")
+
+# Check to see if they are installed: 
+if (!rlang::is_installed(req_pkg)) {
+  pak::pak(req_pkg)
+}
+```
+
+Let's load the meta package and manage some between-package function conflicts. 
+
+```{r}
+#| label: start-tidymodels
+#| results: hide
+#| message: false
+#| warning: false
+library(tidymodels)
+tidymodels_prefer()
+```
+
+The data used here are both in R packages that are already installed. Let's work with the primary data set: the Ames Iowa housing data.
+
+## The Ames Housing Data {#sec-ames-intro}
+
+These data are in the `r pkg(modeldata)` package, which is part of  `r pkg(tidymodels)`. Let's load the data, subset a few columns, and modify the sale price units. We'll also combine the two bathroom-related columns into a single column. 
+
+```{r}
+#| label: setup-ames
+data(ames, package = "modeldata")
+
+ames <-
+  ames %>%
+  select(Sale_Price, Bldg_Type, Neighborhood, Year_Built, Gr_Liv_Area, Full_Bath,
+         Half_Bath, Year_Sold, Lot_Area, Central_Air, Longitude, Latitude) %>%
+  mutate(
+    Sale_Price = log10(Sale_Price),
+    Baths = Full_Bath  + Half_Bath/2
+  ) %>%
+  select(-Half_Bath, -Full_Bath)
+
+glimpse(ames)
+```
+
+tidymodels requires that, for outcome data, any basic transformations should occur before data splitting. 
+
+## Simple Data Splitting  {#sec-basic-splitting}
+
+There are three main functions for an initial split: 
+
+ - `rsample::initial_split()`: completely random splits and stratified splits. 
+ - `rsample::initial_time_split()`: non-random splits for times series; the most recent data are used for testing.
+ - `rsample::initial_validation_split()`: an initial split into three partitions. 
+ - `rsample::group_initial_split()`: for situations with repeated measures or other important grouping factors. 
+ 
+Most of our applications will use the first function, where the default is to use 75% for training and 25% for testing. This is determined at random; there is no need to randomly sort the rows before splitting. By default, a simple random split is used. 
+
+For the Ames data, we know that the distribution of sale prices has some outlying points. To deal with this, we'll use a stratified split (on the outcome) using 5 quantiles of the data in `ames`: 
+
+```{r}
+#| label: setup-split
+set.seed(3024)
+ames_split <- initial_split(ames, strata = Sale_Price, breaks = 5)
+
+ames_split
+```
+
+The output shows the size of the resulting data sets. To get the two data sets, there are simple accessor functions: 
+
+```{r}
+#| label: split-data-sets
+ames_train <- training(ames_split)
+ames_test  <- testing(ames_split)
+```
+
+Consistent with the printed output, there are `r nrow(ames_train)` data points in the training set and `r nrow(ames_test)` reserved for testing. 
+
+We won't touch on `initial_time_split()` here but only mention that it takes the fraction of the data specified for testing from the bottom of the data frame. Unlike the previous function, the order of the rows matters. 
+
+`group_initial_split()` and `initial_validation_split()` are discussed in more detail below.  
+
+## Using the Predictors  {#sec-split-with-predictors}
+
+Instead of using the outcome to partition the data, other columns can be used when applicable. The text mentions using the `r pkg(twinning)` package ([CRAN page](https://cran.r-project.org/package=twinning)). The same authors have a second approach that can be found in the `r pkg(SPlit)` package ([CRAN](https://cran.r-project.org/package=SPlit)). Both are straightforward to use. 
+
+Maximum dissimilarity sampling can be conducted using `caret::maxDissim()`. It starts with an initial set of one or more or fewer data points to use as a starter. Unless there is a specific set of points of interest, picking one close to the center of the multivariate predictor distribution might make sense. Here is some code that uses the geographic coordinates as the splitting variables: 
+
+```{r}
+#| fig-height: 4.5
+#| fig-width: 4.5
+#| fig-align: center
+#| out-width: "40%"
+#| warning: false
+# Since we will be using distances in the calculations, create centered 
+# and scaled versions of the coordinates then add a row index column. 
+ames_scaled <-
+  ames %>%
+  select(Longitude, Latitude) %>%
+  mutate(
+    scaled_lon = scale(Longitude)[,1], 
+    scaled_lat = scale(Latitude)[,1]
+  ) %>%
+  select(starts_with("scaled")) %>% 
+  add_rowindex()
+
+# Select an initial data point closest to the middle
+seed_row <-
+  ames_scaled %>%
+  mutate(
+    dist = (scaled_lon)^2 + (scaled_lat)^2
+  ) %>%
+  slice_min(dist, n = 1) %>%
+  pluck(".row")
+
+# Partition the data
+ames_scaled_seed <- ames_scaled %>% slice( seed_row)
+ames_scaled_pool <- ames_scaled %>% slice(-seed_row)
+
+# Conduct the selection process
+selection_path <- 
+  caret::maxDissim(
+    # Only give the function the predictor columns for each data set
+    ames_scaled_seed %>% select(-.row), 
+    ames_scaled_pool %>% select(-.row), 
+    n = 24
+  )
+
+# Get the selected row numbers that correspond to the 'ames' data frame.
+selected_rows <- c(seed_row, ames_scaled_pool$.row[selection_path])
+
+selected_data <- ames %>% slice(selected_rows)
+
+# A non-map plot of the values: 
+selected_data %>%
+  mutate(xend = lead(Longitude), yend = lead(Latitude)) %>%
+  ggplot(aes(Longitude, Latitude)) +
+  geom_point() +
+  geom_segment(aes(xend = xend, yend = yend),
+               arrow = arrow(length = unit(0.1, "inches"), type = "closed"),
+               col = "blue", alpha = 1 / 5) +
+  theme_bw()
+```
+
+## Multi-Level Data  {#sec-multilevel-splitting}
+
+This section will focus on data with a rational grouping of data. For example, medical data might follow patient over time so that there are multiple rows per patient. The patient is the independent experimental unit (IEU), meaning that the data between patients are thought to be independent, and those within a patient are (statistically) related. We want to partition the data so that all of the data for each IEU end up in _either_ the training or test sets but not both. We want to sample the data by the group -- where the group in this example is the patient. 
+
+There are other applications of grouped data but the example data that we'll use fits into the description above: 27 patients were followed and had data collected at four time points. The data are in the `r pkg(nlme)` package:
+
+```{r}
+#| label: grouped-data
+
+data(Orthodont, package = "nlme")
+glimpse(Orthodont)
+```
+
+To use `rsample::group_initial_split()`, we must supply a `group` argument that corresponds to one of the columns in the data. There is also a `prop` argument that specifies the proportion of the groups that should go into the training set. 
+
+```{r}
+#| label: grouped-data-split
+
+set.seed(93)
+orth_split <- group_initial_split(Orthodont, group = Subject, prop = 2 / 3)
+
+# The numbers in this output are individual rows (not numbers of groups)
+orth_split
+```
+
+From here, the code to get the resulting data sets is the same as previously shown. 
+
+We also verify that no subjects are in both data sets: 
+
+```{r}
+#| label: grouped-split-data-sets
+orth_train <- training(orth_split)
+orth_test  <- testing(orth_split)
+
+# Is there any overlap in the subjects? 
+subjects_train <- unique(orth_train$Subject)
+subjects_test  <- unique(orth_test$Subject)
+
+intersect(subjects_train, subjects_test)
+```
+
+## Validation Sets  {#sec-three-way-split}
+
+To add a validation set at the outset, `initial_validation_split()` works the same as `initial_split()`. The `prop` argument requires two values: the first is the training set proportion, and the second is for the validation set. In this example below, we add 80% to training, 10% to validation, and the remaining 10% to the testing set: 
+
+```{r}
+#| label: setup-val-split
+set.seed(4)
+ames_val_split <- initial_validation_split(ames, strata = Sale_Price, prop = c(0.8, 0.1))
+
+ames_val_split
+```
+
+Again, the acquisition of data is the same but has the additional use of the `validation()` function: 
+ 
+```{r}
+#| label: split-val-data-sets
+ames_train <- training(ames_val_split)
+ames_val   <- validation(ames_val_split)
+ames_test  <- testing(ames_val_split)
+```
