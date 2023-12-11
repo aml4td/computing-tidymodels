@@ -24,9 +24,9 @@ pkg_list <- function(x) {
   n <- length(x)
   x <- x[order(tolower(x))]
   x <- purrr::map_chr(x, ~ pkg_chr(.x))
-  y <- knitr::combine_words(x)
-  
-  req <- cli::pluralize("{n} package{?s}: {y}")
+
+  req <- cli::pluralize("You’ll need {n} package{?s} ({x}) for this chapter. 
+                         You can install {?it/them} via:")
   req
 }
 

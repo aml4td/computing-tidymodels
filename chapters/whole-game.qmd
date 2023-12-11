@@ -21,7 +21,6 @@ knitr::opts_chunk$set(
     fig.path = "../figures/",
     fig.width = 10,
     fig.height = 6,
-    cache.path = "../_cache/introduction/",
     out.width = "95%",
     dev = 'svg',
     dev.args = list(bg = "transparent"),
@@ -39,7 +38,7 @@ source("../R/_common.R")
 req_pkg <- c("brulee", "Cubist", "patchwork", "scales", "splines2", "tidymodels")
 ```
 
-You'll need `r pkg_list(req_pkg)` for this chapter. You can install them via: 
+`r pkg_list(req_pkg)`
 
 ```{r}
 #| label: whole-game-installs
@@ -65,9 +64,7 @@ library(patchwork)
 tidymodels_prefer()
 ```
 
-## The Data
-
-The data set is pre-compiled into a binary format R uses (called "RData format" here). It is in the `RData` directory. A `csv` version is also in the `delimited` directory. 
+Finally, this note:
 
 ::: {.callout-note}
 
@@ -78,7 +75,10 @@ If you are not in the right place, use `setwd()` to change the working directory
 If you start by opening the `Rproj` file, you will always start in the right place. 
 :::
 
-Let's load it: 
+
+## The Data
+
+The data set is pre-compiled into a binary format R uses (called "RData format" here). It is in the `RData` directory. A `csv` version is also in the `delimited` directory. Let's load it: 
 
 ```{r}
 #| label: whole-game-get-data
@@ -93,12 +93,12 @@ load("RData/deliveries.RData")
 load("../RData/deliveries.RData")
 ```
 
-There are a lot of ways that you can examine the contents of an object. `View()` is good for data frames; in the RStudio IDE, it opens a spreadsheet-like viewer. `str()` (short for "structure") shows more details about the object, such as classes, but can be a bad choice if you have >50 columns in the data (or if it is a long list or similar). We'll use that: 
+There are a lot of ways that you can examine the contents of an object. `View()` is good for data frames; in the RStudio IDE, it opens a spreadsheet-like viewer. `tibble::glimpse()` shows more details about the object, such as classes, but can be a bad choice if you have >50 columns in the data (or if it is a long list or similar). We'll use that: 
 
 ```{r}
 #| label: whole-game-str
 
-str(deliveries)
+glimpse(deliveries)
 ```
 
 We can see that this is a data frame and, more specifically a specialized version called a [tibble](https://tibble.tidyverse.org). There are `r format(nrow(deliveries), big.mark = ",")` data points and `r ncol(deliveries)` columns and their types. 
