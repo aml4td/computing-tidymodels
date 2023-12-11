@@ -6,6 +6,8 @@ No reported edits (yet).
 
 ## Changelog {.unlisted .unnumbered}
 
+### 2023-12-11  {.unlisted .unnumbered}
 
+Added a chapter on initial data splitting. 
 
 
