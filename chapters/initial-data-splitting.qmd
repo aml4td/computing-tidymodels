@@ -90,11 +90,11 @@ tidymodels requires that, for outcome data, any basic transformations should occ
 
 ## Simple Data Splitting  {#sec-basic-splitting}
 
-There are three main functions for an initial split: 
+There are a few main functions for an initial split: 
 
  - `rsample::initial_split()`: completely random splits and stratified splits. 
  - `rsample::initial_time_split()`: non-random splits for times series; the most recent data are used for testing.
- - `rsample::initial_validation_split()`: an initial split into three partitions. 
+ - `rsample::initial_validation_split()` and `rsample::initial_validation_time_split()`: an initial split into three partitions. 
  - `rsample::group_initial_split()`: for situations with repeated measures or other important grouping factors. 
  
 Most of our applications will use the first function, where the default is to use 75% for training and 25% for testing. This is determined at random; there is no need to randomly sort the rows before splitting. By default, a simple random split is used. 
@@ -117,9 +117,9 @@ ames_train <- training(ames_split)
 ames_test  <- testing(ames_split)
 ```
 
-Consistent with the printed output, there are `r nrow(ames_train)` data points in the training set and `r nrow(ames_test)` reserved for testing. 
+Consistent with the printed output, there are `r format(nrow(ames_train), big.mark = ",")` data points in the training set and `r nrow(ames_test)` reserved for testing. 
 
-We won't touch on `initial_time_split()` here but only mention that it takes the fraction of the data specified for testing from the bottom of the data frame. Unlike the previous function, the order of the rows matters. 
+We won't touch on `initial_time_split()` here but only mention that it takes the fraction of the data specified for testing from the bottom/tail of the data frame. Unlike the previous function, the order of the rows matters. 
 
 `group_initial_split()` and `initial_validation_split()` are discussed in more detail below.  
 
@@ -210,9 +210,7 @@ orth_split <- group_initial_split(Orthodont, group = Subject, prop = 2 / 3)
 orth_split
 ```
 
-From here, the code to get the resulting data sets is the same as previously shown. 
-
-We also verify that no subjects are in both data sets: 
+From here, the code to get the resulting data sets is the same as previously shown. We'll also verify that no subjects are in both data sets: 
 
 ```{r}
 #| label: grouped-split-data-sets
@@ -228,7 +226,7 @@ intersect(subjects_train, subjects_test)
 
 ## Validation Sets  {#sec-three-way-split}
 
-To add a validation set at the outset, `initial_validation_split()` works the same as `initial_split()`. The `prop` argument requires two values: the first is the training set proportion, and the second is for the validation set. In this example below, we add 80% to training, 10% to validation, and the remaining 10% to the testing set: 
+To add a validation set at the outset, `initial_validation_split()` works the same as `initial_split()`. The `prop` argument requires _two values_ now: the first is the training set proportion, and the second is for the validation set. In this example below, we add 80% to training, 10% to validation, and the remaining 10% to the testing set: 
 
 ```{r}
 #| label: setup-val-split
@@ -246,3 +244,8 @@ ames_train <- training(ames_val_split)
 ames_val   <- validation(ames_val_split)
 ames_test  <- testing(ames_val_split)
 ```
+
+`rsample::initial_validation_time_split()` does the same thing but based on the ordering of the data (as opposed to random selection). 
+
+Suppose a data frame had 100 rows. Using `prop = c(0.8, 0.1)` would place the first 80 rows into training, the next 10 into validation, and the last 10 into testing. Keeping the data appropriately ordered is important when using validation sets in tidymodels. 
+
