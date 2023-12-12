@@ -60,6 +60,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../">
+<link href="../chapters/initial-data-splitting.html" rel="next">
 <link href="../chapters/introduction.html" rel="prev">
 <script src="../site_libs/quarto-html/quarto.js"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
@@ -189,6 +190,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <span class="sidebar-item-text sidebar-link text-start">
  <span class="menu-text">Preparation</span></span>
   </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/initial-data-splitting.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Initial Data Splitting</span></span></a>
+  </div>
+</li>
         <li class="sidebar-item sidebar-item-section">
       <span class="sidebar-item-text sidebar-link text-start">
  <span class="menu-text">Optmization</span></span>
@@ -254,7 +261,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header><p>This chapter on the main website is a high-level tour of the modeling process. We’ll follow the same pattern here by analyzing the same data. We won’t reproduce every figure or table but these notes will give you a broad understanding of how the tidymodels framework operates.</p>
 <section id="requirements" class="level2" data-number="2.1"><h2 data-number="2.1" class="anchored" data-anchor-id="requirements">
 <span class="header-section-number">2.1</span> Requirements</h2>
-<p>You’ll need 6 packages: <span class="pkg"><a href="https://cran.r-project.org/package=brulee">brulee</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=Cubist">Cubist</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=patchwork">patchwork</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=scales">scales</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=splines2">splines2</a></span>, and <span class="pkg"><a href="https://cran.r-project.org/package=tidymodels">tidymodels</a></span> for this chapter. You can install them via:</p>
+<p>You’ll need 6 packages (<span class="pkg"><a href="https://cran.r-project.org/package=brulee">brulee</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=Cubist">Cubist</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=patchwork">patchwork</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=scales">scales</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=splines2">splines2</a></span>, and <span class="pkg"><a href="https://cran.r-project.org/package=tidymodels">tidymodels</a></span>) for this chapter. You can install them via:</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html">pak</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"brulee"</span>, <span class="st">"Cubist"</span>, <span class="st">"patchwork"</span>, <span class="st">"scales"</span>, <span class="st">"splines2"</span>, <span class="st">"tidymodels"</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
@@ -277,7 +284,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="co">#&gt; ✖ dplyr::filter()  masks stats::filter()</span></span>
 <span><span class="co">#&gt; ✖ dplyr::lag()     masks stats::lag()</span></span>
 <span><span class="co">#&gt; ✖ recipes::step()  masks stats::step()</span></span>
-<span><span class="co">#&gt; • Learn how to get started at https://www.tidymodels.org/start/</span></span>
+<span><span class="co">#&gt; • Use suppressPackageStartupMessages() to eliminate package startup messages</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tidymodels/probably/">probably</a></span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Attaching package: 'probably'</span></span>
@@ -288,9 +295,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span></span>
 <span><span class="fu"><a href="https://tidymodels.tidymodels.org/reference/tidymodels_prefer.html">tidymodels_prefer</a></span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-</section><section id="the-data" class="level2" data-number="2.2"><h2 data-number="2.2" class="anchored" data-anchor-id="the-data">
-<span class="header-section-number">2.2</span> The Data</h2>
-<p>The data set is pre-compiled into a binary format R uses (called “RData format” here). It is in the <code>RData</code> directory. A <code>csv</code> version is also in the <code>delimited</code> directory.</p>
+<p>Finally, this note:</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -306,45 +311,48 @@ Note
 <p>If you start by opening the <code>Rproj</code> file, you will always start in the right place.</p>
 </div>
 </div>
-<p>Let’s load it:</p>
+</section><section id="the-data" class="level2" data-number="2.2"><h2 data-number="2.2" class="anchored" data-anchor-id="the-data">
+<span class="header-section-number">2.2</span> The Data</h2>
+<p>The data set is pre-compiled into a binary format R uses (called “RData format” here). It is in the <code>RData</code> directory. A <code>csv</code> version is also in the <code>delimited</code> directory. Let’s load it:</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/load.html">load</a></span><span class="op">(</span><span class="st">"RData/deliveries.RData"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>There are a lot of ways that you can examine the contents of an object. <code><a href="https://rdrr.io/r/utils/View.html">View()</a></code> is good for data frames; in the RStudio IDE, it opens a spreadsheet-like viewer. <code><a href="https://rdrr.io/r/utils/str.html">str()</a></code> (short for “structure”) shows more details about the object, such as classes, but can be a bad choice if you have &gt;50 columns in the data (or if it is a long list or similar). We’ll use that:</p>
+<p>There are a lot of ways that you can examine the contents of an object. <code><a href="https://rdrr.io/r/utils/View.html">View()</a></code> is good for data frames; in the RStudio IDE, it opens a spreadsheet-like viewer. <code><a href="https://pillar.r-lib.org/reference/glimpse.html">tibble::glimpse()</a></code> shows more details about the object, such as classes, but can be a bad choice if you have &gt;50 columns in the data (or if it is a long list or similar). We’ll use that:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/str.html">str</a></span><span class="op">(</span><span class="va">deliveries</span><span class="op">)</span></span>
-<span><span class="co">#&gt; tibble [10,012 × 31] (S3: tbl_df/tbl/data.frame)</span></span>
-<span><span class="co">#&gt;  $ time_to_delivery: num [1:10012] 16.1 22.9 30.3 33.4 27.2 ...</span></span>
-<span><span class="co">#&gt;  $ hour            : num [1:10012] 11.9 19.2 18.4 15.8 19.6 ...</span></span>
-<span><span class="co">#&gt;  $ day             : Factor w/ 7 levels "Mon","Tue","Wed",..: 4 2 5 4 5 6 7 4 5 7 ...</span></span>
-<span><span class="co">#&gt;  $ distance        : num [1:10012] 3.15 3.69 2.06 5.97 2.52 3.35 2.46 2.21 2.62 2.75 ...</span></span>
-<span><span class="co">#&gt;  $ item_01         : int [1:10012] 0 0 0 0 0 1 0 0 0 0 ...</span></span>
-<span><span class="co">#&gt;  $ item_02         : int [1:10012] 0 0 0 0 0 0 0 0 0 2 ...</span></span>
-<span><span class="co">#&gt;  $ item_03         : int [1:10012] 2 0 0 0 0 0 1 1 0 1 ...</span></span>
-<span><span class="co">#&gt;  $ item_04         : int [1:10012] 0 0 0 0 1 1 1 0 0 0 ...</span></span>
-<span><span class="co">#&gt;  $ item_05         : int [1:10012] 0 0 1 0 0 0 0 0 0 0 ...</span></span>
-<span><span class="co">#&gt;  $ item_06         : int [1:10012] 0 0 0 0 0 0 0 1 0 0 ...</span></span>
-<span><span class="co">#&gt;  $ item_07         : int [1:10012] 0 0 0 0 1 1 0 0 1 0 ...</span></span>
-<span><span class="co">#&gt;  $ item_08         : int [1:10012] 0 0 0 0 0 0 0 1 0 0 ...</span></span>
-<span><span class="co">#&gt;  $ item_09         : int [1:10012] 0 0 0 0 0 1 0 0 0 0 ...</span></span>
-<span><span class="co">#&gt;  $ item_10         : int [1:10012] 1 0 0 0 0 0 0 0 0 0 ...</span></span>
-<span><span class="co">#&gt;  $ item_11         : int [1:10012] 1 0 0 0 1 1 0 0 0 0 ...</span></span>
-<span><span class="co">#&gt;  $ item_12         : int [1:10012] 0 0 0 1 0 0 0 0 0 1 ...</span></span>
-<span><span class="co">#&gt;  $ item_13         : int [1:10012] 0 0 0 0 0 0 0 0 0 0 ...</span></span>
-<span><span class="co">#&gt;  $ item_14         : int [1:10012] 0 0 0 0 1 0 0 0 0 0 ...</span></span>
-<span><span class="co">#&gt;  $ item_15         : int [1:10012] 0 0 0 0 0 0 0 0 1 0 ...</span></span>
-<span><span class="co">#&gt;  $ item_16         : int [1:10012] 0 0 0 0 0 0 0 0 0 0 ...</span></span>
-<span><span class="co">#&gt;  $ item_17         : int [1:10012] 0 0 0 0 0 0 0 0 0 1 ...</span></span>
-<span><span class="co">#&gt;  $ item_18         : int [1:10012] 0 1 0 0 0 0 0 0 0 1 ...</span></span>
-<span><span class="co">#&gt;  $ item_19         : int [1:10012] 0 0 0 0 0 0 0 0 0 0 ...</span></span>
-<span><span class="co">#&gt;  $ item_20         : int [1:10012] 0 0 1 0 0 0 0 0 0 0 ...</span></span>
-<span><span class="co">#&gt;  $ item_21         : int [1:10012] 0 0 0 0 0 0 0 1 0 0 ...</span></span>
-<span><span class="co">#&gt;  $ item_22         : int [1:10012] 0 0 0 0 0 1 1 0 0 1 ...</span></span>
-<span><span class="co">#&gt;  $ item_23         : int [1:10012] 0 0 0 0 0 0 0 0 0 0 ...</span></span>
-<span><span class="co">#&gt;  $ item_24         : int [1:10012] 0 0 1 0 0 1 0 0 0 0 ...</span></span>
-<span><span class="co">#&gt;  $ item_25         : int [1:10012] 0 0 0 0 0 0 0 0 0 0 ...</span></span>
-<span><span class="co">#&gt;  $ item_26         : int [1:10012] 0 0 0 0 0 0 0 0 1 0 ...</span></span>
-<span><span class="co">#&gt;  $ item_27         : int [1:10012] 0 0 0 1 1 0 0 0 0 0 ...</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">glimpse</span><span class="op">(</span><span class="va">deliveries</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Rows: 10,012</span></span>
+<span><span class="co">#&gt; Columns: 31</span></span>
+<span><span class="co">#&gt; $ time_to_delivery &lt;dbl&gt; 16.11, 22.95, 30.29, 33.43, 27.23, 19.65, 22.10, 26.63, 3…</span></span>
+<span><span class="co">#&gt; $ hour             &lt;dbl&gt; 11.90, 19.23, 18.37, 15.84, 19.62, 12.95, 15.48, 17.05, 1…</span></span>
+<span><span class="co">#&gt; $ day              &lt;fct&gt; Thu, Tue, Fri, Thu, Fri, Sat, Sun, Thu, Fri, Sun, Tue, Fr…</span></span>
+<span><span class="co">#&gt; $ distance         &lt;dbl&gt; 3.15, 3.69, 2.06, 5.97, 2.52, 3.35, 2.46, 2.21, 2.62, 2.7…</span></span>
+<span><span class="co">#&gt; $ item_01          &lt;int&gt; 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, …</span></span>
+<span><span class="co">#&gt; $ item_02          &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 1, 0, 0, 0, 1, 0, …</span></span>
+<span><span class="co">#&gt; $ item_03          &lt;int&gt; 2, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, …</span></span>
+<span><span class="co">#&gt; $ item_04          &lt;int&gt; 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, …</span></span>
+<span><span class="co">#&gt; $ item_05          &lt;int&gt; 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …</span></span>
+<span><span class="co">#&gt; $ item_06          &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, …</span></span>
+<span><span class="co">#&gt; $ item_07          &lt;int&gt; 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, …</span></span>
+<span><span class="co">#&gt; $ item_08          &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, …</span></span>
+<span><span class="co">#&gt; $ item_09          &lt;int&gt; 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, …</span></span>
+<span><span class="co">#&gt; $ item_10          &lt;int&gt; 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, …</span></span>
+<span><span class="co">#&gt; $ item_11          &lt;int&gt; 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …</span></span>
+<span><span class="co">#&gt; $ item_12          &lt;int&gt; 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, …</span></span>
+<span><span class="co">#&gt; $ item_13          &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …</span></span>
+<span><span class="co">#&gt; $ item_14          &lt;int&gt; 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …</span></span>
+<span><span class="co">#&gt; $ item_15          &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …</span></span>
+<span><span class="co">#&gt; $ item_16          &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …</span></span>
+<span><span class="co">#&gt; $ item_17          &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, …</span></span>
+<span><span class="co">#&gt; $ item_18          &lt;int&gt; 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, …</span></span>
+<span><span class="co">#&gt; $ item_19          &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …</span></span>
+<span><span class="co">#&gt; $ item_20          &lt;int&gt; 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …</span></span>
+<span><span class="co">#&gt; $ item_21          &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …</span></span>
+<span><span class="co">#&gt; $ item_22          &lt;int&gt; 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, …</span></span>
+<span><span class="co">#&gt; $ item_23          &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …</span></span>
+<span><span class="co">#&gt; $ item_24          &lt;int&gt; 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …</span></span>
+<span><span class="co">#&gt; $ item_25          &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, …</span></span>
+<span><span class="co">#&gt; $ item_26          &lt;int&gt; 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, …</span></span>
+<span><span class="co">#&gt; $ item_27          &lt;int&gt; 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, …</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We can see that this is a data frame and, more specifically a specialized version called a <a href="https://tibble.tidyverse.org">tibble</a>. There are 10,012 data points and 31 columns and their types.</p>
 <p>Note that the <code>day</code> column is a <a href="https://r4ds.hadley.nz/factors"><em>factor</em></a>. This is the preferred way to represent most categorical data (for modeling, at least). A factor catalogs the possible values of the data and stores those <em>levels</em>. That is important when we convert categorical predictors to “dummy variables” or “indicators” and similar operations.</p>
@@ -1624,6 +1632,9 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       </a>          
   </div>
   <div class="nav-page nav-page-next">
+      <a href="../chapters/initial-data-splitting.html" class="pagination-link" aria-label="<span class='chapter-number'>3</span>&nbsp; <span class='chapter-title'>Initial Data Splitting</span>">
+        <span class="nav-page-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Initial Data Splitting</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
   </div>
 </nav>
 </div> <!-- /content -->

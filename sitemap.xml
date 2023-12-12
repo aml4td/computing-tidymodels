@@ -2,22 +2,26 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://tidymodels.aml4td.org/index.html</loc>
-    <lastmod>2023-11-27T01:20:45.726Z</lastmod>
+    <lastmod>2023-11-29T00:08:43.115Z</lastmod>
   </url>
   <url>
     <loc>https://tidymodels.aml4td.org/chapters/news.html</loc>
-    <lastmod>2023-11-27T01:20:45.724Z</lastmod>
+    <lastmod>2023-12-12T00:13:58.090Z</lastmod>
   </url>
   <url>
     <loc>https://tidymodels.aml4td.org/chapters/contributing.html</loc>
-    <lastmod>2023-11-28T23:18:29.556Z</lastmod>
+    <lastmod>2023-11-29T00:08:43.111Z</lastmod>
   </url>
   <url>
     <loc>https://tidymodels.aml4td.org/chapters/introduction.html</loc>
-    <lastmod>2023-11-27T01:20:45.724Z</lastmod>
+    <lastmod>2023-11-29T00:08:43.111Z</lastmod>
   </url>
   <url>
     <loc>https://tidymodels.aml4td.org/chapters/whole-game.html</loc>
-    <lastmod>2023-11-29T00:03:02.249Z</lastmod>
+    <lastmod>2023-12-12T00:13:58.091Z</lastmod>
+  </url>
+  <url>
+    <loc>https://tidymodels.aml4td.org/chapters/initial-data-splitting.html</loc>
+    <lastmod>2023-12-12T00:13:58.089Z</lastmod>
   </url>
 </urlset>
