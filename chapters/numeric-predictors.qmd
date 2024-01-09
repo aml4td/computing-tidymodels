@@ -244,9 +244,9 @@ bake(unskew_rec, new_data = NULL)
 
 The main site mentions a few other methods that could be used besides Yeo-Johnson: 
 
- - Box-Cox ([`step_BoxCox()`](https://tidymodels.github.io/recipes/reference/step_BoxCox.html))
- - Percentile ([`step_percentile()`](https://tidymodels.github.io/recipes/reference/step_percentile.html)) 
- - orderNorm ([`step_orderNorm()`](https://petersonr.github.io/bestNormalize/reference/step_orderNorm.html)) 
+ - Box-Cox: `step_BoxCox()`
+ - Percentile: `step_percentile()` 
+ - orderNorm: `step_orderNorm()`
 
 Note that the last method has it's step function in the `r pkg(bestNormalize)` package; there are a variey of recipes extension packages that can be used. A [**full set of recipe steps**](https://www.tidymodels.org/find/recipes/) for CRAN packages is available on `tidymodels.org`. 
 
