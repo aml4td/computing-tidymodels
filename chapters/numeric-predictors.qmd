@@ -55,8 +55,12 @@ In tidymodels, just about everything that you want to do to your predictors can 
 req_pkg <- c("bestNormalize", "embed", "tidymodels")
 
 # Check to see if they are installed: 
-if (!rlang::is_installed(req_pkg)) {
-  pak::pak(req_pkg)
+pkg_installed <- vapply(req_pkg, rlang::is_installed, logical(1))
+
+# Install missing packages: 
+if ( any(!pkg_installed) ) {
+  install_list <- names(pkg_installed)[!pkg_installed]
+  pak::pak(install_list)
 }
 ```
 
@@ -70,15 +74,9 @@ Let's load the meta package and manage some between-package function conflicts.
 library(tidymodels)
 tidymodels_prefer()
 theme_set(theme_bw())
-
-# Not really required but we'll "load" a few more packages so that the downlit
-# package will be able to automatically link them
-library(recipes)
-library(ggplot2)
-library(dplyr)
-library(rsample)
-
 ```
+
+## Data Sets
 
 The data sets used here are both in R packages that are already installed. Let's work with the primary data set: the Ames Iowa housing data.
 
@@ -86,10 +84,6 @@ In the last chapter, our manipulation and splitting code was:
 
 ```{r}
 #| label: ames-split
-
-library(tidymodels)
-tidymodels_prefer()
-
 data(ames, package = "modeldata")
 
 ames <-
@@ -213,9 +207,12 @@ _However_, this may produce unexpected results when multiple factor predictors e
 f_11 <- Sale_Price ~ Bldg_Type + Central_Air + 0
 f_12 <- Sale_Price ~ Central_Air + Bldg_Type + 0
 
-show_columns(f_11)
-show_columns(f_12)
+show_columns(f_11) %>% names() %>% sort()
+show_columns(f_12) %>% names() %>% sort()
 ```
+
+There model predictions and `anova()` results will be the same but the interpretation of their coefficients will be very different. 
+
 
 You can use in-line functions within a recipe. For example: 
 
