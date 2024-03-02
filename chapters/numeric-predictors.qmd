@@ -466,10 +466,6 @@ sp_sign_data %>%
   coord_equal() 
 ```
 
-## Linear Projection Methods
-
-## Distance-Based Methods
-
 ## Other resources for learning about recipes:
 
 - `tidymodels.org`: [_Preprocess your data with recipes_](https://www.tidymodels.org/start/recipes/)
