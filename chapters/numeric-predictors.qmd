@@ -32,7 +32,7 @@ options(crayon.enabled = FALSE)
 options(pillar.advice = FALSE, pillar.min_title_chars = Inf, pillar.sigfig = 4)
 
 source("../R/_common.R")
-req_pkg <- c("bestNormalize", "embed", "tidymodels")
+req_pkg <- c("bestNormalize", "embed", "tidymodels", "splines2")
 ```
 
 This chapter is concerned with operations to improve how numeric predictor variables are represented in the data prior to modeling. We separate these operations into two categories: 
@@ -52,7 +52,7 @@ In tidymodels, just about everything that you want to do to your predictors can 
 #| label: numeric-transformations-installs
 #| eval: false
 #| echo: true
-req_pkg <- c("bestNormalize", "embed", "tidymodels")
+req_pkg <- c("bestNormalize", "embed", "tidymodels", "splines2")
 
 # Check to see if they are installed: 
 pkg_installed <- vapply(req_pkg, rlang::is_installed, logical(1))
@@ -106,9 +106,17 @@ We'll work with `ames_train` almost excusively here.
 
 ## Standard R Formulas
 
-A broader discussion can be found in two blog posts [one](https://rviews.rstudio.com/2017/02/01/the-r-formula-method-the-good-parts/) and [two](https://rviews.rstudio.com/2017/03/01/the-r-formula-method-the-bad-parts/)
+Model formulas in R are identical to those in S, which Chambers and Hastie introduced in _Statistical Models in S_ (1991). A broader discussion can be found in two blog posts ([one](https://rviews.rstudio.com/2017/02/01/the-r-formula-method-the-good-parts/) and [two](https://rviews.rstudio.com/2017/03/01/the-r-formula-method-the-bad-parts/)).
 
-variable roles
+The formula has a few basic operators: 
+
+* The tilde (`~`) separates the outcome columns from the predictor columns. Anything to the left is considered an outcome, and the right-hand side defines predictors (e.g., `outcome ~ predictor`
+* A dot is a wildcard for any columns in the data set that are not outcomes (e.g., `y ~ .`). 
+* Plus signs signify the symbolic addition of columns to the formula (typically predictors). For example, `y ~ x1 + x2` indicates one outcome and two predictor columns. To indicate arithmetic addition (or any other computations), you can wrap the items in the identity function `I()` such as `y ~ I(x1 + x2)`. 
+* You can use the minus sign to remove columns. This may not be implemented in some modeling functions. 
+* The colon indicates interaction terms (described in a future chapter). 
+
+There is further syntax described below. 
 
 Here's an example of a basic formula that creates two predictor columns by specifying a symbolic formula comprised of two numeric predictors. 
 
