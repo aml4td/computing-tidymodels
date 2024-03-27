@@ -1,0 +1,272 @@
+---
+knitr:
+  opts_chunk:
+    cache.path: "../_cache/categorical-predictors/"
+---
+
+# Working with Categorical Predictors {#sec-categorical-predictors}
+
+
+```{r}
+#| label: categorical-predictors-knitr-setup
+#| include: false
+
+knitr::opts_chunk$set(
+    comment = "#>",
+    collapse = TRUE,
+    fig.align = 'center',
+    fig.path = "../figures/",
+    fig.width = 10,
+    fig.height = 6,
+    out.width = "95%",
+    dev = 'svg',
+    dev.args = list(bg = "transparent"),
+    tidy = FALSE,
+    echo = TRUE
+  )
+
+options(digits = 4, width = 84)
+options(dplyr.print_min = 6, dplyr.print_max = 6)
+options(cli.width = 85)
+options(crayon.enabled = FALSE)
+options(pillar.advice = FALSE, pillar.min_title_chars = Inf, pillar.sigfig = 4)
+
+source("../R/_common.R")
+req_pkg <- c("textrecipes", "embed", "tidymodels", "text2vec")
+```
+
+The book's [_Working with Categorical Predictors_](https://aml4td.org/chapters/categorical-predictors.html) chapter focuses on various ways to convert qualitative predictors into better formats for modeling. 
+
+Like the previous chapter, we do most of the calculations with the `r pkg(recipes)` package.
+
+## Requirements
+
+`r pkg_list(req_pkg)`
+
+```{r}
+#| label: numeric-transformations-installs
+#| eval: false
+#| echo: true
+req_pkg <- c("embed", "text2vec", "textrecipes", "tidymodels")
+
+# Check to see if they are installed: 
+pkg_installed <- vapply(req_pkg, rlang::is_installed, logical(1))
+
+# Install missing packages: 
+if ( any(!pkg_installed) ) {
+  install_list <- names(pkg_installed)[!pkg_installed]
+  pak::pak(install_list)
+}
+```
+
+Let's load the meta package and manage some between-package function conflicts. 
+
+```{r}
+#| label: start-tidymodels
+#| results: hide
+#| message: false
+#| warning: false
+library(tidymodels)
+tidymodels_prefer()
+theme_set(theme_bw())
+```
+
+## The Hotel Rate Data
+
+The hotel rate data are used for most examples in the chapter. The original version is in the `r pkg(modeldata)` package. We’ll split the data in the following way:
+
+```{r}
+#| label: hotel-setup
+data(hotel_rates, package = "modeldata")
+
+# Make the initial split
+hotel_rates <- hotel_rates %>% arrange(arrival_date)
+hotel_rate_split <- initial_time_split(hotel_rates, prop = c(0.75))
+hotel_rate_train <- training(hotel_rate_split)
+hotel_rate_test  <- testing(hotel_rate_split)
+```
+
+## Simple Indicator Variables
+
+Base R’s formula method, described in @sec-r-formulas, will automatically create indicators when the formula includes a factor predictor. For example: 
+
+```{r}
+#| label: base-r-indicators
+
+customer_types <- 
+  hotel_rate_train %>% 
+  distinct(customer_type) %>% 
+  arrange(customer_type)
+
+customer_types %>% 
+  model.matrix( ~ customer_type, data = .) %>% 
+  as_tibble() %>% 
+  select(-`(Intercept)`)
+```
+
+Note that the column name and the factor levels are directly concatenated. 
+
+When the factor has missing values, the default behavior is _to remove the offending row_:
+
+```{r}
+#| label: base-r-indicators-missing-gone
+lvls <- levels(hotel_rate_train$customer_type)
+
+with_missing <- 
+  customer_types %>% 
+  bind_rows(tibble(customer_type = factor(NA, levels = lvls)))
+
+with_missing
+
+model.matrix( ~ customer_type, data = with_missing) %>% 
+  as_tibble() %>% 
+  select(-`(Intercept)`)
+```
+
+There is a [family of functions](https://rdrr.io/r/stats/na.fail.html) that can be used to dictate what should be done when missing values occur. The global R option is 
+
+
+```{r}
+#| label: na-action
+options()$na.action
+```
+
+To keep the number of row intact, you can set the global option to be `na.pass`: 
+
+
+```{r}
+#| label: keep-na
+
+orig_options <- options()
+options(na.action = 'na.pass')
+
+model.matrix( ~ customer_type, data = with_missing) %>% 
+  as_tibble() %>% 
+  select(-`(Intercept)`)
+
+# Now reset to original settings:
+options(orig_options) 
+options()$na.action
+```
+
+We can also use a recipe to do this (with more functionality):
+
+```{r}
+#| label: ind-rec
+ind_rec <- 
+  recipe( ~ customer_type, data = customer_types) %>% 
+  step_dummy(all_factor_predictors()) %>% 
+  prep()
+
+bake(ind_rec, customer_types, starts_with("customer_type"))
+bake(ind_rec, with_missing, starts_with("customer_type"))
+```
+
+No need to set the global option. 
+
+Also, the naming of features is more rational, with names and levels separated by an underscore. There is also an argument to `step_dummy()` that controls the naming of new features. 
+
+There is also an option to produce one-hot encodings called... `one_hot`.
+
+## Novel Categories
+
+When we think the recipe or model will encounter new values of a factor predictor, we can use `step_novel()` to add a new factor level: 
+
+```{r}
+#| label: novel-rec
+
+recipe(avg_price_per_room ~ customer_type, data = hotel_rate_train) %>% 
+  step_novel(customer_type) %>% 
+  prep() %>% 
+  bake(new_data = NULL) %>% 
+  pluck("customer_type") %>% 
+  levels()
+```
+
+For the training set, this new level will never have any data associated with it. 
+
+## “Othering”
+
+We can also determine infrequently occurring categories (in the training set) and re-level the factor so that they are converted to an “other” category. If we chose a frequency of 0.01% as a cutoff, we have far fewer levels:
+
+```{r}
+#| label: other-rec
+
+length(levels(hotel_rate_train$agent))
+
+recipe(avg_price_per_room ~ agent, data = hotel_rate_train) %>% 
+  step_other(agent, threshold = 0.0001) %>% 
+  prep() %>% 
+  bake(new_data = NULL) %>% 
+  pluck("agent") %>% 
+  levels() %>% 
+  length()
+```
+
+If you are interested in which levels are combined, the `tidy()` method on the recipe can tell you. 
+
+## Feature Hashing
+
+Feature hashing converts qualitative predictors to a set of binary indicators based solely on the value of their category. It is most useful when there are many categories and/or novel levels that might be encountered. 
+
+The recipe step is in the `r pkg(textrecipes)` package, so we must load it first^[It also requires another package (`r pkg(text2vec)`) to be installed but not loaded.]. The main arguments are `num_terms` and `signed`. The first sets the number of features to create, and when `signed = TRUE`, the indicators will have an appropriate sign attached to them (i.e., their values could be -1/0/1).
+
+
+```{r}
+#| label: hashing-rec
+library(textrecipes)
+
+recipe(avg_price_per_room ~ agent, data = hotel_rate_train) %>% 
+  step_dummy_hash(agent, num_terms = 4) %>% 
+  prep() %>% 
+  bake(new_data = NULL, contains("agent")) 
+```
+
+## Effect Encodings
+
+Effect embedding is a supervised method to convert qualitative predictors to a numeric column that contains the _effect_ of the category on the outcome. The outcome is a numeric value (the ADR) for these data. Using effect endings here will produce a column with specialized estimates of each category’s mean ADR. Let’s look at the agent predictor again. 
+
+The `r pkg(embed)` package has a few recipe steps to do this. This method is sometimes called “likelihood encoding” and the recipe steps all start with `step_lencode_*`: 
+
+* `step_lencode_glm()` produces basic, naive estimates of effect. This is a "no pooling" estimate. 
+* `step_lencode_mixed()` uses a non-Bayesian hierarchical model to produce regularized estimations of effect. 
+* `step_lencode_bayes()` uses a Bayesian model that is more flexible than its non-Bayesian sibling but can take much longer to fit. 
+
+We'll use the "mixed" function^[For this function, we all need the `r pkg(lme4)` package to be installed.], For agent: 
+
+```{r}
+#| label: mixed-encoding
+
+library(embed)
+
+encoded_agent_rec <- 
+  recipe(avg_price_per_room ~ agent, data = hotel_rate_train) %>% 
+  step_lencode_mixed(agent, outcome = vars(avg_price_per_room), id = "effect") %>% 
+  prep() 
+encoded_agent_rec
+```
+
+To see the actual effect estimates, use the `tidy()` method
+
+```{r}
+#| label: tidy-mixed-encoding
+tidy(encoded_agent_rec, id = "effect")
+
+# The estimate for new agents:
+tidy(encoded_agent_rec, id = "effect") %>% 
+  slice_tail(n = 1)
+```
+
+When the recipe is applied to new data, the `agent` column is converted to a numeric column with these values: 
+
+```{r}
+#| label: new-mixed-encoding
+bake(encoded_agent_rec, hotel_rate_test) %>% 
+  bind_cols(hotel_rate_test %>% select(original_col = agent))
+```
+
+For categorical outcomes, the effect estimate is the log-odds of an event (the first factor level).
+
+## Supervised Combining of Categories
+
+## Working with Ordinal Predictors
