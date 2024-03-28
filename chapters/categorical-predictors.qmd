@@ -32,12 +32,12 @@ options(crayon.enabled = FALSE)
 options(pillar.advice = FALSE, pillar.min_title_chars = Inf, pillar.sigfig = 4)
 
 source("../R/_common.R")
-req_pkg <- c("textrecipes", "embed", "tidymodels", "text2vec")
+req_pkg <- c("textrecipes", "embed", "tidymodels", "text2vec", "rpart")
 ```
 
 The book's [_Working with Categorical Predictors_](https://aml4td.org/chapters/categorical-predictors.html) chapter focuses on various ways to convert qualitative predictors into better formats for modeling. 
 
-Like the previous chapter, we do most of the calculations with the `r pkg(recipes)` package.
+Like the previous chapter, we do most calculations with the `r pkg(recipes)` package.
 
 ## Requirements
 
@@ -47,7 +47,7 @@ Like the previous chapter, we do most of the calculations with the `r pkg(recipe
 #| label: numeric-transformations-installs
 #| eval: false
 #| echo: true
-req_pkg <- c("embed", "text2vec", "textrecipes", "tidymodels")
+req_pkg <- c("embed", "text2vec", "textrecipes", "tidymodels", "rpart")
 
 # Check to see if they are installed: 
 pkg_installed <- vapply(req_pkg, rlang::is_installed, logical(1))
@@ -88,7 +88,7 @@ hotel_rate_test  <- testing(hotel_rate_split)
 
 ## Simple Indicator Variables
 
-Base R’s formula method, described in @sec-r-formulas, will automatically create indicators when the formula includes a factor predictor. For example: 
+Base R’s formula method, described in @sec-r-formulas, automatically creates indicators when the formula includes a factor predictor. For example: 
 
 ```{r}
 #| label: base-r-indicators
@@ -123,7 +123,7 @@ model.matrix( ~ customer_type, data = with_missing) %>%
   select(-`(Intercept)`)
 ```
 
-There is a [family of functions](https://rdrr.io/r/stats/na.fail.html) that can be used to dictate what should be done when missing values occur. The global R option is 
+A [family of functions](https://rdrr.io/r/stats/na.fail.html) can be used to dictate what should be done when missing values occur. The global R option is 
 
 
 ```{r}
@@ -131,7 +131,7 @@ There is a [family of functions](https://rdrr.io/r/stats/na.fail.html) that can 
 options()$na.action
 ```
 
-To keep the number of row intact, you can set the global option to be `na.pass`: 
+To keep the number of rows intact, you can set the global option to be `na.pass`: 
 
 
 ```{r}
@@ -162,7 +162,7 @@ bake(ind_rec, customer_types, starts_with("customer_type"))
 bake(ind_rec, with_missing, starts_with("customer_type"))
 ```
 
-No need to set the global option. 
+There is no need to set the global option. 
 
 Also, the naming of features is more rational, with names and levels separated by an underscore. There is also an argument to `step_dummy()` that controls the naming of new features. 
 
@@ -187,7 +187,7 @@ For the training set, this new level will never have any data associated with it
 
 ## “Othering”
 
-We can also determine infrequently occurring categories (in the training set) and re-level the factor so that they are converted to an “other” category. If we chose a frequency of 0.01% as a cutoff, we have far fewer levels:
+We can also determine infrequently occurring categories (in the training set) and re-level the factor by converting them to an “other” category. If we chose a frequency of 0.01% as a cutoff, we have far fewer levels:
 
 ```{r}
 #| label: other-rec
@@ -207,7 +207,7 @@ If you are interested in which levels are combined, the `tidy()` method on the r
 
 ## Feature Hashing
 
-Feature hashing converts qualitative predictors to a set of binary indicators based solely on the value of their category. It is most useful when there are many categories and/or novel levels that might be encountered. 
+Feature hashing converts qualitative predictors to a set of binary indicators based solely on the value of their category. It is most useful when many categories and/or novel levels might be encountered. 
 
 The recipe step is in the `r pkg(textrecipes)` package, so we must load it first^[It also requires another package (`r pkg(text2vec)`) to be installed but not loaded.]. The main arguments are `num_terms` and `signed`. The first sets the number of features to create, and when `signed = TRUE`, the indicators will have an appropriate sign attached to them (i.e., their values could be -1/0/1).
 
@@ -229,7 +229,7 @@ Effect embedding is a supervised method to convert qualitative predictors to a n
 The `r pkg(embed)` package has a few recipe steps to do this. This method is sometimes called “likelihood encoding” and the recipe steps all start with `step_lencode_*`: 
 
 * `step_lencode_glm()` produces basic, naive estimates of effect. This is a "no pooling" estimate. 
-* `step_lencode_mixed()` uses a non-Bayesian hierarchical model to produce regularized estimations of effect. 
+* `step_lencode_mixed()` uses a non-Bayesian hierarchical model to produce regularized effect estimates. 
 * `step_lencode_bayes()` uses a Bayesian model that is more flexible than its non-Bayesian sibling but can take much longer to fit. 
 
 We'll use the "mixed" function^[For this function, we all need the `r pkg(lme4)` package to be installed.], For agent: 
@@ -246,7 +246,7 @@ encoded_agent_rec <-
 encoded_agent_rec
 ```
 
-To see the actual effect estimates, use the `tidy()` method
+To see the actual effect estimates, use the `tidy()` method:
 
 ```{r}
 #| label: tidy-mixed-encoding
@@ -269,11 +269,14 @@ For categorical outcomes, the effect estimate is the log-odds of an event (the f
 
 ## Supervised Combining of Categories
 
+To [collapse](https://aml4td.org/chapters/categorical-predictors.html#sec-combining-categories) a large number of factor levels to a smaller set using a supervised model, we can use `step_collapse_cart()`  in the `r pkg(embed)` package. 
+
+For example: 
 
 ```{r}
 #| label: collapse-encoding
 
-# Also needs the embed package
+# Also needs the embed package loaded (and rpart installed)
 library(embed)
 
 collapse_agent_rec <- 
@@ -283,16 +286,70 @@ collapse_agent_rec <-
 collapse_agent_rec
 ```
 
-
+The step converts `r length(unique(collapse_agent_rec$steps[[1]]$results$agent$.group))` unique values of `agent` in the training set to a smaller set of `r length(unique(collapse_agent_rec$steps[[1]]$results$agent$agent))` categories. To see the conversion key, use the `tidy()` methods: 
 
 ```{r}
 #| label: tidy-collapse-encoding
 
-groupings <- tidy(collapse_agent_rec, id = "collapse")
-groupings
-groupings %>% count(new)
+tidy(collapse_agent_rec, id = "collapse")
+
+tidy(collapse_agent_rec, id = "collapse") %>% 
+  count(new)
 ```
 
+There are two main tuning parameters (described later in section TODO): 
 
+ - cost complexity (a.k.a. $C_p$): smaller values result in more groups. Values typically range between zero and 0.1.
+ - minimum n: the minimum number of rows in a group to enable it to keep splitting. Smaller values should result in more groupings. 
+ 
+These values can be tuned. 
 
 ## Working with Ordinal Predictors
+
+As reported in [the section on ordinal data](https://aml4td.org/chapters/categorical-predictors.html#encodings-for-ordinal-predictors), the default for R is to encode ordinal values with $p$ values is to create a set of $p - 1$ orthogonal polynomial features.  That is what `step_dummy()` does by default. 
+
+```{r}
+#| label: ordinal-poly
+
+quality_vals <- c('excellent', 'fair', 'good', 'typical', 'poor')
+quality <- tibble(quality = ordered(quality_vals, levels = quality_vals))
+str(quality)
+
+recipe(~ quality, data = quality) %>% 
+  step_dummy(quality) %>% 
+  prep() %>% 
+  bake(new_data = NULL)
+```
+
+We can convert the ordered factor to an unordered factor: 
+
+```{r}
+#| label: ordinal-unorder
+
+recipe(~ quality, data = quality) %>% 
+  step_unorder(quality) %>% 
+  step_dummy(quality) %>% 
+  prep() %>% 
+  bake(new_data = NULL)
+```
+
+Another strategy is mapping the ordinal factor levels to a set of numeric values that make sense for their modeling problem. `step_ordinalscore()` can do that with a user-supplied conversion function: 
+
+```{r}
+#| label: ordinal-score
+convert_to_prime <-  function(x) {
+  primes <- c(2, 3, 7, 11, 13)
+  primes[as.numeric(x)]
+}
+
+recipe(~ quality, data = quality) %>% 
+  step_ordinalscore(quality, convert = convert_to_prime) %>% 
+  prep() %>% 
+  bake(new_data = NULL)
+```
+
+`step_integer()` does the same for either type of factor but converts them to consecutive one-based integers.  
+
+## Other relevant recipe steps
+
+There are a variety of other steps that can be used with qualitative predictors ([a list of relevant recipe steps in `r pkg(recipes)`](https://recipes.tidymodels.org/reference/index.html#step-functions-dummy-variables-and-encodings))
