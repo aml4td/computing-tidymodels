@@ -269,4 +269,30 @@ For categorical outcomes, the effect estimate is the log-odds of an event (the f
 
 ## Supervised Combining of Categories
 
+
+```{r}
+#| label: collapse-encoding
+
+# Also needs the embed package
+library(embed)
+
+collapse_agent_rec <- 
+  recipe(avg_price_per_room ~ agent, data = hotel_rate_train) %>% 
+  step_collapse_cart(agent, outcome = vars(avg_price_per_room), id = "collapse") %>% 
+  prep() 
+collapse_agent_rec
+```
+
+
+
+```{r}
+#| label: tidy-collapse-encoding
+
+groupings <- tidy(collapse_agent_rec, id = "collapse")
+groupings
+groupings %>% count(new)
+```
+
+
+
 ## Working with Ordinal Predictors
