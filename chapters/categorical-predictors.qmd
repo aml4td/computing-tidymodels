@@ -286,7 +286,7 @@ collapse_agent_rec <-
 collapse_agent_rec
 ```
 
-The step converts `r length(unique(collapse_agent_rec$steps[[1]]$results$agent$.group))` unique values of `agent` in the training set to a smaller set of `r length(unique(collapse_agent_rec$steps[[1]]$results$agent$agent))` categories. To see the conversion key, use the `tidy()` methods: 
+The step converts `r length(unique(collapse_agent_rec$steps[[1]]$results$agent$agent))` unique values of `agent` in the training set to a smaller set of `r length(unique(collapse_agent_rec$steps[[1]]$results$agent$.group))` categories. To see the conversion key, use the `tidy()` methods: 
 
 ```{r}
 #| label: tidy-collapse-encoding
