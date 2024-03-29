@@ -2,26 +2,34 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://tidymodels.aml4td.org/index.html</loc>
-    <lastmod>2023-11-29T00:08:43.115Z</lastmod>
+    <lastmod>2024-03-29T22:57:01.546Z</lastmod>
   </url>
   <url>
     <loc>https://tidymodels.aml4td.org/chapters/news.html</loc>
-    <lastmod>2023-12-12T00:13:58.090Z</lastmod>
+    <lastmod>2024-01-08T02:12:11.011Z</lastmod>
   </url>
   <url>
     <loc>https://tidymodels.aml4td.org/chapters/contributing.html</loc>
-    <lastmod>2023-11-29T00:08:43.111Z</lastmod>
+    <lastmod>2023-12-08T01:26:55.696Z</lastmod>
   </url>
   <url>
     <loc>https://tidymodels.aml4td.org/chapters/introduction.html</loc>
-    <lastmod>2023-11-29T00:08:43.111Z</lastmod>
+    <lastmod>2023-12-08T01:26:55.696Z</lastmod>
   </url>
   <url>
     <loc>https://tidymodels.aml4td.org/chapters/whole-game.html</loc>
-    <lastmod>2023-12-12T00:13:58.091Z</lastmod>
+    <lastmod>2024-03-29T15:36:41.087Z</lastmod>
   </url>
   <url>
     <loc>https://tidymodels.aml4td.org/chapters/initial-data-splitting.html</loc>
-    <lastmod>2023-12-12T00:13:58.089Z</lastmod>
+    <lastmod>2024-03-29T15:36:41.086Z</lastmod>
+  </url>
+  <url>
+    <loc>https://tidymodels.aml4td.org/chapters/numeric-predictors.html</loc>
+    <lastmod>2024-03-29T22:57:01.546Z</lastmod>
+  </url>
+  <url>
+    <loc>https://tidymodels.aml4td.org/chapters/categorical-predictors.html</loc>
+    <lastmod>2024-03-29T23:11:50.486Z</lastmod>
   </url>
 </urlset>

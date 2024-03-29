@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.5.4">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>Tidymodels Computing Supplement – 5&nbsp; Working with Categorical Predictors</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../chapters/numeric-predictors.html" rel="prev">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light"><script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script><script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script><script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script><script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+</head>
+<body class="nav-sidebar docked">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top"><nav class="quarto-secondary-nav"><div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <a class="flex-grow-1 no-decor" role="button" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+          <h1 class="quarto-secondary-nav-title"><span id="sec-categorical-predictors" class="quarto-section-identifier"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Working with Categorical Predictors</span></span></h1>
+        </a>     
+      <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav></header><!-- content --><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto"><div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../"></a> 
+        <div class="sidebar-tools-main tools-wide">
+    <a href="https://github.com/aml4td/computing-tidymodels/" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
+    <div class="dropdown">
+      <a href="" title="Share" id="quarto-navigation-tool-dropdown-0" class="quarto-navigation-tool dropdown-toggle px-1" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Share"><i class="bi bi-share"></i></a>
+      <ul class="dropdown-menu" aria-labelledby="quarto-navigation-tool-dropdown-0">
+<li>
+            <a class="dropdown-item sidebar-tools-main-item" href="https://twitter.com/intent/tweet?url=%7Curl%7C">
+              <i class="bi bi-bi-twitter pe-1"></i>
+            Twitter
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item sidebar-tools-main-item" href="https://www.facebook.com/sharer/sharer.php?u=%7Curl%7C">
+              <i class="bi bi-bi-facebook pe-1"></i>
+            Facebook
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item sidebar-tools-main-item" href="https://www.linkedin.com/sharing/share-offsite/?url=%7Curl%7C">
+              <i class="bi bi-bi-linkedin pe-1"></i>
+            LinkedIn
+            </a>
+          </li>
+      </ul>
+</div>
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Preface</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/news.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">News</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/contributing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Contributing</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/introduction.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/whole-game.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">The Whole Game</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <span class="sidebar-item-text sidebar-link text-start">
+ <span class="menu-text">Preparation</span></span>
+  </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/initial-data-splitting.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Initial Data Splitting</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/numeric-predictors.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Transforming Numeric Predictors</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/categorical-predictors.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Working with Categorical Predictors</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <span class="sidebar-item-text sidebar-link text-start">
+ <span class="menu-text">Optmization</span></span>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <span class="sidebar-item-text sidebar-link text-start">
+ <span class="menu-text">Classification</span></span>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <span class="sidebar-item-text sidebar-link text-start">
+ <span class="menu-text">Regression</span></span>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <span class="sidebar-item-text sidebar-link text-start">
+ <span class="menu-text">Characterization</span></span>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <span class="sidebar-item-text sidebar-link text-start">
+ <span class="menu-text">Finalization</span></span>
+  </li>
+    </ul>
+</div>
+</nav><div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active"><h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+<li><a href="#requirements" id="toc-requirements" class="nav-link active" data-scroll-target="#requirements"><span class="header-section-number">5.1</span> Requirements</a></li>
+  <li><a href="#the-hotel-rate-data" id="toc-the-hotel-rate-data" class="nav-link" data-scroll-target="#the-hotel-rate-data"><span class="header-section-number">5.2</span> The Hotel Rate Data</a></li>
+  <li>
+<a href="#sec-indicators" id="toc-sec-indicators" class="nav-link" data-scroll-target="#sec-indicators"><span class="header-section-number">5.3</span> Simple Indicator Variables</a>
+  <ul class="collapse">
+<li><a href="#sec-base-r-indicators" id="toc-sec-base-r-indicators" class="nav-link" data-scroll-target="#sec-base-r-indicators"><span class="header-section-number">5.3.1</span> Base R formulas</a></li>
+  <li><a href="#sec-recipe-indicators" id="toc-sec-recipe-indicators" class="nav-link" data-scroll-target="#sec-recipe-indicators"><span class="header-section-number">5.3.2</span> Recipes</a></li>
+  </ul>
+</li>
+  <li><a href="#sec-recipe-novel" id="toc-sec-recipe-novel" class="nav-link" data-scroll-target="#sec-recipe-novel"><span class="header-section-number">5.4</span> Novel Categories</a></li>
+  <li><a href="#sec-recipe-other" id="toc-sec-recipe-other" class="nav-link" data-scroll-target="#sec-recipe-other"><span class="header-section-number">5.5</span> “Othering”</a></li>
+  <li><a href="#sec-recipe-hashing" id="toc-sec-recipe-hashing" class="nav-link" data-scroll-target="#sec-recipe-hashing"><span class="header-section-number">5.6</span> Feature Hashing</a></li>
+  <li><a href="#sec-recipe-effect-encode" id="toc-sec-recipe-effect-encode" class="nav-link" data-scroll-target="#sec-recipe-effect-encode"><span class="header-section-number">5.7</span> Effect Encodings</a></li>
+  <li><a href="#sec-recipe-collapse" id="toc-sec-recipe-collapse" class="nav-link" data-scroll-target="#sec-recipe-collapse"><span class="header-section-number">5.8</span> Supervised Combining of Categories</a></li>
+  <li><a href="#sec-recipe-ordinal" id="toc-sec-recipe-ordinal" class="nav-link" data-scroll-target="#sec-recipe-ordinal"><span class="header-section-number">5.9</span> Working with Ordinal Predictors</a></li>
+  <li><a href="#other-relevant-recipe-steps" id="toc-other-relevant-recipe-steps" class="nav-link" data-scroll-target="#other-relevant-recipe-steps"><span class="header-section-number">5.10</span> Other relevant recipe steps</a></li>
+  </ul></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block default"><div class="quarto-title">
+<h1 class="title d-none d-lg-block"><span id="sec-categorical-predictors" class="quarto-section-identifier"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Working with Categorical Predictors</span></span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header><p>The book’s <a href="https://aml4td.org/chapters/categorical-predictors.html"><em>Working with Categorical Predictors</em></a> chapter focuses on various ways to convert qualitative predictors into better formats for modeling.</p>
+<p>Like the previous chapter, we do most calculations with the <span class="pkg"><a href="https://cran.r-project.org/package=recipes">recipes</a></span> package.</p>
+<section id="requirements" class="level2" data-number="5.1"><h2 data-number="5.1" class="anchored" data-anchor-id="requirements">
+<span class="header-section-number">5.1</span> Requirements</h2>
+<p>You’ll need 5 packages (<span class="pkg"><a href="https://cran.r-project.org/package=embed">embed</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=rpart">rpart</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=text2vec">text2vec</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=textrecipes">textrecipes</a></span>, and <span class="pkg"><a href="https://cran.r-project.org/package=tidymodels">tidymodels</a></span>) for this chapter. You can install them via:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">req_pkg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"embed"</span>, <span class="st">"text2vec"</span>, <span class="st">"textrecipes"</span>, <span class="st">"tidymodels"</span>, <span class="st">"rpart"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Check to see if they are installed: </span></span>
+<span><span class="va">pkg_installed</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">vapply</a></span><span class="op">(</span><span class="va">req_pkg</span>, <span class="fu">rlang</span><span class="fu">::</span><span class="va"><a href="https://rlang.r-lib.org/reference/is_installed.html">is_installed</a></span>, <span class="fu"><a href="https://rdrr.io/r/base/logical.html">logical</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Install missing packages: </span></span>
+<span><span class="kw">if</span> <span class="op">(</span> <span class="fu"><a href="https://rdrr.io/r/base/any.html">any</a></span><span class="op">(</span><span class="op">!</span><span class="va">pkg_installed</span><span class="op">)</span> <span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">install_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">pkg_installed</span><span class="op">)</span><span class="op">[</span><span class="op">!</span><span class="va">pkg_installed</span><span class="op">]</span></span>
+<span>  <span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html">pak</a></span><span class="op">(</span><span class="va">install_list</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Let’s load the meta package and manage some between-package function conflicts.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidymodels.tidymodels.org">tidymodels</a></span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://tidymodels.tidymodels.org/reference/tidymodels_prefer.html">tidymodels_prefer</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="fu">theme_set</span><span class="op">(</span><span class="fu">theme_bw</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section><section id="the-hotel-rate-data" class="level2" data-number="5.2"><h2 data-number="5.2" class="anchored" data-anchor-id="the-hotel-rate-data">
+<span class="header-section-number">5.2</span> The Hotel Rate Data</h2>
+<p>The hotel rate data are used for most examples in the chapter. The original version is in the <span class="pkg"><a href="https://cran.r-project.org/package=modeldata">modeldata</a></span> package. We’ll split the data in the following way:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">hotel_rates</span>, package <span class="op">=</span> <span class="st">"modeldata"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Make the initial split</span></span>
+<span><span class="va">hotel_rates</span> <span class="op">&lt;-</span> <span class="va">hotel_rates</span> <span class="op">%&gt;%</span> <span class="fu">arrange</span><span class="op">(</span><span class="va">arrival_date</span><span class="op">)</span></span>
+<span><span class="va">hotel_rate_split</span> <span class="op">&lt;-</span> <span class="fu">initial_time_split</span><span class="op">(</span><span class="va">hotel_rates</span>, prop <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.75</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">hotel_rate_train</span> <span class="op">&lt;-</span> <span class="fu">training</span><span class="op">(</span><span class="va">hotel_rate_split</span><span class="op">)</span></span>
+<span><span class="va">hotel_rate_test</span>  <span class="op">&lt;-</span> <span class="fu">testing</span><span class="op">(</span><span class="va">hotel_rate_split</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><code>initial_time_split()</code> will reserve that most recent 25% for the test set. It assumes that the data are arranged in time and takes that last part of the data for testing (assumed to be the most recent).</p>
+</section><section id="sec-indicators" class="level2" data-number="5.3"><h2 data-number="5.3" class="anchored" data-anchor-id="sec-indicators">
+<span class="header-section-number">5.3</span> Simple Indicator Variables</h2>
+<p>We’ll look at two primary methods for creating indicator (a.k.a. “dummy”) variables.</p>
+<section id="sec-base-r-indicators" class="level3" data-number="5.3.1"><h3 data-number="5.3.1" class="anchored" data-anchor-id="sec-base-r-indicators">
+<span class="header-section-number">5.3.1</span> Base R formulas</h3>
+<p>Base R’s formula method, discussed previously in <a href="numeric-predictors.html#sec-r-formulas" class="quarto-xref"><span>Section 4.3</span></a>, automatically creates indicators when the formula includes a factor predictor. For example:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">customer_types</span> <span class="op">&lt;-</span> </span>
+<span>  <span class="va">hotel_rate_train</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">distinct</span><span class="op">(</span><span class="va">customer_type</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">arrange</span><span class="op">(</span><span class="va">customer_type</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">customer_types</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/stats/model.matrix.html">model.matrix</a></span><span class="op">(</span> <span class="op">~</span> <span class="va">customer_type</span>, data <span class="op">=</span> <span class="va">.</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">as_tibble</span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">`(Intercept)`</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 4 × 3</span></span>
+<span><span class="co">#&gt;   customer_typegroup customer_typetransient customer_typetransient_party</span></span>
+<span><span class="co">#&gt;                &lt;dbl&gt;                  &lt;dbl&gt;                        &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1                  0                      0                            0</span></span>
+<span><span class="co">#&gt; 2                  1                      0                            0</span></span>
+<span><span class="co">#&gt; 3                  0                      1                            0</span></span>
+<span><span class="co">#&gt; 4                  0                      0                            1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Note that the column name and the factor levels are directly concatenated.</p>
+<p><code><a href="https://rdrr.io/r/stats/model.matrix.html">model.matrix()</a></code> is part of the larger base R preprocessing framework and always returns a matrix (by default, with an intercept column). There is also <code><a href="https://rdrr.io/r/stats/model.frame.html">model.frame()</a></code>. This returns a data frame without creating indicator columns or interactions. It does execute any in-line functions and only returns the columns involved in the formula.</p>
+<p>When the factor has missing values, the default behavior is <em>to remove the offending row</em>:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">lvls</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/levels.html">levels</a></span><span class="op">(</span><span class="va">hotel_rate_train</span><span class="op">$</span><span class="va">customer_type</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">with_missing</span> <span class="op">&lt;-</span> </span>
+<span>  <span class="va">customer_types</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">bind_rows</span><span class="op">(</span><span class="fu">tibble</span><span class="op">(</span>customer_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="cn">NA</span>, levels <span class="op">=</span> <span class="va">lvls</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">with_missing</span></span>
+<span><span class="co">#&gt; # A tibble: 5 × 1</span></span>
+<span><span class="co">#&gt;   customer_type  </span></span>
+<span><span class="co">#&gt;   &lt;fct&gt;          </span></span>
+<span><span class="co">#&gt; 1 contract       </span></span>
+<span><span class="co">#&gt; 2 group          </span></span>
+<span><span class="co">#&gt; 3 transient      </span></span>
+<span><span class="co">#&gt; 4 transient_party</span></span>
+<span><span class="co">#&gt; 5 &lt;NA&gt;</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/model.matrix.html">model.matrix</a></span><span class="op">(</span> <span class="op">~</span> <span class="va">customer_type</span>, data <span class="op">=</span> <span class="va">with_missing</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">as_tibble</span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">`(Intercept)`</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 4 × 3</span></span>
+<span><span class="co">#&gt;   customer_typegroup customer_typetransient customer_typetransient_party</span></span>
+<span><span class="co">#&gt;                &lt;dbl&gt;                  &lt;dbl&gt;                        &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1                  0                      0                            0</span></span>
+<span><span class="co">#&gt; 2                  1                      0                            0</span></span>
+<span><span class="co">#&gt; 3                  0                      1                            0</span></span>
+<span><span class="co">#&gt; 4                  0                      0                            1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>A <a href="https://rdrr.io/r/stats/na.fail.html">family of functions</a> can be used to dictate what should be done when missing values occur. The global R option is</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/options.html">options</a></span><span class="op">(</span><span class="op">)</span><span class="op">$</span><span class="va">na.action</span></span>
+<span><span class="co">#&gt; [1] "na.omit"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>To keep the number of rows intact, you can set the global option to be <code>na.pass</code>:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">orig_options</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html">options</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/options.html">options</a></span><span class="op">(</span>na.action <span class="op">=</span> <span class="st">'na.pass'</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/model.matrix.html">model.matrix</a></span><span class="op">(</span> <span class="op">~</span> <span class="va">customer_type</span>, data <span class="op">=</span> <span class="va">with_missing</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">as_tibble</span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">`(Intercept)`</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 5 × 3</span></span>
+<span><span class="co">#&gt;   customer_typegroup customer_typetransient customer_typetransient_party</span></span>
+<span><span class="co">#&gt;                &lt;dbl&gt;                  &lt;dbl&gt;                        &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1                  0                      0                            0</span></span>
+<span><span class="co">#&gt; 2                  1                      0                            0</span></span>
+<span><span class="co">#&gt; 3                  0                      1                            0</span></span>
+<span><span class="co">#&gt; 4                  0                      0                            1</span></span>
+<span><span class="co">#&gt; 5                 NA                     NA                           NA</span></span>
+<span></span>
+<span><span class="co"># Now reset to original settings:</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/options.html">options</a></span><span class="op">(</span><span class="va">orig_options</span><span class="op">)</span> </span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/options.html">options</a></span><span class="op">(</span><span class="op">)</span><span class="op">$</span><span class="va">na.action</span></span>
+<span><span class="co">#&gt; [1] "na.omit"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>In R, the word “contrast” refers to the algorithm used to create different types of indicators <a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>. Global options control this (for the most part) and the defaults are:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/options.html">options</a></span><span class="op">(</span><span class="op">)</span><span class="op">$</span><span class="va">contrast</span></span>
+<span><span class="co">#&gt;         unordered           ordered </span></span>
+<span><span class="co">#&gt; "contr.treatment"      "contr.poly"</span></span>
+<span></span>
+<span><span class="co"># with possible options: </span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/apropos.html">apropos</a></span><span class="op">(</span><span class="st">"contr\\."</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "contr.helmert"   "contr.poly"      "contr.SAS"       "contr.sum"      </span></span>
+<span><span class="co">#&gt; [5] "contr.treatment"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Many packages also have <a href="https://search.r-project.org/?FMT=query&amp;P=contr.&amp;HITSPERPAGE=20&amp;SORT=&amp;DB=cran-help&amp;DB=cran-info&amp;DB=cran-news&amp;DB=r-help&amp;DB=r-manuals&amp;DB=cran-readme&amp;DB=cran-views&amp;DB=cran-vignettes&amp;DEFAULTOP=and">additional contrast functions</a>.</p>
+</section><section id="sec-recipe-indicators" class="level3" data-number="5.3.2"><h3 data-number="5.3.2" class="anchored" data-anchor-id="sec-recipe-indicators">
+<span class="header-section-number">5.3.2</span> Recipes</h3>
+<p>We can also use a recipe to do this (with more functionality):</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">ind_rec</span> <span class="op">&lt;-</span> </span>
+<span>  <span class="fu">recipe</span><span class="op">(</span> <span class="op">~</span> <span class="va">customer_type</span>, data <span class="op">=</span> <span class="va">customer_types</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">step_dummy</span><span class="op">(</span><span class="fu">all_factor_predictors</span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">prep</span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">bake</span><span class="op">(</span><span class="va">ind_rec</span>, <span class="va">customer_types</span>, <span class="fu">starts_with</span><span class="op">(</span><span class="st">"customer_type"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 4 × 3</span></span>
+<span><span class="co">#&gt;   customer_type_group customer_type_transient customer_type_transient_party</span></span>
+<span><span class="co">#&gt;                 &lt;dbl&gt;                   &lt;dbl&gt;                         &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1                   0                       0                             0</span></span>
+<span><span class="co">#&gt; 2                   1                       0                             0</span></span>
+<span><span class="co">#&gt; 3                   0                       1                             0</span></span>
+<span><span class="co">#&gt; 4                   0                       0                             1</span></span>
+<span><span class="fu">bake</span><span class="op">(</span><span class="va">ind_rec</span>, <span class="va">with_missing</span>, <span class="fu">starts_with</span><span class="op">(</span><span class="st">"customer_type"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning: ! There are new levels in a factor: `NA`.</span></span>
+<span><span class="co">#&gt; # A tibble: 5 × 3</span></span>
+<span><span class="co">#&gt;   customer_type_group customer_type_transient customer_type_transient_party</span></span>
+<span><span class="co">#&gt;                 &lt;dbl&gt;                   &lt;dbl&gt;                         &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1                   0                       0                             0</span></span>
+<span><span class="co">#&gt; 2                   1                       0                             0</span></span>
+<span><span class="co">#&gt; 3                   0                       1                             0</span></span>
+<span><span class="co">#&gt; 4                   0                       0                             1</span></span>
+<span><span class="co">#&gt; 5                  NA                      NA                            NA</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>There is no need to set the global option for <code>na.action</code>.</p>
+<p>Also, the naming of features is more rational, with names and levels separated by an underscore. There is also an argument to <code><a href="https://recipes.tidymodels.org/reference/step_dummy.html">step_dummy()</a></code> that controls the naming of new features.</p>
+<p>There is also an option to produce one-hot encodings called… <code>one_hot</code>.</p>
+</section></section><section id="sec-recipe-novel" class="level2" data-number="5.4"><h2 data-number="5.4" class="anchored" data-anchor-id="sec-recipe-novel">
+<span class="header-section-number">5.4</span> Novel Categories</h2>
+<p>When we think the recipe or model will encounter new values of a factor predictor, we can use <code><a href="https://recipes.tidymodels.org/reference/step_novel.html">step_novel()</a></code> to add a new factor level:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">recipe</span><span class="op">(</span><span class="va">avg_price_per_room</span> <span class="op">~</span> <span class="va">customer_type</span>, data <span class="op">=</span> <span class="va">hotel_rate_train</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">step_novel</span><span class="op">(</span><span class="va">customer_type</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">prep</span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">bake</span><span class="op">(</span>new_data <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">pluck</span><span class="op">(</span><span class="st">"customer_type"</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/levels.html">levels</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "contract"        "group"           "transient"       "transient_party"</span></span>
+<span><span class="co">#&gt; [5] "new"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>For the training set, this new level will never have any data associated with it.</p>
+</section><section id="sec-recipe-other" class="level2" data-number="5.5"><h2 data-number="5.5" class="anchored" data-anchor-id="sec-recipe-other">
+<span class="header-section-number">5.5</span> “Othering”</h2>
+<p>We can also determine infrequently occurring categories (in the training set) and re-level the factor by converting them to an “other” category. If we chose a frequency of 0.01% as a cutoff, we have far fewer levels:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/levels.html">levels</a></span><span class="op">(</span><span class="va">hotel_rate_train</span><span class="op">$</span><span class="va">agent</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 174</span></span>
+<span></span>
+<span><span class="fu">recipe</span><span class="op">(</span><span class="va">avg_price_per_room</span> <span class="op">~</span> <span class="va">agent</span>, data <span class="op">=</span> <span class="va">hotel_rate_train</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">step_other</span><span class="op">(</span><span class="va">agent</span>, threshold <span class="op">=</span> <span class="fl">0.0001</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">prep</span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">bake</span><span class="op">(</span>new_data <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">pluck</span><span class="op">(</span><span class="st">"agent"</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/levels.html">levels</a></span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 101</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>If you are interested in which levels are combined, the <code><a href="https://generics.r-lib.org/reference/tidy.html">tidy()</a></code> method on the recipe can tell you.</p>
+</section><section id="sec-recipe-hashing" class="level2" data-number="5.6"><h2 data-number="5.6" class="anchored" data-anchor-id="sec-recipe-hashing">
+<span class="header-section-number">5.6</span> Feature Hashing</h2>
+<p>Feature hashing converts qualitative predictors to a set of binary indicators based solely on the value of their category. It is most useful when many categories and/or novel levels might be encountered.</p>
+<p>The recipe step is in the <span class="pkg"><a href="https://cran.r-project.org/package=textrecipes">textrecipes</a></span> package, so we must load it first<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>. The main arguments are <code>num_terms</code> and <code>signed</code>. The first sets the number of features to create, and when <code>signed = TRUE</code>, the indicators will have an appropriate sign attached to them (i.e., their values could be -1/0/1).</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tidymodels/textrecipes">textrecipes</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span><span class="va">avg_price_per_room</span> <span class="op">~</span> <span class="va">agent</span>, data <span class="op">=</span> <span class="va">hotel_rate_train</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://textrecipes.tidymodels.org/reference/step_dummy_hash.html">step_dummy_hash</a></span><span class="op">(</span><span class="va">agent</span>, num_terms <span class="op">=</span> <span class="fl">4</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/prep.html">prep</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/bake.html">bake</a></span><span class="op">(</span>new_data <span class="op">=</span> <span class="cn">NULL</span>, <span class="fu">contains</span><span class="op">(</span><span class="st">"agent"</span><span class="op">)</span><span class="op">)</span> </span>
+<span><span class="co">#&gt; # A tibble: 11,551 × 4</span></span>
+<span><span class="co">#&gt;   dummyhash_agent_1 dummyhash_agent_2 dummyhash_agent_3 dummyhash_agent_4</span></span>
+<span><span class="co">#&gt;               &lt;int&gt;             &lt;int&gt;             &lt;int&gt;             &lt;int&gt;</span></span>
+<span><span class="co">#&gt; 1                 0                 1                 0                 0</span></span>
+<span><span class="co">#&gt; 2                 0                 0                -1                 0</span></span>
+<span><span class="co">#&gt; 3                 0                 1                 0                 0</span></span>
+<span><span class="co">#&gt; 4                 0                 1                 0                 0</span></span>
+<span><span class="co">#&gt; 5                 0                 1                 0                 0</span></span>
+<span><span class="co">#&gt; 6                 0                 0                 0                 1</span></span>
+<span><span class="co">#&gt; # ℹ 11,545 more rows</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section><section id="sec-recipe-effect-encode" class="level2" data-number="5.7"><h2 data-number="5.7" class="anchored" data-anchor-id="sec-recipe-effect-encode">
+<span class="header-section-number">5.7</span> Effect Encodings</h2>
+<p>Effect embedding is a supervised method to convert qualitative predictors to a numeric column that contains the <em>effect</em> of the category on the outcome. The outcome is a numeric value (the ADR) for these data. Using effect endings here will produce a column with specialized estimates of each category’s mean ADR. Let’s look at the agent predictor again.</p>
+<p>The <span class="pkg"><a href="https://cran.r-project.org/package=embed">embed</a></span> package has a few recipe steps to do this. This method is sometimes called “likelihood encoding” and the recipe steps all start with <code>step_lencode_*</code>:</p>
+<ul>
+<li>
+<code><a href="https://embed.tidymodels.org/reference/step_lencode_glm.html">step_lencode_glm()</a></code> produces basic, naive estimates of effect. This is a “no pooling” estimate.</li>
+<li>
+<code><a href="https://embed.tidymodels.org/reference/step_lencode_mixed.html">step_lencode_mixed()</a></code> uses a non-Bayesian hierarchical model to produce regularized effect estimates.</li>
+<li>
+<code><a href="https://embed.tidymodels.org/reference/step_lencode_bayes.html">step_lencode_bayes()</a></code> uses a Bayesian model that is more flexible than its non-Bayesian sibling but can take much longer to fit.</li>
+</ul>
+<p>We’ll use the “mixed” function<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>, For agent:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://embed.tidymodels.org">embed</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">encoded_agent_rec</span> <span class="op">&lt;-</span> </span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span><span class="va">avg_price_per_room</span> <span class="op">~</span> <span class="va">agent</span>, data <span class="op">=</span> <span class="va">hotel_rate_train</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://embed.tidymodels.org/reference/step_lencode_mixed.html">step_lencode_mixed</a></span><span class="op">(</span><span class="va">agent</span>, outcome <span class="op">=</span> <span class="fu">vars</span><span class="op">(</span><span class="va">avg_price_per_room</span><span class="op">)</span>, id <span class="op">=</span> <span class="st">"effect"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/prep.html">prep</a></span><span class="op">(</span><span class="op">)</span> </span>
+<span><span class="va">encoded_agent_rec</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Recipe ───────────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Inputs</span></span>
+<span><span class="co">#&gt; Number of variables by role</span></span>
+<span><span class="co">#&gt; outcome:   1</span></span>
+<span><span class="co">#&gt; predictor: 1</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Training information</span></span>
+<span><span class="co">#&gt; Training data contained 11551 data points and no incomplete rows.</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Operations</span></span>
+<span><span class="co">#&gt; • Linear embedding for factors via mixed effects for: agent | Trained</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>To see the actual effect estimates, use the <code><a href="https://generics.r-lib.org/reference/tidy.html">tidy()</a></code> method:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html">tidy</a></span><span class="op">(</span><span class="va">encoded_agent_rec</span>, id <span class="op">=</span> <span class="st">"effect"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 123 × 4</span></span>
+<span><span class="co">#&gt;   level            value terms id    </span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;            &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt; </span></span>
+<span><span class="co">#&gt; 1 aaron_marquez    92.22 agent effect</span></span>
+<span><span class="co">#&gt; 2 alexander_drake 120.1  agent effect</span></span>
+<span><span class="co">#&gt; 3 allen_her        73.70 agent effect</span></span>
+<span><span class="co">#&gt; 4 anas_el_bashir   80.41 agent effect</span></span>
+<span><span class="co">#&gt; 5 araseli_billy    66.91 agent effect</span></span>
+<span><span class="co">#&gt; 6 arhab_al_islam   51.15 agent effect</span></span>
+<span><span class="co">#&gt; # ℹ 117 more rows</span></span>
+<span></span>
+<span><span class="co"># The estimate for new agents:</span></span>
+<span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html">tidy</a></span><span class="op">(</span><span class="va">encoded_agent_rec</span>, id <span class="op">=</span> <span class="st">"effect"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu">slice_tail</span><span class="op">(</span>n <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 1 × 4</span></span>
+<span><span class="co">#&gt;   level value terms id    </span></span>
+<span><span class="co">#&gt;   &lt;chr&gt; &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt; </span></span>
+<span><span class="co">#&gt; 1 ..new 75.36 agent effect</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>When the recipe is applied to new data, the <code>agent</code> column is converted to a numeric column with these values:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://recipes.tidymodels.org/reference/bake.html">bake</a></span><span class="op">(</span><span class="va">encoded_agent_rec</span>, <span class="va">hotel_rate_test</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu">bind_cols</span><span class="op">(</span><span class="va">hotel_rate_test</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> <span class="fu">select</span><span class="op">(</span>original_col <span class="op">=</span> <span class="va">agent</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 3,851 × 3</span></span>
+<span><span class="co">#&gt;    agent avg_price_per_room original_col        </span></span>
+<span><span class="co">#&gt;    &lt;dbl&gt;              &lt;dbl&gt; &lt;fct&gt;               </span></span>
+<span><span class="co">#&gt; 1 106.9                 100 devin_rivera_borrego</span></span>
+<span><span class="co">#&gt; 2 106.9                  60 devin_rivera_borrego</span></span>
+<span><span class="co">#&gt; 3  76.38                 45 not_applicable      </span></span>
+<span><span class="co">#&gt; 4 106.9                  82 devin_rivera_borrego</span></span>
+<span><span class="co">#&gt; 5  76.38                 47 not_applicable      </span></span>
+<span><span class="co">#&gt; 6  76.38                 60 not_applicable      </span></span>
+<span><span class="co">#&gt; # ℹ 3,845 more rows</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>For categorical outcomes, the effect estimate is the log-odds of an event (the first factor level).</p>
+</section><section id="sec-recipe-collapse" class="level2" data-number="5.8"><h2 data-number="5.8" class="anchored" data-anchor-id="sec-recipe-collapse">
+<span class="header-section-number">5.8</span> Supervised Combining of Categories</h2>
+<p>To <a href="https://aml4td.org/chapters/categorical-predictors.html#sec-combining-categories">collapse</a> a large number of factor levels to a smaller set using a supervised model, we can use <code><a href="https://embed.tidymodels.org/reference/step_collapse_cart.html">step_collapse_cart()</a></code> in the <span class="pkg"><a href="https://cran.r-project.org/package=embed">embed</a></span> package.</p>
+<p>For example:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># Also needs the embed package loaded (and rpart installed)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://embed.tidymodels.org">embed</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">collapse_agent_rec</span> <span class="op">&lt;-</span> </span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span><span class="va">avg_price_per_room</span> <span class="op">~</span> <span class="va">agent</span>, data <span class="op">=</span> <span class="va">hotel_rate_train</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://embed.tidymodels.org/reference/step_collapse_cart.html">step_collapse_cart</a></span><span class="op">(</span><span class="va">agent</span>, outcome <span class="op">=</span> <span class="fu">vars</span><span class="op">(</span><span class="va">avg_price_per_room</span><span class="op">)</span>, id <span class="op">=</span> <span class="st">"collapse"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/prep.html">prep</a></span><span class="op">(</span><span class="op">)</span> </span>
+<span><span class="va">collapse_agent_rec</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Recipe ───────────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Inputs</span></span>
+<span><span class="co">#&gt; Number of variables by role</span></span>
+<span><span class="co">#&gt; outcome:   1</span></span>
+<span><span class="co">#&gt; predictor: 1</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Training information</span></span>
+<span><span class="co">#&gt; Training data contained 11551 data points and no incomplete rows.</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Operations</span></span>
+<span><span class="co">#&gt; • Collapsing factor levels using CART: agent | Trained</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The step converts 122 unique values of <code>agent</code> in the training set to a smaller set of 12 categories. To see the conversion key, use the <code><a href="https://generics.r-lib.org/reference/tidy.html">tidy()</a></code> methods:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html">tidy</a></span><span class="op">(</span><span class="va">collapse_agent_rec</span>, id <span class="op">=</span> <span class="st">"collapse"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 122 × 4</span></span>
+<span><span class="co">#&gt;   terms old               new      id      </span></span>
+<span><span class="co">#&gt;   &lt;chr&gt; &lt;chr&gt;             &lt;chr&gt;    &lt;chr&gt;   </span></span>
+<span><span class="co">#&gt; 1 agent araseli_billy     agent_01 collapse</span></span>
+<span><span class="co">#&gt; 2 agent arhab_al_islam    agent_01 collapse</span></span>
+<span><span class="co">#&gt; 3 agent brayan_guerrero   agent_01 collapse</span></span>
+<span><span class="co">#&gt; 4 agent daifallah_el_sami agent_01 collapse</span></span>
+<span><span class="co">#&gt; 5 agent dante_merritt     agent_01 collapse</span></span>
+<span><span class="co">#&gt; 6 agent derrick_barger    agent_01 collapse</span></span>
+<span><span class="co">#&gt; # ℹ 116 more rows</span></span>
+<span></span>
+<span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html">tidy</a></span><span class="op">(</span><span class="va">collapse_agent_rec</span>, id <span class="op">=</span> <span class="st">"collapse"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu">count</span><span class="op">(</span><span class="va">new</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 12 × 2</span></span>
+<span><span class="co">#&gt;   new          n</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;    &lt;int&gt;</span></span>
+<span><span class="co">#&gt; 1 agent_01    17</span></span>
+<span><span class="co">#&gt; 2 agent_02    14</span></span>
+<span><span class="co">#&gt; 3 agent_03    14</span></span>
+<span><span class="co">#&gt; 4 agent_04    10</span></span>
+<span><span class="co">#&gt; 5 agent_05     7</span></span>
+<span><span class="co">#&gt; 6 agent_06    13</span></span>
+<span><span class="co">#&gt; # ℹ 6 more rows</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>There are two main tuning parameters (described later in section TODO):</p>
+<ul>
+<li>cost complexity (a.k.a. <span class="math inline">\(C_p\)</span>): smaller values result in more groups. Values typically range between zero and 0.1.</li>
+<li>minimum n: the minimum number of rows in a group to enable it to keep splitting. Smaller values should result in more groupings.</li>
+</ul>
+<p>These values can be tuned.</p>
+</section><section id="sec-recipe-ordinal" class="level2" data-number="5.9"><h2 data-number="5.9" class="anchored" data-anchor-id="sec-recipe-ordinal">
+<span class="header-section-number">5.9</span> Working with Ordinal Predictors</h2>
+<p>As reported in <a href="https://aml4td.org/chapters/categorical-predictors.html#encodings-for-ordinal-predictors">the section on ordinal data</a>, the default for R is to encode ordinal values with <span class="math inline">\(p\)</span> values is to create a set of <span class="math inline">\(p - 1\)</span> orthogonal polynomial features. That is what <code><a href="https://recipes.tidymodels.org/reference/step_dummy.html">step_dummy()</a></code> does by default.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">quality_vals</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">'excellent'</span>, <span class="st">'fair'</span>, <span class="st">'good'</span>, <span class="st">'typical'</span>, <span class="st">'poor'</span><span class="op">)</span></span>
+<span><span class="va">quality</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="op">(</span>quality <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">ordered</a></span><span class="op">(</span><span class="va">quality_vals</span>, levels <span class="op">=</span> <span class="va">quality_vals</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/str.html">str</a></span><span class="op">(</span><span class="va">quality</span><span class="op">)</span></span>
+<span><span class="co">#&gt; tibble [5 × 1] (S3: tbl_df/tbl/data.frame)</span></span>
+<span><span class="co">#&gt;  $ quality: Ord.factor w/ 5 levels "excellent"&lt;"fair"&lt;..: 1 2 3 4 5</span></span>
+<span></span>
+<span><span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span><span class="op">~</span> <span class="va">quality</span>, data <span class="op">=</span> <span class="va">quality</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_dummy.html">step_dummy</a></span><span class="op">(</span><span class="va">quality</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/prep.html">prep</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/bake.html">bake</a></span><span class="op">(</span>new_data <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 5 × 4</span></span>
+<span><span class="co">#&gt;    quality_1 quality_2  quality_3 quality_4</span></span>
+<span><span class="co">#&gt;        &lt;dbl&gt;     &lt;dbl&gt;      &lt;dbl&gt;     &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1 -6.325e- 1    0.5345 -3.162e- 1    0.1195</span></span>
+<span><span class="co">#&gt; 2 -3.162e- 1   -0.2673  6.325e- 1   -0.4781</span></span>
+<span><span class="co">#&gt; 3 -3.288e-17   -0.5345  9.637e-17    0.7171</span></span>
+<span><span class="co">#&gt; 4  3.162e- 1   -0.2673 -6.325e- 1   -0.4781</span></span>
+<span><span class="co">#&gt; 5  6.325e- 1    0.5345  3.162e- 1    0.1195</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We can convert the ordered factor to an unordered factor:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span><span class="op">~</span> <span class="va">quality</span>, data <span class="op">=</span> <span class="va">quality</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_unorder.html">step_unorder</a></span><span class="op">(</span><span class="va">quality</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_dummy.html">step_dummy</a></span><span class="op">(</span><span class="va">quality</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/prep.html">prep</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/bake.html">bake</a></span><span class="op">(</span>new_data <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 5 × 4</span></span>
+<span><span class="co">#&gt;   quality_fair quality_good quality_typical quality_poor</span></span>
+<span><span class="co">#&gt;          &lt;dbl&gt;        &lt;dbl&gt;           &lt;dbl&gt;        &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1            0            0               0            0</span></span>
+<span><span class="co">#&gt; 2            1            0               0            0</span></span>
+<span><span class="co">#&gt; 3            0            1               0            0</span></span>
+<span><span class="co">#&gt; 4            0            0               1            0</span></span>
+<span><span class="co">#&gt; 5            0            0               0            1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Another strategy is mapping the ordinal factor levels to a set of numeric values that make sense for their modeling problem. <code><a href="https://recipes.tidymodels.org/reference/step_ordinalscore.html">step_ordinalscore()</a></code> can do that with a user-supplied conversion function:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">convert_to_prime</span> <span class="op">&lt;-</span>  <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">primes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">3</span>, <span class="fl">7</span>, <span class="fl">11</span>, <span class="fl">13</span><span class="op">)</span></span>
+<span>  <span class="va">primes</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span><span class="op">~</span> <span class="va">quality</span>, data <span class="op">=</span> <span class="va">quality</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_ordinalscore.html">step_ordinalscore</a></span><span class="op">(</span><span class="va">quality</span>, convert <span class="op">=</span> <span class="va">convert_to_prime</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/prep.html">prep</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/bake.html">bake</a></span><span class="op">(</span>new_data <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 5 × 1</span></span>
+<span><span class="co">#&gt;   quality</span></span>
+<span><span class="co">#&gt;     &lt;int&gt;</span></span>
+<span><span class="co">#&gt; 1       2</span></span>
+<span><span class="co">#&gt; 2       3</span></span>
+<span><span class="co">#&gt; 3       7</span></span>
+<span><span class="co">#&gt; 4      11</span></span>
+<span><span class="co">#&gt; 5      13</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><code><a href="https://recipes.tidymodels.org/reference/step_integer.html">step_integer()</a></code> does the same for either type of factor but converts them to consecutive one-based integers.</p>
+</section><section id="other-relevant-recipe-steps" class="level2" data-number="5.10"><h2 data-number="5.10" class="anchored" data-anchor-id="other-relevant-recipe-steps">
+<span class="header-section-number">5.10</span> Other relevant recipe steps</h2>
+<p>There are a variety of other steps that can be used with qualitative predictors (<a href="https://recipes.tidymodels.org/reference/index.html#step-functions-dummy-variables-and-encodings">a list of relevant recipe steps in <span class="pkg"></span></a><a href="https://cran.r-project.org/package=recipes">recipes</a>)</p>
+
+
+</section><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><hr>
+<ol>
+<li id="fn1"><p>In statistics, “contrasts” typically indicates a combination of parameters. For example, if you wanted to test that the average of two parameters was equal to a third, the contrast would be <span class="math inline">\(\beta_1 + \beta_2 - 2\beta_3\)</span> and the contrast coefficients would be <code>c(1, 1, -2)</code>.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>It also requires another package (<span class="pkg"><a href="https://cran.r-project.org/package=text2vec">text2vec</a></span>) to be installed but not loaded.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>For this function, we all need the <span class="pkg"><a href="https://cran.r-project.org/package=lme4">lme4</a></span> package to be installed.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol></section></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script><nav class="page-navigation"><div class="nav-page nav-page-previous">
+      <a href="../chapters/numeric-predictors.html" class="pagination-link  aria-label=" numeric="" predictors="">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Transforming Numeric Predictors</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+</body></html>

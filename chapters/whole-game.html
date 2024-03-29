@@ -2,9 +2,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.4.510">
+<meta name="generator" content="quarto-1.5.4">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-<title>Tidymodels Computing Supplement - 2&nbsp; The Whole Game</title>
+<title>Tidymodels Computing Supplement – 2&nbsp; The Whole Game</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -91,6 +91,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-more-match-text": "more match in this document",
     "search-more-matches-text": "more matches in this document",
     "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
     "search-detached-cancel-button-title": "Cancel",
     "search-submit-button-title": "Submit",
     "search-label": "Search"
@@ -196,6 +197,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Initial Data Splitting</span></span></a>
   </div>
 </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/numeric-predictors.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Transforming Numeric Predictors</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/categorical-predictors.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Working with Categorical Predictors</span></span></a>
+  </div>
+</li>
         <li class="sidebar-item sidebar-item-section">
       <span class="sidebar-item-text sidebar-link text-start">
  <span class="menu-text">Optmization</span></span>
@@ -270,22 +283,22 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Let’s run some code to get started:</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidymodels.tidymodels.org">tidymodels</a></span><span class="op">)</span></span>
-<span><span class="co">#&gt; ── Attaching packages ─────────────────────────────────────────── tidymodels 1.1.1 ──</span></span>
-<span><span class="co">#&gt; ✔ broom        1.0.5     ✔ recipes      1.0.8</span></span>
-<span><span class="co">#&gt; ✔ dials        1.2.0     ✔ rsample      1.2.0</span></span>
-<span><span class="co">#&gt; ✔ dplyr        1.1.4     ✔ tibble       3.2.1</span></span>
-<span><span class="co">#&gt; ✔ ggplot2      3.4.4     ✔ tidyr        1.3.0</span></span>
-<span><span class="co">#&gt; ✔ infer        1.0.5     ✔ tune         1.1.2</span></span>
-<span><span class="co">#&gt; ✔ modeldata    1.2.0     ✔ workflows    1.1.3</span></span>
-<span><span class="co">#&gt; ✔ parsnip      1.1.1     ✔ workflowsets 1.0.1</span></span>
-<span><span class="co">#&gt; ✔ purrr        1.0.2     ✔ yardstick    1.2.0</span></span>
+<span><span class="co">#&gt; ── Attaching packages ─────────────────────────────────────────── tidymodels 1.2.0 ──</span></span>
+<span><span class="co">#&gt; ✔ broom        1.0.5      ✔ recipes      1.0.10</span></span>
+<span><span class="co">#&gt; ✔ dials        1.2.1      ✔ rsample      1.2.1 </span></span>
+<span><span class="co">#&gt; ✔ dplyr        1.1.4      ✔ tibble       3.2.1 </span></span>
+<span><span class="co">#&gt; ✔ ggplot2      3.5.0      ✔ tidyr        1.3.1 </span></span>
+<span><span class="co">#&gt; ✔ infer        1.0.7      ✔ tune         1.2.0 </span></span>
+<span><span class="co">#&gt; ✔ modeldata    1.3.0      ✔ workflows    1.1.4 </span></span>
+<span><span class="co">#&gt; ✔ parsnip      1.2.1      ✔ workflowsets 1.1.0 </span></span>
+<span><span class="co">#&gt; ✔ purrr        1.0.2      ✔ yardstick    1.3.1</span></span>
 <span><span class="co">#&gt; ── Conflicts ────────────────────────────────────────────── tidymodels_conflicts() ──</span></span>
 <span><span class="co">#&gt; ✖ purrr::discard() masks scales::discard()</span></span>
 <span><span class="co">#&gt; ✖ dplyr::filter()  masks stats::filter()</span></span>
 <span><span class="co">#&gt; ✖ dplyr::lag()     masks stats::lag()</span></span>
 <span><span class="co">#&gt; ✖ recipes::step()  masks stats::step()</span></span>
-<span><span class="co">#&gt; • Use suppressPackageStartupMessages() to eliminate package startup messages</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tidymodels/probably/">probably</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; • Dig deeper into tidy modeling with R at https://www.tmwr.org</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tidymodels/probably">probably</a></span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Attaching package: 'probably'</span></span>
 <span><span class="co">#&gt; The following objects are masked from 'package:base':</span></span>
@@ -823,14 +836,15 @@ Learn More About Recipes
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb28"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">lm_reg_val_pred</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://generics.r-lib.org/reference/augment.html">augment</a></span><span class="op">(</span><span class="va">lin_reg_fit</span>, new_data <span class="op">=</span> <span class="va">delivery_val</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">lm_reg_val_pred</span><span class="op">)</span></span>
-<span><span class="co">#&gt;  [1] "time_to_delivery" "hour"             "day"              "distance"        </span></span>
-<span><span class="co">#&gt;  [5] "item_01"          "item_02"          "item_03"          "item_04"         </span></span>
-<span><span class="co">#&gt;  [9] "item_05"          "item_06"          "item_07"          "item_08"         </span></span>
-<span><span class="co">#&gt; [13] "item_09"          "item_10"          "item_11"          "item_12"         </span></span>
-<span><span class="co">#&gt; [17] "item_13"          "item_14"          "item_15"          "item_16"         </span></span>
-<span><span class="co">#&gt; [21] "item_17"          "item_18"          "item_19"          "item_20"         </span></span>
-<span><span class="co">#&gt; [25] "item_21"          "item_22"          "item_23"          "item_24"         </span></span>
-<span><span class="co">#&gt; [29] "item_25"          "item_26"          "item_27"          ".pred"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt;  [1] ".pred"            ".resid"           "time_to_delivery" "hour"            </span></span>
+<span><span class="co">#&gt;  [5] "day"              "distance"         "item_01"          "item_02"         </span></span>
+<span><span class="co">#&gt;  [9] "item_03"          "item_04"          "item_05"          "item_06"         </span></span>
+<span><span class="co">#&gt; [13] "item_07"          "item_08"          "item_09"          "item_10"         </span></span>
+<span><span class="co">#&gt; [17] "item_11"          "item_12"          "item_13"          "item_14"         </span></span>
+<span><span class="co">#&gt; [21] "item_15"          "item_16"          "item_17"          "item_18"         </span></span>
+<span><span class="co">#&gt; [25] "item_19"          "item_20"          "item_21"          "item_22"         </span></span>
+<span><span class="co">#&gt; [29] "item_23"          "item_24"          "item_25"          "item_26"         </span></span>
+<span><span class="co">#&gt; [33] "item_27"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>What is our MAE? This is where we use our metric set <code>reg_metrics</code>. Note that there is a column in the results called <code>.pred</code>. For regression models, this is the predicted delivery time for each order in the validation set. We can use that and the original observed outcome column to estimate the MAE<a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a>:</p>
 <div class="cell" data-layout-align="center">
@@ -877,19 +891,19 @@ Learn More About Recipes
 <span></span>
 <span><span class="fu"><a href="https://tune.tidymodels.org/reference/collect_predictions.html">collect_predictions</a></span><span class="op">(</span><span class="va">lin_reg_res</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 2,004 × 5</span></span>
-<span><span class="co">#&gt;   id         .pred  .row time_to_delivery .config             </span></span>
-<span><span class="co">#&gt;   &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;            &lt;dbl&gt; &lt;chr&gt;               </span></span>
-<span><span class="co">#&gt; 1 validation 30.12  6005            27.23 Preprocessor1_Model1</span></span>
-<span><span class="co">#&gt; 2 validation 23.02  6006            22.10 Preprocessor1_Model1</span></span>
-<span><span class="co">#&gt; 3 validation 28.38  6007            26.63 Preprocessor1_Model1</span></span>
-<span><span class="co">#&gt; 4 validation 31.04  6008            30.84 Preprocessor1_Model1</span></span>
-<span><span class="co">#&gt; 5 validation 38.57  6009            41.17 Preprocessor1_Model1</span></span>
-<span><span class="co">#&gt; 6 validation 27.04  6010            27.04 Preprocessor1_Model1</span></span>
+<span><span class="co">#&gt;   .pred id          .row time_to_delivery .config             </span></span>
+<span><span class="co">#&gt;   &lt;dbl&gt; &lt;chr&gt;      &lt;int&gt;            &lt;dbl&gt; &lt;chr&gt;               </span></span>
+<span><span class="co">#&gt; 1 30.12 validation  6005            27.23 Preprocessor1_Model1</span></span>
+<span><span class="co">#&gt; 2 23.02 validation  6006            22.10 Preprocessor1_Model1</span></span>
+<span><span class="co">#&gt; 3 28.38 validation  6007            26.63 Preprocessor1_Model1</span></span>
+<span><span class="co">#&gt; 4 31.04 validation  6008            30.84 Preprocessor1_Model1</span></span>
+<span><span class="co">#&gt; 5 38.57 validation  6009            41.17 Preprocessor1_Model1</span></span>
+<span><span class="co">#&gt; 6 27.04 validation  6010            27.04 Preprocessor1_Model1</span></span>
 <span><span class="co">#&gt; # ℹ 1,998 more rows</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>The <span class="pkg"><a href="https://cran.r-project.org/package=probably">probably</a></span> package also has a nice helper to check the calibration of the model via a plot:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://probably.tidymodels.org/reference/cal_plot_regression.html">cal_plot_regression</a></span><span class="op">(</span><span class="va">lin_reg_res</span>, alpha <span class="op">=</span> <span class="fl">1</span> <span class="op">/</span> <span class="fl">3</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://probably.tidymodels.org/reference/cal_plot_regression.html">cal_plot_regression</a></span><span class="op">(</span><span class="va">lin_reg_res</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure"><p><img src="../figures/lm-cal-plot-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:50.0%"></p>
@@ -931,7 +945,7 @@ Learn More About Recipes
 </div>
 <p>The calibration plot:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://probably.tidymodels.org/reference/cal_plot_regression.html">cal_plot_regression</a></span><span class="op">(</span><span class="va">cb_res</span>, alpha <span class="op">=</span> <span class="fl">1</span> <span class="op">/</span> <span class="fl">3</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://probably.tidymodels.org/reference/cal_plot_regression.html">cal_plot_regression</a></span><span class="op">(</span><span class="va">cb_res</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure"><p><img src="../figures/cb-cal-plot-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:50.0%"></p>
@@ -1058,11 +1072,11 @@ Learn More About Recipes
 <span><span class="co">#&gt; # A tibble: 5 × 7</span></span>
 <span><span class="co">#&gt;   hidden_units .metric .estimator  mean     n std_err .config             </span></span>
 <span><span class="co">#&gt;          &lt;int&gt; &lt;chr&gt;   &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;               </span></span>
-<span><span class="co">#&gt; 1            7 mae     standard   1.540     1      NA Preprocessor1_Model6</span></span>
-<span><span class="co">#&gt; 2           10 mae     standard   1.555     1      NA Preprocessor1_Model9</span></span>
-<span><span class="co">#&gt; 3            9 mae     standard   1.577     1      NA Preprocessor1_Model8</span></span>
-<span><span class="co">#&gt; 4            8 mae     standard   1.649     1      NA Preprocessor1_Model7</span></span>
-<span><span class="co">#&gt; 5            5 mae     standard   1.746     1      NA Preprocessor1_Model4</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; 1            5 mae     standard   1.497     1      NA Preprocessor1_Model4</span></span>
+<span><span class="co">#&gt; 2            9 mae     standard   1.511     1      NA Preprocessor1_Model8</span></span>
+<span><span class="co">#&gt; 3            7 mae     standard   1.519     1      NA Preprocessor1_Model6</span></span>
+<span><span class="co">#&gt; 4           10 mae     standard   1.525     1      NA Preprocessor1_Model9</span></span>
+<span><span class="co">#&gt; 5            8 mae     standard   1.603     1      NA Preprocessor1_Model7</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We can also return the parameter with the numerically best results<a href="#fn8" class="footnote-ref" id="fnref8" role="doc-noteref"><sup>8</sup></a>:</p>
 <div class="cell" data-layout-align="center">
@@ -1071,7 +1085,7 @@ Learn More About Recipes
 <span><span class="co">#&gt; # A tibble: 1 × 2</span></span>
 <span><span class="co">#&gt;   hidden_units .config             </span></span>
 <span><span class="co">#&gt;          &lt;int&gt; &lt;chr&gt;               </span></span>
-<span><span class="co">#&gt; 1            7 Preprocessor1_Model6</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; 1            5 Preprocessor1_Model4</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>The <code><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot()</a></code> method can visualize the relationship between the tuning parameter(s) and the performance metric(s).</p>
 <div class="cell" data-layout-align="center">
@@ -1086,7 +1100,7 @@ Learn More About Recipes
 <p><code><a href="https://tune.tidymodels.org/reference/collect_predictions.html">tune::collect_predictions()</a></code> will automatically return the out-of-sample predictions for every candidate model (e.g., every tuning parameter value.). We might not want them all; it has an argument called <code>parameters</code> that can be used to filter the results.</p>
 <p><code><a href="https://probably.tidymodels.org/reference/cal_plot_regression.html">probably::cal_plot_regression()</a></code> automatically shows the results for each tuning parameter combination. For example:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb47"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://probably.tidymodels.org/reference/cal_plot_regression.html">cal_plot_regression</a></span><span class="op">(</span><span class="va">nnet_res</span>, alpha <span class="op">=</span> <span class="fl">1</span> <span class="op">/</span> <span class="fl">3</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb47"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://probably.tidymodels.org/reference/cal_plot_regression.html">cal_plot_regression</a></span><span class="op">(</span><span class="va">nnet_res</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure"><p><img src="../figures/nnet-cal-plot-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:50.0%"></p>
@@ -1150,7 +1164,7 @@ Learn More About Recipes
 <span></span>
 <span><span class="co"># plot the uncalibrated results: </span></span>
 <span><span class="va">lin_reg_test_pred</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
-<span>  <span class="fu"><a href="https://probably.tidymodels.org/reference/cal_plot_regression.html">cal_plot_regression</a></span><span class="op">(</span>truth <span class="op">=</span> <span class="va">time_to_delivery</span>, estimate <span class="op">=</span> <span class="va">.pred</span>, alpha <span class="op">=</span> <span class="fl">1</span> <span class="op">/</span> <span class="fl">3</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>  <span class="fu"><a href="https://probably.tidymodels.org/reference/cal_plot_regression.html">cal_plot_regression</a></span><span class="op">(</span>truth <span class="op">=</span> <span class="va">time_to_delivery</span>, estimate <span class="op">=</span> <span class="va">.pred</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure"><p><img src="../figures/lm-test-final-uncal-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:50.0%"></p>
@@ -1176,14 +1190,14 @@ Learn More About Recipes
 <span><span class="co"># Test set predictions: </span></span>
 <span><span class="fu"><a href="https://tune.tidymodels.org/reference/collect_predictions.html">collect_predictions</a></span><span class="op">(</span><span class="va">lin_reg_test_res</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 2,004 × 5</span></span>
-<span><span class="co">#&gt;   id               .pred  .row time_to_delivery .config             </span></span>
-<span><span class="co">#&gt;   &lt;chr&gt;            &lt;dbl&gt; &lt;int&gt;            &lt;dbl&gt; &lt;chr&gt;               </span></span>
-<span><span class="co">#&gt; 1 train/test split 15.98     7            18.02 Preprocessor1_Model1</span></span>
-<span><span class="co">#&gt; 2 train/test split 16.03    14            17.57 Preprocessor1_Model1</span></span>
-<span><span class="co">#&gt; 3 train/test split 27.60    16            26.71 Preprocessor1_Model1</span></span>
-<span><span class="co">#&gt; 4 train/test split 17.15    29            17.64 Preprocessor1_Model1</span></span>
-<span><span class="co">#&gt; 5 train/test split 32.24    33            32.19 Preprocessor1_Model1</span></span>
-<span><span class="co">#&gt; 6 train/test split 20.18    34            20.31 Preprocessor1_Model1</span></span>
+<span><span class="co">#&gt;   .pred id                .row time_to_delivery .config             </span></span>
+<span><span class="co">#&gt;   &lt;dbl&gt; &lt;chr&gt;            &lt;int&gt;            &lt;dbl&gt; &lt;chr&gt;               </span></span>
+<span><span class="co">#&gt; 1 15.98 train/test split     7            18.02 Preprocessor1_Model1</span></span>
+<span><span class="co">#&gt; 2 16.03 train/test split    14            17.57 Preprocessor1_Model1</span></span>
+<span><span class="co">#&gt; 3 27.60 train/test split    16            26.71 Preprocessor1_Model1</span></span>
+<span><span class="co">#&gt; 4 17.15 train/test split    29            17.64 Preprocessor1_Model1</span></span>
+<span><span class="co">#&gt; 5 32.24 train/test split    33            32.19 Preprocessor1_Model1</span></span>
+<span><span class="co">#&gt; 6 20.18 train/test split    34            20.31 Preprocessor1_Model1</span></span>
 <span><span class="co">#&gt; # ℹ 1,998 more rows</span></span>
 <span></span>
 <span><span class="co"># Final model fit: </span></span>
@@ -1207,7 +1221,7 @@ Learn More About Recipes
 <span></span>
 <span><span class="co"># plot the calibrated results: </span></span>
 <span><span class="va">lin_reg_test_pred_cal</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
-<span>  <span class="fu"><a href="https://probably.tidymodels.org/reference/cal_plot_regression.html">cal_plot_regression</a></span><span class="op">(</span>truth <span class="op">=</span> <span class="va">time_to_delivery</span>, estimate <span class="op">=</span> <span class="va">.pred</span>, alpha <span class="op">=</span> <span class="fl">1</span> <span class="op">/</span> <span class="fl">3</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>  <span class="fu"><a href="https://probably.tidymodels.org/reference/cal_plot_regression.html">cal_plot_regression</a></span><span class="op">(</span>truth <span class="op">=</span> <span class="va">time_to_delivery</span>, estimate <span class="op">=</span> <span class="va">.pred</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure"><p><img src="../figures/lm-test-final-cal-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:50.0%"></p>
@@ -1220,7 +1234,7 @@ Learn More About Recipes
 <p>This has been an abbreviated, high-level introduction to using tidymodels. Future chapters will go into much more detail on these subjects and illustrate additional features and functions as needed.</p>
 
 
-</section><aside id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><hr>
+</section><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><hr>
 <ol>
 <li id="fn1"><p>We use a different ggplot theme for the main materials. We’ll use the default theme here.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn2"><p>If you are wondering how we get the seed values, I use <code>sample.int(1000, 1)</code> to generate random seeds on the fly.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
@@ -1230,7 +1244,7 @@ Learn More About Recipes
 <li id="fn6"><p>We could have used the <code><a href="https://yardstick.tidymodels.org/reference/mae.html">yardstick::mae()</a></code> directly instead of stuffing that function in a metric set. Since we often want to collect more than one type of performance statistic, we’re showing how to use a metric set.<a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn7"><p>This is possible since we previously used the <code>save_workflow = TRUE</code> option in the control function.<a href="#fnref7" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn8"><p>As impressive as the <code>torch</code> ecosystem is, it is not as optimized for reproducibility. These results may vary from run to run due to the inability to fix some of the random numbers used and their use of different numerical tolerances across operating systems.<a href="#fnref8" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-</ol></aside></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">
+</ol></section></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
     const mode = bsSheetEl.getAttribute("data-mode");
@@ -1358,27 +1372,6 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       }
     }
     stripColumnClz(note)
-    const typesetMath = (el) => {
-      if (window.MathJax) {
-        // MathJax Typeset
-        window.MathJax.typeset([el]);
-      } else if (window.katex) {
-        // KaTeX Render
-        var mathElements = el.getElementsByClassName("math");
-        var macros = [];
-        for (var i = 0; i < mathElements.length; i++) {
-          var texText = mathElements[i].firstChild;
-          if (mathElements[i].tagName == "SPAN") {
-            window.katex.render(texText.data, mathElements[i], {
-              displayMode: mathElements[i].classList.contains('display'),
-              throwOnError: false,
-              macros: macros,
-              fleqn: false
-            });
-          }
-        }
-      }
-    }
     if (id === null || id.startsWith('sec-')) {
       // Special case sections, only their first couple elements
       const container = document.createElement("div");
@@ -1393,10 +1386,14 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
             break;
           }
         }
-        typesetMath(container);
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
         return container.innerHTML
       } else {
-        typesetMath(note);
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
         return note.innerHTML;
       }
     } else {
@@ -1405,8 +1402,15 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       if (anchorLink) {
         anchorLink.remove();
       }
-      typesetMath(note);
-      return note.innerHTML;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
     }
   }
   for (var i=0; i<xrefs.length; i++) {
