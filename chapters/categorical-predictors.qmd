@@ -93,7 +93,7 @@ hotel_rate_test  <- testing(hotel_rate_split)
 
 We'll look at two primary methods for creating indicator (a.k.a. "dummy") variables. 
 
-## Base R formulas {#sec-base-r-indicators}
+### Base R formulas {#sec-base-r-indicators}
 
 Base R’s formula method, discussed previously in @sec-r-formulas, automatically creates indicators when the formula includes a factor predictor. For example: 
 
