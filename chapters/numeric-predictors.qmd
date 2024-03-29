@@ -38,11 +38,11 @@ req_pkg <- c("bestNormalize", "embed", "tidymodels", "splines2")
 The corresponding [book chapter](https://aml4td.org/chapters/numeric-predictors.html) is concerned with operations to improve how numeric predictor variables are represented in the data prior to modeling. We separate these operations into two categories: 
 
 - _preprocessing_ methods are actions that the _model requires_ such as standardization of variables. 
-- _feature engineering_ transformations are those that your particular data set requires to successfully predict the outcome. 
+- _feature engineering_ transformations are those that your particular data set requires to predict the outcome successfully. 
 
-In either case, we estimate these transformations exclusively from the training set and apply them to any data (e.g. the training set, test set, and/or new or unknown data). This is generally true and apply to upcoming chapters on categorical data and other transformations.
+In either case, we estimate these transformations exclusively from the training set and apply them to any data (e.g., the training set, test set, and/or new or unknown data). This is generally true and applies to upcoming chapters on categorical data and other transformations.
 
-In tidymodels, just about everything that you want to do to your predictors can be accomplished using the R formula method or, better still, the `r pkg(recipes)` package. We shall describe both. 
+In tidymodels, just about everything you want to do to your predictors can be accomplished using the R formula method or, better still, the `r pkg(recipes)` package. We shall describe both. 
 
 ## Requirements
 
@@ -78,7 +78,7 @@ theme_set(theme_bw())
 
 ## Data Sets
 
-The data sets used here are both in R packages that are already installed. Let's work with the primary data set: the Ames Iowa housing data.
+The data sets used here are both in R packages that have already been installed. Let's work with the primary data set: the Ames Iowa housing data.
 
 In the last chapter, our manipulation and splitting code was: 
 
@@ -102,7 +102,7 @@ ames_train <- training(ames_split)
 ames_test  <- testing(ames_split)
 ```
 
-We'll work with `ames_train` almost excusively here. 
+We'll work with `ames_train` almost exclusively here. 
 
 ## Standard R Formulas
 
@@ -145,7 +145,7 @@ It does not use row-wise arithmetic additions of the two columns. To do that, yo
 f_02 <- Sale_Price ~  I(Full_Bath + Half_Bath)
 ```
 
-Symbolic addition creates separate columns of the data set. In chapter TODO, we'll discuss _main effects_ and _interactions_. The main effects are features composed of a single predictor (as in `f_01` above). Interaction effects are one or more model terms that combine the information of all of the predictors in a multiplicative way. There are a few ways to specify them. Here are three methods for specifying two-factor interactions between predictors: 
+Symbolic addition creates separate columns of the data set. In chapter TODO, we'll discuss _main effects_ and _interactions_. The main effects are features composed of a single predictor (as in `f_01` above). Interaction effects are one or more model terms that combine the information of all the predictors in a multiplicative way. There are a few ways to specify them. Here are three methods for specifying two-factor interactions between predictors: 
 
 ```{r}
 #| label: interactions
@@ -161,6 +161,8 @@ f_05 <- Sale_Price ~  (Baths + Year_Built)^2
 
 show_columns(f_05)
 ```
+
+For this data set, the right-hand side of `f_05` could be shortened to `(.)^2`.
 
 Since `Baths` and `Year_Built` are both numeric, their interactions are created by simply multiplying their values, i.e., `I(Baths * Year_Built)`. 
 
@@ -199,7 +201,7 @@ f_09 <- Sale_Price ~  (Bldg_Type + Central_Air)^2
 show_columns(f_09)
 ```
 
-What happens when you exclude the intercept? For a single categorical predictor, all factor levels receive a binary indicator column.
+What happens when you exclude the intercept? All factor levels receive a binary indicator column for a single categorical predictor.
 
 ```{r}
 #| label: factor-no-int
@@ -278,7 +280,7 @@ the recipe. In terms of syntax, the analogous functions are:
 recipe() -> prep() -> bake()
 ```
 
-We’ll start off simple by trying to “unskew” a predictor’s distirbution. 
+We’ll start simply by trying to “unskew” a predictor’s distribution. 
 
 ## Resolving Skewness
 
@@ -303,11 +305,11 @@ To get started, we initialize a recipe with the `recipe()` function and a data s
 unskew_rec <- recipe(Sale_Price ~ ., data = ames_train)
 ```
 
-The formula method really doesn’t do much here: it records the outcome (columns to the left of `~`), which are predictors (to the right of `~` ), and their data types. Note that the `.` in the formula means that all columns, except those to the left, should be considered predictors. When using a formula to start a recipe, keep it simple. It won’t accept any in-line functions (like `sqrt()` or `log()`); it wants you to change the variables inside of _recipe steps_. 
+The formula method doesn’t do much here: it records the outcome (columns to the left of `~`), which are predictors (to the right of `~` ), and their data types. Note that the `.` in the formula means that all columns, except those to the left, should be considered predictors. When using a formula to start a recipe, keep it simple. It won’t accept any in-line functions (like `sqrt()` or `log()`); it wants you to change the variables inside of _recipe steps_. 
 
 Regarding the `data` argument: _any_ data set with the appropriate columns could be used. The initial recipe work is just cataloging the columns. You could even use a “zero row slice” such as `ames_train[0,]` and get the same results. You might want to do something like this if you have a very large training set (to reduce the in-memory footprint). The main advantage of using `ames_train` is convenience (as we’ll see later). 
 
-From this initial object, we’ll add different recipe step functions to declare what we want to do. Let’s say that we will transform the lot area column using the Yeo-Johnsom transformation. To do this: 
+We’ll add different recipe step functions from this initial object to declare what we want to do. Let’s say we will transform the lot area column using the Yeo-Johnsom transformation. To do this: 
 
 ```{r}
 #| label: yj-step
@@ -389,7 +391,7 @@ The main site mentions a few other methods that could be used besides Yeo-Johnso
  - Percentile: `step_percentile()` 
  - orderNorm: `step_orderNorm()`
 
-Note that the last method has its step function in the `r pkg(bestNormalize)` package; a variety of recipe extension packages can be used. A [**full set of recipe steps**](https://www.tidymodels.org/find/recipes/) for CRAN packages is available on `tidymodels.org`. 
+Note that the last method has its step function in the `r pkg(bestNormalize)` package; various recipe extension packages can be used. A [**full set of recipe steps**](https://www.tidymodels.org/find/recipes/) for CRAN packages is available on `tidymodels.org`. 
 
 There is also a general step for _simple_ computations that do not need to be estimated. If we were to log transform the data, we would use: 
 
