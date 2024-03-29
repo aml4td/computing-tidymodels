@@ -183,7 +183,7 @@ What happens with factor predictors? Their specification is the same:
 f_08 <- Sale_Price ~  Bldg_Type 
 ```
 
-However, _most of the time_^[Some model functions require these binary indicators, and others do not. You should assume they convert factor predictors to binary indicators; we will alter you when a specific function does not.], the formula method creates columns of binary 0/1 to replace the original factor column. Since there are `r length(levels(ames_train$Bldg_Type))` possible values of `Bldg_Type`, the formula creates `r length(levels(ames_train$Bldg_Type)) - 1` columns of indicator variables, each corresponding to a specific level. The first factor level is excluded by default. This is discussed more in Chapter TODO. 
+However, _most of the time_^[Some model functions require these binary indicators, and others do not. You should assume they convert factor predictors to binary indicators; we will alter you when a specific function does not.], the formula method creates columns of binary 0/1 to replace the original factor column. Since there are `r length(levels(ames_train$Bldg_Type))` possible values of `Bldg_Type`, the formula creates `r length(levels(ames_train$Bldg_Type)) - 1` columns of indicator variables, each corresponding to a specific level. The first factor level is excluded by default. This is discussed more in [_Working with Categorical Predictors_](https://aml4td.org/chapters/categorical-predictors.html#sec-indicators). 
 
 ```{r}
 #| label: factor-pred-cols

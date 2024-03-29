@@ -95,7 +95,7 @@ We'll look at two primary methods for creating indicator (a.k.a. "dummy") variab
 
 ## Base R formulas {#sec-base-r-indicators}
 
-Base R’s formula method, described in @sec-r-formulas, automatically creates indicators when the formula includes a factor predictor. For example: 
+Base R’s formula method, discussed previously in @sec-r-formulas, automatically creates indicators when the formula includes a factor predictor. For example: 
 
 ```{r}
 #| label: base-r-indicators
