@@ -86,7 +86,14 @@ hotel_rate_train <- training(hotel_rate_split)
 hotel_rate_test  <- testing(hotel_rate_split)
 ```
 
+`initial_time_split()` will reserve that most recent 25% for the test set. It assumes that the data are arranged in time and takes that last part of the data for testing (assumed to be the most recent). 
+
+
 ## Simple Indicator Variables
+
+We'll look at two primary methods for creating indicator (a.k.a. "dummy") variables. 
+
+## Base R formulas
 
 Base R’s formula method, described in @sec-r-formulas, automatically creates indicators when the formula includes a factor predictor. For example: 
 
@@ -105,6 +112,8 @@ customer_types %>%
 ```
 
 Note that the column name and the factor levels are directly concatenated. 
+
+`model.matrix()` is part of the larger base R preprocessing framework and always returns a matrix (by default, with an intercept column). There is also `model.frame()`. This returns a data frame without creating indicator columns or interactions. It does execute any in-line functions and only returns the columns involved in the formula. 
 
 When the factor has missing values, the default behavior is _to remove the offending row_:
 
@@ -133,7 +142,6 @@ options()$na.action
 
 To keep the number of rows intact, you can set the global option to be `na.pass`: 
 
-
 ```{r}
 #| label: keep-na
 
@@ -149,6 +157,21 @@ options(orig_options)
 options()$na.action
 ```
 
+In R, the word “contrast” refers to the algorithm used to create different types of indicators ^[In statistics, “contrasts” typically indicates a combination of parameters. For example, if you wanted to test that the average of two parameters was equal to a third, the contrast would be $\beta_1 + \beta_2 - 2\beta_3$ and the contrast coefficients would be `c(1, 1, -2)`.]. Global options control this (for the most part) and the defaults are:
+
+```{r}
+#| label: default-contrasts
+
+options()$contrast
+
+# with possible options: 
+apropos("contr\\.")
+```
+
+Many packages also have [additional contrast functions](https://search.r-project.org/?FMT=query&P=contr.&HITSPERPAGE=20&SORT=&DB=cran-help&DB=cran-info&DB=cran-news&DB=r-help&DB=r-manuals&DB=cran-readme&DB=cran-views&DB=cran-vignettes&DEFAULTOP=and).
+
+### Recipes
+
 We can also use a recipe to do this (with more functionality):
 
 ```{r}
@@ -162,7 +185,7 @@ bake(ind_rec, customer_types, starts_with("customer_type"))
 bake(ind_rec, with_missing, starts_with("customer_type"))
 ```
 
-There is no need to set the global option. 
+There is no need to set the global option for `na.action`. 
 
 Also, the naming of features is more rational, with names and levels separated by an underscore. There is also an argument to `step_dummy()` that controls the naming of new features. 
 
