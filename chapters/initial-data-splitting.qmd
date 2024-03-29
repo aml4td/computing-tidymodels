@@ -47,8 +47,12 @@ req_pkg <- c("caret", "tidymodels")
 req_pkg <- c("caret", "tidymodels")
 
 # Check to see if they are installed: 
-if (!rlang::is_installed(req_pkg)) {
-  pak::pak(req_pkg)
+pkg_installed <- vapply(req_pkg, rlang::is_installed, logical(1))
+
+# Install missing packages: 
+if ( any(!pkg_installed) ) {
+  install_list <- names(pkg_installed)[!pkg_installed]
+  pak::pak(install_list)
 }
 ```
 

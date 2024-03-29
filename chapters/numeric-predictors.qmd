@@ -1,0 +1,488 @@
+---
+knitr:
+  opts_chunk:
+    cache.path: "../_cache/transformations/"
+---
+
+# Transforming Numeric Predictors {#sec-numeric-predictors}
+
+
+```{r}
+#| label: numeric-transformations-knitr-setup
+#| include: false
+
+knitr::opts_chunk$set(
+    comment = "#>",
+    collapse = TRUE,
+    fig.align = 'center',
+    fig.path = "../figures/",
+    fig.width = 10,
+    fig.height = 6,
+    out.width = "95%",
+    dev = 'svg',
+    dev.args = list(bg = "transparent"),
+    tidy = FALSE,
+    echo = TRUE
+  )
+
+options(digits = 4, width = 84)
+options(dplyr.print_min = 6, dplyr.print_max = 6)
+options(cli.width = 85)
+options(crayon.enabled = FALSE)
+options(pillar.advice = FALSE, pillar.min_title_chars = Inf, pillar.sigfig = 4)
+
+source("../R/_common.R")
+req_pkg <- c("bestNormalize", "embed", "tidymodels", "splines2")
+```
+
+The corresponding [book chapter](https://aml4td.org/chapters/numeric-predictors.html) is concerned with operations to improve how numeric predictor variables are represented in the data prior to modeling. We separate these operations into two categories: 
+
+- _preprocessing_ methods are actions that the _model requires_ such as standardization of variables. 
+- _feature engineering_ transformations are those that your particular data set requires to predict the outcome successfully. 
+
+In either case, we estimate these transformations exclusively from the training set and apply them to any data (e.g., the training set, test set, and/or new or unknown data). This is generally true and applies to upcoming chapters on categorical data and other transformations.
+
+In tidymodels, just about everything you want to do to your predictors can be accomplished using the R formula method or, better still, the `r pkg(recipes)` package. We shall describe both. 
+
+## Requirements
+
+`r pkg_list(req_pkg)`
+
+```{r}
+#| label: numeric-transformations-installs
+#| eval: false
+#| echo: true
+req_pkg <- c("bestNormalize", "embed", "tidymodels", "splines2")
+
+# Check to see if they are installed: 
+pkg_installed <- vapply(req_pkg, rlang::is_installed, logical(1))
+
+# Install missing packages: 
+if ( any(!pkg_installed) ) {
+  install_list <- names(pkg_installed)[!pkg_installed]
+  pak::pak(install_list)
+}
+```
+
+Let's load the meta package and manage some between-package function conflicts. 
+
+```{r}
+#| label: start-tidymodels
+#| results: hide
+#| message: false
+#| warning: false
+library(tidymodels)
+tidymodels_prefer()
+theme_set(theme_bw())
+```
+
+## Data Sets
+
+The data sets used here are both in R packages that have already been installed. Let's work with the primary data set: the Ames Iowa housing data.
+
+In the last chapter, our manipulation and splitting code was: 
+
+```{r}
+#| label: ames-split
+data(ames, package = "modeldata")
+
+ames <-
+  ames %>%
+  select(Sale_Price, Bldg_Type, Neighborhood, Year_Built, Gr_Liv_Area, Full_Bath,
+         Half_Bath, Year_Sold, Lot_Area, Central_Air, Longitude, Latitude) %>%
+  mutate(
+    Sale_Price = log10(Sale_Price),
+    Baths = Full_Bath  + Half_Bath/2
+  ) %>%
+  select(-Half_Bath, -Full_Bath)
+
+set.seed(3024)
+ames_split <- initial_split(ames, strata = Sale_Price, breaks = 5)
+ames_train <- training(ames_split)
+ames_test  <- testing(ames_split)
+```
+
+We'll work with `ames_train` almost exclusively here. 
+
+## Standard R Formulas
+
+Model formulas in R are identical to those in S, which Chambers and Hastie introduced in _Statistical Models in S_ (1991). A broader discussion can be found in two blog posts ([one](https://rviews.rstudio.com/2017/02/01/the-r-formula-method-the-good-parts/) and [two](https://rviews.rstudio.com/2017/03/01/the-r-formula-method-the-bad-parts/)).
+
+The formula has a few basic operators: 
+
+* The tilde (`~`) separates the outcome columns from the predictor columns. Anything to the left is considered an outcome, and the right-hand side defines predictors (e.g., `outcome ~ predictor`
+* A dot is a wildcard for any columns in the data set that are not outcomes (e.g., `y ~ .`). 
+* Plus signs signify the symbolic addition of columns to the formula (typically predictors). For example, `y ~ x1 + x2` indicates one outcome and two predictor columns. To indicate arithmetic addition (or any other computations), you can wrap the items in the identity function `I()` such as `y ~ I(x1 + x2)`. 
+* You can use the minus sign to remove columns. This may not be implemented in some modeling functions. 
+* The colon indicates interaction terms (described in a future chapter). 
+
+There is further syntax described below. 
+
+Here's an example of a basic formula that creates two predictor columns by specifying a symbolic formula comprised of two numeric predictors. 
+
+```{r}
+#| label: two-cont
+f_01 <- Sale_Price ~  Baths + Year_Built
+```
+
+Here's a short function to show basic results:
+
+```{r}
+#| label: show-cols
+show_columns <- function(f) {
+  model.matrix(f, data = ames_train) %>% 
+  tibble::as_tibble() %>% 
+  dplyr::slice(c(1, 3, 9))
+}
+show_columns(f_01)
+```
+
+It does not use row-wise arithmetic additions of the two columns. To do that, you can use the identify function: 
+
+```{r}
+#| label: identity
+# One slope term, not two
+f_02 <- Sale_Price ~  I(Full_Bath + Half_Bath)
+```
+
+Symbolic addition creates separate columns of the data set. In chapter TODO, we'll discuss _main effects_ and _interactions_. The main effects are features composed of a single predictor (as in `f_01` above). Interaction effects are one or more model terms that combine the information of all the predictors in a multiplicative way. There are a few ways to specify them. Here are three methods for specifying two-factor interactions between predictors: 
+
+```{r}
+#| label: interactions
+# `:` is used for specific interactions
+f_03 <- Sale_Price ~  Baths + Year_Built + Baths:Year_Built
+
+# `*` is used to make all interactions of two or more terms
+f_04 <- Sale_Price ~  Baths * Year_Built
+
+# `()^D` makes interactions up to order D of all of the columns
+# within the parenthesis
+f_05 <- Sale_Price ~  (Baths + Year_Built)^2
+
+show_columns(f_05)
+```
+
+For this data set, the right-hand side of `f_05` could be shortened to `(.)^2`.
+
+Since `Baths` and `Year_Built` are both numeric, their interactions are created by simply multiplying their values, i.e., `I(Baths * Year_Built)`. 
+
+By default, the model formula creates an intercept column where the value of each row is 1.0. To prevent the intercept from being added, there are two syntaxes: 
+
+```{r}
+#| label: no-int
+f_06 <- Sale_Price ~  Baths - 1 
+f_07 <- Sale_Price ~  Baths + 0
+
+show_columns(f_07)
+```
+
+What happens with factor predictors? Their specification is the same: 
+
+```{r}
+#| label: factor-pred
+f_08 <- Sale_Price ~  Bldg_Type 
+```
+
+However, _most of the time_^[Some model functions require these binary indicators, and others do not. You should assume they convert factor predictors to binary indicators; we will alter you when a specific function does not.], the formula method creates columns of binary 0/1 to replace the original factor column. Since there are `r length(levels(ames_train$Bldg_Type))` possible values of `Bldg_Type`, the formula creates `r length(levels(ames_train$Bldg_Type)) - 1` columns of indicator variables, each corresponding to a specific level. The first factor level is excluded by default. This is discussed more in Chapter TODO. 
+
+```{r}
+#| label: factor-pred-cols
+# Note that the resulting column names smash the original column
+# name an its factor level together with no delimiter. 
+show_columns(f_08)
+```
+
+For interaction terms, the syntax is the same as the one shown above. In the case of categorical predictors, all combinations of the predictors are created. In the following case, `Central_Air` has two levels. A two-way interaction of these two predictors creates 4 $\times$ 1 = 4 interaction columns. 
+
+```{r}
+#| label: factor-pred-int
+f_09 <- Sale_Price ~  (Bldg_Type + Central_Air)^2
+
+show_columns(f_09)
+```
+
+What happens when you exclude the intercept? All factor levels receive a binary indicator column for a single categorical predictor.
+
+```{r}
+#| label: factor-no-int
+f_10 <- Sale_Price ~  Bldg_Type + 0
+
+show_columns(f_10)
+```
+
+_However_, this may produce unexpected results when multiple factor predictors exist. The first factor in the formula creates all possible indicators (e.g., 5 for `Bldg_Type`) while the others have all but one factor level created. For example, these two formulas would have different columns: 
+
+```{r}
+#| label: multiple-factor-pred
+f_11 <- Sale_Price ~ Bldg_Type + Central_Air + 0
+f_12 <- Sale_Price ~ Central_Air + Bldg_Type + 0
+
+show_columns(f_11) %>% names() %>% sort()
+show_columns(f_12) %>% names() %>% sort()
+```
+
+There model predictions and `anova()` results will be the same but the interpretation of their coefficients will be very different. 
+
+
+You can use in-line functions within a recipe. For example: 
+
+```{r}
+#| label: in-line
+library(splines2)
+f_13 <- Sale_Price ~  log(Gr_Liv_Area) + scale(Lot_Area) + naturalSpline(Latitude, df = 3)
+
+show_columns(f_13)
+```
+
+uses three in-line functions:
+
+ 1. The first is a simple log transformation of the gross living area.
+ 2. The use of `scale()` will compute the mean and standard deviation of `Lot_Area` and use those to center and scale that column. 
+ 3. The function `splines2::naturalSpline()` will create a set of basis functions (described in chapter TODO) that will replace the original `Latitude` column. 
+ 
+In the second and third cases, R's machinery will estimate the relevant statistics and embed them as attributes in the corresponding columns. For each in-line function, the exact same operations are conducted on new data (say when `predict()` is called). 
+
+Finally, be aware that each formula captures the environment in which it was created. For example: 
+
+```{r}
+#| label: env
+environment(f_12)
+
+# The number of objects in the session used to create this web page (up to now):
+length(ls(envir = environment(f_12)))
+```
+
+If an object that used `f_12` is saved to disk, it will also contain the `r length(ls(envir = environment(f_12)))` objects in the global environment. If any of these objects are large, it can unintentionally make the saved data object large. Note that using the base function `object.size()` will not take into account anything stored in the environment (so the binary file size is underestimated). `lobstr::obj_size()` will give a more accurate estimate.
+
+
+The `r pkg(butcher)` package has tools to strip off these unneeded objects from formulas (or objects that contain formulas). Also, `butcher::weigh()` returns a tibble with the size of each element contained in the object (if any).
+
+
+## What is a Recipe? 
+
+A recipe is a set of sequential steps that specify what operations should be conducted on a set of predictors. Operations could include: 
+
+- Modifying a predictor’s encoding (e.g., date to month/day/year columns)
+- Adding new features, such as basis expansions.
+- Standardizing or transforming individual predictors. 
+- Feature extraction or embeddings on multiple predictors.  
+- Removing features.  
+
+Recipes can be used by themselves or as part of a modeling pipeline. For illustration, we’ll show how to use them directly.  The process is to 
+
+```
+specify -> estimate -> apply
+```
+
+the recipe. In terms of syntax, the analogous functions are: 
+
+```
+recipe() -> prep() -> bake()
+```
+
+We’ll start simply by trying to “unskew” a predictor’s distribution. 
+
+## Resolving Skewness
+
+The main text mentions that the distribution of the `Lot_Area` variable is skewed. Let's see what that looks like. 
+
+```{r}
+#| label: lot-area-skew
+#| fig-width: 6
+#| fig-height: 3.25
+#| out-width: 60%
+
+ames_train %>% 
+  ggplot(aes(Lot_Area)) + 
+  geom_histogram(bins = 30, col = "white", fill = "#8E195C", alpha = 1 / 2) +
+  geom_rug(alpha = 1 / 2, length = unit(0.03, "npc"), linewidth = 1) +
+  labs(x = "Lot Area")
+```
+
+To get started, we initialize a recipe with the `recipe()` function and a data set:
+
+```{r}
+unskew_rec <- recipe(Sale_Price ~ ., data = ames_train)
+```
+
+The formula method doesn’t do much here: it records the outcome (columns to the left of `~`), which are predictors (to the right of `~` ), and their data types. Note that the `.` in the formula means that all columns, except those to the left, should be considered predictors. When using a formula to start a recipe, keep it simple. It won’t accept any in-line functions (like `sqrt()` or `log()`); it wants you to change the variables inside of _recipe steps_. 
+
+Regarding the `data` argument: _any_ data set with the appropriate columns could be used. The initial recipe work is just cataloging the columns. You could even use a “zero row slice” such as `ames_train[0,]` and get the same results. You might want to do something like this if you have a very large training set (to reduce the in-memory footprint). The main advantage of using `ames_train` is convenience (as we’ll see later). 
+
+We’ll add different recipe step functions from this initial object to declare what we want to do. Let’s say we will transform the lot area column using the Yeo-Johnsom transformation. To do this: 
+
+```{r}
+#| label: yj-step
+
+unskew_rec <- 
+  recipe(Sale_Price ~ ., data = ames_train) %>% 
+  step_YeoJohnson(Lot_Area)
+
+# or use a dplyr selector:
+unskew_rec <- 
+  recipe(Sale_Price ~ ., data = ames_train) %>% 
+  step_YeoJohnson(any_of("Lot_Area"))
+
+unskew_rec
+```
+
+or `starts_with("Lot_")` and so on. 
+
+This only specifies what we want to do. Recall that the Yeo-Johnson transformation _estimates_ a transformation parameter from the data. To estimate the recipe, use `prep()`: 
+
+```{r}
+#| label: yj-prep
+
+unskew_rec <- prep(unskew_rec)
+
+# or, to use a different data set: 
+unskew_rec <- prep(unskew_rec, training = ames_train)
+unskew_rec
+```
+
+Note that the printed recipe shows that `Lot_Area` was resolved from the original request for `any_of("Lot_Area")`. 
+
+What was the estimate of the transformation parameter? The `tidy()` method can tell us: 
+
+```{r}
+#| label: yj-tidy
+
+# Get the list of steps: 
+tidy(unskew_rec)
+
+# Get information about the first step: 
+tidy(unskew_rec, number = 1)
+```
+
+Now that we have a trained recipe, we can use it via `bake()`: 
+
+```{r}
+#| label: yj-bake
+
+# Get the list of steps: 
+bake(unskew_rec, new_data = head(ames_train))
+```
+
+Did it work? Let's look at the whole training set: 
+
+```{r}
+#| label: lot-area-unskew
+#| fig-width: 6
+#| fig-height: 3.25
+#| out-width: 60%
+
+unskew_rec %>% 
+  bake(new_data = ames_train) %>% 
+  ggplot(aes(Lot_Area)) +
+  geom_rug(alpha = 1 / 2, length = unit(0.03, "npc"), linewidth = 1) + 
+  geom_histogram(bins = 30, col = "white", fill = "#8E195C", alpha = 1 / 2) +
+  labs(x = "Lot Area")
+```
+
+One shortcut we can take: the recipe has to apply each step to the training data after it estimates the step. By default, the recipe object saves the processed version of the data set. This can be turned off using the `retain = FALSE` option to `prep()`.  Since the training set is already in the recipe, we can get it with no additional computations using 
+
+```r
+bake(unskew_rec, new_data = NULL) 
+```
+
+The main site mentions a few other methods that could be used besides Yeo-Johnson: 
+
+ - Box-Cox: `step_BoxCox()`
+ - Percentile: `step_percentile()` 
+ - orderNorm: `step_orderNorm()`
+
+Note that the last method has its step function in the `r pkg(bestNormalize)` package; various recipe extension packages can be used. A [**full set of recipe steps**](https://www.tidymodels.org/find/recipes/) for CRAN packages is available on `tidymodels.org`. 
+
+There is also a general step for _simple_ computations that do not need to be estimated. If we were to log transform the data, we would use: 
+
+```r
+recipe(Sale_Price ~ ., data = ames_train) %>% 
+  step_mutate(Lot_Area = log10(Lot_Area))
+```
+
+Other single variable transformations can be found in the following R packages: `r pkg(car)`, `r pkg(trafo)`, and `r pkg(Transform)`. 
+
+## More on Recipe Selectors
+
+The previous section showed a recipe step that operated on a single column. You can select one or more predictors in a variety of different ways within a recipe: 
+
+ - Bare, unquoted column names such as `Lot_Area`.
+ - `r pkg(dplyr)` package selectors, including `starts_with()`, `contained()`, and so on. 
+ - Special, recipe-only selectors: 
+    - Role-based: `all_predictors()`, `all_outcomes()`, and so on. 
+    - Type-based: `all_numeric()`, `all_factor()`, ...
+    - Combinations: `all_numeric_predictors()` etc. 
+
+Two important `r pkg(dplyr)` selectors are `all_of()` and `any_of()`. These take character vectors of column names as inputs. `all_of()` will select all of the columns in the vector and will fail if they are not all present when the recipe step is executed. `any_of()` will select any of the columns that are given and won’t fail, even if none are available. 
+
+This is important for a few reasons. Some steps can combine or eliminate columns. A recipe should be fault tolerant; if the previous step removed column `A` and the next step strictly requires it, it will fail. However, if `any_of(c("A"))` is used, it will not ^[More accurately, it will _probably_ be fine. Most steps are permissive; others are not. The previously described `step_mutate()` would fail if `Lot_Area` was previously eliminated.]. 
+
+There is a [documentation page](https://recipes.tidymodels.org/reference/selections.html) for recipe selectors as well as the [reference page](https://recipes.tidymodels.org/reference/has_role.html).
+
+## Standardizing to a common scale 
+
+The two main steps for standardizing columns to have the same units are `step_normalize()` and `step_range()`. A common pattern for the former is: 
+
+```{r}
+#| label: step-norm
+
+norm_rec <- 
+  unskew_rec %>% 
+  step_zv(all_predictors()) %>% 
+  step_normalize(all_numeric_predictors())
+
+norm_rec
+```
+
+`step_zv()` is for removing "zero-variance" (zv) predictors. These are columns with a single unique value. Since `step_normalize()` will try to divide by a column's standard deviation, this will fail if there is no variation in the column. `step_zv()` will remove such columns that exist in the training set. 
+
+We recycled the previous recipe, which has already been trained. Note that in the output above, only the first step is labeled as “`Trained`”. When we run `prep()` on this recipe, it only estimates the remaining two steps. 
+
+Again, once we prep(are) the recipe, we can use `bake()` to get the normalized data. 
+
+Another important point is that recipes are designed to utilize different data sets appropriately. The training set is used with `prep()` and ensures that all the estimations are based on it. There is, as is appropriate, no re-estimation of quantities when new data are processed. 
+
+## Spatial Sign
+
+Unsurprisingly, the step to compute the spatial sign is `step_spatialsign()`. It projects two or more numeric columns onto a multidimensional hypersphere. The resulting data has columns the same name as the input: 
+
+
+```{r}
+#| label: step-sp-sign
+library(bestNormalize)
+
+sp_sign_rec <- 
+  recipe(Sale_Price ~ Lot_Area + Gr_Liv_Area, data = ames_train) %>% 
+  step_YeoJohnson(any_of(c("Lot_Area", "Gr_Liv_Area"))) %>% 
+  step_zv(all_predictors()) %>% 
+  step_orderNorm(all_numeric_predictors()) %>% 
+  step_spatialsign(all_numeric_predictors()) %>% 
+  prep()
+
+sp_sign_data <- bake(sp_sign_rec, new_data = NULL)
+sp_sign_data
+```
+
+
+```{r}
+#| label: sp-sign
+#| fig-width: 4
+#| fig-height: 4
+#| out-width: 40%
+
+sp_sign_data %>% 
+  ggplot(aes(Lot_Area, Gr_Liv_Area)) +
+  geom_point(cex =  2, alpha = 1 / 10, pch = 1) +
+  coord_equal() 
+```
+
+## Other resources for learning about recipes:
+
+- `tidymodels.org`: [_Preprocess your data with recipes_](https://www.tidymodels.org/start/recipes/)
+- _TMwR_ chapter: [_Feature Engineering with recipes_](https://www.tmwr.org/recipes)
+- _TMwR_ chapter: [_Dimensionality Reduction_](https://www.tmwr.org/dimensionality)
+- 2023 Posit conference workshop slides:  [_Intro: Using recipes_](https://workshops.tidymodels.org/archive/2023-09-posit-conf/intro-extra-recipes.html)
+- 2023 Posit conference workshop slides: [_Feature engineering using recipes_](https://workshops.tidymodels.org/archive/2023-09-posit-conf/advanced-02-feature-engineering.html#/title-slide)
+- [_Roles in recipes_](https://recipes.tidymodels.org/articles/Roles.html)
+- [_Ordering of steps_](https://recipes.tidymodels.org/articles/Ordering.html)
+- Stackoverflow Questions tagged [`[r-recipes]`](https://stackoverflow.com/questions/tagged/r-recipes)

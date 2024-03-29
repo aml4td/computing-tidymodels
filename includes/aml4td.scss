@@ -46,8 +46,11 @@ h1, h2, h3, h4 {
   color: $scarlet;
 }
 
-code {
-    color: $blue-screen-o-death;
+code:not(.sourceCode){
+    color: #4758AB;
+    font-size: .95rem;
+    background-color: $whiteblue !important;
+    padding: 0em !important;
 }
 
 span.pkg {  
