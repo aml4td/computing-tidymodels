@@ -2,19 +2,21 @@ Type: Quarto
 Package: aml4td.tidymodels
 Title: tidymodels computing supplement
 Version: 0.0.1.9000
-Authors@R: c(
+Authors@R: 
     person("Max", "Kuhn", , "mxkuhn@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0003-2402-136X"))
-  )
 Description: Sources to build books.
 License: CC BY-SA (see license file)
 Imports: 
+    bestNormalize,
     brulee (>= 0.2.0),
+    caret,
     cli,
     Cubist,
     devtools,
     dials,
     doParallel,
+    downlit,
     dplyr,
     e1071,
     ggplot2,
@@ -34,6 +36,7 @@ Imports:
     purrr,
     ragg,
     recipes,
+    rmarkdown,
     rsample,
     rstudioapi,
     rules,
@@ -50,11 +53,13 @@ Imports:
     usethis,
     workflows,
     workflowsets,
-    yardstick (>= 1.1.0.9000),
-    yaml
+    xml2,
+    yaml,
+    yardstick (>= 1.1.0.9000)
 Suggests: 
     testthat (>= 3.0.0)
 Remotes:
+    r-lib/downlit,
     tidymodels/textrecipes
 Config/testthat/edition: 3
 Encoding: UTF-8
