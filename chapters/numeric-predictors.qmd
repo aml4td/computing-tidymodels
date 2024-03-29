@@ -35,7 +35,7 @@ source("../R/_common.R")
 req_pkg <- c("bestNormalize", "embed", "tidymodels", "splines2")
 ```
 
-This chapter is concerned with operations to improve how numeric predictor variables are represented in the data prior to modeling. We separate these operations into two categories: 
+The corresponding [book chapter](https://aml4td.org/chapters/numeric-predictors.html) is concerned with operations to improve how numeric predictor variables are represented in the data prior to modeling. We separate these operations into two categories: 
 
 - _preprocessing_ methods are actions that the _model requires_ such as standardization of variables. 
 - _feature engineering_ transformations are those that your particular data set requires to successfully predict the outcome. 
