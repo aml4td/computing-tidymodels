@@ -89,11 +89,11 @@ hotel_rate_test  <- testing(hotel_rate_split)
 `initial_time_split()` will reserve that most recent 25% for the test set. It assumes that the data are arranged in time and takes that last part of the data for testing (assumed to be the most recent). 
 
 
-## Simple Indicator Variables
+## Simple Indicator Variables {#sec-indicators}
 
 We'll look at two primary methods for creating indicator (a.k.a. "dummy") variables. 
 
-## Base R formulas
+## Base R formulas {#sec-base-r-indicators}
 
 Base R’s formula method, described in @sec-r-formulas, automatically creates indicators when the formula includes a factor predictor. For example: 
 
@@ -170,7 +170,7 @@ apropos("contr\\.")
 
 Many packages also have [additional contrast functions](https://search.r-project.org/?FMT=query&P=contr.&HITSPERPAGE=20&SORT=&DB=cran-help&DB=cran-info&DB=cran-news&DB=r-help&DB=r-manuals&DB=cran-readme&DB=cran-views&DB=cran-vignettes&DEFAULTOP=and).
 
-### Recipes
+### Recipes {#sec-recipe-indicators}
 
 We can also use a recipe to do this (with more functionality):
 
@@ -191,7 +191,7 @@ Also, the naming of features is more rational, with names and levels separated b
 
 There is also an option to produce one-hot encodings called... `one_hot`.
 
-## Novel Categories
+## Novel Categories {#sec-recipe-novel}
 
 When we think the recipe or model will encounter new values of a factor predictor, we can use `step_novel()` to add a new factor level: 
 
@@ -208,7 +208,7 @@ recipe(avg_price_per_room ~ customer_type, data = hotel_rate_train) %>%
 
 For the training set, this new level will never have any data associated with it. 
 
-## “Othering”
+## “Othering” {#sec-recipe-other}
 
 We can also determine infrequently occurring categories (in the training set) and re-level the factor by converting them to an “other” category. If we chose a frequency of 0.01% as a cutoff, we have far fewer levels:
 
@@ -228,7 +228,7 @@ recipe(avg_price_per_room ~ agent, data = hotel_rate_train) %>%
 
 If you are interested in which levels are combined, the `tidy()` method on the recipe can tell you. 
 
-## Feature Hashing
+## Feature Hashing {#sec-recipe-hashing}
 
 Feature hashing converts qualitative predictors to a set of binary indicators based solely on the value of their category. It is most useful when many categories and/or novel levels might be encountered. 
 
@@ -245,7 +245,7 @@ recipe(avg_price_per_room ~ agent, data = hotel_rate_train) %>%
   bake(new_data = NULL, contains("agent")) 
 ```
 
-## Effect Encodings
+## Effect Encodings  {#sec-recipe-effect-encode}
 
 Effect embedding is a supervised method to convert qualitative predictors to a numeric column that contains the _effect_ of the category on the outcome. The outcome is a numeric value (the ADR) for these data. Using effect endings here will produce a column with specialized estimates of each category’s mean ADR. Let’s look at the agent predictor again. 
 
@@ -290,7 +290,7 @@ bake(encoded_agent_rec, hotel_rate_test) %>%
 
 For categorical outcomes, the effect estimate is the log-odds of an event (the first factor level).
 
-## Supervised Combining of Categories
+## Supervised Combining of Categories  {#sec-recipe-collapse}
 
 To [collapse](https://aml4td.org/chapters/categorical-predictors.html#sec-combining-categories) a large number of factor levels to a smaller set using a supervised model, we can use `step_collapse_cart()`  in the `r pkg(embed)` package. 
 
@@ -327,7 +327,7 @@ There are two main tuning parameters (described later in section TODO):
  
 These values can be tuned. 
 
-## Working with Ordinal Predictors
+## Working with Ordinal Predictors  {#sec-recipe-ordinal}
 
 As reported in [the section on ordinal data](https://aml4td.org/chapters/categorical-predictors.html#encodings-for-ordinal-predictors), the default for R is to encode ordinal values with $p$ values is to create a set of $p - 1$ orthogonal polynomial features.  That is what `step_dummy()` does by default. 
 
