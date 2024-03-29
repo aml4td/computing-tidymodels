@@ -55,6 +55,7 @@ book:
   - part: "Preparation"
   - chapters/initial-data-splitting.qmd
   - chapters/numeric-predictors.qmd
+  - chapters/categorical-predictors.qmd  
   - part: "Optmization"
   - part: "Classification"  
   - part: "Regression"  

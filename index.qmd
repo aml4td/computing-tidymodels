@@ -37,7 +37,7 @@ cat(cite)
 
 ## Intended Audience {.unnumbered}
 
-Readers should have used R before but do not have to be experts. If you are new to R, we suggest taking a look at _R for Data Science_. 
+Readers should have used R before but do not have to be experts. If you are new to R, we suggest taking a look at [_R for Data Science_](https://r4ds.hadley.nz/). 
 
 You do not have to be a modeling expert either. We hope that you have used a linear or logistic regression before and understand basic statistical concepts such as correlation, variability, probabilities, etc. 
 

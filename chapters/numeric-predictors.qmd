@@ -76,7 +76,7 @@ tidymodels_prefer()
 theme_set(theme_bw())
 ```
 
-## Data Sets
+## Data Sets {#sec-hotel-data-intro}
 
 The data sets used here are both in R packages that have already been installed. Let's work with the primary data set: the Ames Iowa housing data.
 
@@ -104,7 +104,7 @@ ames_test  <- testing(ames_split)
 
 We'll work with `ames_train` almost exclusively here. 
 
-## Standard R Formulas
+## Standard R Formulas {#sec-r-formulas}
 
 Model formulas in R are identical to those in S, which Chambers and Hastie introduced in _Statistical Models in S_ (1991). A broader discussion can be found in two blog posts ([one](https://rviews.rstudio.com/2017/02/01/the-r-formula-method-the-good-parts/) and [two](https://rviews.rstudio.com/2017/03/01/the-r-formula-method-the-bad-parts/)).
 
@@ -183,7 +183,7 @@ What happens with factor predictors? Their specification is the same:
 f_08 <- Sale_Price ~  Bldg_Type 
 ```
 
-However, _most of the time_^[Some model functions require these binary indicators, and others do not. You should assume they convert factor predictors to binary indicators; we will alter you when a specific function does not.], the formula method creates columns of binary 0/1 to replace the original factor column. Since there are `r length(levels(ames_train$Bldg_Type))` possible values of `Bldg_Type`, the formula creates `r length(levels(ames_train$Bldg_Type)) - 1` columns of indicator variables, each corresponding to a specific level. The first factor level is excluded by default. This is discussed more in Chapter TODO. 
+However, _most of the time_^[Some model functions require these binary indicators, and others do not. You should assume they convert factor predictors to binary indicators; we will alter you when a specific function does not.], the formula method creates columns of binary 0/1 to replace the original factor column. Since there are `r length(levels(ames_train$Bldg_Type))` possible values of `Bldg_Type`, the formula creates `r length(levels(ames_train$Bldg_Type)) - 1` columns of indicator variables, each corresponding to a specific level. The first factor level is excluded by default. This is discussed more in [_Working with Categorical Predictors_](https://aml4td.org/chapters/categorical-predictors.html#sec-indicators). 
 
 ```{r}
 #| label: factor-pred-cols
@@ -258,7 +258,7 @@ If an object that used `f_12` is saved to disk, it will also contain the `r leng
 The `r pkg(butcher)` package has tools to strip off these unneeded objects from formulas (or objects that contain formulas). Also, `butcher::weigh()` returns a tibble with the size of each element contained in the object (if any).
 
 
-## What is a Recipe? 
+## What is a Recipe? {#sec-recipe-intro}
 
 A recipe is a set of sequential steps that specify what operations should be conducted on a set of predictors. Operations could include: 
 
@@ -282,7 +282,7 @@ recipe() -> prep() -> bake()
 
 We’ll start simply by trying to “unskew” a predictor’s distribution. 
 
-## Resolving Skewness
+## Resolving Skewness {#sec-recipe-skewness}
 
 The main text mentions that the distribution of the `Lot_Area` variable is skewed. Let's see what that looks like. 
 
@@ -402,7 +402,7 @@ recipe(Sale_Price ~ ., data = ames_train) %>%
 
 Other single variable transformations can be found in the following R packages: `r pkg(car)`, `r pkg(trafo)`, and `r pkg(Transform)`. 
 
-## More on Recipe Selectors
+## More on Recipe Selectors {#sec-recipe-selectors}
 
 The previous section showed a recipe step that operated on a single column. You can select one or more predictors in a variety of different ways within a recipe: 
 
@@ -419,7 +419,7 @@ This is important for a few reasons. Some steps can combine or eliminate columns
 
 There is a [documentation page](https://recipes.tidymodels.org/reference/selections.html) for recipe selectors as well as the [reference page](https://recipes.tidymodels.org/reference/has_role.html).
 
-## Standardizing to a common scale 
+## Standardizing to a common scale {#sec-recipe-standardize}
 
 The two main steps for standardizing columns to have the same units are `step_normalize()` and `step_range()`. A common pattern for the former is: 
 
@@ -442,7 +442,7 @@ Again, once we prep(are) the recipe, we can use `bake()` to get the normalized d
 
 Another important point is that recipes are designed to utilize different data sets appropriately. The training set is used with `prep()` and ensures that all the estimations are based on it. There is, as is appropriate, no re-estimation of quantities when new data are processed. 
 
-## Spatial Sign
+## Spatial Sign {#sec-recipe-spatialp-sign}
 
 Unsurprisingly, the step to compute the spatial sign is `step_spatialsign()`. It projects two or more numeric columns onto a multidimensional hypersphere. The resulting data has columns the same name as the input: 
 
@@ -476,7 +476,7 @@ sp_sign_data %>%
   coord_equal() 
 ```
 
-## Other resources for learning about recipes:
+## Other resources for learning about recipes {#sec-recipe-resources}
 
 - `tidymodels.org`: [_Preprocess your data with recipes_](https://www.tidymodels.org/start/recipes/)
 - _TMwR_ chapter: [_Feature Engineering with recipes_](https://www.tmwr.org/recipes)
