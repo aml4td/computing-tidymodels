@@ -128,7 +128,6 @@ barley_rec <-
 barley_rec
 ```
 
-
 Most of the embedding methods can be computed with a common interface if you use a recipe. The recipe step functions are mostly in the `r pkg(recipes)` package although some live in “side packages” such as the `r pkg(embed)` package. We’ll be clear about which package is needed for each. 
 
 ## Linear Transformations  {#sec-linear-embed}
