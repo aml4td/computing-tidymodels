@@ -1,0 +1,243 @@
+---
+knitr:
+  opts_chunk:
+    cache.path: "../_cache/interactions-nonlinear/"
+---
+
+# Interactions and Nonlinear Features {#sec-interactions-nonlinear}
+
+
+```{r}
+#| label: interactions-nonlinear-knitr-setup
+#| include: false
+
+knitr::opts_chunk$set(
+    comment = "#>",
+    collapse = TRUE,
+    fig.align = 'center',
+    fig.path = "../figures/",
+    fig.width = 10,
+    fig.height = 6,
+    out.width = "95%",
+    dev = 'svg',
+    dev.args = list(bg = "transparent"),
+    tidy = FALSE,
+    echo = TRUE
+  )
+
+options(digits = 4, width = 84)
+options(dplyr.print_min = 6, dplyr.print_max = 6)
+options(cli.width = 85)
+options(crayon.enabled = FALSE)
+options(pillar.advice = FALSE, pillar.min_title_chars = Inf, pillar.sigfig = 4)
+
+source("../R/_common.R")
+req_pkg <- c("aorsf", "gt", "hstats", "tidymodels")
+```
+
+
+This chapter is focused on how predictors can enter the model in a nonlinear fashion. The three approaches discussed are interaction effects, basis expansions, and discretization. 
+
+## Requirements
+
+`r pkg_list(req_pkg)`
+
+```{r}
+#| label: interactions-nonlinear-installs
+#| eval: false
+#| echo: true
+req_pkg <- c("aorsf", "gt", "hstats", "tidymodels")
+
+# Check to see if they are installed: 
+pkg_installed <- vapply(req_pkg, rlang::is_installed, logical(1))
+
+# Install missing packages: 
+if ( any(!pkg_installed) ) {
+  install_list <- names(pkg_installed)[!pkg_installed]
+  pak::pak(install_list)
+}
+```
+
+Let's load the meta package and manage some between-package function conflicts. 
+
+```{r}
+#| label: start-tidymodels
+#| results: hide
+#| message: false
+#| warning: false
+library(tidymodels)
+tidymodels_prefer()
+theme_set(theme_bw())
+```
+
+## Interactions {#sec-interactions}
+
+As the text mentions, interactions involve two or more predictors (of any data type). An interaction means that the relationship between the outcome and the predictors involved cannot be articulated by looking at one predictor at a time;  they act in concert.  
+
+To get started, let's once again load the food delivery data and use the same split:
+
+```{r}
+#| label: load-delivery-data
+
+data(deliveries, package = "modeldata")
+
+set.seed(991)
+delivery_split <- initial_validation_split(deliveries, prop = c(0.6, 0.2), 
+                                           strata = time_to_delivery)
+delivery_train <- training(delivery_split)
+delivery_test  <- testing(delivery_split)
+delivery_val   <- validation(delivery_split)
+```
+
+We’ll consider two mechanisms to encode interaction columns: via the base R formula method and with recipes. 
+
+### Interactions with Model Formulas
+
+This was briefly discussed in @sec-r-formulas. 
+
+The main operator that creates interactions is the colon. Using `a:b` within a formula will create the appropriate columns that encode the interactions. The specifics depend on what type of data are in columns `a` and `b`: 
+
+- If both are numeric, an additional column, which is their product, is added to the model matrix. By default, the base R formula method gives it the name `"a:b"`. 
+
+- If one is numeric and the other is categorical, R first converts the categorical (i.e., factor) column into binary indicator variables, then makes columns that are the produce of each indicator column and the original numeric column. 
+
+- If both are categorical, indicators are made for both and then their corresponding product pairs are created (binary times binary columns). 
+
+Let's make a small example to demonstrate: 
+
+```{r}
+#| label: interaction-examples
+library(gt)
+
+interaction_example <- 
+  delivery_test %>% 
+  slice(1, .by = day) %>% 
+  select(day, hour, distance) %>% 
+  arrange(day)
+
+interaction_example %>% gt()
+```
+
+For two numeric predictors: 
+
+```{r}
+#| label: quant-quant-int
+model.matrix(~ hour + distance + hour:distance, interaction_example) %>% 
+  as_tibble() %>% 
+  select(-`(Intercept)`) %>% 
+  gt()
+```
+
+One numeric and one factor predictor: 
+
+```{r}
+#| label: quant-qual-int
+model.matrix(~ day + distance + day:distance, interaction_example) %>% 
+  as_tibble() %>% 
+  select(-`(Intercept)`) %>% 
+  gt()
+```
+
+If you want to make all possible interactions, you can use the dot and exponent operator:
+
+```{r}
+#| label: int-dots
+#| eval: false
+
+# All possible two-way interactions:
+model.matrix(~ (.)^2, interaction_example)
+
+# All possible two- and three-way interactions, etc:
+model.matrix(~ (.)^3, interaction_example)
+```
+
+### Interactions from Recipes
+
+The `r pkg(recipes)` has `step_interact()`. This step is very atypical since it uses a formula to specify the inputs (rather than a set of `r pkg(dplyr)` selectors). It also requires all columns used to be already converted to indicators (perhaps using `step_dummy()`). 
+
+The formula passed to `step_interact()` also uses colons to declare interactions, but it has two special differences from base R formulas: 
+
+ - you can use `r pkg(dplyr)` selectors to select the columns to interact with and
+ - the resulting interaction columns use `_x_` as the default seperator in the names.  
+
+For continuous/continuous interactions: 
+
+```{r}
+#| label: quant-quant-int-rec
+recipe(~ hour + distance, data = interaction_example) %>% 
+  step_interact(~ hour:distance) %>% 
+  prep() %>% 
+  bake(new_data = NULL) %>% 
+  gt()
+```
+
+For categorical/continuous combinations, we use `step_dummy()` first and then a selector to make the interactions
+
+
+```{r}
+#| label: qual-quant-int-rec
+recipe(~ day + hour, data = interaction_example) %>% 
+  step_dummy(all_factor_predictors()) %>% 
+  step_interact(~ starts_with("day_"):hour) %>% 
+  prep() %>% 
+  bake(new_data = NULL) %>% 
+  gt()
+```
+
+### Detecting Interactions {#sec-interactions-detection} 
+
+A few different packages can compute $H$-statistics (and similar quantities): 
+
+- `r pkg(hstats)`
+- `r pkg(pre)`, specifically the [`interact()`](https://github.com/marjoleinF/pre?tab=readme-ov-file#assessing-presence-of-interactions) and `bsnullinteract()` functions
+- `r pkg(bartMachine)` has `interaction_investigator()`
+- `r pkg(aorsf)` has [`orsf_vint()`](https://docs.ropensci.org/aorsf/reference/orsf_vint.html)
+
+and so on. We’ll focus on the first since the other functions are tied to specific models. 
+
+For this chapter, we fit an oblique random forest model to compute the $H$-statistics. We'll defer the details of that model fit until a later chapter but the code was: 
+
+```{r}
+#| label: orf-fit
+library(aorsf)
+
+p <- ncol(delivery_train) - 1
+
+set.seed(1)
+orf_fit <- orsf(time_to_delivery ~ ., data = delivery_train, mtry = p, n_tree = 50)
+```
+
+_Any_ ML model can be used with the `r pkg(hstats)` package. We'll use the validation set to compute the values; this lends more validity to the values (although we could have used the training set). There are a lot of computations here; this may take a bit to compute: 
+
+```{r}
+#| label: orf-hstats
+#| cache: true
+
+library(hstats)
+
+set.seed(218)
+orf_hstats <-
+  hstats(orf_fit,
+         X = delivery_val %>% dplyr::select(-time_to_delivery),
+         # Prioritize the top 10 individual predictors for computing potential
+         # pairwise interactions.
+         pairwise_m = 10,
+         # We can run a little faster by using quantiles to approximate the 
+         # predictor distributions. 
+         approx = TRUE,
+         # How many random data points are used for the computations.
+         n_max = 1000,
+         verbose = FALSE)
+
+orf_two_way_int_obj <- h2_pairwise(orf_hstats, zero = TRUE)
+orf_two_way_int_obj
+```
+
+From these results, we could add more terms by adding another layer of `step_interact()` to our recipe.
+
+## Polynomial Basis Expansions {#sec-polynomials}
+
+## Spline Functions {#sec-splines}
+
+## Discretization
+
