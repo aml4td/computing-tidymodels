@@ -59,9 +59,12 @@ pkg_installed <- vapply(req_pkg, rlang::is_installed, logical(1))
 # Install missing packages: 
 if ( any(!pkg_installed) ) {
   install_list <- names(pkg_installed)[!pkg_installed]
+  
   # mixOmics is not on CRAN
   cran_install_list <- install_list[install_list != "mixOmics"]
-  pak::pak(cran_install_list)
+  if ( length(cran_install_list) > 0 ) {
+    pak::pak(cran_install_list)
+  }
   
   # Get mixOmics from github
   if ( "mixOmics" %in% install_list ) {
@@ -165,8 +168,7 @@ Since we used `num_comp = 2`, there are 2 new features that are generated:
 ```{r}
 #| label: pca-scores
 barley_pca_rec %>% 
-  bake(new_data = NULL, starts_with("PC")) %>% 
-  names()
+  bake(new_data = NULL, starts_with("PC"))
 ```
 
 
