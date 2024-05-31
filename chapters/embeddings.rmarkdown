@@ -4,7 +4,15 @@ knitr:
     cache.path: "../_cache/embeddings/"
 ---
 
+
+
+
+
 # Embeddings {#sec-embeddings}
+
+
+
+
 
 
 ```{r}
@@ -41,9 +49,17 @@ req_pkg_fmt <- purrr::map_chr(req_pkg, ~ pkg_chr(.x))
 ```
 
 
+
+
+
+
 ## Requirements
 
 You’ll need `r length(req_pkg)` packages (`r req_pkg_fmt`) for this chapter. The `r pkg(mixOmics)` is a Bioconductor package and is not on CRAN. For the others, we can install them as usual but we'll get `r pkg(mixOmics)` from GitHub:
+
+
+
+
 
 ```{r}
 #| label: embeddings-installs
@@ -70,7 +86,15 @@ if ( any(!pkg_installed) ) {
 }
 ```
 
+
+
+
+
 Let's load the meta package and manage some between-package function conflicts. 
+
+
+
+
 
 ```{r}
 #| label: start-tidymodels
@@ -86,9 +110,17 @@ tidymodels_prefer()
 theme_set(theme_bw())
 ```
 
+
+
+
+
 ## Example: Predicting Barley Amounts  {#sec-barley}
 
 The data are contained in the `r pkg(modeldatatoo)` package. Let's load the data, remove two outcome columns that will not be analyzed here, and conduct a three-way split of the data: 
+
+
+
+
 
 ```{r}
 library(modeldatatoo)
@@ -107,9 +139,17 @@ barley_val   <- validation(barley_split)
 barley_test  <- testing(barley_split)
 ```
 
+
+
+
+
 The column names for the predictors are `wvlgth_001` through `wvlgth_550`. 
 
 The primary recipe used for almost all of the embedding methods is:
+
+
+
+
 
 ```{r}
 #| label: barley-recipe
@@ -126,11 +166,19 @@ barley_rec
 ```
 
 
+
+
+
+
 ## Linear Transformations  {#sec-linear-embed}
 
 Steps are either in `r pkg(recipes)` or `r pkg(embed)`. Why? 
 
 ### Principal Component Analysis
+
+
+
+
 
 
 ```{r}
@@ -141,7 +189,6 @@ barley_pca_rec <-
   prep()
 ```
 
-
 ```{r}
 #| label: pca-scree-data
 pca_scree <- tidy(barley_pca_rec, id = "pca", type = "variance")
@@ -150,7 +197,15 @@ pca_scree
 pca_scree %>% count(terms)
 ```
 
+
+
+
+
 Note that there are 550 entries for each since there are 550 predictor columns. 
+
+
+
+
 
 ```{r}
 #| label: pca-loadings
@@ -158,9 +213,17 @@ pca_loadings <- tidy(barley_pca_rec, id = "pca")
 pca_loadings
 ```
 
+
+
+
+
 There are `550^2 = 302500` possible loadings. 
 
 Since we used `num_comp = 2`, there are 2 new features that are generated: 
+
+
+
+
 
 ```{r}
 #| label: pca-scores
@@ -168,8 +231,6 @@ barley_pca_rec %>%
   bake(new_data = NULL, starts_with("PC")) %>% 
   names()
 ```
-
-
 
 ```{r}
 #| label: fig-pca-scores
@@ -188,7 +249,6 @@ pca_score_plot <-
 pca_score_plot
 ```
 
-
 ```{r}
 #| label: fig-pca-scores-equal
 #| fig-width: 5
@@ -201,7 +261,15 @@ pca_score_plot + coord_obs_pred()
 
 
 
+
+
+
+
 ### Independent Component Analysis
+
+
+
+
 
 ```{r}
 set.seed(538)
@@ -224,7 +292,6 @@ ica_redo <-
 
 ica_redo %>% tidy(id = "ica")
 ```
-
 
 ```{r}
 #| label: fig-ica-scores
@@ -254,7 +321,15 @@ ica_1 + ica_2
 
 
 
+
+
+
+
 ### Partial Least Squares {#numeric-pls}
+
+
+
+
 
 
 ```{r}
@@ -268,9 +343,17 @@ barley_pls_rec <-
 tidy(barley_pls_rec, id = "pls")
 ```
 
+
+
+
+
 ## Multidimensional Scaling {#sec-mds}
 
 ### Isomap  {#sec-isomap}
+
+
+
+
 
 ```{r}
 #| label: isomap-prep
@@ -284,7 +367,6 @@ barley_isomap_rec <-
   step_isomap(all_numeric_predictors(), neighbors = 10, num_terms = 2) %>% 
   prep()
 ```
-
 
 ```{r}
 #| label: fig-isomap-scores
@@ -303,7 +385,15 @@ barley_isomap_rec %>%
 
 
 
+
+
+
+
 ### UMAP {#sec-umap}
+
+
+
+
 
 ```{r}
 #| label: umap-prep
@@ -313,8 +403,6 @@ barley_umap_rec <-
   step_umap(all_numeric_predictors(), neighbors = 10, num_comp = 2) %>% 
   prep()
 ```
-
-
 
 ```{r}
 #| label: fig-umap-scores
@@ -332,5 +420,10 @@ barley_umap_rec %>%
 ```
 
 
+
+
+
+
 ## Centroid-Based Methods  {#sec-centroids}
+
 
