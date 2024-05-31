@@ -32,21 +32,26 @@ options(crayon.enabled = FALSE)
 options(pillar.advice = FALSE, pillar.min_title_chars = Inf, pillar.sigfig = 4)
 
 source("../R/_common.R")
-req_pkg <- c("bestNormalize", "dimRed", "embed", "fastICA", "igraph", "modeldatatoo", "RANN",
-             "RSpectra", "tidymodels", "uwot")
+req_pkg <- c("bestNormalize", "dimRed", "embed", "fastICA", "igraph", 
+             "mixOmics", "modeldatatoo", "patchwork", "RANN", "RSpectra", 
+             "tidymodels", "uwot", "viridis")
+
+
+req_pkg_fmt <- purrr::map_chr(req_pkg, ~ pkg_chr(.x))
 ```
 
 
 ## Requirements
 
-`r pkg_list(req_pkg)`
+You’ll need `r length(req_pkg)` packages (`r req_pkg_fmt`) for this chapter. The `r pkg(mixOmics)` is a Bioconductor package and is not on CRAN. For the others, we can install them as usual but we'll get `r pkg(mixOmics)` from GitHub:
 
 ```{r}
 #| label: embeddings-installs
 #| eval: false
 #| echo: true
-req_pkg <- c("bestNormalize", "dimRed", "embed", "fastICA", "igraph", "modeldatatoo", "RANN",
-             "RSpectra", "tidymodels", "uwot")
+req_pkg <- c("bestNormalize", "dimRed", "embed", "fastICA", "igraph", 
+             "mixOmics", "modeldatatoo", "patchwork", "RANN", "RSpectra", 
+             "tidymodels", "uwot", "viridis")
 
 # Check to see if they are installed: 
 pkg_installed <- vapply(req_pkg, rlang::is_installed, logical(1))
@@ -54,7 +59,14 @@ pkg_installed <- vapply(req_pkg, rlang::is_installed, logical(1))
 # Install missing packages: 
 if ( any(!pkg_installed) ) {
   install_list <- names(pkg_installed)[!pkg_installed]
-  pak::pak(install_list)
+  # mixOmics is not on CRAN
+  cran_install_list <- install_list[install_list != "mixOmics"]
+  pak::pak(cran_install_list)
+  
+  # Get mixOmics from github
+  if ( "mixOmics" %in% install_list ) {
+    pak::pak("mixOmicsTeam/mixOmics")
+  }
 }
 ```
 
@@ -66,6 +78,10 @@ Let's load the meta package and manage some between-package function conflicts.
 #| message: false
 #| warning: false
 library(tidymodels)
+library(viridis)
+library(embed) # for umap
+library(patchwork)
+
 tidymodels_prefer()
 theme_set(theme_bw())
 ```
@@ -103,7 +119,7 @@ library(bestNormalize) # for ORD transformation
 barley_rec <-
   recipe(barley ~ ., data = barley_train) %>%
   step_orderNorm(all_numeric_predictors()) %>%
-  # Pre-compute these parts to save time
+  # Pre-compute to save time later
   prep()
 
 barley_rec
@@ -121,14 +137,14 @@ Steps are either in `r pkg(recipes)` or `r pkg(embed)`. Why?
 #| label: pca-prep
 barley_pca_rec <-
   barley_rec %>%
-  step_pca(all_numeric_predictors(), num_comp = 20, id = "PCA") %>% 
+  step_pca(all_numeric_predictors(), num_comp = 2, id = "pca") %>% 
   prep()
 ```
 
 
 ```{r}
 #| label: pca-scree-data
-pca_scree <- tidy(barley_pca_rec, id = "PCA", type = "variance")
+pca_scree <- tidy(barley_pca_rec, id = "pca", type = "variance")
 pca_scree
 
 pca_scree %>% count(terms)
@@ -138,13 +154,13 @@ Note that there are 550 entries for each since there are 550 predictor columns.
 
 ```{r}
 #| label: pca-loadings
-pca_loadings <- tidy(barley_pca_rec, id = "PCA")
+pca_loadings <- tidy(barley_pca_rec, id = "pca")
 pca_loadings
 ```
 
 There are `550^2 = 302500` possible loadings. 
 
-Since we used `num_comp = 20`, there are 20 features that are generated: 
+Since we used `num_comp = 2`, there are 20 features that are generated: 
 
 ```{r}
 #| label: pca-scores
@@ -155,16 +171,166 @@ barley_pca_rec %>%
 
 
 
+```{r}
+#| label: fig-pca-scores
+#| fig-width: 5
+#| fig-height: 4
+#| fig-align: "center"
+#| out-width: "60%"
+
+pca_score_plot <- 
+  barley_pca_rec %>% 
+  bake(new_data = barley_val) %>% 
+  ggplot(aes(PC1, PC2, col = barley)) + 
+  geom_point(alpha = 1 / 4) + 
+  scale_color_viridis(option = "viridis")
+
+pca_score_plot
+```
+
+
+```{r}
+#| label: fig-pca-scores-equal
+#| fig-width: 5
+#| fig-height: 4
+#| fig-align: "center"
+#| out-width: "60%"
+
+pca_score_plot + coord_obs_pred()
+```
+
+
+
 ### Independent Component Analysis
+
+```{r}
+set.seed(538)
+barley_ica_rec <-
+  recipe(barley ~ ., data = barley_train) %>% 
+  step_ica(all_numeric_predictors(), num_comp = 2, id = "ica") %>% 
+  prep()
+```
+
+```{r}
+tidy(barley_ica_rec, id = "ica")
+```
+
+```{r}
+set.seed(955)
+ica_redo <- 
+  recipe(barley ~ ., data = barley_train) %>% 
+  step_ica(all_numeric_predictors(), num_comp = 2, id = "ica") %>% 
+  prep()
+
+ica_redo %>% tidy(id = "ica")
+```
+
+
+```{r}
+#| label: fig-ica-scores
+#| fig-width: 10
+#| fig-height: 4
+#| fig-align: "center"
+#| out-width: "100%"
+
+ica_1 <- 
+  barley_ica_rec %>% 
+  bake(new_data = barley_val) %>% 
+  ggplot(aes(IC1, IC2, col = barley)) + 
+  geom_point(alpha = 1 / 4, show.legend = FALSE) + 
+  scale_color_viridis(option = "viridis") +
+  coord_obs_pred()
+
+ica_2 <- 
+  ica_redo %>% 
+  bake(new_data = barley_val) %>% 
+  ggplot(aes(IC1, IC2, col = barley)) + 
+  geom_point(alpha = 1 / 4) + 
+  scale_color_viridis(option = "viridis") +
+  coord_obs_pred()
+
+ica_1 + ica_2
+```
+
+
 
 ### Partial Least Squares {#numeric-pls}
 
+
+```{r}
+#| label: pls-prep
+barley_pls_rec <-
+  barley_rec %>%
+  step_pls(all_numeric_predictors(), outcome = "barley", num_comp = 2,
+           id = "pls") %>% 
+  prep()
+
+tidy(barley_pls_rec, id = "pls")
+```
 
 ## Multidimensional Scaling {#sec-mds}
 
 ### Isomap  {#sec-isomap}
 
+```{r}
+#| label: isomap-prep
+#| cache: true
+#| message: false
+#| warning: false
+
+set.seed(221)
+barley_isomap_rec <-
+  barley_rec %>%
+  step_isomap(all_numeric_predictors(), neighbors = 10, num_terms = 2) %>% 
+  prep()
+```
+
+
+```{r}
+#| label: fig-isomap-scores
+#| fig-width: 5
+#| fig-height: 4
+#| fig-align: "center"
+#| out-width: "60%"
+
+barley_isomap_rec %>% 
+  bake(new_data = barley_val) %>% 
+  ggplot(aes(Isomap1, Isomap2, col = barley)) + 
+  geom_point(alpha = 1 / 4) + 
+  scale_color_viridis(option = "viridis") +
+  coord_obs_pred()
+```
+
+
+
 ### UMAP {#sec-umap}
+
+```{r}
+#| label: umap-prep
+set.seed(724)
+barley_umap_rec <-
+  barley_rec %>%
+  step_umap(all_numeric_predictors(), neighbors = 10, num_comp = 2) %>% 
+  prep()
+```
+
+
+
+```{r}
+#| label: fig-umap-scores
+#| fig-width: 5
+#| fig-height: 4
+#| fig-align: "center"
+#| out-width: "60%"
+
+barley_umap_rec %>% 
+  bake(new_data = barley_val) %>% 
+  ggplot(aes(UMAP1, UMAP2, col = barley)) + 
+  geom_point(alpha = 1 / 4) + 
+  scale_color_viridis(option = "viridis") +
+  coord_obs_pred()
+```
+
 
 ## Centroid-Based Methods  {#sec-centroids}
 
