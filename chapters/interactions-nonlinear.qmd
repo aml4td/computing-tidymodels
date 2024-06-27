@@ -32,7 +32,7 @@ options(crayon.enabled = FALSE)
 options(pillar.advice = FALSE, pillar.min_title_chars = Inf, pillar.sigfig = 4)
 
 source("../R/_common.R")
-req_pkg <- c("aorsf", "gt", "hstats", "tidymodels")
+req_pkg <- c("aorsf", "embed", "gt", "hstats", "tidymodels")
 ```
 
 
@@ -46,7 +46,7 @@ This chapter is focused on how predictors can enter the model in a nonlinear fas
 #| label: interactions-nonlinear-installs
 #| eval: false
 #| echo: true
-req_pkg <- c("aorsf", "gt", "hstats", "tidymodels")
+req_pkg <- c("aorsf", "embed", "gt", "hstats", "tidymodels")
 
 # Check to see if they are installed: 
 pkg_installed <- vapply(req_pkg, rlang::is_installed, logical(1))
@@ -66,6 +66,7 @@ Let's load the meta package and manage some between-package function conflicts.
 #| message: false
 #| warning: false
 library(tidymodels)
+library(embed)
 tidymodels_prefer()
 theme_set(theme_bw())
 ```
@@ -78,15 +79,7 @@ To get started, let's once again load the food delivery data and use the same sp
 
 ```{r}
 #| label: load-delivery-data
-
-data(deliveries, package = "modeldata")
-
-set.seed(991)
-delivery_split <- initial_validation_split(deliveries, prop = c(0.6, 0.2), 
-                                           strata = time_to_delivery)
-delivery_train <- training(delivery_split)
-delivery_test  <- testing(delivery_split)
-delivery_val   <- validation(delivery_split)
+#| file: https://raw.githubusercontent.com/aml4td/website/main/R/setup_deliveries.R
 ```
 
 We’ll consider two mechanisms to encode interaction columns: via the base R formula method and with recipes. 
@@ -237,7 +230,105 @@ From these results, we could add more terms by adding another layer of `step_int
 
 ## Polynomial Basis Expansions {#sec-polynomials}
 
+There are two main functions that produce different types of orthogonal polynomials: 
+
+ - `step_poly()` wrapping `stats::poly()`
+ - `step_poly_bernstein()` wrapping `splines2::bernsteinPoly()`. 
+ 
+We can pass the columns of interest to each step: 
+
+```{r}
+#| label: poly-step
+recipe(time_to_delivery ~ ., data = delivery_train) %>% 
+  step_poly(hour, degree = 4) %>% 
+  prep() %>% 
+  bake(new_data = NULL, starts_with("hour"))
+
+# or
+
+recipe(time_to_delivery ~ ., data = delivery_train) %>% 
+  step_poly_bernstein(hour, degree = 4) %>% 
+  prep() %>% 
+  bake(new_data = NULL, starts_with("hour"))
+```
+
+If we would like different polynomial degrees for different columns, we would call the step twice. 
+
+
 ## Spline Functions {#sec-splines}
+
+`r pkg(recipes)` has several spline steps: 
+
+```{r}
+#| label: list-splines
+apropos("step_spline")
+```
+
+The syntax is almost identical to the polynomial steps. For example, for natural splines: 
+
+
+```{r}
+#| label: natural-spline-step
+recipe(time_to_delivery ~ ., data = delivery_train) %>% 
+  step_spline_natural(hour, deg_free = 4) %>% 
+  prep() %>% 
+  bake(new_data = NULL, starts_with("hour"))
+```
+
+Some steps also have arguments for the spline degree called `degree`.
 
 ## Discretization
 
+There is one step in `r pkg(recipes)` that conducts unsupervised binning called `step_discretize()` and the `r pkg(embed)` package has two for supervised methods: `step_discretize_cart()` and `step_discretize_xgb()`. 
+
+
+For unsupervised binning: 
+
+```{r}
+#| label: unsuper-bin
+
+basic_binning <- 
+  recipe(time_to_delivery ~ ., data = delivery_train) %>% 
+  step_discretize(hour, num_breaks = 4) %>% 
+  prep()
+
+bake(basic_binning, new_data = NULL, hour)
+```
+
+The `hour` column has been converted to a factor. There is also an argument called `min_unique` that defines the "line of dignity" for the binning. If this value is less than the number of data points per bin that would occur for the value of `num_breaks`, binning is not used.  
+
+To understand where the breakpoints reside, the `tidy()` method will show them: 
+
+```{r}
+#| label: unsuper-bin-tidy
+tidy(basic_binning, number = 1)
+
+# note: 
+quantile(delivery_train$hour, probs = (0:4) / 4)
+```
+
+The use of infinite bounds allows data falling outside of the range of the training set to be processed.
+
+If you want to use custom breakpoints, `recipes::step_cut()` is also available. 
+
+For supervised methods, the syntax is different in two ways. First, the outcome column is specified using the `outcome` argument. Secondly, additional parameters control the complexity of the results (i.e., the number of bins). These depend on the binning models. for CART binning, the arguments are `cost_complexity`, `tree_depth`, and `min_n`. They are different for the step that uses boosted trees. 
+
+The format of the results is very similar though: 
+
+```{r}
+#| label: super-bin
+
+library(embed)
+cart_binning <-
+  recipe(time_to_delivery ~ ., data = delivery_train) %>%
+  step_discretize_cart(hour,
+                       outcome = vars(time_to_delivery),
+                       cost_complexity = 0.001) %>%
+  prep()
+
+bake(cart_binning, new_data = NULL, hour)
+
+tidy(cart_binning, number = 1)
+```
+
+As you can see, the breakpoints are built into the factor levels. 
