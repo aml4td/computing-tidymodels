@@ -8,6 +8,7 @@ Authors@R:
 Description: Sources to build books.
 License: CC BY-SA (see license file)
 Imports: 
+    aorsf,
     bestNormalize,
     brulee (>= 0.2.0),
     caret,
@@ -22,9 +23,12 @@ Imports:
     ggplot2,
     gt,
     hardhat (>= 1.2.0.9000),
+    hstats,
     jsonlite,
     kableExtra,
     knitr,
+    lme4,
+    Matrix,
     mixOmics,
     modeldata (>= 1.1.0),
     modeldatatoo,
@@ -44,6 +48,7 @@ Imports:
     sessioninfo,
     splines2,
     stopwords,
+    text2vec,
     textrecipes,
     tibble,
     tidymodels,
