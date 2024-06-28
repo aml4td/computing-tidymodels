@@ -252,7 +252,7 @@ recipe(time_to_delivery ~ ., data = delivery_train) %>%
   bake(new_data = NULL, starts_with("hour"))
 ```
 
-If we would like different polynomial degrees for different columns, we would call the step twice. 
+If we would like different polynomial degrees for different columns, we would call the step multiple times. 
 
 
 ## Spline Functions {#sec-splines}
@@ -275,7 +275,7 @@ recipe(time_to_delivery ~ ., data = delivery_train) %>%
   bake(new_data = NULL, starts_with("hour"))
 ```
 
-Some steps also have arguments for the spline degree called `degree`.
+Some steps also have arguments for the spline degree called `degree`. Also, most basis expansion function steps have an option called `options` to pass additional specifications, such as a vector of knots. 
 
 ## Discretization
 
