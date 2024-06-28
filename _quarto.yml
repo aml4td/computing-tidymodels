@@ -56,6 +56,7 @@ book:
   - chapters/initial-data-splitting.qmd
   - chapters/numeric-predictors.qmd
   - chapters/categorical-predictors.qmd  
+  - chapters/embeddings.qmd  
   - chapters/interactions-nonlinear.qmd
   - part: "Optmization"
   - chapters/overfitting.qmd
