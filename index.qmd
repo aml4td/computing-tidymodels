@@ -15,6 +15,7 @@ To cite this work, we suggest:
 ```{r}
 #| label: citation
 #| echo: false
+#| eval: true
 #| results: asis
 
 cite <- glue::glue("
@@ -27,9 +28,10 @@ cite <- glue::glue("
 }
 ", .open = "[", .close = "]")
 
-cite <- paste("```{bib}", cite, "```", sep = "\n")
+cite <- paste("```", cite, "```", sep = "\n")
 cat(cite)
 ```
+
 
 ## License {.unnumbered}
 
