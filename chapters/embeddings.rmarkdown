@@ -4,7 +4,9 @@ knitr:
     cache.path: "../_cache/embeddings/"
 ---
 
+
 # Embeddings {#sec-embeddings}
+
 
 
 ```{r}
@@ -40,9 +42,11 @@ req_pkg_fmt <- purrr::map_chr(req_pkg, ~ pkg_chr(.x))
 ```
 
 
+
 ## Requirements
 
 You’ll need `r length(req_pkg)` packages (`r req_pkg_fmt`) for this chapter. The `r pkg(mixOmics)` is a Bioconductor package and is not on CRAN. For the others, we can install them as usual but we'll get `r pkg(mixOmics)` from GitHub:
+
 
 ```{r}
 #| label: embeddings-installs
@@ -72,7 +76,9 @@ if ( any(!pkg_installed) ) {
 }
 ```
 
+
 Let's load the meta package and manage some between-package function conflicts. 
+
 
 ```{r}
 #| label: start-tidymodels
@@ -88,18 +94,22 @@ tidymodels_prefer()
 theme_set(theme_bw())
 ```
 
+
 ## Example: Predicting Barley Amounts  {#sec-barley}
 
 The data are in the `r pkg(modeldatatoo)` package. Let's load the data, remove two outcome columns that will not be analyzed here, and conduct a three-way split of the data: 
+
 
 ```{r}
 #| file: https://raw.githubusercontent.com/aml4td/website/main/R/setup_chemometrics.R
 
 ```
 
+
 The column names for the predictors are `wvlgth_001` through `wvlgth_550`. 
 
 The primary recipe used for almost all of the embedding methods is:
+
 
 ```{r}
 #| label: barley-recipe
@@ -115,6 +125,7 @@ barley_rec <-
 barley_rec
 ```
 
+
 If you use a recipe, most of the embedding methods can be computed with a common interface. The recipe step functions are mostly in the `r pkg(recipes)` package, although some live in “side packages,” such as the `r pkg(embed)` package. We’ll be clear about which package is needed for each. 
 
 ## Linear Transformations  {#sec-linear-embed}
@@ -124,6 +135,7 @@ We'll look at the three _linear_ methods described in the text.
 ### Principal Component Analysis
 
 Unsurprisingly, the recipe step needed here is called `step_pca()`. We’ll add an `id` argument to more easily reference the step of interest. 
+
 
 
 ```{r}
@@ -136,7 +148,9 @@ barley_pca_rec <-
 barley_pca_rec
 ```
 
+
 To further investigate the results, the `tidy()` method can extract elements of the computations. For example, you can return how variance each component captures using the argument `type = "variance"`. Note that when the PCA recipe step was added, we used the option `id = “pca”`. This is not required, but it makes it easier to specify what step the `tidy()` method should consider: 
+
 
 ```{r}
 #| label: pca-scree-data
@@ -146,9 +160,11 @@ pca_scree
 pca_scree %>% count(terms)
 ```
 
+
 Note that there are 550 entries for each since there are 550 predictor columns. 
 
 The default option for the `tidy()` method with PCA is to return the estimated loadings. This can help untangle which predictors influence the PCA components the most (or least). 
+
 
 ```{r}
 #| label: pca-loadings
@@ -156,9 +172,11 @@ pca_loadings <- tidy(barley_pca_rec, id = "pca")
 pca_loadings
 ```
 
+
 There are `550^2 = 302500` possible loadings. 
 
 To get the component values for new data, such as the validation set, the `bake()` method can be used. Using `new_data = NULL` returns the training set points:
+
 
 ```{r}
 #| label: pca-scores
@@ -166,9 +184,11 @@ barley_pca_rec %>%
   bake(new_data = NULL, starts_with("PC"))
 ```
 
+
 Since we used `num_comp = 2`, two new features were generated. 
 
 We can also pass new data in, such as the validation set: 
+
 
 ```{r}
 #| label: pca-score-plot
@@ -187,7 +207,9 @@ pca_score_plot <-
 pca_score_plot
 ```
 
+
 Note the difference in the axis ranges. If we are considering how much the PCA components explain the original predictors (i.e., not the outcome), it can be very helpful to keep the axis scales common: 
+
 
 ```{r}
 #| label: pca-scores-equal
@@ -199,6 +221,7 @@ Note the difference in the axis ranges. If we are considering how much the PCA c
 pca_score_plot + coord_obs_pred()
 ```
 
+
 This helps avoid over-interpreting proportionally small patterns in the later components. 
 
 The functions `embed::step_pca_sparse()` and `embed::step_pca_sparse_bayes()` have sparse/regularized estimation methods for PCA. Each has an argument called `predictor_prop()` that attempts to control how much sparsity should be used. `predictor_prop = 0` should approximate regular PCA, and values near 1.0 would produce very few non-zero loadings. 
@@ -206,6 +229,7 @@ The functions `embed::step_pca_sparse()` and `embed::step_pca_sparse_bayes()` ha
 ### Independent Component Analysis
 
 An ICA recipe step can also be found in the `r pkg(recipes)` package. The syntax is virtually identical: 
+
 
 ```{r}
 set.seed(538)
@@ -215,15 +239,19 @@ barley_ica_rec <-
   prep()
 ```
 
+
 Similarly, the `tidy()` method returns the ICA loadings: 
+
 
 ```{r}
 tidy(barley_ica_rec, id = "ica")
 ```
 
+
 Most other dimension reduction techniques (but not PCA and PLS) depend on random numbers. We’ll set them when needed, but it is worth pointing out that you will likely get different results each time you run them. 
 
 For example, when two ICA components are used, the results are not the same but close when using a different random number seed. 
+
 
 ```{r}
 set.seed(955)
@@ -235,7 +263,9 @@ ica_redo <-
 ica_redo %>% tidy(id = "ica")
 ```
 
+
 The individual loading values are different between runs, and components one and two are swapped between invocations with different seeds: 
+
 
 ```{r}
 #| label: ica-scores
@@ -265,11 +295,13 @@ ica_2 <-
 ica_1 + ica_2
 ```
 
+
 This might not cause a difference in performance when the features are used in a predictive model, but if the model uses slopes and intercepts, the parameter estimates will be different each time it is run. 
 
 ### Partial Least Squares {#numeric-pls}
 
 The syntax for PLS is also very similar. However, it is a supervised method, so we need to specify the column containing the outcome (the outcome column is not needed after model training). The code below uses `dplyr::vars()` to declare the column name, but a simple character string can also be used. 
+
 
 ```{r}
 #| label: pls-prep
@@ -283,6 +315,7 @@ barley_pls_rec <-
 tidy(barley_pls_rec, id = "pls")
 ```
 
+
 ## Multidimensional Scaling {#sec-mds}
 
 tidymodels contains recipe steps for Isomap and UMAP. The latter is accessible via the `r pkg(embed)` package. 
@@ -290,6 +323,7 @@ tidymodels contains recipe steps for Isomap and UMAP. The latter is accessible v
 ### Isomap  {#sec-isomap}
 
 Again, the syntax is very similar to the previous unsupervised methods. The main two tuning parameters are `num_terms` and `neighbors `. We should also set the seed before execution. 
+
 
 ```{r}
 #| label: isomap-prep
@@ -304,7 +338,9 @@ barley_isomap_rec <-
   prep()
 ```
 
+
 We can project this preprocessing model onto new data: 
+
 
 ```{r}
 #| label: isomap-scores
@@ -321,11 +357,13 @@ barley_isomap_rec %>%
   coord_obs_pred()
 ```
 
+
 ### UMAP {#sec-umap}
 
 `step_umap()`, in the `r pkg(embed)` package, has a number of tuning parameters: `neighbors`, `num_comp`, `min_dist`, `learn_rate`, `epochs`, `initial` (initialization method, e.g. “pca”), and the optional `target_weight`. 
 
 For an unsupervised embedding: 
+
 
 ```{r}
 #| label: umap-prep
@@ -336,7 +374,9 @@ barley_umap_rec <-
   prep()
 ```
 
+
 Projection on new data has the same syntax: 
+
 
 ```{r}
 #| label: umap-scores
@@ -353,6 +393,7 @@ barley_umap_rec %>%
   coord_obs_pred()
 ```
 
+
 For a _supervised_ embedding, the `target_weight` argument is used. A value of zero is unsupervised, and values near 1.0 are completely supervised. As with PLS, the argument for the outcome column is called `outcome` and can be a string of an unquoted name wrapped in `vars()`. 
 
 ## Centroid-Based Methods  {#sec-centroids}
@@ -363,6 +404,7 @@ There are two steps in recipes for this:
  - `step_classdist_shrunken()`: nearest shrunken centroids
  
 These steps are for classification data, so we'll use some example data from the `r pkg(modeldata)` package: 
+
 
 ```{r}
 #| label: two-class-data-plot
@@ -376,7 +418,9 @@ two_class_dat %>%
   coord_obs_pred()
 ```
 
+
 Here's an example of creating a recipe with the basic class distance computations:
+
 
 ```{r}
 #| label: basic-cent
@@ -386,16 +430,20 @@ centroid_rec <-
   prep()
 ```
 
+
 The outcome argument is called `"class"` and takes a string value for the column name. 
 
 The processed data has a default naming convention of `"classdist_{class level}"` and you get one column per class: 
+
 
 ```{r}
 #| label: basic-cent-pred
 bake(centroid_rec, new_data = NULL)
 ```
 
+
 The shrunken version of this step has an additional argument that is the fraction of the complete solutions. The argument name is `threshold`: 
+
 
 ```{r}
 #| label: shrunk-cent
@@ -404,3 +452,4 @@ centroid_shrunk_rec <-
   step_classdist_shrunken(all_numeric_predictors(), threshold = 1 / 6, class = "Class") %>% 
   prep()
 ```
+
