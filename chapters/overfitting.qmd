@@ -34,7 +34,7 @@ source("../R/_common.R")
 req_pkg <- c("bestNormalize", "tidymodels")
 ```
 
-Since overfitting is often caused by poor values of tuning parameters, we'll first focus on how to work with this values. 
+Since overfitting is often caused by poor values of tuning parameters, we'll focus on how to work with these values. 
 
 
 ## Requirements
@@ -85,14 +85,14 @@ There are currently two main components in a model pipeline:
 
 In tidymodels, the type of object that can hold these two components is called a workflow. Each has arguments, many of which are for tuning parameters. 
 
-In tidymodels, there are standardized arguments for most model parameters. For example, regularization in glmnet models and neural networks use the argument name `penalty` even though the latter model would refer to this as weight decay. 
+There are standardized arguments for most model parameters. For example, regularization in glmnet models and neural networks use the argument name `penalty` even though the latter model would refer to this as weight decay. 
 
 tidymodels differentiates between two varieties of tuning parameters: 
 
  - main arguments are used by most engines for a model type.
  - engine arguments represent more niche values specific to a few engines. 
 
-Let’s look at an example. In the embeddings chapter, the barley data had a high degree of correlation between the predictors. We discussed PCA, PLS, and other methods to deal with this (via a recipe). We might try a neural network (say, using the `r pkg(brulee)` engine) for a model. The code to specify this model would be: 
+Let’s look at an example. In the [embeddings chapter](https://aml4td.org/chapters/embeddings.html), the barley data had a high degree of correlation between the predictors. We discussed PCA, PLS, and other methods to deal with this (via  recipe steps). We might try a neural network (say, using the `r pkg(brulee)` engine) for a model. The code to specify this pipeline would be: 
 
 ```{r}
 #| label: pls-nnet
@@ -121,7 +121,7 @@ pls_nnet_wflow <- workflow(pls_rec, nnet_spec)
 ```
 
 
-We’ve filled in specific values for each of these arguments, although we don’t know if these are best. 
+We’ve filled in specific values for each of these arguments, although we don’t know if these are best that we can do. 
 
 ### Marking Parameters for Optimization
 
@@ -136,7 +136,8 @@ pls_rec <-
   step_orderNorm(all_numeric_predictors()) %>%
   step_pls(all_numeric_predictors(),
            outcome = "barley",
-           num_comp = tune()) %>%
+           # For demonstration, we'll use a label
+           num_comp = tune("pca comps")) %>%
   step_normalize(all_predictors())
 
 nnet_spec <-
@@ -248,7 +249,7 @@ apropos("^value_")
 value_seq(hidden_units(), n = 4)
 ```
 
-### Set of Parameters
+### Sets of Parameters
 
 For our pipeline `pls_nnet_wflow`, we can extract a _parameter set_ that collects all of the parameters and their suggested information. There is a function to do this: 
 
@@ -264,7 +265,9 @@ names(pls_nnet_param)
 pls_nnet_param
 ```
 
-The difference in the `type` and `identifier` columns only occurs when the `tune()` value has a label. The output `”nparam[+]”` indicates a numeric parameter, and the plus indicates that it is fully specified. If our pipeline had used $m_{try}$, that value would show `"nparam[?]”`. The rate schedule is a qualitative parameter and has a label of `"dparam[+]"` ("d" for discrete). 
+The difference in the `type` and `identifier` columns only occurs when the `tune()` value has a label (as with the final row). 
+
+The output `”nparam[+]”` indicates a numeric parameter, and the plus indicates that it is fully specified. If our pipeline had used $m_{try}$, that value would show `"nparam[?]”`. The rate schedule is a qualitative parameter and has a label of `"dparam[+]"` ("d" for discrete). 
 
 Let’s look at the information for the learning rate parameter by viewing the parameter information set by tidymodels. It is different than the default: 
 
