@@ -1,0 +1,92 @@
+---
+knitr:
+  opts_chunk:
+    cache.path: "../_cache/embeddings/"
+---
+
+# Embeddings {#sec-embeddings}
+
+
+```{r}
+#| label: embeddings-knitr-setup
+#| include: false
+
+knitr::opts_chunk$set(
+    comment = "#>",
+    collapse = TRUE,
+    fig.align = 'center',
+    fig.path = "../figures/",
+    fig.width = 10,
+    fig.height = 6,
+    out.width = "95%",
+    dev = 'svg',
+    dev.args = list(bg = "transparent"),
+    tidy = FALSE,
+    echo = TRUE
+  )
+
+options(digits = 4, width = 84)
+options(dplyr.print_min = 6, dplyr.print_max = 6)
+options(cli.width = 85)
+options(crayon.enabled = FALSE)
+options(pillar.advice = FALSE, pillar.min_title_chars = Inf, pillar.sigfig = 4)
+
+source("../R/_common.R")
+req_pkg <- c("bestNormalize", "dimRed", "embed", "fastICA", "igraph", "RANN",
+             "RSpectra", "tidymodels", "uwot")
+```
+
+
+## Requirements
+
+`r pkg_list(req_pkg)`
+
+```{r}
+#| label: embeddings-installs
+#| eval: false
+#| echo: true
+req_pkg <- c("bestNormalize", "dimRed", "embed", "fastICA", "igraph", "RANN",
+             "RSpectra", "tidymodels", "uwot")
+
+# Check to see if they are installed: 
+pkg_installed <- vapply(req_pkg, rlang::is_installed, logical(1))
+
+# Install missing packages: 
+if ( any(!pkg_installed) ) {
+  install_list <- names(pkg_installed)[!pkg_installed]
+  pak::pak(install_list)
+}
+```
+
+Let's load the meta package and manage some between-package function conflicts. 
+
+```{r}
+#| label: start-tidymodels
+#| results: hide
+#| message: false
+#| warning: false
+library(tidymodels)
+tidymodels_prefer()
+theme_set(theme_bw())
+```
+
+## Example: Predicting Barley Amounts  {#sec-barley}
+
+
+## Linear Transformations  {#sec-linear-embed}
+
+### Principal Component Analysis
+
+### Independent Component Analysis
+
+### Partial Least Squares {#numeric-pls}
+
+
+## Multidimensional Scaling {#sec-mds}
+
+### Isomap  {#sec-isomap}
+
+### UMAP {#sec-umap}
+
+## Centroid-Based Methods  {#sec-centroids}
+
