@@ -123,7 +123,7 @@ pls_nnet_wflow <- workflow(pls_rec, nnet_spec)
 
 We’ve filled in specific values for each of these arguments, although we don’t know if these are best that we can do. 
 
-### Marking Parameters for Optimization
+## Marking Parameters for Optimization
 
 To tune these parameters, we can give them a value of the function `tune()`. This special function just returns an expression with the value "`tune()`". For example: 
 
@@ -184,7 +184,7 @@ nnet_spec <-
 pls_nnet_wflow <- workflow(pls_rec, nnet_spec)
 ```
 
-### Parameter Functions
+## Parameter Functions
 
 Each tuning parameter has a corresponding function from the `r pkg(dials)` package containing information on the parameter type, parameter ranges (or possible values), and other data.  
 
@@ -249,7 +249,7 @@ apropos("^value_")
 value_seq(hidden_units(), n = 4)
 ```
 
-### Sets of Parameters
+## Sets of Parameters
 
 For our pipeline `pls_nnet_wflow`, we can extract a _parameter set_ that collects all of the parameters and their suggested information. There is a function to do this: 
 
@@ -303,7 +303,7 @@ You don't always have to extract or modify a parameter set; this is an optional 
 The parameter set is sometimes passed as an argument to grid creation functions or to iterative optimization functions that need to simulate/sample random candidates. For example, to create a random grid with 4 candidate values: 
 
 ```{r}
-#| label: fill-space
+#| label: random-design
 #| echo: true
 set.seed(220)
 grid_random(pls_nnet_param, size = 4)
