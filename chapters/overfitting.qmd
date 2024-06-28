@@ -92,7 +92,7 @@ tidymodels differentiates between two varieties of tuning parameters:
  - main arguments are used by most engines for a model type.
  - engine arguments represent more niche values specific to a few engines. 
 
-Let’s look at an example. In the embeddings chapter, the barley data had a high degree of correlation between the predictors. We discussed PCA, PLS, and other methods to deal with this (via a recipe). We might try a neural network (say, using the brulee engine) for a model. The code to specify this model would be: 
+Let’s look at an example. In the embeddings chapter, the barley data had a high degree of correlation between the predictors. We discussed PCA, PLS, and other methods to deal with this (via a recipe). We might try a neural network (say, using the `r pkg(brulee)` engine) for a model. The code to specify this model would be: 
 
 ```{r}
 #| label: pls-nnet
@@ -250,14 +250,17 @@ value_seq(hidden_units(), n = 4)
 
 ### Set of Parameters
 
-For out pipeline, we can extract a _parameter set_ that collects all of the parameters and their suggested information. There is a function to do this: 
+For our pipeline `pls_nnet_wflow`, we can extract a _parameter set_ that collects all of the parameters and their suggested information. There is a function to do this: 
 
 ```{r}
 #| label: extract-param
 #| echo: true
 pls_nnet_param <- extract_parameter_set_dials(pls_nnet_wflow)
+
 class(pls_nnet_param)
+
 names(pls_nnet_param)
+
 pls_nnet_param
 ```
 
