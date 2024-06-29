@@ -1,0 +1,311 @@
+---
+knitr:
+  opts_chunk:
+    cache.path: "../_cache/overfitting/"
+---
+
+# Overfitting {#sec-overfitting}
+
+```{r}
+#| label: overfitting-predictors-knitr-setup
+#| include: false
+
+knitr::opts_chunk$set(
+    comment = "#>",
+    collapse = TRUE,
+    fig.align = 'center',
+    fig.path = "../figures/",
+    fig.width = 10,
+    fig.height = 6,
+    out.width = "95%",
+    dev = 'svg',
+    dev.args = list(bg = "transparent"),
+    tidy = FALSE,
+    echo = TRUE
+  )
+
+options(digits = 4, width = 84)
+options(dplyr.print_min = 6, dplyr.print_max = 6)
+options(cli.width = 85)
+options(crayon.enabled = FALSE)
+options(pillar.advice = FALSE, pillar.min_title_chars = Inf, pillar.sigfig = 4)
+
+source("../R/_common.R")
+req_pkg <- c("bestNormalize", "tidymodels")
+```
+
+Since overfitting is often caused by poor values of tuning parameters, we'll focus on how to work with these values. 
+
+
+## Requirements
+
+`r pkg_list(req_pkg)`
+
+```{r}
+#| label: overfitting-transformations-installs
+#| eval: false
+#| echo: true
+req_pkg <- c("bestNormalize", "tidymodels")
+
+# Check to see if they are installed: 
+pkg_installed <- vapply(req_pkg, rlang::is_installed, logical(1))
+
+# Install missing packages: 
+if ( any(!pkg_installed) ) {
+  install_list <- names(pkg_installed)[!pkg_installed]
+  pak::pak(install_list)
+}
+```
+
+Let's load the meta package and manage some between-package function conflicts. 
+
+```{r}
+#| label: start-tidymodels
+#| results: hide
+#| message: false
+#| warning: false
+library(tidymodels)
+library(bestNormalize)
+tidymodels_prefer()
+```
+
+## Tuning Paramters
+
+
+```{r}
+#| label: barley
+#| echo: false
+#| file: https://raw.githubusercontent.com/aml4td/website/main/R/setup_chemometrics.R
+```
+
+There are currently two main components in a model pipeline: 
+
+ - a preprocessing method
+ - a supervised model fit.
+
+In tidymodels, the type of object that can hold these two components is called a workflow. Each has arguments, many of which are for tuning parameters. 
+
+There are standardized arguments for most model parameters. For example, regularization in glmnet models and neural networks use the argument name `penalty` even though the latter model would refer to this as weight decay. 
+
+tidymodels differentiates between two varieties of tuning parameters: 
+
+ - main arguments are used by most engines for a model type.
+ - engine arguments represent more niche values specific to a few engines. 
+
+Let’s look at an example. In the [embeddings chapter](https://aml4td.org/chapters/embeddings.html), the barley data had a high degree of correlation between the predictors. We discussed PCA, PLS, and other methods to deal with this (via  recipe steps). We might try a neural network (say, using the `r pkg(brulee)` engine) for a model. The code to specify this pipeline would be: 
+
+```{r}
+#| label: pls-nnet
+#| echo: true
+pls_rec <-
+  recipe(barley ~ ., data = barley_train) %>%
+  step_zv(all_predictors()) %>%
+  step_orderNorm(all_numeric_predictors()) %>%
+  step_pls(all_numeric_predictors(),
+           outcome = "barley",
+           num_comp = 20) %>%
+  step_normalize(all_predictors())
+
+nnet_spec <-
+  mlp(
+    hidden_units = 10,
+    activation = "relu",
+    penalty = 0.01,
+    epochs = 1000,
+    learn_rate = 0.1
+  ) %>%
+  set_mode("regression") %>%
+  set_engine("brulee")
+
+pls_nnet_wflow <- workflow(pls_rec, nnet_spec)
+```
+
+
+We’ve filled in specific values for each of these arguments, although we don’t know if these are best that we can do. 
+
+## Marking Parameters for Optimization
+
+To tune these parameters, we can give them a value of the function `tune()`. This special function just returns an expression with the value "`tune()`". For example: 
+
+```{r}
+#| label: pls-nnet-tune
+#| echo: true
+pls_rec <-
+  recipe(barley ~ ., data = barley_train) %>%
+  step_zv(all_predictors()) %>%
+  step_orderNorm(all_numeric_predictors()) %>%
+  step_pls(all_numeric_predictors(),
+           outcome = "barley",
+           # For demonstration, we'll use a label
+           num_comp = tune("pca comps")) %>%
+  step_normalize(all_predictors())
+
+nnet_spec <-
+  mlp(
+    hidden_units = tune(),
+    activation = tune(),
+    penalty = tune(),
+    epochs = tune(),
+    learn_rate = tune()
+  ) %>%
+  set_mode("regression") %>%
+  set_engine("brulee")
+
+pls_nnet_wflow <- workflow(pls_rec, nnet_spec)
+```
+
+Optionally, we can give a label as an argument to the function: 
+
+```{r}
+#| label: tune-arg
+#| echo: true
+str(tune("#PCA components"))
+```
+
+This is useful when the pipeline has two arguments with the same name. For example, if you wanted to use splines for two predictors but allow them to have different degrees of freedom, the resulting set of parameters would not be unique since both of them would have the default label of `deg_free`. In this case, one recipe step could use `tune(“predictor 1 deg free”)` and another could be `tune(“predictor 2 deg free”)`. 
+
+Engine arguments are set by `set_engine()`. For example:  
+
+
+```{r}
+#| label: pls-nnet-tune-engine
+#| echo: true
+nnet_spec <-
+  mlp(
+    hidden_units = tune(),
+    activation = tune(),
+    penalty = tune(),
+    epochs = tune(),
+    learn_rate = tune()
+  ) %>%
+  set_mode("regression") %>%
+  set_engine("brulee", stop_iter = 5, rate_schedule = tune()) 
+
+pls_nnet_wflow <- workflow(pls_rec, nnet_spec)
+```
+
+## Parameter Functions
+
+Each tuning parameter has a corresponding function from the `r pkg(dials)` package containing information on the parameter type, parameter ranges (or possible values), and other data.  
+
+For example, the function for the `penalty` argument is: 
+
+```{r}
+#| label: tune-penalty
+#| echo: true
+penalty()
+```
+
+This parameter has a default range from 10<sup>-10</sup> to 1.0.  It also has a corresponding transformation function (log base 10). This means that when values are created, they are uniformly distributed on the log scale. This is common for parameters that have values that span several orders of magnitude and cannot be negative. 
+
+We can change these defaults via arguments: 
+
+```{r}
+#| label: tune-penalty-alt
+#| echo: true
+penalty(range = c(0, 1), trans = scales::transform_identity())
+```
+
+In some cases, we can’t know the range _a priori_. Parameters like the number of possible PCA components or random forest’s $m_{try}$ depend on the data dimensions. In the case of $m_{try}$ , the default has an unknown in its range:
+
+```{r}
+#| label: tune-unknown
+#| echo: true
+mtry()
+```
+
+We would need to set this range to use the parameter. 
+
+In a few situations, the argument name to a recipe step or model function will use a dials function that has a different name than the argument. For example, there are a few different types of “degrees”. There is (real-valued) polynomial exponent degree: 
+
+```{r}
+#| label: real-degree
+#| echo: true
+degree()
+
+# Data type: 
+degree()$type
+```
+
+but for the spline recipe steps we need an integer value: 
+
+```{r}
+#| label: int-degree
+#| echo: true
+# Data type: 
+spline_degree()$type
+```
+
+In some cases, tidymodels has methods for automatically changing the parameter function to be used, the range of values, and so on. We’ll see that in a minute. 
+
+There are also functions to manipulate individual parameters: 
+
+```{r}
+#| label: value-functions
+#| echo: true
+# Function list:
+apropos("^value_")
+
+value_seq(hidden_units(), n = 4)
+```
+
+## Sets of Parameters
+
+For our pipeline `pls_nnet_wflow`, we can extract a _parameter set_ that collects all of the parameters and their suggested information. There is a function to do this: 
+
+```{r}
+#| label: extract-param
+#| echo: true
+pls_nnet_param <- extract_parameter_set_dials(pls_nnet_wflow)
+
+class(pls_nnet_param)
+
+names(pls_nnet_param)
+
+pls_nnet_param
+```
+
+The difference in the `type` and `identifier` columns only occurs when the `tune()` value has a label (as with the final row). 
+
+The output `”nparam[+]”` indicates a numeric parameter, and the plus indicates that it is fully specified. If our pipeline had used $m_{try}$, that value would show `"nparam[?]”`. The rate schedule is a qualitative parameter and has a label of `"dparam[+]"` ("d" for discrete). 
+
+Let’s look at the information for the learning rate parameter by viewing the parameter information set by tidymodels. It is different than the default: 
+
+```{r}
+#| label: learn-rate
+#| echo: true
+pls_nnet_param %>% 
+  filter(id == "learn_rate") %>% 
+  pluck("object")
+
+# The defaults: 
+learn_rate()
+```
+
+Why are they different? The main function has a wider range since it can be used by boosted trees, neural networks, UMAP, and other tools. The range is more narrow for this pipeline since we know that neural networks tend to work better with faster learning rates (so we set a different default). 
+
+Suppose we want to change the range to be even more narrow. We can use the `update()` function to change defaults or to use a different `r pkg(dials)` parameter function: 
+
+```{r}
+#| label: learn-rate-alt
+#| echo: true
+new_rate <- 
+  pls_nnet_param %>% 
+  update(learn_rate = learn_rate(c(-2, -1/2)))
+
+new_rate %>% 
+  filter(id == "learn_rate") %>% 
+  pluck("object")
+```
+
+You don't always have to extract or modify a parameter set; this is an optional tool in case you want to change default values. 
+
+The parameter set is sometimes passed as an argument to grid creation functions or to iterative optimization functions that need to simulate/sample random candidates. For example, to create a random grid with 4 candidate values: 
+
+```{r}
+#| label: random-design
+#| echo: true
+set.seed(220)
+grid_random(pls_nnet_param, size = 4)
+```
+
