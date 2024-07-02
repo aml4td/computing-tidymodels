@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.5.4">
+<meta name="generator" content="quarto-1.5.22">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <title>Tidymodels Computing Supplement – 2&nbsp; The Whole Game</title>
 <style>
@@ -209,10 +209,28 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Working with Categorical Predictors</span></span></a>
   </div>
 </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/embeddings.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Embeddings</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/interactions-nonlinear.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Interactions and Nonlinear Features</span></span></a>
+  </div>
+</li>
         <li class="sidebar-item sidebar-item-section">
       <span class="sidebar-item-text sidebar-link text-start">
  <span class="menu-text">Optmization</span></span>
   </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/overfitting.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Overfitting</span></span></a>
+  </div>
+</li>
         <li class="sidebar-item sidebar-item-section">
       <span class="sidebar-item-text sidebar-link text-start">
  <span class="menu-text">Classification</span></span>
@@ -271,12 +289,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   
 
 
-</header><p>This chapter on the main website is a high-level tour of the modeling process. We’ll follow the same pattern here by analyzing the same data. We won’t reproduce every figure or table but these notes will give you a broad understanding of how the tidymodels framework operates.</p>
+</header><p>This <a href="https://aml4td.org/chapters/whole-game.html">chapter on the main website</a> is a high-level tour of the modeling process. We’ll follow the same pattern here by analyzing the same data. We won’t reproduce every figure or table but these notes will give you a broad understanding of how the tidymodels framework operates.</p>
 <section id="requirements" class="level2" data-number="2.1"><h2 data-number="2.1" class="anchored" data-anchor-id="requirements">
 <span class="header-section-number">2.1</span> Requirements</h2>
 <p>You’ll need 6 packages (<span class="pkg"><a href="https://cran.r-project.org/package=brulee">brulee</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=Cubist">Cubist</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=patchwork">patchwork</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=scales">scales</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=splines2">splines2</a></span>, and <span class="pkg"><a href="https://cran.r-project.org/package=tidymodels">tidymodels</a></span>) for this chapter. You can install them via:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html">pak</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"brulee"</span>, <span class="st">"Cubist"</span>, <span class="st">"patchwork"</span>, <span class="st">"scales"</span>, <span class="st">"splines2"</span>, <span class="st">"tidymodels"</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">req_pkg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"brulee"</span>, <span class="st">"Cubist"</span>, <span class="st">"patchwork"</span>, <span class="st">"scales"</span>, <span class="st">"splines2"</span>, <span class="st">"tidymodels"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Check to see if they are installed: </span></span>
+<span><span class="va">pkg_installed</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">vapply</a></span><span class="op">(</span><span class="va">req_pkg</span>, <span class="fu">rlang</span><span class="fu">::</span><span class="va"><a href="https://rlang.r-lib.org/reference/is_installed.html">is_installed</a></span>, <span class="fu"><a href="https://rdrr.io/r/base/logical.html">logical</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Install missing packages: </span></span>
+<span><span class="kw">if</span> <span class="op">(</span> <span class="fu"><a href="https://rdrr.io/r/base/any.html">any</a></span><span class="op">(</span><span class="op">!</span><span class="va">pkg_installed</span><span class="op">)</span> <span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">install_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">pkg_installed</span><span class="op">)</span><span class="op">[</span><span class="op">!</span><span class="va">pkg_installed</span><span class="op">]</span></span>
+<span>  <span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html">pak</a></span><span class="op">(</span><span class="va">install_list</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Once you’ve installed <span class="pkg"><a href="https://cran.r-project.org/package=brulee">brulee</a></span>, you should load it using <code><a href="https://github.com/tidymodels/brulee">library(brulee)</a></code> to install the underlying <code>torch</code> executables. You only have to do this once.</p>
 <p>Two other packages are described but not directly used: <span class="pkg"><a href="https://cran.r-project.org/package=parallel">parallel</a></span> and <span class="pkg"><a href="https://cran.r-project.org/package=doParallel">doParallel</a></span>.</p>
@@ -287,9 +314,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="co">#&gt; ✔ broom        1.0.5      ✔ recipes      1.0.10</span></span>
 <span><span class="co">#&gt; ✔ dials        1.2.1      ✔ rsample      1.2.1 </span></span>
 <span><span class="co">#&gt; ✔ dplyr        1.1.4      ✔ tibble       3.2.1 </span></span>
-<span><span class="co">#&gt; ✔ ggplot2      3.5.0      ✔ tidyr        1.3.1 </span></span>
-<span><span class="co">#&gt; ✔ infer        1.0.7      ✔ tune         1.2.0 </span></span>
-<span><span class="co">#&gt; ✔ modeldata    1.3.0      ✔ workflows    1.1.4 </span></span>
+<span><span class="co">#&gt; ✔ ggplot2      3.5.1      ✔ tidyr        1.3.1 </span></span>
+<span><span class="co">#&gt; ✔ infer        1.0.7      ✔ tune         1.2.1 </span></span>
+<span><span class="co">#&gt; ✔ modeldata    1.4.0      ✔ workflows    1.1.4 </span></span>
 <span><span class="co">#&gt; ✔ parsnip      1.2.1      ✔ workflowsets 1.1.0 </span></span>
 <span><span class="co">#&gt; ✔ purrr        1.0.2      ✔ yardstick    1.3.1</span></span>
 <span><span class="co">#&gt; ── Conflicts ────────────────────────────────────────────── tidymodels_conflicts() ──</span></span>
@@ -297,7 +324,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="co">#&gt; ✖ dplyr::filter()  masks stats::filter()</span></span>
 <span><span class="co">#&gt; ✖ dplyr::lag()     masks stats::lag()</span></span>
 <span><span class="co">#&gt; ✖ recipes::step()  masks stats::step()</span></span>
-<span><span class="co">#&gt; • Dig deeper into tidy modeling with R at https://www.tmwr.org</span></span>
+<span><span class="co">#&gt; • Use suppressPackageStartupMessages() to eliminate package startup messages</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tidymodels/probably">probably</a></span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Attaching package: 'probably'</span></span>
@@ -1072,11 +1099,11 @@ Learn More About Recipes
 <span><span class="co">#&gt; # A tibble: 5 × 7</span></span>
 <span><span class="co">#&gt;   hidden_units .metric .estimator  mean     n std_err .config             </span></span>
 <span><span class="co">#&gt;          &lt;int&gt; &lt;chr&gt;   &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;               </span></span>
-<span><span class="co">#&gt; 1            5 mae     standard   1.497     1      NA Preprocessor1_Model4</span></span>
-<span><span class="co">#&gt; 2            9 mae     standard   1.511     1      NA Preprocessor1_Model8</span></span>
-<span><span class="co">#&gt; 3            7 mae     standard   1.519     1      NA Preprocessor1_Model6</span></span>
-<span><span class="co">#&gt; 4           10 mae     standard   1.525     1      NA Preprocessor1_Model9</span></span>
-<span><span class="co">#&gt; 5            8 mae     standard   1.603     1      NA Preprocessor1_Model7</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; 1            9 mae     standard   1.499     1      NA Preprocessor1_Model8</span></span>
+<span><span class="co">#&gt; 2            5 mae     standard   1.514     1      NA Preprocessor1_Model4</span></span>
+<span><span class="co">#&gt; 3            6 mae     standard   1.518     1      NA Preprocessor1_Model5</span></span>
+<span><span class="co">#&gt; 4           10 mae     standard   1.528     1      NA Preprocessor1_Model9</span></span>
+<span><span class="co">#&gt; 5            7 mae     standard   1.532     1      NA Preprocessor1_Model6</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We can also return the parameter with the numerically best results<a href="#fn8" class="footnote-ref" id="fnref8" role="doc-noteref"><sup>8</sup></a>:</p>
 <div class="cell" data-layout-align="center">
@@ -1085,7 +1112,7 @@ Learn More About Recipes
 <span><span class="co">#&gt; # A tibble: 1 × 2</span></span>
 <span><span class="co">#&gt;   hidden_units .config             </span></span>
 <span><span class="co">#&gt;          &lt;int&gt; &lt;chr&gt;               </span></span>
-<span><span class="co">#&gt; 1            5 Preprocessor1_Model4</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; 1            9 Preprocessor1_Model8</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>The <code><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot()</a></code> method can visualize the relationship between the tuning parameter(s) and the performance metric(s).</p>
 <div class="cell" data-layout-align="center">
@@ -1323,6 +1350,24 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     // clear code selection
     e.clearSelection();
   });
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/tidymodels\.aml4td\.org");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
   function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
@@ -1357,7 +1402,11 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       try { href = new URL(href).hash; } catch {}
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
-      return note.innerHTML;
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
     });
   }
   const xrefs = window.document.querySelectorAll('a.quarto-xref');
@@ -1631,12 +1680,12 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   }
 });
 </script><nav class="page-navigation"><div class="nav-page nav-page-previous">
-      <a href="../chapters/introduction.html" class="pagination-link  aria-label=">
+      <a href="../chapters/introduction.html" class="pagination-link" aria-label="Introduction">
         <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="../chapters/initial-data-splitting.html" class="pagination-link" aria-label="<span class='chapter-number'>3</span>&nbsp; <span class='chapter-title'>Initial Data Splitting</span>">
+      <a href="../chapters/initial-data-splitting.html" class="pagination-link" aria-label="Initial Data Splitting">
         <span class="nav-page-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Initial Data Splitting</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>

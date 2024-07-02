@@ -1,0 +1,3711 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.5.22">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>Tidymodels Computing Supplement – 7&nbsp; Interactions and Nonlinear Features</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../chapters/overfitting.html" rel="next">
+<link href="../chapters/embeddings.html" rel="prev">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light"><script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script><script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script><script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script><script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+</head>
+<body class="nav-sidebar docked">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top"><nav class="quarto-secondary-nav"><div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <a class="flex-grow-1 no-decor" role="button" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+          <h1 class="quarto-secondary-nav-title"><span id="sec-interactions-nonlinear" class="quarto-section-identifier"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Interactions and Nonlinear Features</span></span></h1>
+        </a>     
+      <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav></header><!-- content --><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto"><div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../"></a> 
+        <div class="sidebar-tools-main tools-wide">
+    <a href="https://github.com/aml4td/computing-tidymodels/" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
+    <div class="dropdown">
+      <a href="" title="Share" id="quarto-navigation-tool-dropdown-0" class="quarto-navigation-tool dropdown-toggle px-1" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Share"><i class="bi bi-share"></i></a>
+      <ul class="dropdown-menu" aria-labelledby="quarto-navigation-tool-dropdown-0">
+<li>
+            <a class="dropdown-item sidebar-tools-main-item" href="https://twitter.com/intent/tweet?url=%7Curl%7C">
+              <i class="bi bi-bi-twitter pe-1"></i>
+            Twitter
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item sidebar-tools-main-item" href="https://www.facebook.com/sharer/sharer.php?u=%7Curl%7C">
+              <i class="bi bi-bi-facebook pe-1"></i>
+            Facebook
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item sidebar-tools-main-item" href="https://www.linkedin.com/sharing/share-offsite/?url=%7Curl%7C">
+              <i class="bi bi-bi-linkedin pe-1"></i>
+            LinkedIn
+            </a>
+          </li>
+      </ul>
+</div>
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Preface</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/news.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">News</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/contributing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Contributing</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/introduction.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/whole-game.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">The Whole Game</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <span class="sidebar-item-text sidebar-link text-start">
+ <span class="menu-text">Preparation</span></span>
+  </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/initial-data-splitting.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Initial Data Splitting</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/numeric-predictors.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Transforming Numeric Predictors</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/categorical-predictors.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Working with Categorical Predictors</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/embeddings.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Embeddings</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/interactions-nonlinear.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Interactions and Nonlinear Features</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <span class="sidebar-item-text sidebar-link text-start">
+ <span class="menu-text">Optmization</span></span>
+  </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/overfitting.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Overfitting</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <span class="sidebar-item-text sidebar-link text-start">
+ <span class="menu-text">Classification</span></span>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <span class="sidebar-item-text sidebar-link text-start">
+ <span class="menu-text">Regression</span></span>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <span class="sidebar-item-text sidebar-link text-start">
+ <span class="menu-text">Characterization</span></span>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <span class="sidebar-item-text sidebar-link text-start">
+ <span class="menu-text">Finalization</span></span>
+  </li>
+    </ul>
+</div>
+</nav><div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active"><h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+<li><a href="#requirements" id="toc-requirements" class="nav-link active" data-scroll-target="#requirements"><span class="header-section-number">7.1</span> Requirements</a></li>
+  <li>
+<a href="#sec-interactions" id="toc-sec-interactions" class="nav-link" data-scroll-target="#sec-interactions"><span class="header-section-number">7.2</span> Interactions</a>
+  <ul class="collapse">
+<li><a href="#interactions-with-model-formulas" id="toc-interactions-with-model-formulas" class="nav-link" data-scroll-target="#interactions-with-model-formulas"><span class="header-section-number">7.2.1</span> Interactions with Model Formulas</a></li>
+  <li><a href="#interactions-from-recipes" id="toc-interactions-from-recipes" class="nav-link" data-scroll-target="#interactions-from-recipes"><span class="header-section-number">7.2.2</span> Interactions from Recipes</a></li>
+  <li><a href="#sec-interactions-detection" id="toc-sec-interactions-detection" class="nav-link" data-scroll-target="#sec-interactions-detection"><span class="header-section-number">7.2.3</span> Detecting Interactions</a></li>
+  </ul>
+</li>
+  <li><a href="#sec-polynomials" id="toc-sec-polynomials" class="nav-link" data-scroll-target="#sec-polynomials"><span class="header-section-number">7.3</span> Polynomial Basis Expansions</a></li>
+  <li><a href="#sec-splines" id="toc-sec-splines" class="nav-link" data-scroll-target="#sec-splines"><span class="header-section-number">7.4</span> Spline Functions</a></li>
+  <li><a href="#discretization" id="toc-discretization" class="nav-link" data-scroll-target="#discretization"><span class="header-section-number">7.5</span> Discretization</a></li>
+  </ul></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block default"><div class="quarto-title">
+<h1 class="title d-none d-lg-block"><span id="sec-interactions-nonlinear" class="quarto-section-identifier"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Interactions and Nonlinear Features</span></span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header><p>This chapter is focused on how predictors can enter the model in a nonlinear fashion. The three approaches discussed are interaction effects, basis expansions, and discretization.</p>
+<section id="requirements" class="level2" data-number="7.1"><h2 data-number="7.1" class="anchored" data-anchor-id="requirements">
+<span class="header-section-number">7.1</span> Requirements</h2>
+<p>You’ll need 5 packages (<span class="pkg"><a href="https://cran.r-project.org/package=aorsf">aorsf</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=embed">embed</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=gt">gt</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=hstats">hstats</a></span>, and <span class="pkg"><a href="https://cran.r-project.org/package=tidymodels">tidymodels</a></span>) for this chapter. You can install them via:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">req_pkg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"aorsf"</span>, <span class="st">"embed"</span>, <span class="st">"gt"</span>, <span class="st">"hstats"</span>, <span class="st">"tidymodels"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Check to see if they are installed: </span></span>
+<span><span class="va">pkg_installed</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">vapply</a></span><span class="op">(</span><span class="va">req_pkg</span>, <span class="fu">rlang</span><span class="fu">::</span><span class="va"><a href="https://rlang.r-lib.org/reference/is_installed.html">is_installed</a></span>, <span class="fu"><a href="https://rdrr.io/r/base/logical.html">logical</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Install missing packages: </span></span>
+<span><span class="kw">if</span> <span class="op">(</span> <span class="fu"><a href="https://rdrr.io/r/base/any.html">any</a></span><span class="op">(</span><span class="op">!</span><span class="va">pkg_installed</span><span class="op">)</span> <span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">install_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">pkg_installed</span><span class="op">)</span><span class="op">[</span><span class="op">!</span><span class="va">pkg_installed</span><span class="op">]</span></span>
+<span>  <span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html">pak</a></span><span class="op">(</span><span class="va">install_list</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Let’s load the meta package and manage some between-package function conflicts.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidymodels.tidymodels.org">tidymodels</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://embed.tidymodels.org">embed</a></span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://tidymodels.tidymodels.org/reference/tidymodels_prefer.html">tidymodels_prefer</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="fu">theme_set</span><span class="op">(</span><span class="fu">theme_bw</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section><section id="sec-interactions" class="level2" data-number="7.2"><h2 data-number="7.2" class="anchored" data-anchor-id="sec-interactions">
+<span class="header-section-number">7.2</span> Interactions</h2>
+<p>As the text mentions, interactions involve two or more predictors (of any data type). An interaction means that the relationship between the outcome and the predictors involved cannot be articulated by looking at one predictor at a time; they act in concert.</p>
+<p>To get started, let’s once again load the food delivery data and use the same split:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">deliveries</span>, package <span class="op">=</span> <span class="st">"modeldata"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">991</span><span class="op">)</span></span>
+<span><span class="va">delivery_split</span> <span class="op">&lt;-</span> <span class="fu">initial_validation_split</span><span class="op">(</span><span class="va">deliveries</span>, prop <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.6</span>, <span class="fl">0.2</span><span class="op">)</span>, strata <span class="op">=</span> <span class="va">time_to_delivery</span><span class="op">)</span></span>
+<span><span class="va">delivery_train</span> <span class="op">&lt;-</span> <span class="fu">training</span><span class="op">(</span><span class="va">delivery_split</span><span class="op">)</span></span>
+<span><span class="va">delivery_test</span>  <span class="op">&lt;-</span> <span class="fu">testing</span><span class="op">(</span><span class="va">delivery_split</span><span class="op">)</span></span>
+<span><span class="va">delivery_val</span>   <span class="op">&lt;-</span> <span class="fu">validation</span><span class="op">(</span><span class="va">delivery_split</span><span class="op">)</span></span>
+<span><span class="va">delivery_rs</span>    <span class="op">&lt;-</span> <span class="fu">validation_set</span><span class="op">(</span><span class="va">delivery_split</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">## Some functions to faciltate the content</span></span>
+<span></span>
+<span><span class="va">dec_to_time</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">mins</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">floor</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
+<span>  <span class="va">dec</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">floor</a></span><span class="op">(</span><span class="op">(</span><span class="va">x</span> <span class="op">-</span> <span class="va">mins</span><span class="op">)</span> <span class="op">*</span> <span class="fl">60</span><span class="op">)</span></span>
+<span>  <span class="va">res</span> <span class="op">&lt;-</span> <span class="fu">cli</span><span class="fu">::</span><span class="fu"><a href="https://cli.r-lib.org/reference/pluralize.html">pluralize</a></span><span class="op">(</span><span class="st">"{mins} minutes{?s} and {dec} second{?s}"</span><span class="op">)</span></span>
+<span>  <span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html">as.character</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span>
+<span>  <span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html">gsub</a></span><span class="op">(</span><span class="st">" and 0 seconds"</span>, <span class="st">""</span>, <span class="va">res</span><span class="op">)</span></span>
+<span>  <span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html">gsub</a></span><span class="op">(</span><span class="st">"1 minutes"</span>, <span class="st">"1 minute"</span>, <span class="va">res</span><span class="op">)</span> </span>
+<span>  <span class="va">res</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">dec_to_time_rs</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu">collect_metrics</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">.metric</span> <span class="op">==</span> <span class="st">"mae"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>    <span class="fu">pluck</span><span class="op">(</span><span class="st">"mean"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>    <span class="va">dec_to_time</span></span>
+<span><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We’ll consider two mechanisms to encode interaction columns: via the base R formula method and with recipes.</p>
+<section id="interactions-with-model-formulas" class="level3" data-number="7.2.1"><h3 data-number="7.2.1" class="anchored" data-anchor-id="interactions-with-model-formulas">
+<span class="header-section-number">7.2.1</span> Interactions with Model Formulas</h3>
+<p>This was briefly discussed in <a href="numeric-predictors.html#sec-r-formulas" class="quarto-xref"><span>Section 4.3</span></a>.</p>
+<p>The main operator that creates interactions is the colon. Using <code>a:b</code> within a formula will create the appropriate columns that encode the interactions. The specifics depend on what type of data are in columns <code>a</code> and <code>b</code>:</p>
+<ul>
+<li><p>If both are numeric, an additional column, which is their product, is added to the model matrix. By default, the base R formula method gives it the name <code>"a:b"</code>.</p></li>
+<li><p>If one is numeric and the other is categorical, R first converts the categorical (i.e., factor) column into binary indicator variables, then makes columns that are the produce of each indicator column and the original numeric column.</p></li>
+<li><p>If both are categorical, indicators are made for both and then their corresponding product pairs are created (binary times binary columns).</p></li>
+</ul>
+<p>Let’s make a small example to demonstrate:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://gt.rstudio.com">gt</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">interaction_example</span> <span class="op">&lt;-</span> </span>
+<span>  <span class="va">delivery_test</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu">slice</span><span class="op">(</span><span class="fl">1</span>, .by <span class="op">=</span> <span class="va">day</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu">select</span><span class="op">(</span><span class="va">day</span>, <span class="va">hour</span>, <span class="va">distance</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu">arrange</span><span class="op">(</span><span class="va">day</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">interaction_example</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://gt.rstudio.com/reference/gt.html">gt</a></span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<div id="fgacxacsht" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#fgacxacsht table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#fgacxacsht thead, #fgacxacsht tbody, #fgacxacsht tfoot, #fgacxacsht tr, #fgacxacsht td, #fgacxacsht th {
+  border-style: none;
+}
+
+#fgacxacsht p {
+  margin: 0;
+  padding: 0;
+}
+
+#fgacxacsht .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#fgacxacsht .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#fgacxacsht .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#fgacxacsht .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#fgacxacsht .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#fgacxacsht .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#fgacxacsht .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#fgacxacsht .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#fgacxacsht .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#fgacxacsht .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#fgacxacsht .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#fgacxacsht .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#fgacxacsht .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#fgacxacsht .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#fgacxacsht .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#fgacxacsht .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#fgacxacsht .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#fgacxacsht .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#fgacxacsht .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#fgacxacsht .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#fgacxacsht .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#fgacxacsht .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#fgacxacsht .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#fgacxacsht .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#fgacxacsht .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#fgacxacsht .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#fgacxacsht .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#fgacxacsht .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#fgacxacsht .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#fgacxacsht .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#fgacxacsht .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#fgacxacsht .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#fgacxacsht .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#fgacxacsht .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#fgacxacsht .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#fgacxacsht .gt_left {
+  text-align: left;
+}
+
+#fgacxacsht .gt_center {
+  text-align: center;
+}
+
+#fgacxacsht .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#fgacxacsht .gt_font_normal {
+  font-weight: normal;
+}
+
+#fgacxacsht .gt_font_bold {
+  font-weight: bold;
+}
+
+#fgacxacsht .gt_font_italic {
+  font-style: italic;
+}
+
+#fgacxacsht .gt_super {
+  font-size: 65%;
+}
+
+#fgacxacsht .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#fgacxacsht .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#fgacxacsht .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#fgacxacsht .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#fgacxacsht .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#fgacxacsht .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#fgacxacsht .gt_indent_5 {
+  text-indent: 25px;
+}
+</style>
+<table class="gt_table table table-sm table-striped small" data-quarto-postprocess="true" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<thead><tr class="header gt_col_headings">
+<th id="day" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col">day</th>
+<th id="hour" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">hour</th>
+<th id="distance" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">distance</th>
+</tr></thead>
+<tbody class="gt_table_body">
+<tr class="odd">
+<td class="gt_row gt_center" headers="day">Mon</td>
+<td class="gt_row gt_right" headers="hour">19.38</td>
+<td class="gt_row gt_right" headers="distance">2.59</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="day">Tue</td>
+<td class="gt_row gt_right" headers="hour">12.14</td>
+<td class="gt_row gt_right" headers="distance">2.40</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="day">Wed</td>
+<td class="gt_row gt_right" headers="hour">18.03</td>
+<td class="gt_row gt_right" headers="distance">2.96</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="day">Thu</td>
+<td class="gt_row gt_right" headers="hour">16.22</td>
+<td class="gt_row gt_right" headers="distance">3.25</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="day">Fri</td>
+<td class="gt_row gt_right" headers="hour">12.88</td>
+<td class="gt_row gt_right" headers="distance">2.88</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="day">Sat</td>
+<td class="gt_row gt_right" headers="hour">12.94</td>
+<td class="gt_row gt_right" headers="distance">2.47</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="day">Sun</td>
+<td class="gt_row gt_right" headers="hour">12.96</td>
+<td class="gt_row gt_right" headers="distance">3.80</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<p>For two numeric predictors:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/model.matrix.html">model.matrix</a></span><span class="op">(</span><span class="op">~</span> <span class="va">hour</span> <span class="op">+</span> <span class="va">distance</span> <span class="op">+</span> <span class="va">hour</span><span class="op">:</span><span class="va">distance</span>, <span class="va">interaction_example</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu">as_tibble</span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">`(Intercept)`</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://gt.rstudio.com/reference/gt.html">gt</a></span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<div id="emttviarbx" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#emttviarbx table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#emttviarbx thead, #emttviarbx tbody, #emttviarbx tfoot, #emttviarbx tr, #emttviarbx td, #emttviarbx th {
+  border-style: none;
+}
+
+#emttviarbx p {
+  margin: 0;
+  padding: 0;
+}
+
+#emttviarbx .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#emttviarbx .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#emttviarbx .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#emttviarbx .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#emttviarbx .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#emttviarbx .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#emttviarbx .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#emttviarbx .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#emttviarbx .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#emttviarbx .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#emttviarbx .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#emttviarbx .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#emttviarbx .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#emttviarbx .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#emttviarbx .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#emttviarbx .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#emttviarbx .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#emttviarbx .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#emttviarbx .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#emttviarbx .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#emttviarbx .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#emttviarbx .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#emttviarbx .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#emttviarbx .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#emttviarbx .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#emttviarbx .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#emttviarbx .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#emttviarbx .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#emttviarbx .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#emttviarbx .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#emttviarbx .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#emttviarbx .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#emttviarbx .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#emttviarbx .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#emttviarbx .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#emttviarbx .gt_left {
+  text-align: left;
+}
+
+#emttviarbx .gt_center {
+  text-align: center;
+}
+
+#emttviarbx .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#emttviarbx .gt_font_normal {
+  font-weight: normal;
+}
+
+#emttviarbx .gt_font_bold {
+  font-weight: bold;
+}
+
+#emttviarbx .gt_font_italic {
+  font-style: italic;
+}
+
+#emttviarbx .gt_super {
+  font-size: 65%;
+}
+
+#emttviarbx .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#emttviarbx .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#emttviarbx .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#emttviarbx .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#emttviarbx .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#emttviarbx .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#emttviarbx .gt_indent_5 {
+  text-indent: 25px;
+}
+</style>
+<table class="gt_table table table-sm table-striped small" data-quarto-postprocess="true" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<thead><tr class="header gt_col_headings">
+<th id="hour" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">hour</th>
+<th id="distance" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">distance</th>
+<th id="hour:distance" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">hour:distance</th>
+</tr></thead>
+<tbody class="gt_table_body">
+<tr class="odd">
+<td class="gt_row gt_right" headers="hour">19.38</td>
+<td class="gt_row gt_right" headers="distance">2.59</td>
+<td class="gt_row gt_right" headers="hour:distance">50.19</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_right" headers="hour">12.14</td>
+<td class="gt_row gt_right" headers="distance">2.40</td>
+<td class="gt_row gt_right" headers="hour:distance">29.14</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_right" headers="hour">18.03</td>
+<td class="gt_row gt_right" headers="distance">2.96</td>
+<td class="gt_row gt_right" headers="hour:distance">53.36</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_right" headers="hour">16.22</td>
+<td class="gt_row gt_right" headers="distance">3.25</td>
+<td class="gt_row gt_right" headers="hour:distance">52.71</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_right" headers="hour">12.88</td>
+<td class="gt_row gt_right" headers="distance">2.88</td>
+<td class="gt_row gt_right" headers="hour:distance">37.09</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_right" headers="hour">12.94</td>
+<td class="gt_row gt_right" headers="distance">2.47</td>
+<td class="gt_row gt_right" headers="hour:distance">31.97</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_right" headers="hour">12.96</td>
+<td class="gt_row gt_right" headers="distance">3.80</td>
+<td class="gt_row gt_right" headers="hour:distance">49.26</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<p>One numeric and one factor predictor:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/model.matrix.html">model.matrix</a></span><span class="op">(</span><span class="op">~</span> <span class="va">day</span> <span class="op">+</span> <span class="va">distance</span> <span class="op">+</span> <span class="va">day</span><span class="op">:</span><span class="va">distance</span>, <span class="va">interaction_example</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu">as_tibble</span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">`(Intercept)`</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://gt.rstudio.com/reference/gt.html">gt</a></span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<div id="zizjnjknvw" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#zizjnjknvw table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#zizjnjknvw thead, #zizjnjknvw tbody, #zizjnjknvw tfoot, #zizjnjknvw tr, #zizjnjknvw td, #zizjnjknvw th {
+  border-style: none;
+}
+
+#zizjnjknvw p {
+  margin: 0;
+  padding: 0;
+}
+
+#zizjnjknvw .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#zizjnjknvw .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#zizjnjknvw .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#zizjnjknvw .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#zizjnjknvw .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#zizjnjknvw .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#zizjnjknvw .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#zizjnjknvw .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#zizjnjknvw .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#zizjnjknvw .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#zizjnjknvw .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#zizjnjknvw .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#zizjnjknvw .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#zizjnjknvw .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#zizjnjknvw .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#zizjnjknvw .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#zizjnjknvw .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#zizjnjknvw .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#zizjnjknvw .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#zizjnjknvw .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#zizjnjknvw .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#zizjnjknvw .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#zizjnjknvw .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#zizjnjknvw .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#zizjnjknvw .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#zizjnjknvw .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#zizjnjknvw .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#zizjnjknvw .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#zizjnjknvw .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#zizjnjknvw .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#zizjnjknvw .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#zizjnjknvw .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#zizjnjknvw .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#zizjnjknvw .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#zizjnjknvw .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#zizjnjknvw .gt_left {
+  text-align: left;
+}
+
+#zizjnjknvw .gt_center {
+  text-align: center;
+}
+
+#zizjnjknvw .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#zizjnjknvw .gt_font_normal {
+  font-weight: normal;
+}
+
+#zizjnjknvw .gt_font_bold {
+  font-weight: bold;
+}
+
+#zizjnjknvw .gt_font_italic {
+  font-style: italic;
+}
+
+#zizjnjknvw .gt_super {
+  font-size: 65%;
+}
+
+#zizjnjknvw .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#zizjnjknvw .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#zizjnjknvw .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#zizjnjknvw .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#zizjnjknvw .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#zizjnjknvw .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#zizjnjknvw .gt_indent_5 {
+  text-indent: 25px;
+}
+</style>
+<table class="gt_table table table-sm table-striped small" data-quarto-postprocess="true" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<thead><tr class="header gt_col_headings">
+<th id="dayTue" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">dayTue</th>
+<th id="dayWed" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">dayWed</th>
+<th id="dayThu" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">dayThu</th>
+<th id="dayFri" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">dayFri</th>
+<th id="daySat" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">daySat</th>
+<th id="daySun" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">daySun</th>
+<th id="distance" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">distance</th>
+<th id="dayTue:distance" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">dayTue:distance</th>
+<th id="dayWed:distance" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">dayWed:distance</th>
+<th id="dayThu:distance" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">dayThu:distance</th>
+<th id="dayFri:distance" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">dayFri:distance</th>
+<th id="daySat:distance" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">daySat:distance</th>
+<th id="daySun:distance" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">daySun:distance</th>
+</tr></thead>
+<tbody class="gt_table_body">
+<tr class="odd">
+<td class="gt_row gt_right" headers="dayTue">0</td>
+<td class="gt_row gt_right" headers="dayWed">0</td>
+<td class="gt_row gt_right" headers="dayThu">0</td>
+<td class="gt_row gt_right" headers="dayFri">0</td>
+<td class="gt_row gt_right" headers="daySat">0</td>
+<td class="gt_row gt_right" headers="daySun">0</td>
+<td class="gt_row gt_right" headers="distance">2.59</td>
+<td class="gt_row gt_right" headers="dayTue:distance">0.0</td>
+<td class="gt_row gt_right" headers="dayWed:distance">0.00</td>
+<td class="gt_row gt_right" headers="dayThu:distance">0.00</td>
+<td class="gt_row gt_right" headers="dayFri:distance">0.00</td>
+<td class="gt_row gt_right" headers="daySat:distance">0.00</td>
+<td class="gt_row gt_right" headers="daySun:distance">0.0</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_right" headers="dayTue">1</td>
+<td class="gt_row gt_right" headers="dayWed">0</td>
+<td class="gt_row gt_right" headers="dayThu">0</td>
+<td class="gt_row gt_right" headers="dayFri">0</td>
+<td class="gt_row gt_right" headers="daySat">0</td>
+<td class="gt_row gt_right" headers="daySun">0</td>
+<td class="gt_row gt_right" headers="distance">2.40</td>
+<td class="gt_row gt_right" headers="dayTue:distance">2.4</td>
+<td class="gt_row gt_right" headers="dayWed:distance">0.00</td>
+<td class="gt_row gt_right" headers="dayThu:distance">0.00</td>
+<td class="gt_row gt_right" headers="dayFri:distance">0.00</td>
+<td class="gt_row gt_right" headers="daySat:distance">0.00</td>
+<td class="gt_row gt_right" headers="daySun:distance">0.0</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_right" headers="dayTue">0</td>
+<td class="gt_row gt_right" headers="dayWed">1</td>
+<td class="gt_row gt_right" headers="dayThu">0</td>
+<td class="gt_row gt_right" headers="dayFri">0</td>
+<td class="gt_row gt_right" headers="daySat">0</td>
+<td class="gt_row gt_right" headers="daySun">0</td>
+<td class="gt_row gt_right" headers="distance">2.96</td>
+<td class="gt_row gt_right" headers="dayTue:distance">0.0</td>
+<td class="gt_row gt_right" headers="dayWed:distance">2.96</td>
+<td class="gt_row gt_right" headers="dayThu:distance">0.00</td>
+<td class="gt_row gt_right" headers="dayFri:distance">0.00</td>
+<td class="gt_row gt_right" headers="daySat:distance">0.00</td>
+<td class="gt_row gt_right" headers="daySun:distance">0.0</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_right" headers="dayTue">0</td>
+<td class="gt_row gt_right" headers="dayWed">0</td>
+<td class="gt_row gt_right" headers="dayThu">1</td>
+<td class="gt_row gt_right" headers="dayFri">0</td>
+<td class="gt_row gt_right" headers="daySat">0</td>
+<td class="gt_row gt_right" headers="daySun">0</td>
+<td class="gt_row gt_right" headers="distance">3.25</td>
+<td class="gt_row gt_right" headers="dayTue:distance">0.0</td>
+<td class="gt_row gt_right" headers="dayWed:distance">0.00</td>
+<td class="gt_row gt_right" headers="dayThu:distance">3.25</td>
+<td class="gt_row gt_right" headers="dayFri:distance">0.00</td>
+<td class="gt_row gt_right" headers="daySat:distance">0.00</td>
+<td class="gt_row gt_right" headers="daySun:distance">0.0</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_right" headers="dayTue">0</td>
+<td class="gt_row gt_right" headers="dayWed">0</td>
+<td class="gt_row gt_right" headers="dayThu">0</td>
+<td class="gt_row gt_right" headers="dayFri">1</td>
+<td class="gt_row gt_right" headers="daySat">0</td>
+<td class="gt_row gt_right" headers="daySun">0</td>
+<td class="gt_row gt_right" headers="distance">2.88</td>
+<td class="gt_row gt_right" headers="dayTue:distance">0.0</td>
+<td class="gt_row gt_right" headers="dayWed:distance">0.00</td>
+<td class="gt_row gt_right" headers="dayThu:distance">0.00</td>
+<td class="gt_row gt_right" headers="dayFri:distance">2.88</td>
+<td class="gt_row gt_right" headers="daySat:distance">0.00</td>
+<td class="gt_row gt_right" headers="daySun:distance">0.0</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_right" headers="dayTue">0</td>
+<td class="gt_row gt_right" headers="dayWed">0</td>
+<td class="gt_row gt_right" headers="dayThu">0</td>
+<td class="gt_row gt_right" headers="dayFri">0</td>
+<td class="gt_row gt_right" headers="daySat">1</td>
+<td class="gt_row gt_right" headers="daySun">0</td>
+<td class="gt_row gt_right" headers="distance">2.47</td>
+<td class="gt_row gt_right" headers="dayTue:distance">0.0</td>
+<td class="gt_row gt_right" headers="dayWed:distance">0.00</td>
+<td class="gt_row gt_right" headers="dayThu:distance">0.00</td>
+<td class="gt_row gt_right" headers="dayFri:distance">0.00</td>
+<td class="gt_row gt_right" headers="daySat:distance">2.47</td>
+<td class="gt_row gt_right" headers="daySun:distance">0.0</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_right" headers="dayTue">0</td>
+<td class="gt_row gt_right" headers="dayWed">0</td>
+<td class="gt_row gt_right" headers="dayThu">0</td>
+<td class="gt_row gt_right" headers="dayFri">0</td>
+<td class="gt_row gt_right" headers="daySat">0</td>
+<td class="gt_row gt_right" headers="daySun">1</td>
+<td class="gt_row gt_right" headers="distance">3.80</td>
+<td class="gt_row gt_right" headers="dayTue:distance">0.0</td>
+<td class="gt_row gt_right" headers="dayWed:distance">0.00</td>
+<td class="gt_row gt_right" headers="dayThu:distance">0.00</td>
+<td class="gt_row gt_right" headers="dayFri:distance">0.00</td>
+<td class="gt_row gt_right" headers="daySat:distance">0.00</td>
+<td class="gt_row gt_right" headers="daySun:distance">3.8</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<p>If you want to make all possible interactions, you can use the dot and exponent operator:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># All possible two-way interactions:</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/model.matrix.html">model.matrix</a></span><span class="op">(</span><span class="op">~</span> <span class="op">(</span><span class="va">.</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span>, <span class="va">interaction_example</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># All possible two- and three-way interactions, etc:</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/model.matrix.html">model.matrix</a></span><span class="op">(</span><span class="op">~</span> <span class="op">(</span><span class="va">.</span><span class="op">)</span><span class="op">^</span><span class="fl">3</span>, <span class="va">interaction_example</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section><section id="interactions-from-recipes" class="level3" data-number="7.2.2"><h3 data-number="7.2.2" class="anchored" data-anchor-id="interactions-from-recipes">
+<span class="header-section-number">7.2.2</span> Interactions from Recipes</h3>
+<p>The <span class="pkg"><a href="https://cran.r-project.org/package=recipes">recipes</a></span> has <code><a href="https://recipes.tidymodels.org/reference/step_interact.html">step_interact()</a></code>. This step is very atypical since it uses a formula to specify the inputs (rather than a set of <span class="pkg"><a href="https://cran.r-project.org/package=dplyr">dplyr</a></span> selectors). It also requires all columns used to be already converted to indicators (perhaps using <code><a href="https://recipes.tidymodels.org/reference/step_dummy.html">step_dummy()</a></code>).</p>
+<p>The formula passed to <code><a href="https://recipes.tidymodels.org/reference/step_interact.html">step_interact()</a></code> also uses colons to declare interactions, but it has two special differences from base R formulas:</p>
+<ul>
+<li>you can use <span class="pkg"><a href="https://cran.r-project.org/package=dplyr">dplyr</a></span> selectors to select the columns to interact with and</li>
+<li>the resulting interaction columns use <code>_x_</code> as the default seperator in the names.</li>
+</ul>
+<p>For continuous/continuous interactions:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span><span class="op">~</span> <span class="va">hour</span> <span class="op">+</span> <span class="va">distance</span>, data <span class="op">=</span> <span class="va">interaction_example</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_interact.html">step_interact</a></span><span class="op">(</span><span class="op">~</span> <span class="va">hour</span><span class="op">:</span><span class="va">distance</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/prep.html">prep</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/bake.html">bake</a></span><span class="op">(</span>new_data <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://gt.rstudio.com/reference/gt.html">gt</a></span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<div id="kqeitxrjnl" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#kqeitxrjnl table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#kqeitxrjnl thead, #kqeitxrjnl tbody, #kqeitxrjnl tfoot, #kqeitxrjnl tr, #kqeitxrjnl td, #kqeitxrjnl th {
+  border-style: none;
+}
+
+#kqeitxrjnl p {
+  margin: 0;
+  padding: 0;
+}
+
+#kqeitxrjnl .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#kqeitxrjnl .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#kqeitxrjnl .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#kqeitxrjnl .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#kqeitxrjnl .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#kqeitxrjnl .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#kqeitxrjnl .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#kqeitxrjnl .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#kqeitxrjnl .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#kqeitxrjnl .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#kqeitxrjnl .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#kqeitxrjnl .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#kqeitxrjnl .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#kqeitxrjnl .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#kqeitxrjnl .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#kqeitxrjnl .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#kqeitxrjnl .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#kqeitxrjnl .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#kqeitxrjnl .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#kqeitxrjnl .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#kqeitxrjnl .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#kqeitxrjnl .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#kqeitxrjnl .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#kqeitxrjnl .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#kqeitxrjnl .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#kqeitxrjnl .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#kqeitxrjnl .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#kqeitxrjnl .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#kqeitxrjnl .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#kqeitxrjnl .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#kqeitxrjnl .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#kqeitxrjnl .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#kqeitxrjnl .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#kqeitxrjnl .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#kqeitxrjnl .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#kqeitxrjnl .gt_left {
+  text-align: left;
+}
+
+#kqeitxrjnl .gt_center {
+  text-align: center;
+}
+
+#kqeitxrjnl .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#kqeitxrjnl .gt_font_normal {
+  font-weight: normal;
+}
+
+#kqeitxrjnl .gt_font_bold {
+  font-weight: bold;
+}
+
+#kqeitxrjnl .gt_font_italic {
+  font-style: italic;
+}
+
+#kqeitxrjnl .gt_super {
+  font-size: 65%;
+}
+
+#kqeitxrjnl .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#kqeitxrjnl .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#kqeitxrjnl .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#kqeitxrjnl .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#kqeitxrjnl .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#kqeitxrjnl .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#kqeitxrjnl .gt_indent_5 {
+  text-indent: 25px;
+}
+</style>
+<table class="gt_table table table-sm table-striped small" data-quarto-postprocess="true" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<thead><tr class="header gt_col_headings">
+<th id="hour" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">hour</th>
+<th id="distance" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">distance</th>
+<th id="hour_x_distance" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">hour_x_distance</th>
+</tr></thead>
+<tbody class="gt_table_body">
+<tr class="odd">
+<td class="gt_row gt_right" headers="hour">19.38</td>
+<td class="gt_row gt_right" headers="distance">2.59</td>
+<td class="gt_row gt_right" headers="hour_x_distance">50.19</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_right" headers="hour">12.14</td>
+<td class="gt_row gt_right" headers="distance">2.40</td>
+<td class="gt_row gt_right" headers="hour_x_distance">29.14</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_right" headers="hour">18.03</td>
+<td class="gt_row gt_right" headers="distance">2.96</td>
+<td class="gt_row gt_right" headers="hour_x_distance">53.36</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_right" headers="hour">16.22</td>
+<td class="gt_row gt_right" headers="distance">3.25</td>
+<td class="gt_row gt_right" headers="hour_x_distance">52.71</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_right" headers="hour">12.88</td>
+<td class="gt_row gt_right" headers="distance">2.88</td>
+<td class="gt_row gt_right" headers="hour_x_distance">37.09</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_right" headers="hour">12.94</td>
+<td class="gt_row gt_right" headers="distance">2.47</td>
+<td class="gt_row gt_right" headers="hour_x_distance">31.97</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_right" headers="hour">12.96</td>
+<td class="gt_row gt_right" headers="distance">3.80</td>
+<td class="gt_row gt_right" headers="hour_x_distance">49.26</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<p>For categorical/continuous combinations, we use <code><a href="https://recipes.tidymodels.org/reference/step_dummy.html">step_dummy()</a></code> first and then a selector to make the interactions</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span><span class="op">~</span> <span class="va">day</span> <span class="op">+</span> <span class="va">hour</span>, data <span class="op">=</span> <span class="va">interaction_example</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_dummy.html">step_dummy</a></span><span class="op">(</span><span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html">all_factor_predictors</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_interact.html">step_interact</a></span><span class="op">(</span><span class="op">~</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html">starts_with</a></span><span class="op">(</span><span class="st">"day_"</span><span class="op">)</span><span class="op">:</span><span class="va">hour</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/prep.html">prep</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/bake.html">bake</a></span><span class="op">(</span>new_data <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://gt.rstudio.com/reference/gt.html">gt</a></span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<div id="vogzqwwijj" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#vogzqwwijj table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#vogzqwwijj thead, #vogzqwwijj tbody, #vogzqwwijj tfoot, #vogzqwwijj tr, #vogzqwwijj td, #vogzqwwijj th {
+  border-style: none;
+}
+
+#vogzqwwijj p {
+  margin: 0;
+  padding: 0;
+}
+
+#vogzqwwijj .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#vogzqwwijj .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#vogzqwwijj .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#vogzqwwijj .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#vogzqwwijj .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#vogzqwwijj .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#vogzqwwijj .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#vogzqwwijj .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#vogzqwwijj .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#vogzqwwijj .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#vogzqwwijj .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#vogzqwwijj .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#vogzqwwijj .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#vogzqwwijj .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#vogzqwwijj .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#vogzqwwijj .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#vogzqwwijj .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#vogzqwwijj .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#vogzqwwijj .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#vogzqwwijj .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#vogzqwwijj .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#vogzqwwijj .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#vogzqwwijj .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#vogzqwwijj .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#vogzqwwijj .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#vogzqwwijj .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#vogzqwwijj .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#vogzqwwijj .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#vogzqwwijj .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#vogzqwwijj .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#vogzqwwijj .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#vogzqwwijj .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#vogzqwwijj .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#vogzqwwijj .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#vogzqwwijj .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#vogzqwwijj .gt_left {
+  text-align: left;
+}
+
+#vogzqwwijj .gt_center {
+  text-align: center;
+}
+
+#vogzqwwijj .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#vogzqwwijj .gt_font_normal {
+  font-weight: normal;
+}
+
+#vogzqwwijj .gt_font_bold {
+  font-weight: bold;
+}
+
+#vogzqwwijj .gt_font_italic {
+  font-style: italic;
+}
+
+#vogzqwwijj .gt_super {
+  font-size: 65%;
+}
+
+#vogzqwwijj .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#vogzqwwijj .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#vogzqwwijj .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#vogzqwwijj .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#vogzqwwijj .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#vogzqwwijj .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#vogzqwwijj .gt_indent_5 {
+  text-indent: 25px;
+}
+</style>
+<table class="gt_table table table-sm table-striped small" data-quarto-postprocess="true" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<thead><tr class="header gt_col_headings">
+<th id="hour" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">hour</th>
+<th id="day_Tue" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">day_Tue</th>
+<th id="day_Wed" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">day_Wed</th>
+<th id="day_Thu" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">day_Thu</th>
+<th id="day_Fri" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">day_Fri</th>
+<th id="day_Sat" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">day_Sat</th>
+<th id="day_Sun" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">day_Sun</th>
+<th id="day_Tue_x_hour" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">day_Tue_x_hour</th>
+<th id="day_Wed_x_hour" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">day_Wed_x_hour</th>
+<th id="day_Thu_x_hour" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">day_Thu_x_hour</th>
+<th id="day_Fri_x_hour" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">day_Fri_x_hour</th>
+<th id="day_Sat_x_hour" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">day_Sat_x_hour</th>
+<th id="day_Sun_x_hour" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">day_Sun_x_hour</th>
+</tr></thead>
+<tbody class="gt_table_body">
+<tr class="odd">
+<td class="gt_row gt_right" headers="hour">19.38</td>
+<td class="gt_row gt_right" headers="day_Tue">0</td>
+<td class="gt_row gt_right" headers="day_Wed">0</td>
+<td class="gt_row gt_right" headers="day_Thu">0</td>
+<td class="gt_row gt_right" headers="day_Fri">0</td>
+<td class="gt_row gt_right" headers="day_Sat">0</td>
+<td class="gt_row gt_right" headers="day_Sun">0</td>
+<td class="gt_row gt_right" headers="day_Tue_x_hour">0.00</td>
+<td class="gt_row gt_right" headers="day_Wed_x_hour">0.00</td>
+<td class="gt_row gt_right" headers="day_Thu_x_hour">0.00</td>
+<td class="gt_row gt_right" headers="day_Fri_x_hour">0.00</td>
+<td class="gt_row gt_right" headers="day_Sat_x_hour">0.00</td>
+<td class="gt_row gt_right" headers="day_Sun_x_hour">0.00</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_right" headers="hour">12.14</td>
+<td class="gt_row gt_right" headers="day_Tue">1</td>
+<td class="gt_row gt_right" headers="day_Wed">0</td>
+<td class="gt_row gt_right" headers="day_Thu">0</td>
+<td class="gt_row gt_right" headers="day_Fri">0</td>
+<td class="gt_row gt_right" headers="day_Sat">0</td>
+<td class="gt_row gt_right" headers="day_Sun">0</td>
+<td class="gt_row gt_right" headers="day_Tue_x_hour">12.14</td>
+<td class="gt_row gt_right" headers="day_Wed_x_hour">0.00</td>
+<td class="gt_row gt_right" headers="day_Thu_x_hour">0.00</td>
+<td class="gt_row gt_right" headers="day_Fri_x_hour">0.00</td>
+<td class="gt_row gt_right" headers="day_Sat_x_hour">0.00</td>
+<td class="gt_row gt_right" headers="day_Sun_x_hour">0.00</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_right" headers="hour">18.03</td>
+<td class="gt_row gt_right" headers="day_Tue">0</td>
+<td class="gt_row gt_right" headers="day_Wed">1</td>
+<td class="gt_row gt_right" headers="day_Thu">0</td>
+<td class="gt_row gt_right" headers="day_Fri">0</td>
+<td class="gt_row gt_right" headers="day_Sat">0</td>
+<td class="gt_row gt_right" headers="day_Sun">0</td>
+<td class="gt_row gt_right" headers="day_Tue_x_hour">0.00</td>
+<td class="gt_row gt_right" headers="day_Wed_x_hour">18.03</td>
+<td class="gt_row gt_right" headers="day_Thu_x_hour">0.00</td>
+<td class="gt_row gt_right" headers="day_Fri_x_hour">0.00</td>
+<td class="gt_row gt_right" headers="day_Sat_x_hour">0.00</td>
+<td class="gt_row gt_right" headers="day_Sun_x_hour">0.00</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_right" headers="hour">16.22</td>
+<td class="gt_row gt_right" headers="day_Tue">0</td>
+<td class="gt_row gt_right" headers="day_Wed">0</td>
+<td class="gt_row gt_right" headers="day_Thu">1</td>
+<td class="gt_row gt_right" headers="day_Fri">0</td>
+<td class="gt_row gt_right" headers="day_Sat">0</td>
+<td class="gt_row gt_right" headers="day_Sun">0</td>
+<td class="gt_row gt_right" headers="day_Tue_x_hour">0.00</td>
+<td class="gt_row gt_right" headers="day_Wed_x_hour">0.00</td>
+<td class="gt_row gt_right" headers="day_Thu_x_hour">16.22</td>
+<td class="gt_row gt_right" headers="day_Fri_x_hour">0.00</td>
+<td class="gt_row gt_right" headers="day_Sat_x_hour">0.00</td>
+<td class="gt_row gt_right" headers="day_Sun_x_hour">0.00</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_right" headers="hour">12.88</td>
+<td class="gt_row gt_right" headers="day_Tue">0</td>
+<td class="gt_row gt_right" headers="day_Wed">0</td>
+<td class="gt_row gt_right" headers="day_Thu">0</td>
+<td class="gt_row gt_right" headers="day_Fri">1</td>
+<td class="gt_row gt_right" headers="day_Sat">0</td>
+<td class="gt_row gt_right" headers="day_Sun">0</td>
+<td class="gt_row gt_right" headers="day_Tue_x_hour">0.00</td>
+<td class="gt_row gt_right" headers="day_Wed_x_hour">0.00</td>
+<td class="gt_row gt_right" headers="day_Thu_x_hour">0.00</td>
+<td class="gt_row gt_right" headers="day_Fri_x_hour">12.88</td>
+<td class="gt_row gt_right" headers="day_Sat_x_hour">0.00</td>
+<td class="gt_row gt_right" headers="day_Sun_x_hour">0.00</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_right" headers="hour">12.94</td>
+<td class="gt_row gt_right" headers="day_Tue">0</td>
+<td class="gt_row gt_right" headers="day_Wed">0</td>
+<td class="gt_row gt_right" headers="day_Thu">0</td>
+<td class="gt_row gt_right" headers="day_Fri">0</td>
+<td class="gt_row gt_right" headers="day_Sat">1</td>
+<td class="gt_row gt_right" headers="day_Sun">0</td>
+<td class="gt_row gt_right" headers="day_Tue_x_hour">0.00</td>
+<td class="gt_row gt_right" headers="day_Wed_x_hour">0.00</td>
+<td class="gt_row gt_right" headers="day_Thu_x_hour">0.00</td>
+<td class="gt_row gt_right" headers="day_Fri_x_hour">0.00</td>
+<td class="gt_row gt_right" headers="day_Sat_x_hour">12.94</td>
+<td class="gt_row gt_right" headers="day_Sun_x_hour">0.00</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_right" headers="hour">12.96</td>
+<td class="gt_row gt_right" headers="day_Tue">0</td>
+<td class="gt_row gt_right" headers="day_Wed">0</td>
+<td class="gt_row gt_right" headers="day_Thu">0</td>
+<td class="gt_row gt_right" headers="day_Fri">0</td>
+<td class="gt_row gt_right" headers="day_Sat">0</td>
+<td class="gt_row gt_right" headers="day_Sun">1</td>
+<td class="gt_row gt_right" headers="day_Tue_x_hour">0.00</td>
+<td class="gt_row gt_right" headers="day_Wed_x_hour">0.00</td>
+<td class="gt_row gt_right" headers="day_Thu_x_hour">0.00</td>
+<td class="gt_row gt_right" headers="day_Fri_x_hour">0.00</td>
+<td class="gt_row gt_right" headers="day_Sat_x_hour">0.00</td>
+<td class="gt_row gt_right" headers="day_Sun_x_hour">12.96</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</section><section id="sec-interactions-detection" class="level3" data-number="7.2.3"><h3 data-number="7.2.3" class="anchored" data-anchor-id="sec-interactions-detection">
+<span class="header-section-number">7.2.3</span> Detecting Interactions</h3>
+<p>A few different packages can compute <span class="math inline">\(H\)</span>-statistics (and similar quantities):</p>
+<ul>
+<li><span class="pkg"><a href="https://cran.r-project.org/package=hstats">hstats</a></span></li>
+<li>
+<span class="pkg"><a href="https://cran.r-project.org/package=pre">pre</a></span>, specifically the <a href="https://github.com/marjoleinF/pre?tab=readme-ov-file#assessing-presence-of-interactions"><code>interact()</code></a> and <code>bsnullinteract()</code> functions</li>
+<li>
+<span class="pkg"><a href="https://cran.r-project.org/package=bartMachine">bartMachine</a></span> has <code>interaction_investigator()</code>
+</li>
+<li>
+<span class="pkg"><a href="https://cran.r-project.org/package=aorsf">aorsf</a></span> has <a href="https://docs.ropensci.org/aorsf/reference/orsf_vint.html"><code>orsf_vint()</code></a>
+</li>
+</ul>
+<p>and so on. We’ll focus on the first since the other functions are tied to specific models.</p>
+<p>For this chapter, we fit an oblique random forest model to compute the <span class="math inline">\(H\)</span>-statistics. We’ll defer the details of that model fit until a later chapter but the code was:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://docs.ropensci.org/aorsf">aorsf</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning: package 'aorsf' was built under R version 4.3.3</span></span>
+<span></span>
+<span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">ncol</a></span><span class="op">(</span><span class="va">delivery_train</span><span class="op">)</span> <span class="op">-</span> <span class="fl">1</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">orf_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://docs.ropensci.org/aorsf/reference/orsf.html">orsf</a></span><span class="op">(</span><span class="va">time_to_delivery</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">delivery_train</span>, mtry <span class="op">=</span> <span class="va">p</span>, n_tree <span class="op">=</span> <span class="fl">50</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><em>Any</em> ML model can be used with the <span class="pkg"><a href="https://cran.r-project.org/package=hstats">hstats</a></span> package. We’ll use the validation set to compute the values; this lends more validity to the values (although we could have used the training set). There are a lot of computations here; this may take a bit to compute:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/mayer79/hstats">hstats</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">218</span><span class="op">)</span></span>
+<span><span class="va">orf_hstats</span> <span class="op">&lt;-</span></span>
+<span>  <span class="fu"><a href="https://mayer79.github.io/hstats/reference/hstats.html">hstats</a></span><span class="op">(</span><span class="va">orf_fit</span>,</span>
+<span>         X <span class="op">=</span> <span class="va">delivery_val</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="op">-</span><span class="va">time_to_delivery</span><span class="op">)</span>,</span>
+<span>         <span class="co"># Prioritize the top 10 individual predictors for computing potential</span></span>
+<span>         <span class="co"># pairwise interactions.</span></span>
+<span>         pairwise_m <span class="op">=</span> <span class="fl">10</span>,</span>
+<span>         <span class="co"># We can run a little faster by using quantiles to approximate the </span></span>
+<span>         <span class="co"># predictor distributions. </span></span>
+<span>         approx <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>         <span class="co"># How many random data points are used for the computations.</span></span>
+<span>         n_max <span class="op">=</span> <span class="fl">1000</span>,</span>
+<span>         verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">orf_two_way_int_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mayer79.github.io/hstats/reference/h2_pairwise.html">h2_pairwise</a></span><span class="op">(</span><span class="va">orf_hstats</span>, zero <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">orf_two_way_int_obj</span></span>
+<span><span class="co">#&gt; Pairwise H^2 (normalized)</span></span>
+<span><span class="co">#&gt;                       [,1]</span></span>
+<span><span class="co">#&gt; hour:day         6.623e-02</span></span>
+<span><span class="co">#&gt; item_01:item_10  2.606e-02</span></span>
+<span><span class="co">#&gt; day:distance     1.554e-02</span></span>
+<span><span class="co">#&gt; hour:distance    4.647e-03</span></span>
+<span><span class="co">#&gt; item_10:item_24  4.074e-03</span></span>
+<span><span class="co">#&gt; day:item_10      4.043e-03</span></span>
+<span><span class="co">#&gt; day:item_24      1.897e-03</span></span>
+<span><span class="co">#&gt; day:item_01      1.792e-03</span></span>
+<span><span class="co">#&gt; item_07:item_24  1.187e-03</span></span>
+<span><span class="co">#&gt; item_01:item_24  1.149e-03</span></span>
+<span><span class="co">#&gt; distance:item_24 1.022e-03</span></span>
+<span><span class="co">#&gt; item_01:item_07  1.004e-03</span></span>
+<span><span class="co">#&gt; item_08:item_10  9.924e-04</span></span>
+<span><span class="co">#&gt; item_02:item_03  9.040e-04</span></span>
+<span><span class="co">#&gt; distance:item_10 7.654e-04</span></span>
+<span><span class="co">#&gt; day:item_02      7.413e-04</span></span>
+<span><span class="co">#&gt; item_03:item_07  6.627e-04</span></span>
+<span><span class="co">#&gt; item_01:item_08  6.616e-04</span></span>
+<span><span class="co">#&gt; day:item_03      6.051e-04</span></span>
+<span><span class="co">#&gt; day:item_07      5.829e-04</span></span>
+<span><span class="co">#&gt; item_02:item_24  5.552e-04</span></span>
+<span><span class="co">#&gt; item_08:item_24  5.536e-04</span></span>
+<span><span class="co">#&gt; distance:item_02 5.458e-04</span></span>
+<span><span class="co">#&gt; item_07:item_10  5.246e-04</span></span>
+<span><span class="co">#&gt; distance:item_03 5.144e-04</span></span>
+<span><span class="co">#&gt; distance:item_01 4.824e-04</span></span>
+<span><span class="co">#&gt; distance:item_07 4.761e-04</span></span>
+<span><span class="co">#&gt; item_03:item_24  4.467e-04</span></span>
+<span><span class="co">#&gt; item_03:item_10  3.985e-04</span></span>
+<span><span class="co">#&gt; hour:item_10     3.515e-04</span></span>
+<span><span class="co">#&gt; hour:item_01     2.623e-04</span></span>
+<span><span class="co">#&gt; hour:item_24     2.140e-04</span></span>
+<span><span class="co">#&gt; item_07:item_08  2.086e-04</span></span>
+<span><span class="co">#&gt; day:item_08      1.894e-04</span></span>
+<span><span class="co">#&gt; item_02:item_10  1.800e-04</span></span>
+<span><span class="co">#&gt; distance:item_08 1.757e-04</span></span>
+<span><span class="co">#&gt; hour:item_08     1.711e-04</span></span>
+<span><span class="co">#&gt; item_02:item_07  1.532e-04</span></span>
+<span><span class="co">#&gt; hour:item_02     1.489e-04</span></span>
+<span><span class="co">#&gt; hour:item_03     1.368e-04</span></span>
+<span><span class="co">#&gt; item_03:item_08  1.292e-04</span></span>
+<span><span class="co">#&gt; item_01:item_03  9.561e-05</span></span>
+<span><span class="co">#&gt; item_01:item_02  8.399e-05</span></span>
+<span><span class="co">#&gt; item_02:item_08  5.081e-05</span></span>
+<span><span class="co">#&gt; hour:item_07     3.284e-05</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>From these results, we could add more terms by adding another layer of <code><a href="https://recipes.tidymodels.org/reference/step_interact.html">step_interact()</a></code> to our recipe.</p>
+</section></section><section id="sec-polynomials" class="level2" data-number="7.3"><h2 data-number="7.3" class="anchored" data-anchor-id="sec-polynomials">
+<span class="header-section-number">7.3</span> Polynomial Basis Expansions</h2>
+<p>There are two main functions that produce different types of orthogonal polynomials:</p>
+<ul>
+<li>
+<code><a href="https://recipes.tidymodels.org/reference/step_poly.html">step_poly()</a></code> wrapping <code><a href="https://rdrr.io/r/stats/poly.html">stats::poly()</a></code>
+</li>
+<li>
+<code><a href="https://recipes.tidymodels.org/reference/step_poly_bernstein.html">step_poly_bernstein()</a></code> wrapping <code><a href="https://wwenjie.org/splines2/reference/bernsteinPoly.html">splines2::bernsteinPoly()</a></code>.</li>
+</ul>
+<p>We can pass the columns of interest to each step:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span><span class="va">time_to_delivery</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">delivery_train</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_poly.html">step_poly</a></span><span class="op">(</span><span class="va">hour</span>, degree <span class="op">=</span> <span class="fl">4</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/prep.html">prep</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/bake.html">bake</a></span><span class="op">(</span>new_data <span class="op">=</span> <span class="cn">NULL</span>, <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html">starts_with</a></span><span class="op">(</span><span class="st">"hour"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 6,004 × 4</span></span>
+<span><span class="co">#&gt;   hour_poly_1 hour_poly_2 hour_poly_3 hour_poly_4</span></span>
+<span><span class="co">#&gt;         &lt;dbl&gt;       &lt;dbl&gt;       &lt;dbl&gt;       &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1   -0.02318    0.02240     -0.01758     0.008000</span></span>
+<span><span class="co">#&gt; 2    0.01558    0.01027     -0.003123   -0.01343 </span></span>
+<span><span class="co">#&gt; 3    0.01105   -0.0003742   -0.01174    -0.01039 </span></span>
+<span><span class="co">#&gt; 4   -0.002365  -0.01319      0.004819    0.01182 </span></span>
+<span><span class="co">#&gt; 5   -0.01761    0.006275     0.009360   -0.01725 </span></span>
+<span><span class="co">#&gt; 6   -0.02321    0.02249     -0.01777     0.008254</span></span>
+<span><span class="co">#&gt; # ℹ 5,998 more rows</span></span>
+<span></span>
+<span><span class="co"># or</span></span>
+<span></span>
+<span><span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span><span class="va">time_to_delivery</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">delivery_train</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_poly_bernstein.html">step_poly_bernstein</a></span><span class="op">(</span><span class="va">hour</span>, degree <span class="op">=</span> <span class="fl">4</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/prep.html">prep</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/bake.html">bake</a></span><span class="op">(</span>new_data <span class="op">=</span> <span class="cn">NULL</span>, <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html">starts_with</a></span><span class="op">(</span><span class="st">"hour"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 6,004 × 4</span></span>
+<span><span class="co">#&gt;    hour_1  hour_2   hour_3     hour_4</span></span>
+<span><span class="co">#&gt;     &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;      &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1 0.2593  0.03588 0.002207 0.00005090</span></span>
+<span><span class="co">#&gt; 2 0.01665 0.1209  0.3899   0.4717    </span></span>
+<span><span class="co">#&gt; 3 0.05106 0.2201  0.4216   0.3028    </span></span>
+<span><span class="co">#&gt; 4 0.2658  0.3742  0.2342   0.05495   </span></span>
+<span><span class="co">#&gt; 5 0.4047  0.1437  0.02267  0.001341  </span></span>
+<span><span class="co">#&gt; 6 0.2582  0.03549 0.002169 0.00004969</span></span>
+<span><span class="co">#&gt; # ℹ 5,998 more rows</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>If we would like different polynomial degrees for different columns, we would call the step multiple times.</p>
+</section><section id="sec-splines" class="level2" data-number="7.4"><h2 data-number="7.4" class="anchored" data-anchor-id="sec-splines">
+<span class="header-section-number">7.4</span> Spline Functions</h2>
+<p><span class="pkg"><a href="https://cran.r-project.org/package=recipes">recipes</a></span> has several spline steps:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/apropos.html">apropos</a></span><span class="op">(</span><span class="st">"step_spline"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "step_spline_b"           "step_spline_convex"      "step_spline_monotone"   </span></span>
+<span><span class="co">#&gt; [4] "step_spline_natural"     "step_spline_nonnegative"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The syntax is almost identical to the polynomial steps. For example, for natural splines:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span><span class="va">time_to_delivery</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">delivery_train</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_spline_natural.html">step_spline_natural</a></span><span class="op">(</span><span class="va">hour</span>, deg_free <span class="op">=</span> <span class="fl">4</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/prep.html">prep</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/bake.html">bake</a></span><span class="op">(</span>new_data <span class="op">=</span> <span class="cn">NULL</span>, <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html">starts_with</a></span><span class="op">(</span><span class="st">"hour"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 6,004 × 4</span></span>
+<span><span class="co">#&gt;   hour_1   hour_2  hour_3  hour_4</span></span>
+<span><span class="co">#&gt;    &lt;dbl&gt;    &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1 0.1970 0.004302 0       0      </span></span>
+<span><span class="co">#&gt; 2 0      0.06326  0.4307  0.3122 </span></span>
+<span><span class="co">#&gt; 3 0      0.2167   0.4816  0.2611 </span></span>
+<span><span class="co">#&gt; 4 0.2030 0.6655   0.03618 0.01668</span></span>
+<span><span class="co">#&gt; 5 0.3939 0.05003  0       0      </span></span>
+<span><span class="co">#&gt; 6 0.1959 0.004225 0       0      </span></span>
+<span><span class="co">#&gt; # ℹ 5,998 more rows</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Some steps also have arguments for the spline degree called <code>degree</code>. Also, most basis expansion function steps have an option called <code>options</code> to pass additional specifications, such as a vector of knots.</p>
+</section><section id="discretization" class="level2" data-number="7.5"><h2 data-number="7.5" class="anchored" data-anchor-id="discretization">
+<span class="header-section-number">7.5</span> Discretization</h2>
+<p>There is one step in <span class="pkg"><a href="https://cran.r-project.org/package=recipes">recipes</a></span> that conducts unsupervised binning called <code><a href="https://recipes.tidymodels.org/reference/step_discretize.html">step_discretize()</a></code> and the <span class="pkg"><a href="https://cran.r-project.org/package=embed">embed</a></span> package has two for supervised methods: <code><a href="https://embed.tidymodels.org/reference/step_discretize_cart.html">step_discretize_cart()</a></code> and <code><a href="https://embed.tidymodels.org/reference/step_discretize_xgb.html">step_discretize_xgb()</a></code>.</p>
+<p>For unsupervised binning:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">basic_binning</span> <span class="op">&lt;-</span> </span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span><span class="va">time_to_delivery</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">delivery_train</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_discretize.html">step_discretize</a></span><span class="op">(</span><span class="va">hour</span>, num_breaks <span class="op">=</span> <span class="fl">4</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/prep.html">prep</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://recipes.tidymodels.org/reference/bake.html">bake</a></span><span class="op">(</span><span class="va">basic_binning</span>, new_data <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">hour</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 6,004 × 1</span></span>
+<span><span class="co">#&gt;   hour </span></span>
+<span><span class="co">#&gt;   &lt;fct&gt;</span></span>
+<span><span class="co">#&gt; 1 bin1 </span></span>
+<span><span class="co">#&gt; 2 bin4 </span></span>
+<span><span class="co">#&gt; 3 bin4 </span></span>
+<span><span class="co">#&gt; 4 bin2 </span></span>
+<span><span class="co">#&gt; 5 bin1 </span></span>
+<span><span class="co">#&gt; 6 bin1 </span></span>
+<span><span class="co">#&gt; # ℹ 5,998 more rows</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The <code>hour</code> column has been converted to a factor. There is also an argument called <code>min_unique</code> that defines the “line of dignity” for the binning. If this value is less than the number of data points per bin that would occur for the value of <code>num_breaks</code>, binning is not used.</p>
+<p>To understand where the breakpoints reside, the <code><a href="https://generics.r-lib.org/reference/tidy.html">tidy()</a></code> method will show them:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html">tidy</a></span><span class="op">(</span><span class="va">basic_binning</span>, number <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 5 × 3</span></span>
+<span><span class="co">#&gt;   terms   value id              </span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;   &lt;dbl&gt; &lt;chr&gt;           </span></span>
+<span><span class="co">#&gt; 1 hour  -Inf    discretize_eoInz</span></span>
+<span><span class="co">#&gt; 2 hour    14.48 discretize_eoInz</span></span>
+<span><span class="co">#&gt; 3 hour    16.57 discretize_eoInz</span></span>
+<span><span class="co">#&gt; 4 hour    18.21 discretize_eoInz</span></span>
+<span><span class="co">#&gt; 5 hour   Inf    discretize_eoInz</span></span>
+<span></span>
+<span><span class="co"># note: </span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/quantile.html">quantile</a></span><span class="op">(</span><span class="va">delivery_train</span><span class="op">$</span><span class="va">hour</span>, probs <span class="op">=</span> <span class="op">(</span><span class="fl">0</span><span class="op">:</span><span class="fl">4</span><span class="op">)</span> <span class="op">/</span> <span class="fl">4</span><span class="op">)</span></span>
+<span><span class="co">#&gt;    0%   25%   50%   75%  100% </span></span>
+<span><span class="co">#&gt; 11.07 14.48 16.57 18.21 20.92</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The use of infinite bounds allows data falling outside of the range of the training set to be processed.</p>
+<p>If you want to use custom breakpoints, <code><a href="https://recipes.tidymodels.org/reference/step_cut.html">recipes::step_cut()</a></code> is also available.</p>
+<p>For supervised methods, the syntax is different in two ways. First, the outcome column is specified using the <code>outcome</code> argument. Secondly, additional parameters control the complexity of the results (i.e., the number of bins). These depend on the binning models. for CART binning, the arguments are <code>cost_complexity</code>, <code>tree_depth</code>, and <code>min_n</code>. They are different for the step that uses boosted trees.</p>
+<p>The format of the results is very similar though:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://embed.tidymodels.org">embed</a></span><span class="op">)</span></span>
+<span><span class="va">cart_binning</span> <span class="op">&lt;-</span></span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span><span class="va">time_to_delivery</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">delivery_train</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://embed.tidymodels.org/reference/step_discretize_cart.html">step_discretize_cart</a></span><span class="op">(</span><span class="va">hour</span>,</span>
+<span>                       outcome <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/vars.html">vars</a></span><span class="op">(</span><span class="va">time_to_delivery</span><span class="op">)</span>,</span>
+<span>                       cost_complexity <span class="op">=</span> <span class="fl">0.001</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/prep.html">prep</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://recipes.tidymodels.org/reference/bake.html">bake</a></span><span class="op">(</span><span class="va">cart_binning</span>, new_data <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">hour</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 6,004 × 1</span></span>
+<span><span class="co">#&gt;   hour         </span></span>
+<span><span class="co">#&gt;   &lt;fct&gt;        </span></span>
+<span><span class="co">#&gt; 1 [-Inf,12.28) </span></span>
+<span><span class="co">#&gt; 2 [18.97,19.68)</span></span>
+<span><span class="co">#&gt; 3 [16.63,18.97)</span></span>
+<span><span class="co">#&gt; 4 [15.73,16.24)</span></span>
+<span><span class="co">#&gt; 5 [12.28,13.23)</span></span>
+<span><span class="co">#&gt; 6 [-Inf,12.28) </span></span>
+<span><span class="co">#&gt; # ℹ 5,998 more rows</span></span>
+<span></span>
+<span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html">tidy</a></span><span class="op">(</span><span class="va">cart_binning</span>, number <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 11 × 3</span></span>
+<span><span class="co">#&gt;   terms value id                   </span></span>
+<span><span class="co">#&gt;   &lt;chr&gt; &lt;dbl&gt; &lt;chr&gt;                </span></span>
+<span><span class="co">#&gt; 1 hour  12.28 discretize_cart_ChWJu</span></span>
+<span><span class="co">#&gt; 2 hour  13.23 discretize_cart_ChWJu</span></span>
+<span><span class="co">#&gt; 3 hour  13.96 discretize_cart_ChWJu</span></span>
+<span><span class="co">#&gt; 4 hour  14.77 discretize_cart_ChWJu</span></span>
+<span><span class="co">#&gt; 5 hour  15.73 discretize_cart_ChWJu</span></span>
+<span><span class="co">#&gt; 6 hour  16.24 discretize_cart_ChWJu</span></span>
+<span><span class="co">#&gt; # ℹ 5 more rows</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>As you can see, the breakpoints are built into the factor levels.</p>
+
+
+</section></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/tidymodels\.aml4td\.org");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script><nav class="page-navigation"><div class="nav-page nav-page-previous">
+      <a href="../chapters/embeddings.html" class="pagination-link" aria-label="Embeddings">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Embeddings</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../chapters/overfitting.html" class="pagination-link" aria-label="Overfitting">
+        <span class="nav-page-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Overfitting</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+</body></html>

@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.5.4">
+<meta name="generator" content="quarto-1.5.22">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <title>Tidymodels Computing Supplement – Contributing</title>
 <style>
@@ -175,10 +175,28 @@ ul.task-list li input[type="checkbox"] {
  <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Working with Categorical Predictors</span></span></a>
   </div>
 </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/embeddings.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Embeddings</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/interactions-nonlinear.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Interactions and Nonlinear Features</span></span></a>
+  </div>
+</li>
         <li class="sidebar-item sidebar-item-section">
       <span class="sidebar-item-text sidebar-link text-start">
  <span class="menu-text">Optmization</span></span>
   </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/overfitting.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Overfitting</span></span></a>
+  </div>
+</li>
         <li class="sidebar-item sidebar-item-section">
       <span class="sidebar-item-text sidebar-link text-start">
  <span class="menu-text">Classification</span></span>
@@ -267,10 +285,10 @@ ul.task-list li input[type="checkbox"] {
 <p>Regarding R packages, the repository has a DESCRIPTION file as if it were an R package. This lets us specify precisely what packages and their versions should be installed. The packages listed in the imports field contain packages for modeling/analysis and packages used to make the website/book. Some basic system requirements are likely needed to install packages: Fortran, gdal, and others.</p>
 <p>The main requirements are as follows.</p>
 <section id="quarto" class="level3"><h3 class="anchored" data-anchor-id="quarto">Quarto</h3>
-<p>Quarto is an open-source scientific and technical publishing system. <a href="https://quarto.org/docs/get-started/">Quarto</a> version 1.4.510 is used to compile the website.</p>
+<p>Quarto is an open-source scientific and technical publishing system. <a href="https://quarto.org/docs/get-started/">Quarto</a> version 1.5.22 is used to compile the website.</p>
 </section><section id="r-and-renv" class="level3"><h3 class="anchored" data-anchor-id="r-and-renv">R and renv</h3>
 <p>R version 4.3.2 (2023-10-31) is what we are currently using. We suggest using <a href="https://github.com/r-lib/rig">rig</a> to manage R versions. There are several IDEs that you can use. We’ve used RStudio (&gt;= 2023.6.1.524).</p>
-<p>The current strategy is to use the <a href="https://rstudio.github.io/renv/">renv</a> (&gt;= version 1.0.3) package to make this project more isolated, portable and reproducible.</p>
+<p>The current strategy is to use the <a href="https://rstudio.github.io/renv/">renv</a> (&gt;= version 1.0.5) package to make this project more isolated, portable and reproducible.</p>
 <p>To get package dependencies installed…</p>
 <details><p>When you open the <code>computing-tidymodels.Rproj</code> file, the renv package should be automatically installed/updated (if needed). For example:</p>
 <pre><code># Bootstrapping renv 1.0.3 ---------------------------------------------------
@@ -422,6 +440,24 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     // clear code selection
     e.clearSelection();
   });
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/tidymodels\.aml4td\.org");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
   function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
@@ -456,7 +492,11 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       try { href = new URL(href).hash; } catch {}
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
-      return note.innerHTML;
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
     });
   }
   const xrefs = window.document.querySelectorAll('a.quarto-xref');
@@ -730,12 +770,12 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   }
 });
 </script><nav class="page-navigation"><div class="nav-page nav-page-previous">
-      <a href="../chapters/news.html" class="pagination-link  aria-label=" news="">
+      <a href="../chapters/news.html" class="pagination-link" aria-label="News">
         <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">News</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="../chapters/introduction.html" class="pagination-link" aria-label="<span class='chapter-number'>1</span>&nbsp; <span class='chapter-title'>Introduction</span>">
+      <a href="../chapters/introduction.html" class="pagination-link" aria-label="Introduction">
         <span class="nav-page-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
