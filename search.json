@@ -74,7 +74,7 @@
     "href": "chapters/news.html#changelog",
     "title": "News",
     "section": "Changelog",
-    "text": "Changelog\n\n2023-12-11\nAdded a chapter on initial data splitting.",
+    "text": "Changelog\n\n2024-07-01\nAdded chapters on embeddings, interactions, splines, and overfitting\n\n\n2023-12-11\nAdded a chapter on initial data splitting.",
     "crumbs": [
       "News"
     ]
