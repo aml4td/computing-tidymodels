@@ -1,0 +1,362 @@
+---
+knitr:
+  opts_chunk:
+    cache.path: "../_cache/missing-data/"
+---
+
+# Missing Data {#sec-missing-data}
+
+This chapter outlines how to work with missing data when building prediction models.  
+
+```{r}
+#| label: interactions-nonlinear-knitr-setup
+#| include: false
+
+knitr::opts_chunk$set(
+    comment = "#>",
+    collapse = TRUE,
+    fig.align = 'center',
+    fig.path = "../figures/",
+    fig.width = 10,
+    fig.height = 6,
+    out.width = "95%",
+    dev = 'svg',
+    dev.args = list(bg = "transparent"),
+    tidy = FALSE,
+    echo = TRUE
+  )
+
+options(digits = 4, width = 84)
+options(dplyr.print_min = 6, dplyr.print_max = 6)
+options(cli.width = 85)
+options(crayon.enabled = FALSE)
+options(pillar.advice = FALSE, pillar.min_title_chars = Inf, pillar.sigfig = 4)
+
+source("../R/_common.R")
+req_pkg <- c("naniar", "ranger", "tidymodels")
+```
+
+
+A general discussion on missing data in R can be found in [R for Data Science (2e)](https://r4ds.hadley.nz/missing-values). [The Missing Book](https://tmb.njtierney.com/) is an excellent reference that supplements this chapter. 
+
+The data will be taken from 
+- [_A morphometric modeling approach to distinguishing among bobcat, coyote, and gray fox scats_](https://doi.org/10.2981/wlb.00105). The data set is designed to see how well experts can determine which of three species (bobcats, coyotes, and gray foxes) can be identified by their ~~poop~~ feces (a.k.a. scat). There are physical measurements as well as some laboratory tests that can be used as predictors. The species is the outcome. The data are in the `r pkg(modeldata)` package. 
+
+## Requirements
+
+`r pkg_list(req_pkg)`
+
+```{r}
+#| label: interactions-nonlinear-installs
+#| eval: false
+#| echo: true
+req_pkg <- c("naniar", "ranger", "tidymodels")
+
+# Check to see if they are installed: 
+pkg_installed <- vapply(req_pkg, rlang::is_installed, logical(1))
+
+# Install missing packages: 
+if ( any(!pkg_installed) ) {
+  install_list <- names(pkg_installed)[!pkg_installed]
+  pak::pak(install_list)
+}
+```
+
+Let's load the meta package and manage some between-package function conflicts. 
+
+```{r}
+#| label: start-tidymodels
+#| results: hide
+#| message: false
+#| warning: false
+library(tidymodels)
+tidymodels_prefer()
+theme_set(theme_bw())
+```
+
+The data are automatically attached when the `r pkg(tidymodels)` package is loaded. The data frame is named `scat`. Let's split the data into training and testing, create some resamples (to be discussed in chapter TODO), and a data frame of predictor values. For both data splitting steps, we'll stratify by the species since the frequencies of each are not balanced. 
+
+```{r}
+#| label: poop
+
+set.seed(383)
+scat_split <- initial_split(scat, strata = Species)
+scat_tr <- training(scat_split)
+scat_te <- testing(scat_split)
+
+scat_rs <- vfold_cv(scat_tr, repeats = 5, strata = Species)
+
+scat_tr_preds <- scat_tr %>% select(-Species)
+```
+
+Here is the breakdown of the species per data partition: 
+
+```{r}
+#| label: species
+scat_tr %>% count(Species)
+scat_te %>% count(Species)
+```
+
+We'll spend some time on visualization and summary techniques that are helpful when performing exploratory data analysis. 
+
+## Investigating missing data
+
+The `r pkg(naniar)` package is an excellent tool for missing data. Let's load it and then get a summary of our training set variables. 
+
+```{r}
+#| label: summary
+library(naniar)
+
+miss_var_summary(scat_tr_preds) %>% print(n = Inf)
+```
+
+The `miss_var_summary()` function summarizes the missing data in the predictors. The `n_miss` column is the number of missing values, and the `p_miss` column is the proportion of missing values. 
+
+For convenience, let’s make character vectors of column names for predictors with and without missing values. 
+
+```{r}
+#| label: chr-vecs
+miss_cols <- c("Taper", "TI", "Diameter", "Mass", "d13C", "d15N", "CN")
+non_miss_cols <- c("Month", "Year", "Site", "Location", "Age", "Number", "Length", 
+                   "ropey", "segmented", "flat", "scrape")
+```
+
+We can make an _upset plot_, which visualizes frequently occurring subsets in the high-dimensional Venn diagram where each predictor is encoded as missing/not missing: 
+
+```{r}
+#| label: upset
+
+library(naniar)
+gg_miss_upset(scat_tr_preds, nsets = 10)
+```
+
+From this, we might notice that there might be two different mechanisms causing missing data. First, the laboratory values for predictors (`d13C`, `d15N`, and `CN`) are only missing with one another. This suggests that some laboratory errors may be the cause of their missingness. The second set of predictors that are missing at once are all related to physical properties measured on-site. If the diameter and taper predictors cannot be ascertained, it might be because the scat sample might not have been... solid enough to measure. These assertions, if accurate, help us understand the type of missingness involved and, by extension, how to handle them. 
+
+The steps we would take to address missingness in the predictors is a preprocessing step; the tidymodels approach is to handle these in a recipes object. Recipes are more thoroughly introduced in @sec-recipe-intro. For now, we’ll show their usage and defer the broader information on how recipes work (and why you might want to use them) to the next chapter. 
+
+## Filtering 
+
+A recipe consists of an initialized object and a sequence of one or more “steps” that define specific actions/computations that should be done to the data prior to modeling. 
+
+The initialization consists of a call to `recipe::recipe()`. The most common interface used there is a formula. This declares which column is the outcome and which are predictors. For example: 
+
+```{r}
+#| label: recipe-start
+scat_rec <- recipe(Species ~ ., data = scat_tr)
+```
+
+At this point, the recipe catalogs each column’s name, data type, and role (i.e., predictor or outcome). From there, we can add step functions to specify what should be done to what columns.  
+
+Two recipes steps can be used for filtering missing data: `r cli::format_inline("{.fn recipes::step_naomit}")` and `r cli::format_inline("{.fn recipes::step_filter_missing}")`. The former removes rows of the training set, and the latter removes predictors if they have too many missing values. 
+
+### Row filtering
+
+Let's add `step_naomit()` to the recipe and declare the `r pkg(dplyr)` selector `dplyr::everything()` should be used to capture which columns should be checked for missing rows: 
+
+```{r}
+#| label: remove-rows
+
+na_omit_rec <- 
+  scat_rec %>% 
+  step_naomit(everything())
+```
+
+To estimate the recipe (manually), we can use `recipes::prep()` to process the training set and use these values to decide which rows to omit: 
+
+```{r}
+#| label: remove-row-prep
+
+na_omit_rec <- 
+  scat_rec %>% 
+  step_naomit(everything()) %>% 
+  prep()
+```
+
+The `recipes::bake()` function can be used to apply the recipe to a data set. Before processing, there are `r nrow(scat_tr)` scat samples in the training set. How many remain after applying the recipe?
+
+To do this, we can use the `bake()` function but supply `new_data = NULL`. This is a shortcut: when preparing the recipe, we must execute all the steps on the entire training set. By default, recipes save the preprocessed version of the training set in the recipe object. There's no need to re-process the data. 
+
+The results is that we loose `r sum(!complete.cases(scat_tr))` scat samples due to missingness: 
+
+```{r}
+#| label: remove-row-bake-1
+all_complete <- bake(na_omit_rec, new_data = NULL)
+
+nrow(all_complete)
+```
+
+_However_, `step_naomit()` is a bit irregular compared to other recipe steps. It is designed to [skip execution on every other data set](https://recipes.tidymodels.org/articles/Skipping.html). This is an important (and appropriate) choice for this method. 
+
+If we were to apply the recipe to the test set, it would _not_ exclude the missing rows: 
+
+```{r}
+#| label: remove-row-bake-2
+bake(na_omit_rec, new_data = scat_te) %>% nrow()
+
+nrow(scat_te)
+
+# but there are missing values:
+sum(!complete.cases(scat_te))
+```
+
+### Column filtering
+
+The sample size of this data set is not large; removing rows might be more problematic than removing columns with a lot of missingness. We can use the `step_filter_missing()` step to do this. We decide on a threshold representing our "line of dignity" regarding how much missingness is acceptable. That can be specified as a proportion of missing data and is passed to the `threshold` argument. 
+
+Here's an example where we determine that more than 10% missingness is too much. Based on our results from the `r pkg(naniar)` package above, this should eliminate two predictors (`Taper` and `TI`). 
+
+
+```{r}
+#| label: filter-predictors
+filter_features_rec <- 
+  scat_rec %>% 
+  step_filter_missing(everything(), threshold = 0.10) %>% 
+  prep()
+
+ncol(scat_tr)
+bake(filter_features_rec, new_data = NULL) %>% ncol()
+
+# use the tody method to determine which were removed: 
+tidy(filter_features_rec, number = 1)
+```
+
+
+## Imputation
+
+```{r}
+#| label: step-names
+#| include: false
+
+steps <- ls(pattern = "^step_impute_", envir = asNamespace("recipes"))
+steps <- steps[!grepl("new", steps)]
+steps <- paste0("recipes::", steps)
+steps <- map_chr(steps, ~ cli::format_inline("{.fn {.x}}"))
+names(steps) <- rep("*", length(steps))
+# cli::cli_bullets(steps)
+```
+
+The `r pkg(recipes)` package has several steps for imputing predictors: `r steps`. 
+
+### Linear regression
+
+Let’s consider using linear regression to predict the rows missing their value of `Taper`. The imputation steps allow you to select which column to impute and which predictors to use as predictors in the imputation model.
+
+If we were to predictor `Taper` as a function of `Age`, `Length`, `Number`, and `Location`, the code would be: 
+
+```{r}
+#| label: impute-lm
+
+lin_impute_rec <- 
+  scat_rec %>% 
+  step_impute_linear(Taper, impute_with = imp_vars(Age, Length, Number, Location)) %>% 
+  prep() # <- This estimates the regression
+
+# Imputing the test set: 
+lin_impute_rec %>% 
+  bake(new_data = scat_te, Taper) %>% 
+  filter(is.na(Taper))
+```
+
+The `tidy()` methods can extract the model object. We'll use `tidyr::enframe()` to get the coefficients: 
+
+```{r}
+#| label: impute-lm-coef
+lm_res <- tidy(lin_impute_rec, number = 1) 
+lm_res
+
+enframe(coef(lm_res$model[[1]]))
+```
+
+We might also want to impute the predictor based on its mean value but would like it to be different based on some other grouping column. We can accomplish this by using a single categorical predictor in the formula (such as `Location`): 
+
+```{r}
+#| label: impute-by-group
+
+group_impute_rec <- 
+  scat_rec %>% 
+  step_mutate(Taper_missing = is.na(Taper)) %>% 
+  step_impute_linear(Taper, impute_with = imp_vars(Location)) %>% 
+  prep()
+
+group_impute_rec %>% 
+  bake(new_data = scat_tr, Taper, Taper_missing, Location) %>% 
+  filter(Taper_missing) %>% 
+  count(Taper, Location)
+```
+
+### Nearest-neighbor imputation
+
+The syntax for imputation steps is very consistent, so the only change that would be made to move from linear imputation to a nonlinear, nearest-neighbor method would be to change the name. 
+
+The number of neighbors defaults to five. We can change that using the `neighbors` option:
+
+```{r}
+#| label: impute-knn
+
+knn_impute_rec <- 
+  scat_rec %>% 
+  step_impute_knn(
+    all_of(miss_cols), 
+    impute_with = imp_vars(Age, Length, Number, Location),
+    neighbors = 5) %>% 
+  prep()
+
+imputed_train <- 
+  knn_impute_rec %>% 
+  bake(new_data = scat_tr)
+
+mean(complete.cases(imputed_train))
+```
+
+Note that this step uses [Gower distance]() to define the neighbors. This method does _not_ require the predictors to be numeric or in the same units; they can be left as-is. Also, the function keeps the imputed data in the same format. A categorical predictor being imputed will remain a categorical predictor. 
+
+
+### Tuning the preprocessors
+
+The syntax to tune parameters will be described in depth in @sec-overfitting. Let’s briefly show that preprocessing parameters can also be tuned. 
+
+Many tree-based models can naturally handle missingness. Random forest models compute a large number of tree-based models and combine them into an ensemble model. Unfortunately, most implementations of random forests require complete data. 
+
+Let’s use our neighbor-based imputation method but tune the number of neighbors. At the same time, we can tune the random forest $n_{min}$ parameter using a space-filling grid. 
+
+To do this, we give the `neighbors` argument of `step_impute_knn()` a value of `tune()`. This marks it for optimization. tidymodels knows a lot about these parameters and can make informed decisions about the range and scale of the tuning parameters. With the `tune::tune_grid()` function, using `grid = 15` will automatically create a two-factor grid of candidate models to evaluate. 
+
+```{r}
+#| label: impute-knn-tuned
+#| cache: true
+
+knn_impute_rec <- 
+  scat_rec %>% 
+  step_impute_knn(
+    all_of(miss_cols), 
+    impute_with = imp_vars(Age, Length, Number, Location),
+    neighbors = tune()) 
+
+rf_spec <- 
+  rand_forest(min_n = tune(), trees = 1000) %>% 
+  set_mode("classification")
+
+knn_rf_wflow <- workflow(knn_impute_rec, rf_spec)
+
+knn_rf_res <- 
+  knn_rf_wflow %>% 
+  tune_grid(
+    scat_rs,
+    grid = 15
+  )
+```
+
+Looking at the results below, we can see that the number of neighbors does not seem to affect performance (measured via a Brier score). However, for these data, the random forests $n_{min}$ parameter does have a profound effect on model performance. 
+
+```{r}
+#| label: impute-knn-tune-res
+#| fig-width: 5
+#| fig-height: 3
+#| fig-align: "center"
+#| out-width: "50%"
+
+show_best(knn_rf_res, metric = "brier_class")
+
+autoplot(knn_rf_res, metric = "brier_class")
+```
+
