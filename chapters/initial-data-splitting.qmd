@@ -35,7 +35,7 @@ options(crayon.enabled = FALSE)
 options(pillar.advice = FALSE, pillar.min_title_chars = Inf, pillar.sigfig = 4)
 
 source("../R/_common.R")
-req_pkg <- c("caret", "tidymodels")
+req_pkg <- c("caret", "spatialsample", "tidymodels", "tidysdm")
 ```
 
 `r pkg_list(req_pkg)`
@@ -44,7 +44,7 @@ req_pkg <- c("caret", "tidymodels")
 #| label: initial-data-splitting-installs
 #| eval: false
 #| echo: true
-req_pkg <- c("caret", "tidymodels")
+req_pkg <- c("caret", "spatialsample", "tidymodels", "tidysdm")
 
 # Check to see if they are installed: 
 pkg_installed <- vapply(req_pkg, rlang::is_installed, logical(1))
@@ -108,17 +108,17 @@ For the Ames data, we know that the distribution of sale prices has some outlyin
 ```{r}
 #| label: setup-split
 set.seed(3024)
-ames_split <- initial_split(ames, strata = Sale_Price, breaks = 5)
+ames_block_split <- initial_split(ames, strata = Sale_Price, breaks = 5)
 
-ames_split
+ames_block_split
 ```
 
 The output shows the size of the resulting data sets. To get the two data sets, there are simple accessor functions: 
 
 ```{r}
 #| label: split-data-sets
-ames_train <- training(ames_split)
-ames_test  <- testing(ames_split)
+ames_train <- training(ames_block_split)
+ames_test  <- testing(ames_block_split)
 ```
 
 Consistent with the printed output, there are `r format(nrow(ames_train), big.mark = ",")` data points in the training set and `r nrow(ames_test)` reserved for testing. 
@@ -134,6 +134,7 @@ Instead of using the outcome to partition the data, other columns can be used wh
 Maximum dissimilarity sampling can be conducted using `caret::maxDissim()`. It starts with an initial set of one or more or fewer data points to use as a starter. Unless there is a specific set of points of interest, picking one close to the center of the multivariate predictor distribution might make sense. Here is some code that uses the geographic coordinates as the splitting variables: 
 
 ```{r}
+#| label: ames-dissim
 #| fig-height: 4.5
 #| fig-width: 4.5
 #| fig-align: center
@@ -218,12 +219,12 @@ From here, the code to get the resulting data sets is the same as previously sho
 
 ```{r}
 #| label: grouped-split-data-sets
-orth_train <- training(orth_split)
-orth_test  <- testing(orth_split)
+orth_tr <- training(orth_split)
+orth_te  <- testing(orth_split)
 
 # Is there any overlap in the subjects? 
-subjects_train <- unique(orth_train$Subject)
-subjects_test  <- unique(orth_test$Subject)
+subjects_train <- unique(orth_tr$Subject)
+subjects_test  <- unique(orth_te$Subject)
 
 intersect(subjects_train, subjects_test)
 ```
@@ -253,3 +254,94 @@ ames_test  <- testing(ames_val_split)
 
 Suppose a data frame had 100 rows. Using `prop = c(0.8, 0.1)` would place the first 80 rows into training, the next 10 into validation, and the last 10 into testing. Keeping the data appropriately ordered is important when using validation sets in tidymodels. 
 
+## Splitting Spatial Data {#sec-spatial-splitting}
+
+For spatial data, we need to convert longitude and latitude to a special type of vector called a [geometry](https://r-spatial.github.io/sf/reference/st_geometry.html) vector. The `r pkg(sf)` package can do this so let's load that and two others:
+
+```{r}
+#| label: load-spatial-pkgs
+library(sf)
+library(spatialsample)
+library(tidysdm)
+```
+
+The function to make the conversion is `sf::st_as_sf()`:
+
+```{r}
+#| label: cols-to-geom
+ames_sf <-
+  ames %>%
+  st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
+
+ames_sf %>% select(geometry)
+```
+
+The `crs` argument specifies a [coordinate reference system](https://en.wikipedia.org/wiki/Spatial_reference_system). We used [4326](https://spatialreference.org/ref/epsg/4326/) since it contains the US. 
+
+Note that this is a _sticky_ column and can't be removed via normal means. There is a function to do this though: `sf::st_drop_geometry()`. 
+
+The `r pkg(tidysdm)` package can create an initial data split using the methods given in the `r pkg(spatialsample)` package. The function is `tidysdm::spatial_initial_split()`.  The main argument is `prop` for the amount of data in the _testing_ set. Let’s put 20% into testing using `prop = 0.2`. 
+
+After specifying this, we can set a blocking strategy using `r pkg(spatialsample)`, such as: 
+ 
+ - `spatial_block_cv()`: create a regular grid. 
+ - `spatial_clustering_cv()`: use a clustering method to group the data. 
+
+For the blocking method, we need to specify the number of blocks (`n`), whether the block is square or hexagonal (`square`), and (optionally) the radius for a buffer (`buffer`). These options will define how to create blocks. There is another option that designates how the blocks are assigned to the training set: `method`. You should experiment with these for your data. We’ll use `method = "continuous"` in this example. 
+
+```{r}
+set.seed(318)
+ames_block_split <-
+  spatial_initial_split(
+    ames_sf, 
+    prop = 0.2, 
+    strategy = spatial_block_cv,
+    method = "continuous",
+    n = 25, 
+    square = FALSE)
+ames_block_split
+```
+
+There is a handy `autoplot()` method to visually assess the results: 
+
+```{r}
+#| label: ames-split-block
+#| fig-height: 4
+#| fig-width: 6
+#| fig-align: center
+#| out-width: "70%"
+autoplot(ames_block_split, cex = 1 / 2) + 
+  ggtitle("Blocking, no buffer") + 
+  theme_bw()
+```
+
+Let's add a buffer around these blocks to stop adjacent data from being the training and testing sets. We can experiment with the `buffer` argument until we have results that seem acceptable. 
+
+```{r}
+set.seed(318)
+ames_block_buff_split <-
+  spatial_initial_split(
+    ames_sf, 
+    prop = 0.2, 
+    strategy = spatial_block_cv,
+    method = "continuous",
+    n = 25, 
+    square = FALSE,
+    buffer = 250)
+ames_block_buff_split
+```
+
+The buffer points are on gray: 
+
+```{r}
+#| label: ames-split-block-buff
+#| fig-height: 4
+#| fig-width: 6
+#| fig-align: center
+#| out-width: "70%"
+autoplot(ames_block_buff_split, cex = 1 / 2) + 
+  ggtitle("Blocking with a buffer") + 
+  theme_bw()
+```
+
+As with the previous methods, the `training()` and `testing()` functions are used to obtain those data sets. 

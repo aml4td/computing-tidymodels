@@ -61,6 +61,7 @@ book:
   - chapters/interactions-nonlinear.qmd
   - part: "Optmization"
   - chapters/overfitting.qmd
+  - chapters/resampling.qmd
   - part: "Classification"  
   - part: "Regression"  
   - part: "Characterization"  

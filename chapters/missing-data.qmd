@@ -9,7 +9,7 @@ knitr:
 This chapter outlines how to work with missing data when building prediction models.  
 
 ```{r}
-#| label: interactions-nonlinear-knitr-setup
+#| label: missing-data-knitr-setup
 #| include: false
 
 knitr::opts_chunk$set(
@@ -39,8 +39,7 @@ req_pkg <- c("naniar", "ranger", "tidymodels")
 
 A general discussion on missing data in R can be found in [R for Data Science (2e)](https://r4ds.hadley.nz/missing-values). [The Missing Book](https://tmb.njtierney.com/) is an excellent reference that supplements this chapter. 
 
-The data will be taken from 
-- [_A morphometric modeling approach to distinguishing among bobcat, coyote, and gray fox scats_](https://doi.org/10.2981/wlb.00105). The data set is designed to see how well experts can determine which of three species (bobcats, coyotes, and gray foxes) can be identified by their ~~poop~~ feces (a.k.a. scat). There are physical measurements as well as some laboratory tests that can be used as predictors. The species is the outcome. The data are in the `r pkg(modeldata)` package. 
+The data will be taken from [_A morphometric modeling approach to distinguishing among bobcat, coyote, and gray fox scats_](https://doi.org/10.2981/wlb.00105). The data set is designed to see how well experts can determine which of three species (bobcats, coyotes, and gray foxes) can be identified by their ~~poop~~ feces (a.k.a. scat). There are physical measurements as well as some laboratory tests that can be used as predictors. The species is the outcome. The data are in the `r pkg(modeldata)` package. 
 
 ## Requirements
 
