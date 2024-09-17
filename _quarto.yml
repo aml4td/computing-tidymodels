@@ -62,6 +62,7 @@ book:
   - part: "Optmization"
   - chapters/overfitting.qmd
   - chapters/resampling.qmd
+  - chapters/grid.qmd
   - part: "Classification"  
   - part: "Regression"  
   - part: "Characterization"  

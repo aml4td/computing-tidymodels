@@ -475,7 +475,7 @@ If there were issues with the computations, `collect_notes(concrete_res)` would 
 
 Next, let’s look at a few customizations for `fit_resamples()`. 
 
-### Parallel processing
+### Parallel processing {#sec-parallel-resamples}
 
 We fit 10 different Cubist models to 10 slightly different data sets. None of these computations depend on one another. This is the case of an “embarrassingly parallel” computing issue. We can increase our computational efficiency by running training the models on multiple “worker” processes on our computer(s). 
 

@@ -1,0 +1,332 @@
+---
+knitr:
+  opts_chunk:
+    cache.path: "../_cache/grid/"
+---
+
+# Grid Search {#sec-grid}
+
+The previous chapters have discussed how to estimate performance using resampling as well as how to tag arguments for optimization (via `tune()`). This page will illustrate how to use similar tools to optimize models via grid search. 
+
+```{r}
+#| label: grid-knitr-setup
+#| include: false
+
+knitr::opts_chunk$set(
+    comment = "#>",
+    collapse = TRUE,
+    fig.align = 'center',
+    fig.path = "../figures/",
+    fig.width = 10,
+    fig.height = 6,
+    out.width = "95%",
+    dev = 'svg',
+    dev.args = list(bg = "transparent"),
+    tidy = FALSE,
+    echo = TRUE
+  )
+
+options(digits = 4, width = 84)
+options(dplyr.print_min = 6, dplyr.print_max = 6)
+options(cli.width = 85)
+options(crayon.enabled = FALSE)
+options(pillar.advice = FALSE, pillar.min_title_chars = Inf, pillar.sigfig = 4)
+
+source("../R/_common.R")
+req_pkg <- c("Cubist", "finetune", "rules", "tidymodels")
+```
+```{r}
+#| label: parallel
+#| include: false
+library(future)
+plan("multisession")
+```
+
+## Requirements
+
+As with the previous chapter, we will use the `concrete` data set from the `r pkg(modeldata)` package (which is automatically loaded below) to illustrate some of the methods.
+
+`r pkg_list(req_pkg)`
+
+```{r}
+#| label: interactions-nonlinear-installs
+#| eval: false
+#| echo: true
+req_pkg <- c("Cubist", "finetune", "rules", "tidymodels")
+
+# Check to see if they are installed: 
+pkg_installed <- vapply(req_pkg, rlang::is_installed, logical(1))
+
+# Install missing packages: 
+if ( any(!pkg_installed) ) {
+  install_list <- names(pkg_installed)[!pkg_installed]
+  pak::pak(install_list)
+}
+```
+
+Let's load the meta package and manage some between-package function conflicts. 
+
+```{r}
+#| label: start-tidymodels
+#| results: hide
+#| message: false
+#| warning: false
+library(tidymodels)
+tidymodels_prefer()
+theme_set(theme_bw())
+```
+
+
+## Creating grids
+
+The `r pkg(dials)` package has several grid creation functions, whose names all start with grid_. The primary input is a `r pkg(dials)` parameter set object, which can be created from a model, recipe, or workflow. The primary functions are: 
+
+ - `grid_regular()` for regular grids. The argument for specifying the size of the grid is called `levels`. This can be a single number (recycled across parameters) or a vector of sizes for each tuning parameter. 
+ - `grid_random()` creates random uniform parameter values. The argument `size` dictates how many candidate combinations are created. 
+ - `grid_space_filling()` can produce different types of space-filling designs (via the `type` argument). It also uses a `size` argument. 
+
+Let’s pick back up from the Cubist example in @sec-resampled-models. We can tag two of the Cubist models’s parameters for tuning: 
+
+ - The number of `committee` members in the ensemble (usually ranging from one to 100). 
+ - The number of `neighbors` to use in a post hoc model adjustment phase, ranging from zero neighbors (i.e., no adjustment) to nine. 
+
+Both of these parameters are described more in a blog post on ["Modern Rule-Based Models"](https://rviews.rstudio.com/2020/05/21/modern-rule-based-models/).  
+
+We need to load the `r pkg(rules)` package to enable access to the model, mark these parameters for tuning, and then extract the parameter set needed to make the grids. 
+
+```{r}
+#| label: basic-cubist
+library(rules)
+
+cubist_spec <- cubist_rules(committees = tune(), neighbors = tune())
+
+cubist_param <- 
+  cubist_spec %>% 
+  extract_parameter_set_dials()
+
+cubist_param
+```
+
+Let's make a uniform space-filling design with 25 candidate models: 
+
+```{r}
+#| label: cubist-grid
+#| fig-width: 4
+#| fig-height: 4
+#| out-width: 40%
+
+cubist_grid <- grid_space_filling(cubist_param, size = 25) 
+
+cubist_grid %>% 
+  ggplot(aes(committees, neighbors)) + 
+  geom_point() + 
+  coord_fixed(ratio = 10)
+```
+
+Recall from @sec-tuning-parameters, we can manipulate the ranges and values of the tuning parameters in the parameter set using `update()`. 
+
+Note that: 
+
+ - If we labeled any of our parameters (e.g., `neighbors = tune("K")`), that label is used as the column name.
+ - Some parameters are associated with a transformation, and, by default, the values are created on that scale and then transformed back to the original units when the grid is returned. 
+ - The `size` argument should be considered the _maximum_ size; redundant combinations are removed. For example:
+
+```{r}
+#| label: max-size
+# Default range is 0L to 9L:
+cubist_rules(neighbors = tune("K")) %>% 
+  extract_parameter_set_dials() %>%
+  grid_space_filling(size = 50) %>% 
+  arrange(K)
+```
+
+You can also make grid manually as long as they are in a data frame and the column names match the parameter types/labels of the parameters: 
+
+```{r}
+#| label: manual-grid
+crossing(committees = c(1, 8, 100), neighbors = c(0, 9))
+```
+
+Finally, as a reminder, a workflow can contain preprocessing arguments that were tagged for optimization via `tune()`. These values are treated the same as model arguments when it comes to extracting the parameter set and creating grids. 
+
+## Tuning models with grids
+
+For grids, the three main functions are `tune::tune_grid()` and the two racing functions in the `r pkg(finetune)` package: `finetune::tune_race_anova()` and `finetune::tune_race_winloss()`. The syntax for these is nearly identical and also closely follows the previously described code for `fit_resamples()` from @sec-resampled-models.
+
+The primary arguments for these tuning functions in tidymodels are: 
+
+ - `grid`: Either a data frame or an integer value. The latter choice will trigger tidymodels to make a space-filling design for you. 
+ - `param_info`: The parameter set object. This is only needed if `grid` is an integer and you request nonstandard ranges/values for one or more parameters. 
+ 
+Other arguments, such as `metrics`, are the same. The control function for these functions are named differently (e.g., `tune_race()`). 
+
+To get started, let’s recreate the objects for the concrete data that match those from the previous chapter: 
+
+```{r}
+#| label: conc-setup
+set.seed(426)
+concrete_split <- initial_split(concrete, prop = 3 / 4)
+concrete_tr <- training(concrete_split)
+concrete_te <- testing(concrete_split)
+concrete_rs <- vfold_cv(concrete_tr)
+```
+
+We will reuse the `cubist_spec` and `cubist_grid` objects created above. 
+
+Let's do basic grid search: 
+
+```{r}
+#| label: basic-cubist-grid
+#| cache: true
+
+cubist_res <- 
+  cubist_spec %>% 
+  tune_grid(
+    compressive_strength ~ .,
+    resamples = concrete_rs,
+    grid = cubist_grid,
+    control = control_grid(save_pred = TRUE, save_workflow = TRUE)
+  )
+```
+
+The option to save the workflow for our model will be references below. 
+
+This object is similar to the one produced by fit_resamples except that the `.metrics` and `.predictions` columns have more rows since their values contain the results for the `r nrow (cubist_grid)` candidates. We have our previous functions to rely on: 
+
+```{r}
+#| label: tune-helpers
+collect_metrics(cubist_res)
+collect_predictions(cubist_res)
+```
+
+There are a few additional methods that we can apply here. First, we can visualize the results using `autoplot()`: 
+
+```{r}
+#| label: cubist-autoplot
+#| fig-width: 7
+#| fig-height: 4
+#| out-width: 75%
+autoplot(cubist_res)
+```
+
+This function has a `metric` argument in case you want to plot a selection of metrics. Also, for regular grids, the visualization can look very different. 
+
+From these results, both tuning parameters have an effect on performance. A small number of committees or neighbors have poor performance. How can we tell which one was best for either metric? 
+
+There are also `show_best()` and `select_*()` functions to select the best results _for a given metric_: 
+
+```{r}
+#| label: cubist-select
+show_best(cubist_res, metric = "rmse")
+
+show_best(cubist_res, metric = "rsq", n = 3)
+```
+
+To return the candidate with the smallest RMSE: 
+
+```{r}
+#| label: cubist-best-candidate
+
+cubist_best <- select_best(cubist_res, metric = "rmse")
+cubist_best
+```
+
+There are a few things that we can do with this candidate value. We can use it to subset other results. For example, we can get the out-of-sample predictions _for just this model_ via: 
+
+```{r}
+#| label: cubist-best-augment
+cubist_res %>% 
+  collect_predictions() %>% 
+  nrow()
+
+# Just for the best:
+cubist_res %>% 
+  collect_predictions(parameters = cubist_best) %>% 
+  nrow()
+
+# augment() returns the numerically best by default: 
+cubist_res %>% 
+  augment() %>% 
+  nrow()
+```
+
+We can also give these values for the calibration plot produced by `r pkg(probably)`: 
+
+```{r}
+#| label: reg-cal-best
+#| fig-width: 5
+#| fig-height: 5
+#| out-width: 50%
+#| warning: false
+library(probably)
+cal_plot_regression(cubist_res, parameters = cubist_best)
+```
+
+If these candidate points appear to be optimal, we can also update our model specification (or workflow) using a `finalize_*()` function:
+
+```{r}
+#| label: cubist-finalize
+finalize_model(cubist_spec, cubist_best)
+```
+
+If we used the `save_workflow = TRUE` control option, we could get fit on the entire training set for this model via `fit_best()`, which serves as a shortcut  
+
+```{r}
+#| label: cubist-fit-best
+fit_best(cubist_res)
+```
+
+Finally, as previously seen in @sec-parallel-resamples, we can parallel process these model fits using the same syntax as shown there. 
+
+## Racing
+
+The syntax for these optimization methods is virtually the same. Besides the different function names, the control function has a few options of note: 
+
+- `verbose_elim` should be a logical for whether a log of the candidate eliminations should be shown. 
+- `burn_in` requires an integer and represents the earliest the parameter filter should be applied. 
+- `num_ties`, also an integer value, decides when tie-breaking should occur when only two candidates are remaining. 
+- `alpha`  is the numeric value for the hypothesis testing false positive rate (for one-sided hypothesis tests). 
+- `randomize` accepts a logical value for whether the resamples should be randomly ordered. 
+
+Let’s run the same Cubist grid using the ANOVA method: 
+
+```{r}
+#| label: cubist-race
+library(finetune)
+
+# Since resamples are randomized, set the seed:
+set.seed(11)
+cubist_race_res <- 
+  cubist_spec %>% 
+  tune_race_anova(
+    compressive_strength ~ .,
+    resamples = concrete_rs,
+    grid = cubist_grid,
+    control = control_race(verbose_elim = TRUE)
+  )
+```
+
+It is important to note that the helpful functions for racing results mostly filter their output to disregard candidates who did not finish the race. For example, if we ask `show_best()` to  provide results for more candidate than those that finished, it will curtail its output: 
+
+
+```{r}
+#| label: best-race
+show_best(cubist_race_res, metric = "rmse", n = 10)
+```
+
+To visualize the results, there is also a `plot_race()` function:
+
+```{r}
+#| label: race-plot
+#| fig-width: 6
+#| fig-height: 4
+#| out-width: 60%
+plot_race(cubist_race_res)
+```
+
+Each line corresponds to a candidate. 
+
+
+## Nested resampling
+
+There are tidymodels experimental APIs for nested resampling (and analytical bias correction). We’ll fill this section in when these are finalized. 
