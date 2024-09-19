@@ -10,10 +10,16 @@ $scarlet:               #B32800;
 $brewer-set1-blue:      #377EB8;
 $blue-screen-o-death:   #0031b3;
 
+// From tidymodels sites: 
+$cranberry:             #CA225E;
+$theme-blue:            #4758AB;
+
+
 // Base document colors
 $body-bg:    $whiteblue;          // main page background
 $sidebar-bg: $whiteblue;          // LHS contents background
 $link-color: $brewer-set1-blue;
+$code-color: $theme-blue;
 
 // Other base document features
 $toc-font-size: .7rem;
@@ -22,7 +28,7 @@ $toc-font-size: .7rem;
 /*-- scss:rules --*/
 
 h1, h2, h3, h4 {
-  color: $scarlet;
+  color: $cranberry;
 }
 
 // make the LHS sidebar text smaller
@@ -43,7 +49,7 @@ h1, h2, h3, h4 {
 }
 
 .header-section-number {
-  color: $scarlet;
+  color: $cranberry;
 }
 
 code:not(.sourceCode){
