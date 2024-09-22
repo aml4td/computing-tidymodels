@@ -46,6 +46,7 @@ Imports:
     rstudioapi,
     rules,
     sessioninfo,
+    sfd,
     splines2,
     stopwords,
     text2vec,
