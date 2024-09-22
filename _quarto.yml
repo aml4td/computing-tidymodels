@@ -20,7 +20,7 @@ format:
 
 execute:
   freeze: auto
-  keep-md: false
+  keep-md: true
   # turn these on during development
   # message: false
   # warning: false
