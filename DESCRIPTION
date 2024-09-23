@@ -1,7 +1,7 @@
 Type: Quarto
 Package: aml4td.tidymodels
 Title: tidymodels computing supplement
-Version: 0.0.1.9000
+Version: 24.10.23
 Authors@R: 
     person("Max", "Kuhn", , "mxkuhn@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0003-2402-136X"))
@@ -16,14 +16,20 @@ Imports:
     Cubist,
     devtools,
     dials,
+    dimRed,
     doParallel,
     downlit,
     dplyr,
     e1071,
+    embed,
+    fastICA,
+    finetune,
+    forested,
     ggplot2,
     gt,
     hardhat (>= 1.2.0.9000),
     hstats,
+    igraph,
     jsonlite,
     kableExtra,
     knitr,
@@ -32,6 +38,7 @@ Imports:
     mixOmics,
     modeldata (>= 1.1.0),
     modeldatatoo,
+    naniar,
     pak,
     parallel,
     parsnip,
@@ -40,13 +47,17 @@ Imports:
     probably (>= 0.1.0.9007),
     purrr,
     ragg,
+    RANN,
     recipes,
     rmarkdown,
     rsample,
+    RSpectra,
     rstudioapi,
     rules,
     sessioninfo,
+    sf,
     sfd,
+    spatialsample,
     splines2,
     stopwords,
     text2vec,
@@ -54,10 +65,12 @@ Imports:
     tibble,
     tidymodels,
     tidyr,
+    tidysdm,
     tinytex,
     torch (>= 0.9.0),
     tune,
     usethis,
+    viridis,
     workflows,
     workflowsets,
     xml2,
@@ -66,8 +79,8 @@ Imports:
 Suggests: 
     testthat (>= 3.0.0)
 Remotes:
-    r-lib/downlit,
-    mixOmicsTeam/mixOmics
+    mixOmicsTeam/mixOmics,
+    r-lib/downlit
 Config/testthat/edition: 3
 Encoding: UTF-8
 LazyData: true

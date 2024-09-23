@@ -93,8 +93,8 @@ theme_set(theme_bw())
 The data are in the `r pkg(modeldatatoo)` package. Let's load the data, remove two outcome columns that will not be analyzed here, and conduct a three-way split of the data: 
 
 ```{r}
-#| file: https://raw.githubusercontent.com/aml4td/website/main/R/setup_chemometrics.R
-
+#| label: barley-data-import
+source("https://raw.githubusercontent.com/aml4td/website/main/R/setup_chemometrics.R")
 ```
 
 The column names for the predictors are `wvlgth_001` through `wvlgth_550`. 

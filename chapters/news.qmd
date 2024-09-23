@@ -6,6 +6,10 @@ No reported edits (yet).
 
 ## Changelog {.unlisted .unnumbered}
 
+### 2024-09-23  {.unlisted .unnumbered}
+
+Computing chapters caught up to the website (chapter 11, grid search)
+
 ### 2023-12-11  {.unlisted .unnumbered}
 
 Added a chapter on initial data splitting. 
