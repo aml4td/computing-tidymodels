@@ -47,6 +47,7 @@ Imports:
     probably (>= 0.1.0.9007),
     purrr,
     ragg,
+    ranger,
     RANN,
     recipes,
     rmarkdown,
