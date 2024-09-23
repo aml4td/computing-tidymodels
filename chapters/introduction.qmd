@@ -17,7 +17,6 @@ knitr::opts_chunk$set(
     fig.path = "../figures/",
     fig.width = 10,
     fig.height = 6,
-    cache.path = "../_cache/introduction/",
     out.width = "95%",
     dev = 'svg',
     dev.args = list(bg = "transparent"),

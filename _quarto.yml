@@ -20,7 +20,7 @@ format:
 
 execute:
   freeze: auto
-  keep-md: false
+  keep-md: true
   # turn these on during development
   # message: false
   # warning: false
@@ -54,12 +54,15 @@ book:
   - chapters/whole-game.qmd
   - part: "Preparation"
   - chapters/initial-data-splitting.qmd
+  - chapters/missing-data.qmd
   - chapters/numeric-predictors.qmd
   - chapters/categorical-predictors.qmd  
   - chapters/embeddings.qmd  
   - chapters/interactions-nonlinear.qmd
   - part: "Optmization"
   - chapters/overfitting.qmd
+  - chapters/resampling.qmd
+  - chapters/grid.qmd
   - part: "Classification"  
   - part: "Regression"  
   - part: "Characterization"  

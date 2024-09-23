@@ -1,0 +1,668 @@
+---
+knitr:
+  opts_chunk:
+    cache.path: "../_cache/resampling/"
+---
+
+# Measuring Performance with Resampling {#sec-resampling}
+
+This chapter outlines how to create objects to facilitate resampling. At the end, @sec-resampled-models illustrates how to use the resampling objects to produce good estimates of performance for a model. 
+
+```{r}
+#| label: resampling-knitr-setup
+#| include: false
+
+knitr::opts_chunk$set(
+    comment = "#>",
+    collapse = TRUE,
+    fig.align = 'center',
+    fig.path = "../figures/",
+    fig.width = 10,
+    fig.height = 6,
+    out.width = "95%",
+    dev = 'svg',
+    dev.args = list(bg = "transparent"),
+    tidy = FALSE,
+    echo = TRUE
+  )
+
+options(digits = 4, width = 84)
+options(dplyr.print_min = 6, dplyr.print_max = 6)
+options(cli.width = 85)
+options(crayon.enabled = FALSE)
+options(pillar.advice = FALSE, pillar.min_title_chars = Inf, pillar.sigfig = 4)
+
+source("../R/_common.R")
+req_pkg <- c("Cubist", "future", "parallelly", "probably", "rules", "spatialsample", 
+             "tidymodels", "tidysdm")
+```
+```{r}
+#| label: for-downlit
+#| include: false
+
+downlit:::add_depends(c("rsample", "spatialsample", "parallelly"))
+```
+
+## Requirements
+
+We will use the `ames`, `concrete`, and `Chicago` data sets from the `r pkg(modeldata)` package (which is automatically loaded below) to illustrate some of the methods. The other data, `Orthodont`, can be obtained in the `r pkg(nlme)` package which comes with each R installation.  
+
+`r pkg_list(req_pkg)`
+
+```{r}
+#| label: interactions-nonlinear-installs
+#| eval: false
+#| echo: true
+req_pkg <- c("Cubist", "future", "parallelly", "probably", "rules", "spatialsample", 
+             "tidymodels", "tidysdm")
+
+# Check to see if they are installed: 
+pkg_installed <- vapply(req_pkg, rlang::is_installed, logical(1))
+
+# Install missing packages: 
+if ( any(!pkg_installed) ) {
+  install_list <- names(pkg_installed)[!pkg_installed]
+  pak::pak(install_list)
+}
+```
+
+Let's load the meta package and manage some between-package function conflicts. 
+
+```{r}
+#| label: start-tidymodels
+#| results: hide
+#| message: false
+#| warning: false
+library(tidymodels)
+tidymodels_prefer()
+theme_set(theme_bw())
+```
+
+## Basic methods and data structures
+
+The `r pkg(rsample)` package provides many functions to facilitate resampling. For now, we’ll assume an initial split into a training and test set has been made (but see @validation-sets below for three-way splits). 
+
+Let’s use the concrete data for illustration: 
+
+```{r}
+#| label: conc-split
+
+set.seed(82)
+concrete_split <- initial_split(concrete)
+concrete_tr <- training(concrete_split)
+concrete_te <- testing(concrete_split)
+```
+
+All resampling methods use the training set as the substrate for creating resamples. We’ll demonstrate the main tools and functions using basic bootstrap resampling and then discuss the other resampling methods. 
+
+The function that we’ll use is `rsample::bootstraps()`. Its main option, `times`, describes how many resamples to create. Let’s make five resamples: 
+
+```{r}
+#| label: bt
+set.seed(380)
+concrete_rs <- bootstraps(concrete, times = 5)
+```
+
+This creates a tibble with five rows and two columns: 
+
+```{r}
+#| label: bt-print
+concrete_rs
+```
+
+We'll investigate the `splits` column in a bit. The `id` column gives each row a name (corresponding to a resample). Some resampling methods, such as repeated cross-validation, can have additional identification columns. 
+
+The object has two additional classes `r cli::format_inline("{.code {class(concrete_rs)[1:2]}}")` that differentiate it from a standard tibble. 
+
+This collection of splits is called an `"rset"` and has specific rules. The object above is defined as a set of five bootstrap samples. If we delete a row, it breaks that definition, and the class drops back down to a basic tibble: 
+
+```{r}
+#| label: bt-downcase
+concrete_rs[-1,]
+```
+
+The "A tibble: 4 × 2" title is different from the original title of "Bootstrap sampling." This, and the class values, give away the difference. You can add columns without violating the definition. 
+
+
+### Split objects
+
+Note the `splits` column in the output above. This is a _list column_ in the data frame. It contains an `rsplit` object that tells us which rows of the training set go into our analysis and assessment sets. As a reminder: 
+
+- The **analysis set** (of size $n_{fit}$) estimates quantities associated with preprocessing, model training, and postprocessing. 
+- The **assessment set** ($n_{pred}$) is only used for prediction so that we can compute measures of model effectiveness (e.g., RMSE, classification accuracy, etc).  
+
+When we see output “`<split [1030/408]>`” this indicates a binary split where the analysis set has 1030 rows, and the assessment set has 408 rows. 
+
+To get the analysis and assessment sets, there are two eponymous functions. For a specific split: 
+
+```{r}
+#| label: split-data
+
+ex_split <- concrete_rs$splits[[1]]
+ex_split
+
+analysis(ex_split)   %>% dim()
+assessment(ex_split) %>% dim()
+```
+
+If we want to get the specific row indices of the training set: 
+
+```{r}
+#| label: split-ind
+
+ex_ind <- as.integer(ex_split, data = "assessment")
+head(ex_ind)
+length(ex_ind)
+```
+
+You shouldn't really have to interact with these objects at all. 
+
+## Basic resampling tools
+
+`r pkg(rsample)` contains several functions that resample data whose rows are thought to be statistically independent of one another. 
+
+Almost all of these functions contain options for stratified resampling. 
+
+Two important functions: 
+
+- Basic V-fold cross-validation is performed using `vfold_cv()`.  The `v` argument defines the number of folds. Another argument of note is `repeats`, which describes how many sets of V resamples should be created. This generated an additional column called `id2`. 
+
+- Monte Carlo cross-validation emulates random sampling to make binary splits via `mc_cv()`. Since these are not created as a set, the `times` argument specifies the number of resamples, and `prop` defines the proportion of the data that should go into the analysis set. 
+
+We'll show an example with basic 10-fold cross-validation below in @sec-estimating-performance.
+
+## Validation sets
+
+To create a validation set, the first split should use `rsample::initial_validation_split()`: 
+
+```{r}
+#| label: conc-val
+
+set.seed(426)
+concrete_split <- initial_validation_split(concrete, prop = c(.8, .1))
+concrete_tr <- training(concrete_split)
+concrete_vl <- validation(concrete_split)
+concrete_te <- testing(concrete_split)
+```
+
+To make an `rset` object that can be used with most of tidymodel’s resampling machinery, we can use the `rsample::validation_set()` function to produce one (taking the initial three-way split as input): 
+
+```{r}
+#| label: conc-val-rs
+
+concrete_rs <- validation_set(concrete_split)
+concrete_rs
+```
+
+At this point, we can use `concrete_rs` as if it were any other `rset` object. 
+
+## Times series resampling
+
+Usually, the most recent data are used to evaluate performance for time series data. The function `initial_time_split()` can be used to make the initial split. We’ll use the `Chicago` data to demonstrate: 
+
+```{r}
+#| label: chi-initial
+
+n <- nrow(Chicago)
+# To get 30 days of data
+prop_30 <- (n - 30) / n
+
+chi_split <- initial_time_split(Chicago, prop = prop_30)
+chi_split
+
+chi_tr <- training(chi_split)
+chi_te <- testing(chi_split)
+```
+
+Let's say that we want 
+
+ - 5,000 days in our analysis set,
+ - 30 day assessment sets
+ - shift the 30-day window 30 days ahead
+
+The data set has a column with the `Date` class. We can use this to partition the data in case there is an unequal number of data points in our 30-day period. The `sliding_period()` can be used with a date or date/time input, while `sliding_index()` can be used for equally spaced data. 
+
+Let’s use `sliding_period()` for this example, annotate the argument logic in comments, and then compute a few columns for the start/stop dates for the analysis and assessment sets (for illustration): 
+
+```{r}
+#| label: rolling-fit-data
+
+chi_rs <- 
+  sliding_period(
+    chi_tr,
+    index = date,
+    period = "day",   # Could be "year", "quarter", "month", "week", or "day"
+    lookback = 5000,  # 5000 days in the analysis sets
+    assess_start = 1, # Start the assessment set 1 day after analysis set
+    assess_stop = 30, # Stop the assessment set 20 days after analysis set
+    step = 30         # Jump ahead 30 days between resamples; no assessment overlap in assessments
+  ) %>% 
+  mutate(
+    fit_start =  map_vec(splits, ~ min(analysis(.x)$date)),
+    fit_stop =   map_vec(splits, ~ max(analysis(.x)$date)),
+    perf_start = map_vec(splits, ~ min(assessment(.x)$date)),
+    perf_stop =  map_vec(splits, ~ max(assessment(.x)$date))
+  )
+chi_rs
+```
+
+The first analysis set starts on `r format(chi_rs$fit_start[1])` and ends 5,000 days later on `r format(chi_rs$fit_stop[1])`. The next day (`r format(chi_rs$perf_start[1])`), the analysis set includes 30 days and stops on `r format(chi_rs$perf_stop[1])`. 
+
+For the second resample, the analysis and assessment sets both start 30 days later. 
+
+Here is a visualization of the date periods defined by the resampling scheme that illustrates why the method is sometimes called rolling origin forecast resampling. The figure also shows that the assessment sets are very small compared to the analysis sets.
+
+```{r}
+#| label: rolling-analysis
+#| fig-width: 6
+#| fig-height: 3.25
+#| out-width: 80%
+chi_rs %>% 
+  ggplot(aes(y = id)) + 
+  geom_segment(aes(x = fit_start,  xend = fit_stop,  yend = id), col = "grey", linewidth = 1) +
+  geom_segment(aes(x = perf_start, xend = perf_stop, yend = id), col = "red", linewidth = 3) +
+  labs(y = NULL, x = "Date")
+```
+
+One variation of this approach is to cumulately increase the analysis set by keeping the starting date the same (inside of sliding/rolling). For this, we can make the “lookback” infinite but use the `skip` argument to remove the large number of resamples that contain fewer than 5,000 days in the analysis sets: 
+
+```{r}
+#| label: cumulative-fit-data
+
+chi_rs <- 
+  sliding_period(
+    chi_tr,
+    index = date,
+    period = "day", 
+    lookback = Inf,   # Use all data before assessment
+    assess_start = 1,
+    assess_stop = 30,
+    step = 30,
+    skip = 5000       # Drop first 5000 results so assessment starts at same time 
+  ) %>% 
+  mutate(
+    fit_start =  map_vec(splits, ~ min(analysis(.x)$date)),
+    fit_stop =   map_vec(splits, ~ max(analysis(.x)$date)),
+    perf_start = map_vec(splits, ~ min(assessment(.x)$date)),
+    perf_stop =  map_vec(splits, ~ max(assessment(.x)$date))
+  )
+chi_rs
+```
+
+Note that the values in the `fit_stop` column are the same. Visually: 
+
+```{r}
+#| label: cumulative-analysis
+#| fig-width: 6
+#| fig-height: 3.25
+#| out-width: 80%
+chi_rs %>% 
+  ggplot(aes(y = id)) + 
+  geom_segment(aes(x = fit_start,  xend = fit_stop,  yend = id), col = "grey", linewidth = 1) +
+  geom_segment(aes(x = perf_start, xend = perf_stop, yend = id), col = "red", linewidth = 3) +
+  labs(y = NULL, x = "Date") 
+```
+
+
+##  Multi-Level Data {#sec-multilevel-resampling}
+
+Returning to the orthodontal data from @sec-multilevel-splitting, we use the initial split: 
+
+```{r}
+#| label: orthodont-again
+data(Orthodont, package = "nlme")
+
+set.seed(93)
+orth_split <- group_initial_split(Orthodont, group = Subject, prop = 2 / 3)
+orth_tr <- training(orth_split)
+orth_te <- testing(orth_split)
+```
+
+There are several resampling functions for these data in the `r pkg(rsample)` package, including: `group_vfold_cv()`,  `group_bootstraps()`, and `group_mc_cv()`. For example: 
+
+```{r}
+#| label: orthodont-rs
+library(vctrs)
+
+# Subjects in the training set: 
+vec_unique_count(orth_tr$Subject)
+
+set.seed(714)
+orth_rs <- 
+  group_vfold_cv(orth_tr, group = Subject, v = 10) %>% 
+  mutate(num_subjects = map_int(splits, ~ vec_unique_count(assessment(.x)$Subject)))
+
+orth_rs
+```
+
+To leave a single subject out for each resample, we could have set `v` to be `r vec_unique_count(orth_tr$Subject)`. 
+
+## Spatial Resampling {#sec-spatial-resampling}
+
+We split the Ames data into a training and testing set back in @sec-spatial-splitting using this code: 
+
+```{r}
+#| label: spatial-recap
+#| results: hide
+library(sf)
+library(spatialsample)
+library(tidysdm)
+
+ames_sf <-
+  ames %>%
+  st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
+
+set.seed(318)
+ames_block_buff_split <-
+  spatial_initial_split(
+    ames_sf, 
+    prop = 0.2, 
+    strategy = spatial_block_cv,
+    method = "continuous",
+    n = 25, 
+    square = FALSE,
+    buffer = 250)
+
+ames_tr <- training(ames_block_buff_split)
+ames_te <- testing(ames_block_buff_split)
+```
+
+The options for resampling are basically the same as the initial split. For example, with block resampling, we create a grid on the training set and allocate specific grids to specific assessment sets. Buffering can also be used for each resample. The `spatial_block_cv()`  function in the `r pkg(spatialsample)` package and has a `v` argument for the number of resamples: 
+
+```{r}
+#| label: spatial-cv-split
+
+set.seed(652)
+ames_rs <-
+  spatial_block_cv(
+    ames_tr, 
+    v = 10,
+    method = "continuous",
+    n = 25, 
+    square = FALSE,
+    buffer = 250)
+ames_rs
+```
+
+There is an overall `autoplot()` method that can be used to show the grid:
+
+```{r}
+#| label: ames-split-block-rs-all
+#| fig-height: 5.3
+#| fig-width: 8
+#| fig-align: center
+#| out-width: "90%"
+
+autoplot(ames_rs, cex = 1 / 3, show_grid = TRUE)
+```
+
+We can also `autoplot()` individual splits to see the analysis and assessment set. 
+
+```{r}
+#| label: ames-split-block-rs-single
+#| fig-height: 4
+#| fig-width: 6
+#| fig-align: center
+#| out-width: "70%"
+
+autoplot(ames_rs$splits[[1]], cex = 1 / 2)
+```
+
+## Estimating performance {#sec-resampled-models}
+
+Now that we can create different types of resamples for our training set, how do we actually resample a model to get accurate performance statistics? 
+
+tidymodels contains high-level functions for this purpose, so there is typically no need to loop over rows of the resampling objects to get the data sets, train the model, etc. 
+
+The `fit_resamples()` function can do all of this for you. It takes a model (or workflow) in conjunction with a resampling object as inputs. 
+
+To demonstrate, let’s re-use the concrete data and create an object for a simple 10-fold cross-validation:
+
+```{r}
+#| label: concrete-resample
+set.seed(426)
+concrete_split <- initial_split(concrete, prop = 3 / 4)
+concrete_tr <- training(concrete_split)
+concrete_te <- testing(concrete_split)
+
+concrete_rs <- vfold_cv(concrete_tr)
+```
+
+Let’s use a Cubist model for the data. It creates a set of rules from the data (derived from a regression tree) and, for each rule, creates a corresponding linear regression for the training set points covered by the rule. In the end, a sample is predicted, perhaps using multiple rules, and the average of the linear regression models is used as the prediction. 
+
+Usually, we use a boosting-like process called _model committees _to create an ensemble of rule sets. Instead, we will make a single rule set. We’ll need to load the `r pkg(rules)` package to load this type of model into the `r pkg(parsnip)` model database. 
+
+```{r}
+#| label: cubist-spec
+library(rules)
+rules_spec <- cubist_rules(committees = 1)
+```
+
+To specify the model in `fit_resamples()`, there are two options: 
+
+- The first two arguments can be a model specification and a preprocessor (in that order). The preprocessor could be a recipe or a standard R formula. 
+- The first argument can be a workflow. 
+
+After the model specification, the `resamples` argument takes the resamping object. 
+
+From here, we can run `fit_resamples()`. Note that the Cubist model does not use any random numbers. If it did, we would probably want to set the random number seed before using `fit_resamples()`. 
+
+Our code:
+
+```{r}
+#| label: cubist-resampled
+concrete_res <- fit_resamples(rules_spec, compressive_strength ~ ., resamples = concrete_rs)
+concrete_res
+```
+
+This looks a lot like our resampling object. There are some new columns. `.metrics` contains data frames with performance statistics for the particular resample. The `.notes` column contains any warnings or error messages that the model produced; none were produced by these 10 model fits. Note that, if there are errors, `fit_resamples()` does not stop computations.
+  
+How can we get our performance estimates? To aggregate the data in this object, there is a set of `collect_*()` functions. The first is `collect_metrics()`. By default, it returns the averages of the resampled estimates:   
+  
+```{r}
+#| label: cubist-metrics
+collect_metrics(concrete_res)
+```
+
+Note the `n` and `std_err` columns. To get the per-resample estimates: 
+
+```{r}
+#| label: cubist-metrics-indiv
+collect_metrics(concrete_res, summarize = FALSE)
+```
+
+If there were issues with the computations, `collect_notes(concrete_res)` would print a catalog of messages. 
+
+Next, let’s look at a few customizations for `fit_resamples()`. 
+
+### Parallel processing {#sec-parallel-resamples}
+
+We fit 10 different Cubist models to 10 slightly different data sets. None of these computations depend on one another. This is the case of an “embarrassingly parallel” computing issue. We can increase our computational efficiency by running training the models on multiple “worker” processes on our computer(s). 
+
+The `future` package can run the resamples in parallel. The `plan()` function sets the parallel processing engine. There are a few plans that can be used: 
+
+ - The most common approach is "multisession". This uses a parallel socket cluster (akak "psock cluster") on your local computer. It is available for all operating systems. 
+ - Another option (not available on Windows) is "multicore". The forks the current R session into different worker processes. 
+ - The "cluster" option is most useful for having worker processes on different machines. 
+ - The "sequential" plan is regular, non-parallel computing. 
+ 
+There are several other packages with plans: `r pkg(future.batchtools)`, `r pkg(future.callr)`, and `r pkg(future.mirai)`. The last is (as of this writing) experimental but shows great promise. 
+
+Once we know a plan, we run the following code (once) before running operations that can be done in parallel: 
+
+```{r}
+#| label: cubist-in-parallel
+
+library(future)
+parallelly::availableCores()
+plan("multisession")
+```
+
+This will generally increase the efficiency of the resampling process. 
+
+### Other options
+
+Let's look at some other options. First, note that the results did not include the trained models or the out-of-sample predicted results. This is the default because there is no way of knowing how much memory will be required to keep these values. 
+
+We’ll talk about accessing the fitted models in the next sections. 
+
+To save the predictions, we can use an R convention of a “control function.” These functions are reserved for specifying ancillary aspects of the computations. For `fit_resamples()` the control function is called `control_resamples()`, and it has an option called `save_pred`. When set to `TRUE`, the out-of-sample predictions are retained. 
+
+```{r}
+#| label: save-pred
+ctrl <- control_resamples(save_pred = TRUE)
+```
+
+Let's also estimate different metrics. As mentioned back in @sec-model-development, a _metric set_ is used to specify statistics for model efficacy. `fit_resamples()` has an option called `metrics` that we can use to pass in a metric set. 
+
+Let's re-run our model with these two changes:
+
+```{r}
+#| label: cubist-resampled-opts
+reg_mtr <- metric_set(rmse, rsq, ccc, mae)
+
+concrete_opts_res <- fit_resamples(
+  rules_spec,
+  compressive_strength ~ .,
+  resamples = concrete_rs,
+  metrics = reg_mtr,
+  control = ctrl
+)
+concrete_opts_res
+```
+
+The expanded set of metrics: 
+
+```{r}
+#| label: cubist-metrics-more
+collect_metrics(concrete_opts_res)
+```
+
+Notice that there is now a column named `.predictions`. The number of rows in the tibbles matches the sizes of the assessment sets shown in the `splits` column; these are the held-out predicted values. 
+
+To obtain these values, there are `collect_predictions()` and `augment()`: 
+
+```{r}
+#| label: cubist-pred
+heldout_pred <- collect_predictions(concrete_opts_res)
+heldout_pred
+
+# Same but merges them with the original training data
+augment(concrete_opts_res)
+```
+
+From here, we can do exploratory data analysis to understand where our model can be improved. 
+
+One other option: the `r pkg(probably)` package has a simple interface for obtaining plots of the observed and predicted values (i.e., a regression “calibration” plot): 
+
+```{r}
+#| label: reg-cal
+#| fig-width: 5
+#| fig-height: 5
+#| out-width: 60%
+
+library(probably)
+cal_plot_regression(concrete_opts_res)
+```
+
+Not too bad but there are fairly large outliers that seem to occur more with mixtures corresponding to larger observed outcomes. 
+
+### Extracting results
+
+How can we get the 10 trained models? The control function has an option for `extract` that takes a user-defined function. The argument to this function (say `x`) is the fitted workflow. If you want the whole model, you can return `x`. Otherwise, we can run computations on the model and return whatever elements or statistics associated with the model that we are interested in. 
+
+For example, a `tidy()` method for Cubist models will save information on the rules, the regression function for each rule, and various statistics. To get this, we need to pull the Cubist model out of the workflow and then run the tidy method on it. Here is an example of that: 
+
+```{r}
+#| label: cubist-extract-function
+
+extract_rules <- function(x) {
+  x %>% 
+    extract_fit_engine() %>%
+    tidy()
+}
+```
+
+Now we update our control object:
+
+
+```{r}
+#| label: save-rules
+ctrl <- control_resamples(save_pred = TRUE, extract = extract_rules)
+```
+
+and pass it into `fit_resamples()`:
+
+```{r}
+#| label: cubist-extracted
+
+concrete_ext_res <- fit_resamples(rules_spec,
+                                  compressive_strength ~ .,
+                                  resamples = concrete_rs,
+                                  control = ctrl)
+concrete_ext_res
+```
+
+The new output has an `.extracts` column. The rows contain a tibble that has the resampling information and another tibble, also with the name `.extracts`. We can pull that column out via: 
+
+```{r}
+#| label: cubist-extracts
+
+rule_extract <- collect_extracts(concrete_ext_res)
+rule_extract
+```
+
+What is in a specific result? 
+
+```{r}
+#| label: cubist-extract-example
+
+rule_extract$.extracts[[1]]
+```
+
+To “flatten out” these results, we’ll `unnest()` the column of extracted results:
+
+```{r}
+#| label: cubist-re-extracts
+
+rule_extract <- 
+  collect_extracts(concrete_ext_res) %>% 
+  unnest(col = .extracts)
+rule_extract
+```
+
+What could we do with these results? Let’s look at what is in the `statistics` tibble: 
+
+```{r}
+#| label: cubist-stat-col
+rule_extract$statistic[[1]]
+```
+
+It might be interesting to know how complex each rule was. For example, the rule
+
+```{r}
+#| label: example-rule
+#| echo: false
+
+rlang::parse_exprs(rule_extract$rule[21])[[1]]
+```
+
+has `r rule_extract$statistic[[21]]$num_conditions` conditions.
+
+We can use a `mutate()` and a `map_int()` to pull out the frequency of terms included in the rules (captured by the `num_conditions` column). 
+
+```{r}
+#| label: cubist-stats
+conditions <- 
+  rule_extract %>% 
+  mutate(conditions = map_int(statistic, ~ .x$num_conditions)) %>% 
+  select(id, rule_num, conditions)
+```
+
+Here is the distribution of the number of logical conditions that make up the rules: 
+
+```{r}
+#| label: cubist-num_rules
+conditions %>% 
+  count(conditions)
+```
