@@ -2,9 +2,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.5.22">
+<meta name="generator" content="quarto-1.6.3">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-<title>Tidymodels Computing Supplement – 6&nbsp; Embeddings</title>
+<title>7&nbsp; Embeddings – Tidymodels Computing Supplement</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -30,7 +30,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -102,13 +102,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top"><nav class="quarto-secondary-nav"><div class="container-fluid d-flex">
-      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <a class="flex-grow-1 no-decor" role="button" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
-          <h1 class="quarto-secondary-nav-title"><span id="sec-embeddings" class="quarto-section-identifier"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Embeddings</span></span></h1>
+        <a class="flex-grow-1 no-decor" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+          <h1 class="quarto-secondary-nav-title"><span id="sec-embeddings" class="quarto-section-identifier"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Embeddings</span></span></h1>
         </a>     
-      <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
         <i class="bi bi-search"></i>
       </button>
     </div>
@@ -120,23 +120,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
         <div class="sidebar-tools-main tools-wide">
     <a href="https://github.com/aml4td/computing-tidymodels/" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
     <div class="dropdown">
-      <a href="" title="Share" id="quarto-navigation-tool-dropdown-0" class="quarto-navigation-tool dropdown-toggle px-1" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Share"><i class="bi bi-share"></i></a>
+      <a href="" title="Share" id="quarto-navigation-tool-dropdown-0" class="quarto-navigation-tool dropdown-toggle px-1" data-bs-toggle="dropdown" aria-expanded="false" role="link" aria-label="Share"><i class="bi bi-share"></i></a>
       <ul class="dropdown-menu" aria-labelledby="quarto-navigation-tool-dropdown-0">
 <li>
             <a class="dropdown-item sidebar-tools-main-item" href="https://twitter.com/intent/tweet?url=%7Curl%7C">
-              <i class="bi bi-bi-twitter pe-1"></i>
+              <i class="bi bi-twitter pe-1"></i>
             Twitter
             </a>
           </li>
           <li>
             <a class="dropdown-item sidebar-tools-main-item" href="https://www.facebook.com/sharer/sharer.php?u=%7Curl%7C">
-              <i class="bi bi-bi-facebook pe-1"></i>
+              <i class="bi bi-facebook pe-1"></i>
             Facebook
             </a>
           </li>
           <li>
             <a class="dropdown-item sidebar-tools-main-item" href="https://www.linkedin.com/sharing/share-offsite/?url=%7Curl%7C">
-              <i class="bi bi-bi-linkedin pe-1"></i>
+              <i class="bi bi-linkedin pe-1"></i>
             LinkedIn
             </a>
           </li>
@@ -199,26 +199,32 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="../chapters/missing-data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Missing Data</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="../chapters/numeric-predictors.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Transforming Numeric Predictors</span></span></a>
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Transforming Numeric Predictors</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../chapters/categorical-predictors.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Working with Categorical Predictors</span></span></a>
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Working with Categorical Predictors</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../chapters/embeddings.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Embeddings</span></span></a>
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Embeddings</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../chapters/interactions-nonlinear.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Interactions and Nonlinear Features</span></span></a>
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Interactions and Nonlinear Features</span></span></a>
   </div>
 </li>
         <li class="sidebar-item sidebar-item-section">
@@ -228,7 +234,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../chapters/overfitting.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Overfitting</span></span></a>
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Overfitting</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/resampling.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Measuring Performance with Resampling</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/grid.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Grid Search</span></span></a>
   </div>
 </li>
         <li class="sidebar-item sidebar-item-section">
@@ -255,29 +273,29 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
         <nav id="TOC" role="doc-toc" class="toc-active"><h2 id="toc-title">Table of contents</h2>
    
   <ul>
-<li><a href="#requirements" id="toc-requirements" class="nav-link active" data-scroll-target="#requirements"><span class="header-section-number">6.1</span> Requirements</a></li>
-  <li><a href="#sec-barley" id="toc-sec-barley" class="nav-link" data-scroll-target="#sec-barley"><span class="header-section-number">6.2</span> Example: Predicting Barley Amounts</a></li>
+<li><a href="#requirements" id="toc-requirements" class="nav-link active" data-scroll-target="#requirements"><span class="header-section-number">7.1</span> Requirements</a></li>
+  <li><a href="#sec-barley" id="toc-sec-barley" class="nav-link" data-scroll-target="#sec-barley"><span class="header-section-number">7.2</span> Example: Predicting Barley Amounts</a></li>
   <li>
-<a href="#sec-linear-embed" id="toc-sec-linear-embed" class="nav-link" data-scroll-target="#sec-linear-embed"><span class="header-section-number">6.3</span> Linear Transformations</a>
+<a href="#sec-linear-embed" id="toc-sec-linear-embed" class="nav-link" data-scroll-target="#sec-linear-embed"><span class="header-section-number">7.3</span> Linear Transformations</a>
   <ul class="collapse">
-<li><a href="#principal-component-analysis" id="toc-principal-component-analysis" class="nav-link" data-scroll-target="#principal-component-analysis"><span class="header-section-number">6.3.1</span> Principal Component Analysis</a></li>
-  <li><a href="#independent-component-analysis" id="toc-independent-component-analysis" class="nav-link" data-scroll-target="#independent-component-analysis"><span class="header-section-number">6.3.2</span> Independent Component Analysis</a></li>
-  <li><a href="#numeric-pls" id="toc-numeric-pls" class="nav-link" data-scroll-target="#numeric-pls"><span class="header-section-number">6.3.3</span> Partial Least Squares</a></li>
+<li><a href="#principal-component-analysis" id="toc-principal-component-analysis" class="nav-link" data-scroll-target="#principal-component-analysis"><span class="header-section-number">7.3.1</span> Principal Component Analysis</a></li>
+  <li><a href="#independent-component-analysis" id="toc-independent-component-analysis" class="nav-link" data-scroll-target="#independent-component-analysis"><span class="header-section-number">7.3.2</span> Independent Component Analysis</a></li>
+  <li><a href="#numeric-pls" id="toc-numeric-pls" class="nav-link" data-scroll-target="#numeric-pls"><span class="header-section-number">7.3.3</span> Partial Least Squares</a></li>
   </ul>
 </li>
   <li>
-<a href="#sec-mds" id="toc-sec-mds" class="nav-link" data-scroll-target="#sec-mds"><span class="header-section-number">6.4</span> Multidimensional Scaling</a>
+<a href="#sec-mds" id="toc-sec-mds" class="nav-link" data-scroll-target="#sec-mds"><span class="header-section-number">7.4</span> Multidimensional Scaling</a>
   <ul class="collapse">
-<li><a href="#sec-isomap" id="toc-sec-isomap" class="nav-link" data-scroll-target="#sec-isomap"><span class="header-section-number">6.4.1</span> Isomap</a></li>
-  <li><a href="#sec-umap" id="toc-sec-umap" class="nav-link" data-scroll-target="#sec-umap"><span class="header-section-number">6.4.2</span> UMAP</a></li>
+<li><a href="#sec-isomap" id="toc-sec-isomap" class="nav-link" data-scroll-target="#sec-isomap"><span class="header-section-number">7.4.1</span> Isomap</a></li>
+  <li><a href="#sec-umap" id="toc-sec-umap" class="nav-link" data-scroll-target="#sec-umap"><span class="header-section-number">7.4.2</span> UMAP</a></li>
   </ul>
 </li>
-  <li><a href="#sec-centroids" id="toc-sec-centroids" class="nav-link" data-scroll-target="#sec-centroids"><span class="header-section-number">6.5</span> Centroid-Based Methods</a></li>
+  <li><a href="#sec-centroids" id="toc-sec-centroids" class="nav-link" data-scroll-target="#sec-centroids"><span class="header-section-number">7.5</span> Centroid-Based Methods</a></li>
   </ul></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block default"><div class="quarto-title">
-<h1 class="title d-none d-lg-block"><span id="sec-embeddings" class="quarto-section-identifier"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Embeddings</span></span></h1>
+<h1 class="title d-none d-lg-block"><span id="sec-embeddings" class="quarto-section-identifier"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Embeddings</span></span></h1>
 </div>
 
 
@@ -291,8 +309,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   
 
 
-</header><section id="requirements" class="level2" data-number="6.1"><h2 data-number="6.1" class="anchored" data-anchor-id="requirements">
-<span class="header-section-number">6.1</span> Requirements</h2>
+</header><section id="requirements" class="level2" data-number="7.1"><h2 data-number="7.1" class="anchored" data-anchor-id="requirements">
+<span class="header-section-number">7.1</span> Requirements</h2>
 <p>You’ll need 13 packages (<span class="pkg"><a href="https://cran.r-project.org/package=bestNormalize">bestNormalize</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=dimRed">dimRed</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=embed">embed</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=fastICA">fastICA</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=igraph">igraph</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=mixOmics">mixOmics</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=modeldatatoo">modeldatatoo</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=patchwork">patchwork</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=RANN">RANN</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=RSpectra">RSpectra</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=tidymodels">tidymodels</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=uwot">uwot</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=viridis">viridis</a></span>) for this chapter. The <span class="pkg"><a href="https://cran.r-project.org/package=mixOmics">mixOmics</a></span> is a Bioconductor package and is not on CRAN. For the others, we can install them as usual but we’ll get <span class="pkg"><a href="https://cran.r-project.org/package=mixOmics">mixOmics</a></span> from GitHub:</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">req_pkg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"bestNormalize"</span>, <span class="st">"dimRed"</span>, <span class="st">"embed"</span>, <span class="st">"fastICA"</span>, <span class="st">"igraph"</span>, </span>
@@ -328,36 +346,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="fu"><a href="https://tidymodels.tidymodels.org/reference/tidymodels_prefer.html">tidymodels_prefer</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu">theme_set</span><span class="op">(</span><span class="fu">theme_bw</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-</section><section id="sec-barley" class="level2" data-number="6.2"><h2 data-number="6.2" class="anchored" data-anchor-id="sec-barley">
-<span class="header-section-number">6.2</span> Example: Predicting Barley Amounts</h2>
+</section><section id="sec-barley" class="level2" data-number="7.2"><h2 data-number="7.2" class="anchored" data-anchor-id="sec-barley">
+<span class="header-section-number">7.2</span> Example: Predicting Barley Amounts</h2>
 <p>The data are in the <span class="pkg"><a href="https://cran.r-project.org/package=modeldatatoo">modeldatatoo</a></span> package. Let’s load the data, remove two outcome columns that will not be analyzed here, and conduct a three-way split of the data:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tidymodels/modeldatatoo">modeldatatoo</a></span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">chimiometrie_2019</span> <span class="op">&lt;-</span></span>
-<span>  <span class="fu"><a href="https://tidymodels.github.io/modeldatatoo/reference/data_chimiometrie_2019.html">data_chimiometrie_2019</a></span><span class="op">(</span><span class="op">)</span>  <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span></span>
-<span>  <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">soy_oil</span>, <span class="op">-</span><span class="va">lucerne</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">barley_breaks</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="fl">0</span><span class="op">:</span><span class="fl">27</span><span class="op">)</span> <span class="op">*</span> <span class="fl">2</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">101</span><span class="op">)</span></span>
-<span><span class="va">barley_split</span> <span class="op">&lt;-</span> <span class="fu">initial_validation_split</span><span class="op">(</span><span class="va">chimiometrie_2019</span>, prop <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.7</span>, <span class="fl">0.15</span><span class="op">)</span>, strata <span class="op">=</span> <span class="va">barley</span><span class="op">)</span></span>
-<span><span class="va">barley_train</span> <span class="op">&lt;-</span> <span class="fu">training</span><span class="op">(</span><span class="va">barley_split</span><span class="op">)</span></span>
-<span><span class="va">barley_val</span> <span class="op">&lt;-</span> <span class="fu">validation</span><span class="op">(</span><span class="va">barley_split</span><span class="op">)</span></span>
-<span><span class="va">barley_test</span> <span class="op">&lt;-</span> <span class="fu">testing</span><span class="op">(</span><span class="va">barley_split</span><span class="op">)</span></span>
-<span><span class="va">barley_rs</span> <span class="op">&lt;-</span> <span class="fu">validation_set</span><span class="op">(</span><span class="va">barley_split</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">wave</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="op">(</span>index <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">550</span>, wavelength <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="fl">1300</span>, <span class="fl">2398</span>, by <span class="op">=</span> <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">wave_corr</span> <span class="op">&lt;-</span> </span>
-<span>  <span class="va">barley_train</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
-<span>  <span class="fu">select</span><span class="op">(</span><span class="fu">starts_with</span><span class="op">(</span><span class="st">"wv"</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/stats/cor.html">cor</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="va">wave_corr</span> <span class="op">&lt;-</span> <span class="va">wave_corr</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/lower.tri.html">upper.tri</a></span><span class="op">(</span><span class="va">wave_corr</span><span class="op">)</span><span class="op">]</span></span>
-<span></span>
-<span><span class="va">chimiometrie_2019</span><span class="op">$</span><span class="va">barley_bin</span> <span class="op">&lt;-</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/cut.html">cut</a></span><span class="op">(</span><span class="va">chimiometrie_2019</span><span class="op">$</span><span class="va">barley</span>,</span>
-<span>      breaks <span class="op">=</span> <span class="va">barley_breaks</span>,</span>
-<span>      include.lowest <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/source.html">source</a></span><span class="op">(</span><span class="st">"https://raw.githubusercontent.com/aml4td/website/main/R/setup_chemometrics.R"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>The column names for the predictors are <code>wvlgth_001</code> through <code>wvlgth_550</code>.</p>
 <p>The primary recipe used for almost all of the embedding methods is:</p>
@@ -386,11 +379,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="co">#&gt; • orderNorm transformation on: wvlgth_001, wvlgth_002, wvlgth_003, ... | Trained</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>If you use a recipe, most of the embedding methods can be computed with a common interface. The recipe step functions are mostly in the <span class="pkg"><a href="https://cran.r-project.org/package=recipes">recipes</a></span> package, although some live in “side packages,” such as the <span class="pkg"><a href="https://cran.r-project.org/package=embed">embed</a></span> package. We’ll be clear about which package is needed for each.</p>
-</section><section id="sec-linear-embed" class="level2" data-number="6.3"><h2 data-number="6.3" class="anchored" data-anchor-id="sec-linear-embed">
-<span class="header-section-number">6.3</span> Linear Transformations</h2>
+</section><section id="sec-linear-embed" class="level2" data-number="7.3"><h2 data-number="7.3" class="anchored" data-anchor-id="sec-linear-embed">
+<span class="header-section-number">7.3</span> Linear Transformations</h2>
 <p>We’ll look at the three <em>linear</em> methods described in the text.</p>
-<section id="principal-component-analysis" class="level3" data-number="6.3.1"><h3 data-number="6.3.1" class="anchored" data-anchor-id="principal-component-analysis">
-<span class="header-section-number">6.3.1</span> Principal Component Analysis</h3>
+<section id="principal-component-analysis" class="level3" data-number="7.3.1"><h3 data-number="7.3.1" class="anchored" data-anchor-id="principal-component-analysis">
+<span class="header-section-number">7.3.1</span> Principal Component Analysis</h3>
 <p>Unsurprisingly, the recipe step needed here is called <code><a href="https://recipes.tidymodels.org/reference/step_pca.html">step_pca()</a></code>. We’ll add an <code>id</code> argument to more easily reference the step of interest.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">barley_pca_rec</span> <span class="op">&lt;-</span></span>
@@ -500,8 +493,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>This helps avoid over-interpreting proportionally small patterns in the later components.</p>
 <p>The functions <code><a href="https://embed.tidymodels.org/reference/step_pca_sparse.html">embed::step_pca_sparse()</a></code> and <code><a href="https://embed.tidymodels.org/reference/step_pca_sparse_bayes.html">embed::step_pca_sparse_bayes()</a></code> have sparse/regularized estimation methods for PCA. Each has an argument called <code>predictor_prop()</code> that attempts to control how much sparsity should be used. <code>predictor_prop = 0</code> should approximate regular PCA, and values near 1.0 would produce very few non-zero loadings.</p>
-</section><section id="independent-component-analysis" class="level3" data-number="6.3.2"><h3 data-number="6.3.2" class="anchored" data-anchor-id="independent-component-analysis">
-<span class="header-section-number">6.3.2</span> Independent Component Analysis</h3>
+</section><section id="independent-component-analysis" class="level3" data-number="7.3.2"><h3 data-number="7.3.2" class="anchored" data-anchor-id="independent-component-analysis">
+<span class="header-section-number">7.3.2</span> Independent Component Analysis</h3>
 <p>An ICA recipe step can also be found in the <span class="pkg"><a href="https://cran.r-project.org/package=recipes">recipes</a></span> package. The syntax is virtually identical:</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">538</span><span class="op">)</span></span>
@@ -574,8 +567,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <p>This might not cause a difference in performance when the features are used in a predictive model, but if the model uses slopes and intercepts, the parameter estimates will be different each time it is run.</p>
-</section><section id="numeric-pls" class="level3" data-number="6.3.3"><h3 data-number="6.3.3" class="anchored" data-anchor-id="numeric-pls">
-<span class="header-section-number">6.3.3</span> Partial Least Squares</h3>
+</section><section id="numeric-pls" class="level3" data-number="7.3.3"><h3 data-number="7.3.3" class="anchored" data-anchor-id="numeric-pls">
+<span class="header-section-number">7.3.3</span> Partial Least Squares</h3>
 <p>The syntax for PLS is also very similar. However, it is a supervised method, so we need to specify the column containing the outcome (the outcome column is not needed after model training). The code below uses <code><a href="https://dplyr.tidyverse.org/reference/vars.html">dplyr::vars()</a></code> to declare the column name, but a simple character string can also be used.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">barley_pls_rec</span> <span class="op">&lt;-</span></span>
@@ -597,11 +590,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="co">#&gt; 6 wvlgth_003 -0.1570  PLS2      pls  </span></span>
 <span><span class="co">#&gt; # ℹ 1,094 more rows</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-</section></section><section id="sec-mds" class="level2" data-number="6.4"><h2 data-number="6.4" class="anchored" data-anchor-id="sec-mds">
-<span class="header-section-number">6.4</span> Multidimensional Scaling</h2>
+</section></section><section id="sec-mds" class="level2" data-number="7.4"><h2 data-number="7.4" class="anchored" data-anchor-id="sec-mds">
+<span class="header-section-number">7.4</span> Multidimensional Scaling</h2>
 <p>tidymodels contains recipe steps for Isomap and UMAP. The latter is accessible via the <span class="pkg"><a href="https://cran.r-project.org/package=embed">embed</a></span> package.</p>
-<section id="sec-isomap" class="level3" data-number="6.4.1"><h3 data-number="6.4.1" class="anchored" data-anchor-id="sec-isomap">
-<span class="header-section-number">6.4.1</span> Isomap</h3>
+<section id="sec-isomap" class="level3" data-number="7.4.1"><h3 data-number="7.4.1" class="anchored" data-anchor-id="sec-isomap">
+<span class="header-section-number">7.4.1</span> Isomap</h3>
 <p>Again, the syntax is very similar to the previous unsupervised methods. The main two tuning parameters are <code>num_terms</code> and <code>neighbors</code>. We should also set the seed before execution.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">221</span><span class="op">)</span></span>
@@ -625,8 +618,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 </div>
-</section><section id="sec-umap" class="level3" data-number="6.4.2"><h3 data-number="6.4.2" class="anchored" data-anchor-id="sec-umap">
-<span class="header-section-number">6.4.2</span> UMAP</h3>
+</section><section id="sec-umap" class="level3" data-number="7.4.2"><h3 data-number="7.4.2" class="anchored" data-anchor-id="sec-umap">
+<span class="header-section-number">7.4.2</span> UMAP</h3>
 <p><code><a href="https://embed.tidymodels.org/reference/step_umap.html">step_umap()</a></code>, in the <span class="pkg"><a href="https://cran.r-project.org/package=embed">embed</a></span> package, has a number of tuning parameters: <code>neighbors</code>, <code>num_comp</code>, <code>min_dist</code>, <code>learn_rate</code>, <code>epochs</code>, <code>initial</code> (initialization method, e.g.&nbsp;“pca”), and the optional <code>target_weight</code>.</p>
 <p>For an unsupervised embedding:</p>
 <div class="cell" data-layout-align="center">
@@ -652,8 +645,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <p>For a <em>supervised</em> embedding, the <code>target_weight</code> argument is used. A value of zero is unsupervised, and values near 1.0 are completely supervised. As with PLS, the argument for the outcome column is called <code>outcome</code> and can be a string of an unquoted name wrapped in <code>vars()</code>.</p>
-</section></section><section id="sec-centroids" class="level2" data-number="6.5"><h2 data-number="6.5" class="anchored" data-anchor-id="sec-centroids">
-<span class="header-section-number">6.5</span> Centroid-Based Methods</h2>
+</section></section><section id="sec-centroids" class="level2" data-number="7.5"><h2 data-number="7.5" class="anchored" data-anchor-id="sec-centroids">
+<span class="header-section-number">7.5</span> Centroid-Based Methods</h2>
 <p>There are two steps in recipes for this:</p>
 <ul>
 <li>
@@ -740,18 +733,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }
     return false;
   }
-  const clipboard = new window.ClipboardJS('.code-copy-button', {
-    text: function(trigger) {
-      const codeEl = trigger.previousElementSibling.cloneNode(true);
-      for (const childEl of codeEl.children) {
-        if (isCodeAnnotation(childEl)) {
-          childEl.remove();
-        }
-      }
-      return codeEl.innerText;
-    }
-  });
-  clipboard.on('success', function(e) {
+  const onCopySuccess = function(e) {
     // button target
     const button = e.trigger;
     // don't keep focus
@@ -783,7 +765,29 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }, 1000);
     // clear code selection
     e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
   });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
     var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
     var mailtoRegex = new RegExp(/^mailto:/);
       var filterRegex = new RegExp("https:\/\/tidymodels\.aml4td\.org");
@@ -791,7 +795,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
         return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
     }
     // Inspect non-navigation links and adorn them if external
- 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
     for (var i=0; i<links.length; i++) {
       const link = links[i];
       if (!isInternal(link.href)) {
@@ -1115,12 +1119,12 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 });
 </script><nav class="page-navigation"><div class="nav-page nav-page-previous">
       <a href="../chapters/categorical-predictors.html" class="pagination-link" aria-label="Working with Categorical Predictors">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Working with Categorical Predictors</span></span>
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Working with Categorical Predictors</span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
       <a href="../chapters/interactions-nonlinear.html" class="pagination-link" aria-label="Interactions and Nonlinear Features">
-        <span class="nav-page-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Interactions and Nonlinear Features</span></span> <i class="bi bi-arrow-right-short"></i>
+        <span class="nav-page-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Interactions and Nonlinear Features</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

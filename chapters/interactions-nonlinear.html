@@ -2,9 +2,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.5.22">
+<meta name="generator" content="quarto-1.6.3">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-<title>Tidymodels Computing Supplement – 7&nbsp; Interactions and Nonlinear Features</title>
+<title>8&nbsp; Interactions and Nonlinear Features – Tidymodels Computing Supplement</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -30,7 +30,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -96,7 +96,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-submit-button-title": "Submit",
     "search-label": "Search"
   }
-}</script><script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script><script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script><script type="text/javascript">
+}</script><script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script><script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script><script type="text/javascript">
 const typesetMath = (el) => {
   if (window.MathJax) {
     // MathJax Typeset
@@ -127,13 +127,13 @@ window.Quarto = {
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top"><nav class="quarto-secondary-nav"><div class="container-fluid d-flex">
-      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <a class="flex-grow-1 no-decor" role="button" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
-          <h1 class="quarto-secondary-nav-title"><span id="sec-interactions-nonlinear" class="quarto-section-identifier"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Interactions and Nonlinear Features</span></span></h1>
+        <a class="flex-grow-1 no-decor" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+          <h1 class="quarto-secondary-nav-title"><span id="sec-interactions-nonlinear" class="quarto-section-identifier"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Interactions and Nonlinear Features</span></span></h1>
         </a>     
-      <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
         <i class="bi bi-search"></i>
       </button>
     </div>
@@ -145,23 +145,23 @@ window.Quarto = {
         <div class="sidebar-tools-main tools-wide">
     <a href="https://github.com/aml4td/computing-tidymodels/" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
     <div class="dropdown">
-      <a href="" title="Share" id="quarto-navigation-tool-dropdown-0" class="quarto-navigation-tool dropdown-toggle px-1" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Share"><i class="bi bi-share"></i></a>
+      <a href="" title="Share" id="quarto-navigation-tool-dropdown-0" class="quarto-navigation-tool dropdown-toggle px-1" data-bs-toggle="dropdown" aria-expanded="false" role="link" aria-label="Share"><i class="bi bi-share"></i></a>
       <ul class="dropdown-menu" aria-labelledby="quarto-navigation-tool-dropdown-0">
 <li>
             <a class="dropdown-item sidebar-tools-main-item" href="https://twitter.com/intent/tweet?url=%7Curl%7C">
-              <i class="bi bi-bi-twitter pe-1"></i>
+              <i class="bi bi-twitter pe-1"></i>
             Twitter
             </a>
           </li>
           <li>
             <a class="dropdown-item sidebar-tools-main-item" href="https://www.facebook.com/sharer/sharer.php?u=%7Curl%7C">
-              <i class="bi bi-bi-facebook pe-1"></i>
+              <i class="bi bi-facebook pe-1"></i>
             Facebook
             </a>
           </li>
           <li>
             <a class="dropdown-item sidebar-tools-main-item" href="https://www.linkedin.com/sharing/share-offsite/?url=%7Curl%7C">
-              <i class="bi bi-bi-linkedin pe-1"></i>
+              <i class="bi bi-linkedin pe-1"></i>
             LinkedIn
             </a>
           </li>
@@ -224,26 +224,32 @@ window.Quarto = {
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="../chapters/missing-data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Missing Data</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="../chapters/numeric-predictors.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Transforming Numeric Predictors</span></span></a>
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Transforming Numeric Predictors</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../chapters/categorical-predictors.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Working with Categorical Predictors</span></span></a>
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Working with Categorical Predictors</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../chapters/embeddings.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Embeddings</span></span></a>
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Embeddings</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../chapters/interactions-nonlinear.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Interactions and Nonlinear Features</span></span></a>
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Interactions and Nonlinear Features</span></span></a>
   </div>
 </li>
         <li class="sidebar-item sidebar-item-section">
@@ -253,7 +259,19 @@ window.Quarto = {
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../chapters/overfitting.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Overfitting</span></span></a>
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Overfitting</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/resampling.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Measuring Performance with Resampling</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/grid.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Grid Search</span></span></a>
   </div>
 </li>
         <li class="sidebar-item sidebar-item-section">
@@ -280,23 +298,23 @@ window.Quarto = {
         <nav id="TOC" role="doc-toc" class="toc-active"><h2 id="toc-title">Table of contents</h2>
    
   <ul>
-<li><a href="#requirements" id="toc-requirements" class="nav-link active" data-scroll-target="#requirements"><span class="header-section-number">7.1</span> Requirements</a></li>
+<li><a href="#requirements" id="toc-requirements" class="nav-link active" data-scroll-target="#requirements"><span class="header-section-number">8.1</span> Requirements</a></li>
   <li>
-<a href="#sec-interactions" id="toc-sec-interactions" class="nav-link" data-scroll-target="#sec-interactions"><span class="header-section-number">7.2</span> Interactions</a>
+<a href="#sec-interactions" id="toc-sec-interactions" class="nav-link" data-scroll-target="#sec-interactions"><span class="header-section-number">8.2</span> Interactions</a>
   <ul class="collapse">
-<li><a href="#interactions-with-model-formulas" id="toc-interactions-with-model-formulas" class="nav-link" data-scroll-target="#interactions-with-model-formulas"><span class="header-section-number">7.2.1</span> Interactions with Model Formulas</a></li>
-  <li><a href="#interactions-from-recipes" id="toc-interactions-from-recipes" class="nav-link" data-scroll-target="#interactions-from-recipes"><span class="header-section-number">7.2.2</span> Interactions from Recipes</a></li>
-  <li><a href="#sec-interactions-detection" id="toc-sec-interactions-detection" class="nav-link" data-scroll-target="#sec-interactions-detection"><span class="header-section-number">7.2.3</span> Detecting Interactions</a></li>
+<li><a href="#interactions-with-model-formulas" id="toc-interactions-with-model-formulas" class="nav-link" data-scroll-target="#interactions-with-model-formulas"><span class="header-section-number">8.2.1</span> Interactions with Model Formulas</a></li>
+  <li><a href="#interactions-from-recipes" id="toc-interactions-from-recipes" class="nav-link" data-scroll-target="#interactions-from-recipes"><span class="header-section-number">8.2.2</span> Interactions from Recipes</a></li>
+  <li><a href="#sec-interactions-detection" id="toc-sec-interactions-detection" class="nav-link" data-scroll-target="#sec-interactions-detection"><span class="header-section-number">8.2.3</span> Detecting Interactions</a></li>
   </ul>
 </li>
-  <li><a href="#sec-polynomials" id="toc-sec-polynomials" class="nav-link" data-scroll-target="#sec-polynomials"><span class="header-section-number">7.3</span> Polynomial Basis Expansions</a></li>
-  <li><a href="#sec-splines" id="toc-sec-splines" class="nav-link" data-scroll-target="#sec-splines"><span class="header-section-number">7.4</span> Spline Functions</a></li>
-  <li><a href="#discretization" id="toc-discretization" class="nav-link" data-scroll-target="#discretization"><span class="header-section-number">7.5</span> Discretization</a></li>
+  <li><a href="#sec-polynomials" id="toc-sec-polynomials" class="nav-link" data-scroll-target="#sec-polynomials"><span class="header-section-number">8.3</span> Polynomial Basis Expansions</a></li>
+  <li><a href="#sec-splines" id="toc-sec-splines" class="nav-link" data-scroll-target="#sec-splines"><span class="header-section-number">8.4</span> Spline Functions</a></li>
+  <li><a href="#discretization" id="toc-discretization" class="nav-link" data-scroll-target="#discretization"><span class="header-section-number">8.5</span> Discretization</a></li>
   </ul></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block default"><div class="quarto-title">
-<h1 class="title d-none d-lg-block"><span id="sec-interactions-nonlinear" class="quarto-section-identifier"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Interactions and Nonlinear Features</span></span></h1>
+<h1 class="title d-none d-lg-block"><span id="sec-interactions-nonlinear" class="quarto-section-identifier"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Interactions and Nonlinear Features</span></span></h1>
 </div>
 
 
@@ -311,8 +329,8 @@ window.Quarto = {
 
 
 </header><p>This chapter is focused on how predictors can enter the model in a nonlinear fashion. The three approaches discussed are interaction effects, basis expansions, and discretization.</p>
-<section id="requirements" class="level2" data-number="7.1"><h2 data-number="7.1" class="anchored" data-anchor-id="requirements">
-<span class="header-section-number">7.1</span> Requirements</h2>
+<section id="requirements" class="level2" data-number="8.1"><h2 data-number="8.1" class="anchored" data-anchor-id="requirements">
+<span class="header-section-number">8.1</span> Requirements</h2>
 <p>You’ll need 5 packages (<span class="pkg"><a href="https://cran.r-project.org/package=aorsf">aorsf</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=embed">embed</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=gt">gt</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=hstats">hstats</a></span>, and <span class="pkg"><a href="https://cran.r-project.org/package=tidymodels">tidymodels</a></span>) for this chapter. You can install them via:</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">req_pkg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"aorsf"</span>, <span class="st">"embed"</span>, <span class="st">"gt"</span>, <span class="st">"hstats"</span>, <span class="st">"tidymodels"</span><span class="op">)</span></span>
@@ -333,8 +351,8 @@ window.Quarto = {
 <span><span class="fu"><a href="https://tidymodels.tidymodels.org/reference/tidymodels_prefer.html">tidymodels_prefer</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu">theme_set</span><span class="op">(</span><span class="fu">theme_bw</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-</section><section id="sec-interactions" class="level2" data-number="7.2"><h2 data-number="7.2" class="anchored" data-anchor-id="sec-interactions">
-<span class="header-section-number">7.2</span> Interactions</h2>
+</section><section id="sec-interactions" class="level2" data-number="8.2"><h2 data-number="8.2" class="anchored" data-anchor-id="sec-interactions">
+<span class="header-section-number">8.2</span> Interactions</h2>
 <p>As the text mentions, interactions involve two or more predictors (of any data type). An interaction means that the relationship between the outcome and the predictors involved cannot be articulated by looking at one predictor at a time; they act in concert.</p>
 <p>To get started, let’s once again load the food delivery data and use the same split:</p>
 <div class="cell" data-layout-align="center">
@@ -367,9 +385,9 @@ window.Quarto = {
 <span><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We’ll consider two mechanisms to encode interaction columns: via the base R formula method and with recipes.</p>
-<section id="interactions-with-model-formulas" class="level3" data-number="7.2.1"><h3 data-number="7.2.1" class="anchored" data-anchor-id="interactions-with-model-formulas">
-<span class="header-section-number">7.2.1</span> Interactions with Model Formulas</h3>
-<p>This was briefly discussed in <a href="numeric-predictors.html#sec-r-formulas" class="quarto-xref"><span>Section 4.3</span></a>.</p>
+<section id="interactions-with-model-formulas" class="level3" data-number="8.2.1"><h3 data-number="8.2.1" class="anchored" data-anchor-id="interactions-with-model-formulas">
+<span class="header-section-number">8.2.1</span> Interactions with Model Formulas</h3>
+<p>This was briefly discussed in <a href="numeric-predictors.html#sec-r-formulas" class="quarto-xref"><span>Section 5.3</span></a>.</p>
 <p>The main operator that creates interactions is the colon. Using <code>a:b</code> within a formula will create the appropriate columns that encode the interactions. The specifics depend on what type of data are in columns <code>a</code> and <code>b</code>:</p>
 <ul>
 <li><p>If both are numeric, an additional column, which is their product, is added to the model matrix. By default, the base R formula method gives it the name <code>"a:b"</code>.</p></li>
@@ -388,7 +406,6 @@ window.Quarto = {
 <span></span>
 <span><span class="va">interaction_example</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://gt.rstudio.com/reference/gt.html">gt</a></span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div>
 <div id="fgacxacsht" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>#fgacxacsht table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
@@ -828,6 +845,15 @@ window.Quarto = {
 #fgacxacsht .gt_indent_5 {
   text-indent: 25px;
 }
+
+#fgacxacsht .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#fgacxacsht div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
 </style>
 <table class="gt_table table table-sm table-striped small" data-quarto-postprocess="true" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
 <thead><tr class="header gt_col_headings">
@@ -876,7 +902,6 @@ window.Quarto = {
 </div>
 </div>
 </div>
-</div>
 <p>For two numeric predictors:</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/model.matrix.html">model.matrix</a></span><span class="op">(</span><span class="op">~</span> <span class="va">hour</span> <span class="op">+</span> <span class="va">distance</span> <span class="op">+</span> <span class="va">hour</span><span class="op">:</span><span class="va">distance</span>, <span class="va">interaction_example</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
@@ -884,7 +909,6 @@ window.Quarto = {
 <span>  <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">`(Intercept)`</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://gt.rstudio.com/reference/gt.html">gt</a></span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div>
 <div id="emttviarbx" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>#emttviarbx table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
@@ -1324,6 +1348,15 @@ window.Quarto = {
 #emttviarbx .gt_indent_5 {
   text-indent: 25px;
 }
+
+#emttviarbx .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#emttviarbx div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
 </style>
 <table class="gt_table table table-sm table-striped small" data-quarto-postprocess="true" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
 <thead><tr class="header gt_col_headings">
@@ -1372,7 +1405,6 @@ window.Quarto = {
 </div>
 </div>
 </div>
-</div>
 <p>One numeric and one factor predictor:</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/model.matrix.html">model.matrix</a></span><span class="op">(</span><span class="op">~</span> <span class="va">day</span> <span class="op">+</span> <span class="va">distance</span> <span class="op">+</span> <span class="va">day</span><span class="op">:</span><span class="va">distance</span>, <span class="va">interaction_example</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
@@ -1380,7 +1412,6 @@ window.Quarto = {
 <span>  <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">`(Intercept)`</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://gt.rstudio.com/reference/gt.html">gt</a></span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div>
 <div id="zizjnjknvw" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>#zizjnjknvw table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
@@ -1820,6 +1851,15 @@ window.Quarto = {
 #zizjnjknvw .gt_indent_5 {
   text-indent: 25px;
 }
+
+#zizjnjknvw .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#zizjnjknvw div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
 </style>
 <table class="gt_table table table-sm table-striped small" data-quarto-postprocess="true" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
 <thead><tr class="header gt_col_headings">
@@ -1948,7 +1988,6 @@ window.Quarto = {
 </div>
 </div>
 </div>
-</div>
 <p>If you want to make all possible interactions, you can use the dot and exponent operator:</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># All possible two-way interactions:</span></span>
@@ -1957,8 +1996,8 @@ window.Quarto = {
 <span><span class="co"># All possible two- and three-way interactions, etc:</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/stats/model.matrix.html">model.matrix</a></span><span class="op">(</span><span class="op">~</span> <span class="op">(</span><span class="va">.</span><span class="op">)</span><span class="op">^</span><span class="fl">3</span>, <span class="va">interaction_example</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-</section><section id="interactions-from-recipes" class="level3" data-number="7.2.2"><h3 data-number="7.2.2" class="anchored" data-anchor-id="interactions-from-recipes">
-<span class="header-section-number">7.2.2</span> Interactions from Recipes</h3>
+</section><section id="interactions-from-recipes" class="level3" data-number="8.2.2"><h3 data-number="8.2.2" class="anchored" data-anchor-id="interactions-from-recipes">
+<span class="header-section-number">8.2.2</span> Interactions from Recipes</h3>
 <p>The <span class="pkg"><a href="https://cran.r-project.org/package=recipes">recipes</a></span> has <code><a href="https://recipes.tidymodels.org/reference/step_interact.html">step_interact()</a></code>. This step is very atypical since it uses a formula to specify the inputs (rather than a set of <span class="pkg"><a href="https://cran.r-project.org/package=dplyr">dplyr</a></span> selectors). It also requires all columns used to be already converted to indicators (perhaps using <code><a href="https://recipes.tidymodels.org/reference/step_dummy.html">step_dummy()</a></code>).</p>
 <p>The formula passed to <code><a href="https://recipes.tidymodels.org/reference/step_interact.html">step_interact()</a></code> also uses colons to declare interactions, but it has two special differences from base R formulas:</p>
 <ul>
@@ -1973,7 +2012,6 @@ window.Quarto = {
 <span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/bake.html">bake</a></span><span class="op">(</span>new_data <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://gt.rstudio.com/reference/gt.html">gt</a></span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div>
 <div id="kqeitxrjnl" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>#kqeitxrjnl table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
@@ -2413,6 +2451,15 @@ window.Quarto = {
 #kqeitxrjnl .gt_indent_5 {
   text-indent: 25px;
 }
+
+#kqeitxrjnl .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#kqeitxrjnl div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
 </style>
 <table class="gt_table table table-sm table-striped small" data-quarto-postprocess="true" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
 <thead><tr class="header gt_col_headings">
@@ -2461,7 +2508,6 @@ window.Quarto = {
 </div>
 </div>
 </div>
-</div>
 <p>For categorical/continuous combinations, we use <code><a href="https://recipes.tidymodels.org/reference/step_dummy.html">step_dummy()</a></code> first and then a selector to make the interactions</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span><span class="op">~</span> <span class="va">day</span> <span class="op">+</span> <span class="va">hour</span>, data <span class="op">=</span> <span class="va">interaction_example</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
@@ -2471,7 +2517,6 @@ window.Quarto = {
 <span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/bake.html">bake</a></span><span class="op">(</span>new_data <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://gt.rstudio.com/reference/gt.html">gt</a></span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div>
 <div id="vogzqwwijj" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>#vogzqwwijj table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
@@ -2911,6 +2956,15 @@ window.Quarto = {
 #vogzqwwijj .gt_indent_5 {
   text-indent: 25px;
 }
+
+#vogzqwwijj .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#vogzqwwijj div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
 </style>
 <table class="gt_table table table-sm table-striped small" data-quarto-postprocess="true" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
 <thead><tr class="header gt_col_headings">
@@ -3039,9 +3093,8 @@ window.Quarto = {
 </div>
 </div>
 </div>
-</div>
-</section><section id="sec-interactions-detection" class="level3" data-number="7.2.3"><h3 data-number="7.2.3" class="anchored" data-anchor-id="sec-interactions-detection">
-<span class="header-section-number">7.2.3</span> Detecting Interactions</h3>
+</section><section id="sec-interactions-detection" class="level3" data-number="8.2.3"><h3 data-number="8.2.3" class="anchored" data-anchor-id="sec-interactions-detection">
+<span class="header-section-number">8.2.3</span> Detecting Interactions</h3>
 <p>A few different packages can compute <span class="math inline">\(H\)</span>-statistics (and similar quantities):</p>
 <ul>
 <li><span class="pkg"><a href="https://cran.r-project.org/package=hstats">hstats</a></span></li>
@@ -3058,7 +3111,6 @@ window.Quarto = {
 <p>For this chapter, we fit an oblique random forest model to compute the <span class="math inline">\(H\)</span>-statistics. We’ll defer the details of that model fit until a later chapter but the code was:</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://docs.ropensci.org/aorsf">aorsf</a></span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: package 'aorsf' was built under R version 4.3.3</span></span>
 <span></span>
 <span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">ncol</a></span><span class="op">(</span><span class="va">delivery_train</span><span class="op">)</span> <span class="op">-</span> <span class="fl">1</span></span>
 <span></span>
@@ -3067,11 +3119,11 @@ window.Quarto = {
 </div>
 <p><em>Any</em> ML model can be used with the <span class="pkg"><a href="https://cran.r-project.org/package=hstats">hstats</a></span> package. We’ll use the validation set to compute the values; this lends more validity to the values (although we could have used the training set). There are a lot of computations here; this may take a bit to compute:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/mayer79/hstats">hstats</a></span><span class="op">)</span></span>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/ModelOriented/hstats/">hstats</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">218</span><span class="op">)</span></span>
 <span><span class="va">orf_hstats</span> <span class="op">&lt;-</span></span>
-<span>  <span class="fu"><a href="https://mayer79.github.io/hstats/reference/hstats.html">hstats</a></span><span class="op">(</span><span class="va">orf_fit</span>,</span>
+<span>  <span class="fu"><a href="https://modeloriented.github.io/hstats/reference/hstats.html">hstats</a></span><span class="op">(</span><span class="va">orf_fit</span>,</span>
 <span>         X <span class="op">=</span> <span class="va">delivery_val</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="op">-</span><span class="va">time_to_delivery</span><span class="op">)</span>,</span>
 <span>         <span class="co"># Prioritize the top 10 individual predictors for computing potential</span></span>
 <span>         <span class="co"># pairwise interactions.</span></span>
@@ -3083,7 +3135,7 @@ window.Quarto = {
 <span>         n_max <span class="op">=</span> <span class="fl">1000</span>,</span>
 <span>         verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">orf_two_way_int_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mayer79.github.io/hstats/reference/h2_pairwise.html">h2_pairwise</a></span><span class="op">(</span><span class="va">orf_hstats</span>, zero <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">orf_two_way_int_obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://modeloriented.github.io/hstats/reference/h2_pairwise.html">h2_pairwise</a></span><span class="op">(</span><span class="va">orf_hstats</span>, zero <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">orf_two_way_int_obj</span></span>
 <span><span class="co">#&gt; Pairwise H^2 (normalized)</span></span>
 <span><span class="co">#&gt;                       [,1]</span></span>
@@ -3134,8 +3186,8 @@ window.Quarto = {
 <span><span class="co">#&gt; hour:item_07     3.284e-05</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>From these results, we could add more terms by adding another layer of <code><a href="https://recipes.tidymodels.org/reference/step_interact.html">step_interact()</a></code> to our recipe.</p>
-</section></section><section id="sec-polynomials" class="level2" data-number="7.3"><h2 data-number="7.3" class="anchored" data-anchor-id="sec-polynomials">
-<span class="header-section-number">7.3</span> Polynomial Basis Expansions</h2>
+</section></section><section id="sec-polynomials" class="level2" data-number="8.3"><h2 data-number="8.3" class="anchored" data-anchor-id="sec-polynomials">
+<span class="header-section-number">8.3</span> Polynomial Basis Expansions</h2>
 <p>There are two main functions that produce different types of orthogonal polynomials:</p>
 <ul>
 <li>
@@ -3179,8 +3231,8 @@ window.Quarto = {
 <span><span class="co">#&gt; # ℹ 5,998 more rows</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>If we would like different polynomial degrees for different columns, we would call the step multiple times.</p>
-</section><section id="sec-splines" class="level2" data-number="7.4"><h2 data-number="7.4" class="anchored" data-anchor-id="sec-splines">
-<span class="header-section-number">7.4</span> Spline Functions</h2>
+</section><section id="sec-splines" class="level2" data-number="8.4"><h2 data-number="8.4" class="anchored" data-anchor-id="sec-splines">
+<span class="header-section-number">8.4</span> Spline Functions</h2>
 <p><span class="pkg"><a href="https://cran.r-project.org/package=recipes">recipes</a></span> has several spline steps:</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/apropos.html">apropos</a></span><span class="op">(</span><span class="st">"step_spline"</span><span class="op">)</span></span>
@@ -3205,8 +3257,8 @@ window.Quarto = {
 <span><span class="co">#&gt; # ℹ 5,998 more rows</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Some steps also have arguments for the spline degree called <code>degree</code>. Also, most basis expansion function steps have an option called <code>options</code> to pass additional specifications, such as a vector of knots.</p>
-</section><section id="discretization" class="level2" data-number="7.5"><h2 data-number="7.5" class="anchored" data-anchor-id="discretization">
-<span class="header-section-number">7.5</span> Discretization</h2>
+</section><section id="discretization" class="level2" data-number="8.5"><h2 data-number="8.5" class="anchored" data-anchor-id="discretization">
+<span class="header-section-number">8.5</span> Discretization</h2>
 <p>There is one step in <span class="pkg"><a href="https://cran.r-project.org/package=recipes">recipes</a></span> that conducts unsupervised binning called <code><a href="https://recipes.tidymodels.org/reference/step_discretize.html">step_discretize()</a></code> and the <span class="pkg"><a href="https://cran.r-project.org/package=embed">embed</a></span> package has two for supervised methods: <code><a href="https://embed.tidymodels.org/reference/step_discretize_cart.html">step_discretize_cart()</a></code> and <code><a href="https://embed.tidymodels.org/reference/step_discretize_xgb.html">step_discretize_xgb()</a></code>.</p>
 <p>For unsupervised binning:</p>
 <div class="cell" data-layout-align="center">
@@ -3320,18 +3372,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }
     return false;
   }
-  const clipboard = new window.ClipboardJS('.code-copy-button', {
-    text: function(trigger) {
-      const codeEl = trigger.previousElementSibling.cloneNode(true);
-      for (const childEl of codeEl.children) {
-        if (isCodeAnnotation(childEl)) {
-          childEl.remove();
-        }
-      }
-      return codeEl.innerText;
-    }
-  });
-  clipboard.on('success', function(e) {
+  const onCopySuccess = function(e) {
     // button target
     const button = e.trigger;
     // don't keep focus
@@ -3363,7 +3404,29 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }, 1000);
     // clear code selection
     e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
   });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
     var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
     var mailtoRegex = new RegExp(/^mailto:/);
       var filterRegex = new RegExp("https:\/\/tidymodels\.aml4td\.org");
@@ -3371,7 +3434,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
         return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
     }
     // Inspect non-navigation links and adorn them if external
- 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
     for (var i=0; i<links.length; i++) {
       const link = links[i];
       if (!isInternal(link.href)) {
@@ -3695,12 +3758,12 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 });
 </script><nav class="page-navigation"><div class="nav-page nav-page-previous">
       <a href="../chapters/embeddings.html" class="pagination-link" aria-label="Embeddings">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Embeddings</span></span>
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Embeddings</span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
       <a href="../chapters/overfitting.html" class="pagination-link" aria-label="Overfitting">
-        <span class="nav-page-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Overfitting</span></span> <i class="bi bi-arrow-right-short"></i>
+        <span class="nav-page-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Overfitting</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>
