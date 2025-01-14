@@ -6,7 +6,6 @@ knitr:
 
 # Transforming Numeric Predictors {#sec-numeric-predictors}
 
-
 ```{r}
 #| label: numeric-transformations-knitr-setup
 #| include: false
@@ -223,7 +222,6 @@ show_columns(f_12) %>% names() %>% sort()
 
 There model predictions and `anova()` results will be the same but the interpretation of their coefficients will be very different. 
 
-
 You can use in-line functions within a recipe. For example: 
 
 ```{r}
@@ -254,9 +252,7 @@ length(ls(envir = environment(f_12)))
 
 If an object that used `f_12` is saved to disk, it will also contain the `r length(ls(envir = environment(f_12)))` objects in the global environment. If any of these objects are large, it can unintentionally make the saved data object large. Note that using the base function `object.size()` will not take into account anything stored in the environment (so the binary file size is underestimated). `lobstr::obj_size()` will give a more accurate estimate.
 
-
 The `r pkg(butcher)` package has tools to strip off these unneeded objects from formulas (or objects that contain formulas). Also, `butcher::weigh()` returns a tibble with the size of each element contained in the object (if any).
-
 
 ## What is a Recipe? {#sec-recipe-intro}
 
@@ -280,7 +276,7 @@ the recipe. In terms of syntax, the analogous functions are:
 recipe() -> prep() -> bake()
 ```
 
-We’ll start simply by trying to “unskew” a predictor’s distribution. 
+We’ll start simply by trying to "unskew" a predictor’s distribution. 
 
 ## Resolving Skewness {#sec-recipe-skewness}
 
@@ -307,7 +303,7 @@ unskew_rec <- recipe(Sale_Price ~ ., data = ames_train)
 
 The formula method doesn’t do much here: it records the outcome (columns to the left of `~`), which are predictors (to the right of `~` ), and their data types. Note that the `.` in the formula means that all columns, except those to the left, should be considered predictors. When using a formula to start a recipe, keep it simple. It won’t accept any in-line functions (like `sqrt()` or `log()`); it wants you to change the variables inside of _recipe steps_. 
 
-Regarding the `data` argument: _any_ data set with the appropriate columns could be used. The initial recipe work is just cataloging the columns. You could even use a “zero row slice” such as `ames_train[0,]` and get the same results. You might want to do something like this if you have a very large training set (to reduce the in-memory footprint). The main advantage of using `ames_train` is convenience (as we’ll see later). 
+Regarding the `data` argument: _any_ data set with the appropriate columns could be used. The initial recipe work is just cataloging the columns. You could even use a "zero row slice" such as `ames_train[0,]` and get the same results. You might want to do something like this if you have a very large training set (to reduce the in-memory footprint). The main advantage of using `ames_train` is convenience (as we’ll see later). 
 
 We’ll add different recipe step functions from this initial object to declare what we want to do. Let’s say we will transform the lot area column using the Yeo-Johnsom transformation. To do this: 
 
@@ -419,7 +415,7 @@ This is important for a few reasons. Some steps can combine or eliminate columns
 
 There is a [documentation page](https://recipes.tidymodels.org/reference/selections.html) for recipe selectors as well as the [reference page](https://recipes.tidymodels.org/reference/has_role.html).
 
-## Standardizing to a common scale {#sec-recipe-standardize}
+## Standardizing to a Common Scale {#sec-recipe-standardize}
 
 The two main steps for standardizing columns to have the same units are `step_normalize()` and `step_range()`. A common pattern for the former is: 
 
@@ -436,7 +432,7 @@ norm_rec
 
 `step_zv()` is for removing "zero-variance" (zv) predictors. These are columns with a single unique value. Since `step_normalize()` will try to divide by a column's standard deviation, this will fail if there is no variation in the column. `step_zv()` will remove such columns that exist in the training set. 
 
-We recycled the previous recipe, which has already been trained. Note that in the output above, only the first step is labeled as “`Trained`”. When we run `prep()` on this recipe, it only estimates the remaining two steps. 
+We recycled the previous recipe, which has already been trained. Note that in the output above, only the first step is labeled as "`Trained`". When we run `prep()` on this recipe, it only estimates the remaining two steps. 
 
 Again, once we prep(are) the recipe, we can use `bake()` to get the normalized data. 
 
@@ -445,7 +441,6 @@ Another important point is that recipes are designed to utilize different data s
 ## Spatial Sign {#sec-recipe-spatialp-sign}
 
 Unsurprisingly, the step to compute the spatial sign is `step_spatialsign()`. It projects two or more numeric columns onto a multidimensional hypersphere. The resulting data has columns the same name as the input: 
-
 
 ```{r}
 #| label: step-sp-sign
@@ -463,7 +458,6 @@ sp_sign_data <- bake(sp_sign_rec, new_data = NULL)
 sp_sign_data
 ```
 
-
 ```{r}
 #| label: sp-sign
 #| fig-width: 4
@@ -476,7 +470,7 @@ sp_sign_data %>%
   coord_equal() 
 ```
 
-## Other resources for learning about recipes {#sec-recipe-resources}
+## Other Resources for Learning About Recipes {#sec-recipe-resources}
 
 - `tidymodels.org`: [_Preprocess your data with recipes_](https://www.tidymodels.org/start/recipes/)
 - _TMwR_ chapter: [_Feature Engineering with recipes_](https://www.tmwr.org/recipes)

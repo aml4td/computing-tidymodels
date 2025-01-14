@@ -78,7 +78,7 @@ tidymodels_prefer()
 theme_set(theme_bw())
 ```
 
-## Basic methods and data structures
+## Basic Methods and Data Structures {#sec-resampling-basics}
 
 The `r pkg(rsample)` package provides many functions to facilitate resampling. For now, we’ll assume an initial split into a training and test set has been made (but see @validation-sets below for three-way splits). 
 
@@ -123,15 +123,14 @@ concrete_rs[-1,]
 
 The "A tibble: 4 × 2" title is different from the original title of "Bootstrap sampling." This, and the class values, give away the difference. You can add columns without violating the definition. 
 
-
-### Split objects
+### Split Objects {#sec-rsplits}
 
 Note the `splits` column in the output above. This is a _list column_ in the data frame. It contains an `rsplit` object that tells us which rows of the training set go into our analysis and assessment sets. As a reminder: 
 
 - The **analysis set** (of size $n_{fit}$) estimates quantities associated with preprocessing, model training, and postprocessing. 
 - The **assessment set** ($n_{pred}$) is only used for prediction so that we can compute measures of model effectiveness (e.g., RMSE, classification accuracy, etc).  
 
-When we see output “`<split [1030/408]>`” this indicates a binary split where the analysis set has 1030 rows, and the assessment set has 408 rows. 
+When we see output "`<split [1030/408]>`" this indicates a binary split where the analysis set has 1030 rows, and the assessment set has 408 rows. 
 
 To get the analysis and assessment sets, there are two eponymous functions. For a specific split: 
 
@@ -157,7 +156,7 @@ length(ex_ind)
 
 You shouldn't really have to interact with these objects at all. 
 
-## Basic resampling tools
+## Basic Resampling Tools {#sec-resampling-todo}
 
 `r pkg(rsample)` contains several functions that resample data whose rows are thought to be statistically independent of one another. 
 
@@ -171,7 +170,7 @@ Two important functions:
 
 We'll show an example with basic 10-fold cross-validation below in @sec-estimating-performance.
 
-## Validation sets
+## Validation Sets {#sec-validation}
 
 To create a validation set, the first split should use `rsample::initial_validation_split()`: 
 
@@ -196,7 +195,7 @@ concrete_rs
 
 At this point, we can use `concrete_rs` as if it were any other `rset` object. 
 
-## Times series resampling
+## Times Series Resampling {#sec-time-series-resampling}
 
 Usually, the most recent data are used to evaluate performance for time series data. The function `initial_time_split()` can be used to make the initial split. We’ll use the `Chicago` data to demonstrate: 
 
@@ -264,7 +263,7 @@ chi_rs %>%
   labs(y = NULL, x = "Date")
 ```
 
-One variation of this approach is to cumulately increase the analysis set by keeping the starting date the same (inside of sliding/rolling). For this, we can make the “lookback” infinite but use the `skip` argument to remove the large number of resamples that contain fewer than 5,000 days in the analysis sets: 
+One variation of this approach is to cumulately increase the analysis set by keeping the starting date the same (inside of sliding/rolling). For this, we can make the "lookback" infinite but use the `skip` argument to remove the large number of resamples that contain fewer than 5,000 days in the analysis sets: 
 
 ```{r}
 #| label: cumulative-fit-data
@@ -302,7 +301,6 @@ chi_rs %>%
   geom_segment(aes(x = perf_start, xend = perf_stop, yend = id), col = "red", linewidth = 3) +
   labs(y = NULL, x = "Date") 
 ```
-
 
 ##  Multi-Level Data {#sec-multilevel-resampling}
 
@@ -408,7 +406,7 @@ We can also `autoplot()` individual splits to see the analysis and assessment se
 autoplot(ames_rs$splits[[1]], cex = 1 / 2)
 ```
 
-## Estimating performance {#sec-resampled-models}
+## Estimating Performance {#sec-resampled-models}
 
 Now that we can create different types of resamples for our training set, how do we actually resample a model to get accurate performance statistics? 
 
@@ -475,9 +473,9 @@ If there were issues with the computations, `collect_notes(concrete_res)` would 
 
 Next, let’s look at a few customizations for `fit_resamples()`. 
 
-### Parallel processing {#sec-parallel-resamples}
+### Parallel Processing {#sec-parallel-resamples}
 
-We fit 10 different Cubist models to 10 slightly different data sets. None of these computations depend on one another. This is the case of an “embarrassingly parallel” computing issue. We can increase our computational efficiency by running training the models on multiple “worker” processes on our computer(s). 
+We fit 10 different Cubist models to 10 slightly different data sets. None of these computations depend on one another. This is the case of an "embarrassingly parallel" computing issue. We can increase our computational efficiency by running training the models on multiple "worker" processes on our computer(s). 
 
 The `future` package can run the resamples in parallel. The `plan()` function sets the parallel processing engine. There are a few plans that can be used: 
 
@@ -500,13 +498,13 @@ plan("multisession")
 
 This will generally increase the efficiency of the resampling process. 
 
-### Other options
+### Other Options {#sec-function-arguments}
 
 Let's look at some other options. First, note that the results did not include the trained models or the out-of-sample predicted results. This is the default because there is no way of knowing how much memory will be required to keep these values. 
 
 We’ll talk about accessing the fitted models in the next sections. 
 
-To save the predictions, we can use an R convention of a “control function.” These functions are reserved for specifying ancillary aspects of the computations. For `fit_resamples()` the control function is called `control_resamples()`, and it has an option called `save_pred`. When set to `TRUE`, the out-of-sample predictions are retained. 
+To save the predictions, we can use an R convention of a "control function." These functions are reserved for specifying ancillary aspects of the computations. For `fit_resamples()` the control function is called `control_resamples()`, and it has an option called `save_pred`. When set to `TRUE`, the out-of-sample predictions are retained. 
 
 ```{r}
 #| label: save-pred
@@ -553,7 +551,7 @@ augment(concrete_opts_res)
 
 From here, we can do exploratory data analysis to understand where our model can be improved. 
 
-One other option: the `r pkg(probably)` package has a simple interface for obtaining plots of the observed and predicted values (i.e., a regression “calibration” plot): 
+One other option: the `r pkg(probably)` package has a simple interface for obtaining plots of the observed and predicted values (i.e., a regression "calibration" plot): 
 
 ```{r}
 #| label: reg-cal
@@ -567,7 +565,7 @@ cal_plot_regression(concrete_opts_res)
 
 Not too bad but there are fairly large outliers that seem to occur more with mixtures corresponding to larger observed outcomes. 
 
-### Extracting results
+### Extracting Results {#sec-extraction}
 
 How can we get the 10 trained models? The control function has an option for `extract` that takes a user-defined function. The argument to this function (say `x`) is the fitted workflow. If you want the whole model, you can return `x`. Otherwise, we can run computations on the model and return whatever elements or statistics associated with the model that we are interested in. 
 
@@ -584,7 +582,6 @@ extract_rules <- function(x) {
 ```
 
 Now we update our control object:
-
 
 ```{r}
 #| label: save-rules
@@ -620,7 +617,7 @@ What is in a specific result?
 rule_extract$.extracts[[1]]
 ```
 
-To “flatten out” these results, we’ll `unnest()` the column of extracted results:
+To "flatten out" these results, we’ll `unnest()` the column of extracted results:
 
 ```{r}
 #| label: cubist-re-extracts

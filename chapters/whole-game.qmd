@@ -84,8 +84,7 @@ If you are not in the right place, use `setwd()` to change the working directory
 If you start by opening the `Rproj` file, you will always start in the right place. 
 :::
 
-
-## The Data
+## The Data {#sec-delivery-times}
 
 The data set is pre-compiled into a binary format R uses (called "RData format" here). It is in the `RData` directory. A `csv` version is also in the `delimited` directory. Let's load it: 
 
@@ -151,7 +150,7 @@ delivery_hist + delivery_log_hist
 
 In the code above, we use an option called `"alpha"`. This is jargon for transparency; a value of `1/4` means that the points in the rug are 25% opaque. 
 
-## Data Spending 
+## Data Spending  {#sec-data-spending-whole-game}
 
 tidymodels has a variety of ways to split the data at the outset of your modeling project. We will create a three-way split of the data using a function called `initial_validation_split()`.  
 
@@ -198,10 +197,9 @@ delivery_val   <- validation(delivery_split)
 
 We will mostly work with the training set of `r format(nrow(delivery_train), big.mark = ",")` deliveries. We'll use that to explore the data, fit models, and so on. 
 
-## Exploratory Data Analysis
+## Exploratory Data Analysis {#sec-eda-whole-game}
 
 We mostly used `r pkg(ggplot2)` and `r pkg(patchwork)` to create these graphics: 
-
 
 ```{r}
 #| label: delivery-predictors-code
@@ -372,8 +370,7 @@ resampled_intervals %>%
   theme(axis.text.y = element_text(hjust = 0))
 ```
 
-
-## Model Development
+## Model Development {#sec-model-development-whole-game}
 
 The analyses in this section define a model pipeline, fit it to the training set, and then measure performance using the validation set. We'll review the three evaluated models and describe how those computations were done.
 
@@ -584,7 +581,6 @@ lin_reg_res <-
 
 The benefit here is that there are a lot of _helper_ functions to simplify your code. For example, to get the validation set MAE and predictions: 
 
-
 ```{r}
 #| label: lm-resample-collects
 
@@ -603,7 +599,6 @@ The `r pkg(probably)` package also has a nice helper to check the calibration of
 #| 
 cal_plot_regression(lin_reg_res)
 ```
-
 
 ### Rule-Based Ensemble {.unnumbered}
 
@@ -818,7 +813,7 @@ nnet_fit <-
   fit(data = delivery_train)
 ```
 
-## Aside: Parallel Processing
+## Aside: Parallel Processing {#sec-parallel-processing}
 
 For model tuning, we are fitting many models. With grid search, these models are not dependent on one another. For this reason, it is possible to compute these model fits simultaneously (i.e., in parallel).  
 
@@ -851,7 +846,6 @@ The functions to calibrate predictions are in the `r pkg(probably)` package and 
 
 We must estimate the trend with the validation set. If we use our object `lin_reg_res`, it knows what data to use: 
 
-
 ```{r}
 #| label: cal-linear-est
 lin_reg_cal <- cal_estimate_linear(lin_reg_res)
@@ -860,7 +854,7 @@ lin_reg_cal
 
 As you'll see in a minute, the function `probably::cal_apply()` calibrates new predictions.  
  
-## Test Set Results
+## Test Set Results {#sec-test-results-whole-game}
 
 As with `best_fit()`, there are two ways to predict the test set.
 

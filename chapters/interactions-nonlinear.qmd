@@ -6,7 +6,6 @@ knitr:
 
 # Interactions and Nonlinear Features {#sec-interactions-nonlinear}
 
-
 ```{r}
 #| label: interactions-nonlinear-knitr-setup
 #| include: false
@@ -34,7 +33,6 @@ options(pillar.advice = FALSE, pillar.min_title_chars = Inf, pillar.sigfig = 4)
 source("../R/_common.R")
 req_pkg <- c("aorsf", "embed", "gt", "hstats", "tidymodels")
 ```
-
 
 This chapter is focused on how predictors can enter the model in a nonlinear fashion. The three approaches discussed are interaction effects, basis expansions, and discretization. 
 
@@ -84,7 +82,7 @@ To get started, let's once again load the food delivery data and use the same sp
 
 We’ll consider two mechanisms to encode interaction columns: via the base R formula method and with recipes. 
 
-### Interactions with Model Formulas
+### Interactions with Model Formulas {#sec-interactions-via-formula}
 
 This was briefly discussed in @sec-r-formulas. 
 
@@ -144,7 +142,7 @@ model.matrix(~ (.)^2, interaction_example)
 model.matrix(~ (.)^3, interaction_example)
 ```
 
-### Interactions from Recipes
+### Interactions from Recipes {#sec-interactions-via-recipe}
 
 The `r pkg(recipes)` has `step_interact()`. This step is very atypical since it uses a formula to specify the inputs (rather than a set of `r pkg(dplyr)` selectors). It also requires all columns used to be already converted to indicators (perhaps using `step_dummy()`). 
 
@@ -165,7 +163,6 @@ recipe(~ hour + distance, data = interaction_example) %>%
 ```
 
 For categorical/continuous combinations, we use `step_dummy()` first and then a selector to make the interactions
-
 
 ```{r}
 #| label: qual-quant-int-rec
@@ -254,7 +251,6 @@ recipe(time_to_delivery ~ ., data = delivery_train) %>%
 
 If we would like different polynomial degrees for different columns, we would call the step multiple times. 
 
-
 ## Spline Functions {#sec-splines}
 
 `r pkg(recipes)` has several spline steps: 
@@ -265,7 +261,6 @@ apropos("step_spline")
 ```
 
 The syntax is almost identical to the polynomial steps. For example, for natural splines: 
-
 
 ```{r}
 #| label: natural-spline-step
@@ -280,7 +275,6 @@ Some steps also have arguments for the spline degree called `degree`. Also, most
 ## Discretization
 
 There is one step in `r pkg(recipes)` that conducts unsupervised binning called `step_discretize()` and the `r pkg(embed)` package has two for supervised methods: `step_discretize_cart()` and `step_discretize_xgb()`. 
-
 
 For unsupervised binning: 
 

@@ -6,7 +6,6 @@ knitr:
 
 # Embeddings {#sec-embeddings}
 
-
 ```{r}
 #| label: embeddings-knitr-setup
 #| include: false
@@ -38,7 +37,6 @@ req_pkg <- c("bestNormalize", "dimRed", "embed", "fastICA", "igraph",
 
 req_pkg_fmt <- purrr::map_chr(req_pkg, ~ pkg_chr(.x))
 ```
-
 
 ## Requirements
 
@@ -115,16 +113,15 @@ barley_rec <-
 barley_rec
 ```
 
-If you use a recipe, most of the embedding methods can be computed with a common interface. The recipe step functions are mostly in the `r pkg(recipes)` package, although some live in “side packages,” such as the `r pkg(embed)` package. We’ll be clear about which package is needed for each. 
+If you use a recipe, most of the embedding methods can be computed with a common interface. The recipe step functions are mostly in the `r pkg(recipes)` package, although some live in "side packages," such as the `r pkg(embed)` package. We’ll be clear about which package is needed for each. 
 
 ## Linear Transformations  {#sec-linear-embed}
 
 We'll look at the three _linear_ methods described in the text. 
 
-### Principal Component Analysis
+### Principal Component Analysis {#sec-pca}
 
 Unsurprisingly, the recipe step needed here is called `step_pca()`. We’ll add an `id` argument to more easily reference the step of interest. 
-
 
 ```{r}
 #| label: pca-prep
@@ -136,7 +133,7 @@ barley_pca_rec <-
 barley_pca_rec
 ```
 
-To further investigate the results, the `tidy()` method can extract elements of the computations. For example, you can return how variance each component captures using the argument `type = "variance"`. Note that when the PCA recipe step was added, we used the option `id = “pca”`. This is not required, but it makes it easier to specify what step the `tidy()` method should consider: 
+To further investigate the results, the `tidy()` method can extract elements of the computations. For example, you can return how variance each component captures using the argument `type = "variance"`. Note that when the PCA recipe step was added, we used the option `id = "pca"`. This is not required, but it makes it easier to specify what step the `tidy()` method should consider: 
 
 ```{r}
 #| label: pca-scree-data
@@ -203,7 +200,7 @@ This helps avoid over-interpreting proportionally small patterns in the later co
 
 The functions `embed::step_pca_sparse()` and `embed::step_pca_sparse_bayes()` have sparse/regularized estimation methods for PCA. Each has an argument called `predictor_prop()` that attempts to control how much sparsity should be used. `predictor_prop = 0` should approximate regular PCA, and values near 1.0 would produce very few non-zero loadings. 
 
-### Independent Component Analysis
+### Independent Component Analysis {#sec-ica}
 
 An ICA recipe step can also be found in the `r pkg(recipes)` package. The syntax is virtually identical: 
 
@@ -267,7 +264,7 @@ ica_1 + ica_2
 
 This might not cause a difference in performance when the features are used in a predictive model, but if the model uses slopes and intercepts, the parameter estimates will be different each time it is run. 
 
-### Partial Least Squares {#numeric-pls}
+### Partial Least Squares {#numeric-pls} {#sec-pls}
 
 The syntax for PLS is also very similar. However, it is a supervised method, so we need to specify the column containing the outcome (the outcome column is not needed after model training). The code below uses `dplyr::vars()` to declare the column name, but a simple character string can also be used. 
 
@@ -323,7 +320,7 @@ barley_isomap_rec %>%
 
 ### UMAP {#sec-umap}
 
-`step_umap()`, in the `r pkg(embed)` package, has a number of tuning parameters: `neighbors`, `num_comp`, `min_dist`, `learn_rate`, `epochs`, `initial` (initialization method, e.g. “pca”), and the optional `target_weight`. 
+`step_umap()`, in the `r pkg(embed)` package, has a number of tuning parameters: `neighbors`, `num_comp`, `min_dist`, `learn_rate`, `epochs`, `initial` (initialization method, e.g. "pca"), and the optional `target_weight`. 
 
 For an unsupervised embedding: 
 

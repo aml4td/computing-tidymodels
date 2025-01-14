@@ -76,8 +76,7 @@ tidymodels_prefer()
 theme_set(theme_bw())
 ```
 
-
-## Creating grids
+## Creating Grids {#sec-grid-creation}
 
 The `r pkg(dials)` package has several grid creation functions, whose names all start with grid_. The primary input is a `r pkg(dials)` parameter set object, which can be created from a model, recipe, or workflow. The primary functions are: 
 
@@ -149,7 +148,7 @@ crossing(committees = c(1, 8, 100), neighbors = c(0, 9))
 
 Finally, as a reminder, a workflow can contain preprocessing arguments that were tagged for optimization via `tune()`. These values are treated the same as model arguments when it comes to extracting the parameter set and creating grids. 
 
-## Tuning models with grids
+## Tuning Models with Grids {#sec-grid-tuning}
 
 For grids, the three main functions are `tune::tune_grid()` and the two racing functions in the `r pkg(finetune)` package: `finetune::tune_race_anova()` and `finetune::tune_race_winloss()`. The syntax for these is nearly identical and also closely follows the previously described code for `fit_resamples()` from @sec-resampled-models.
 
@@ -308,7 +307,6 @@ cubist_race_res <-
 
 It is important to note that the helpful functions for racing results mostly filter their output to disregard candidates who did not finish the race. For example, if we ask `show_best()` to  provide results for more candidate than those that finished, it will curtail its output: 
 
-
 ```{r}
 #| label: best-race
 show_best(cubist_race_res, metric = "rmse", n = 10)
@@ -326,7 +324,6 @@ plot_race(cubist_race_res)
 
 Each line corresponds to a candidate. 
 
-
-## Nested resampling
+## Nested Resampling {#sec-nested-resampling}
 
 There are tidymodels experimental APIs for nested resampling (and analytical bias correction). We’ll fill this section in when these are finalized. 
