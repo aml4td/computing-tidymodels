@@ -6,7 +6,6 @@ knitr:
 
 # Working with Categorical Predictors {#sec-categorical-predictors}
 
-
 ```{r}
 #| label: categorical-predictors-knitr-setup
 #| include: false
@@ -71,7 +70,7 @@ tidymodels_prefer()
 theme_set(theme_bw())
 ```
 
-## The Hotel Rate Data
+## The Hotel Rate Data {#sec-hotel-prep}
 
 The hotel rate data are used for most examples in the chapter. The original version is in the `r pkg(modeldata)` package. We’ll split the data in the following way:
 
@@ -88,12 +87,11 @@ hotel_rate_test  <- testing(hotel_rate_split)
 
 `initial_time_split()` will reserve that most recent 25% for the test set. It assumes that the data are arranged in time and takes that last part of the data for testing (assumed to be the most recent). 
 
-
 ## Simple Indicator Variables {#sec-indicators}
 
 We'll look at two primary methods for creating indicator (a.k.a. "dummy") variables. 
 
-### Base R formulas {#sec-base-r-indicators}
+### Base R Formulas {#sec-base-r-indicators}
 
 Base R’s formula method, discussed previously in @sec-r-formulas, automatically creates indicators when the formula includes a factor predictor. For example: 
 
@@ -134,7 +132,6 @@ model.matrix( ~ customer_type, data = with_missing) %>%
 
 A [family of functions](https://rdrr.io/r/stats/na.fail.html) can be used to dictate what should be done when missing values occur. The global R option is 
 
-
 ```{r}
 #| label: na-action
 options()$na.action
@@ -157,7 +154,7 @@ options(orig_options)
 options()$na.action
 ```
 
-In R, the word “contrast” refers to the algorithm used to create different types of indicators ^[In statistics, “contrasts” typically indicates a combination of parameters. For example, if you wanted to test that the average of two parameters was equal to a third, the contrast would be $\beta_1 + \beta_2 - 2\beta_3$ and the contrast coefficients would be `c(1, 1, -2)`.]. Global options control this (for the most part) and the defaults are:
+In R, the word "contrast" refers to the algorithm used to create different types of indicators ^[In statistics, "contrasts" typically indicates a combination of parameters. For example, if you wanted to test that the average of two parameters was equal to a third, the contrast would be $\beta_1 + \beta_2 - 2\beta_3$ and the contrast coefficients would be `c(1, 1, -2)`.]. Global options control this (for the most part) and the defaults are:
 
 ```{r}
 #| label: default-contrasts
@@ -208,9 +205,9 @@ recipe(avg_price_per_room ~ customer_type, data = hotel_rate_train) %>%
 
 For the training set, this new level will never have any data associated with it. 
 
-## “Othering” {#sec-recipe-other}
+## "Othering" {#sec-recipe-other}
 
-We can also determine infrequently occurring categories (in the training set) and re-level the factor by converting them to an “other” category. If we chose a frequency of 0.01% as a cutoff, we have far fewer levels:
+We can also determine infrequently occurring categories (in the training set) and re-level the factor by converting them to an "other" category. If we chose a frequency of 0.01% as a cutoff, we have far fewer levels:
 
 ```{r}
 #| label: other-rec
@@ -234,7 +231,6 @@ Feature hashing converts qualitative predictors to a set of binary indicators ba
 
 The recipe step is in the `r pkg(textrecipes)` package, so we must load it first^[It also requires another package (`r pkg(text2vec)`) to be installed but not loaded.]. The main arguments are `num_terms` and `signed`. The first sets the number of features to create, and when `signed = TRUE`, the indicators will have an appropriate sign attached to them (i.e., their values could be -1/0/1).
 
-
 ```{r}
 #| label: hashing-rec
 library(textrecipes)
@@ -249,7 +245,7 @@ recipe(avg_price_per_room ~ agent, data = hotel_rate_train) %>%
 
 Effect embedding is a supervised method to convert qualitative predictors to a numeric column that contains the _effect_ of the category on the outcome. The outcome is a numeric value (the ADR) for these data. Using effect endings here will produce a column with specialized estimates of each category’s mean ADR. Let’s look at the agent predictor again. 
 
-The `r pkg(embed)` package has a few recipe steps to do this. This method is sometimes called “likelihood encoding” and the recipe steps all start with `step_lencode_*`: 
+The `r pkg(embed)` package has a few recipe steps to do this. This method is sometimes called "likelihood encoding" and the recipe steps all start with `step_lencode_*`: 
 
 * `step_lencode_glm()` produces basic, naive estimates of effect. This is a "no pooling" estimate. 
 * `step_lencode_mixed()` uses a non-Bayesian hierarchical model to produce regularized effect estimates. 
@@ -373,6 +369,6 @@ recipe(~ quality, data = quality) %>%
 
 `step_integer()` does the same for either type of factor but converts them to consecutive one-based integers.  
 
-## Other relevant recipe steps
+## Other Relevant Recipe Steps {#sec-other-recipe-steps}
 
 There are a variety of other steps that can be used with qualitative predictors ([a list of relevant recipe steps in `r pkg(recipes)`](https://recipes.tidymodels.org/reference/index.html#step-functions-dummy-variables-and-encodings))

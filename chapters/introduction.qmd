@@ -73,7 +73,7 @@ if (require(pak)) {
 
 ```
 
-## Loading tidymodels
+## Loading Tidymodels {#sec-tidymodels-pkg}
 
 Once you do that, load `r pkg(tidymodels)`: 
 
@@ -100,7 +100,7 @@ tidymodels_prefer(quiet = FALSE)
 
 If you want to know more about _why_ tidymodels exists, we've written a bit about this in the [tidymodels book](https://www.tmwr.org/software-modeling). The second chapter describes how [tidyverse principles can be used for modeling](https://www.tmwr.org/tidyverse). 
 
-## Package Versions and Reproducability
+## Package Versions and Reproducability {#sec-repro}
 
 We will do our best to use versions of our packages corresponding to the CRAN versions. We can't always do that, and, for many packages, a version number ending with a value in the 9000 range (e.g., version "1.1.4.9001") means that it was a development version of the package and was most likely installed from a GitHub repository. 
 

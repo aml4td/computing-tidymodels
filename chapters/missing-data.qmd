@@ -36,7 +36,6 @@ source("../R/_common.R")
 req_pkg <- c("naniar", "ranger", "tidymodels")
 ```
 
-
 A general discussion on missing data in R can be found in [R for Data Science (2e)](https://r4ds.hadley.nz/missing-values). [The Missing Book](https://tmb.njtierney.com/) is an excellent reference that supplements this chapter. 
 
 The data will be taken from [_A morphometric modeling approach to distinguishing among bobcat, coyote, and gray fox scats_](https://doi.org/10.2981/wlb.00105). The data set is designed to see how well experts can determine which of three species (bobcats, coyotes, and gray foxes) can be identified by their ~~poop~~ feces (a.k.a. scat). There are physical measurements as well as some laboratory tests that can be used as predictors. The species is the outcome. The data are in the `r pkg(modeldata)` package. 
@@ -98,7 +97,7 @@ scat_te %>% count(Species)
 
 We'll spend some time on visualization and summary techniques that are helpful when performing exploratory data analysis. 
 
-## Investigating missing data
+## Investigating Missing Data {#sec-missing-eda}
 
 The `r pkg(naniar)` package is an excellent tool for missing data. Let's load it and then get a summary of our training set variables. 
 
@@ -135,7 +134,7 @@ The steps we would take to address missingness in the predictors is a preprocess
 
 ## Filtering 
 
-A recipe consists of an initialized object and a sequence of one or more “steps” that define specific actions/computations that should be done to the data prior to modeling. 
+A recipe consists of an initialized object and a sequence of one or more "steps" that define specific actions/computations that should be done to the data prior to modeling. 
 
 The initialization consists of a call to `recipe::recipe()`. The most common interface used there is a formula. This declares which column is the outcome and which are predictors. For example: 
 
@@ -148,7 +147,7 @@ At this point, the recipe catalogs each column’s name, data type, and role (i.
 
 Two recipes steps can be used for filtering missing data: `r cli::format_inline("{.fn recipes::step_naomit}")` and `r cli::format_inline("{.fn recipes::step_filter_missing}")`. The former removes rows of the training set, and the latter removes predictors if they have too many missing values. 
 
-### Row filtering
+### Row Filtering {#sec-removing-missing-rows}
 
 Let's add `step_naomit()` to the recipe and declare the `r pkg(dplyr)` selector `dplyr::everything()` should be used to capture which columns should be checked for missing rows: 
 
@@ -198,12 +197,11 @@ nrow(scat_te)
 sum(!complete.cases(scat_te))
 ```
 
-### Column filtering
+### Column Filtering {#sec-removing-missing-cols}
 
 The sample size of this data set is not large; removing rows might be more problematic than removing columns with a lot of missingness. We can use the `step_filter_missing()` step to do this. We decide on a threshold representing our "line of dignity" regarding how much missingness is acceptable. That can be specified as a proportion of missing data and is passed to the `threshold` argument. 
 
 Here's an example where we determine that more than 10% missingness is too much. Based on our results from the `r pkg(naniar)` package above, this should eliminate two predictors (`Taper` and `TI`). 
-
 
 ```{r}
 #| label: filter-predictors
@@ -218,7 +216,6 @@ bake(filter_features_rec, new_data = NULL) %>% ncol()
 # use the tody method to determine which were removed: 
 tidy(filter_features_rec, number = 1)
 ```
-
 
 ## Imputation
 
@@ -236,7 +233,7 @@ names(steps) <- rep("*", length(steps))
 
 The `r pkg(recipes)` package has several steps for imputing predictors: `r steps`. 
 
-### Linear regression
+### Linear Regression {#sec-imputation-linear}
 
 Let’s consider using linear regression to predict the rows missing their value of `Taper`. The imputation steps allow you to select which column to impute and which predictors to use as predictors in the imputation model.
 
@@ -283,7 +280,7 @@ group_impute_rec %>%
   count(Taper, Location)
 ```
 
-### Nearest-neighbor imputation
+### Nearest-Neighbor Imputation {#sec-imputation-knn}
 
 The syntax for imputation steps is very consistent, so the only change that would be made to move from linear imputation to a nonlinear, nearest-neighbor method would be to change the name. 
 
@@ -309,8 +306,7 @@ mean(complete.cases(imputed_train))
 
 Note that this step uses [Gower distance]() to define the neighbors. This method does _not_ require the predictors to be numeric or in the same units; they can be left as-is. Also, the function keeps the imputed data in the same format. A categorical predictor being imputed will remain a categorical predictor. 
 
-
-### Tuning the preprocessors
+### Tuning the Preprocessors {#sec-imputation-within-tuning}
 
 The syntax to tune parameters will be described in depth in @sec-overfitting. Let’s briefly show that preprocessing parameters can also be tuned. 
 

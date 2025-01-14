@@ -36,7 +36,6 @@ req_pkg <- c("bestNormalize", "tidymodels")
 
 Since overfitting is often caused by poor values of tuning parameters, we'll focus on how to work with these values. 
 
-
 ## Requirements
 
 `r pkg_list(req_pkg)`
@@ -70,7 +69,6 @@ tidymodels_prefer()
 ```
 
 ## Tuning Paramters {#sec-tuning-parameters}
-
 
 ```{r}
 #| label: barley
@@ -120,10 +118,9 @@ nnet_spec <-
 pls_nnet_wflow <- workflow(pls_rec, nnet_spec)
 ```
 
-
 We’ve filled in specific values for each of these arguments, although we don’t know if these are best that we can do. 
 
-## Marking Parameters for Optimization
+## Marking Parameters for Optimization {#sec-tag-for-tuning}
 
 To tune these parameters, we can give them a value of the function `tune()`. This special function just returns an expression with the value "`tune()`". For example: 
 
@@ -162,10 +159,9 @@ Optionally, we can give a label as an argument to the function:
 str(tune("#PCA components"))
 ```
 
-This is useful when the pipeline has two arguments with the same name. For example, if you wanted to use splines for two predictors but allow them to have different degrees of freedom, the resulting set of parameters would not be unique since both of them would have the default label of `deg_free`. In this case, one recipe step could use `tune(“predictor 1 deg free”)` and another could be `tune(“predictor 2 deg free”)`. 
+This is useful when the pipeline has two arguments with the same name. For example, if you wanted to use splines for two predictors but allow them to have different degrees of freedom, the resulting set of parameters would not be unique since both of them would have the default label of `deg_free`. In this case, one recipe step could use `tune("predictor 1 deg free")` and another could be `tune("predictor 2 deg free")`. 
 
 Engine arguments are set by `set_engine()`. For example:  
-
 
 ```{r}
 #| label: pls-nnet-tune-engine
@@ -184,7 +180,7 @@ nnet_spec <-
 pls_nnet_wflow <- workflow(pls_rec, nnet_spec)
 ```
 
-## Parameter Functions
+## Parameter Functions {#sec-param-functions}
 
 Each tuning parameter has a corresponding function from the `r pkg(dials)` package containing information on the parameter type, parameter ranges (or possible values), and other data.  
 
@@ -216,7 +212,7 @@ mtry()
 
 We would need to set this range to use the parameter. 
 
-In a few situations, the argument name to a recipe step or model function will use a dials function that has a different name than the argument. For example, there are a few different types of “degrees”. There is (real-valued) polynomial exponent degree: 
+In a few situations, the argument name to a recipe step or model function will use a dials function that has a different name than the argument. For example, there are a few different types of "degrees". There is (real-valued) polynomial exponent degree: 
 
 ```{r}
 #| label: real-degree
@@ -249,7 +245,7 @@ apropos("^value_")
 value_seq(hidden_units(), n = 4)
 ```
 
-## Sets of Parameters
+## Sets of Parameters {#sec-param-sets}
 
 For our pipeline `pls_nnet_wflow`, we can extract a _parameter set_ that collects all of the parameters and their suggested information. There is a function to do this: 
 
@@ -267,7 +263,7 @@ pls_nnet_param
 
 The difference in the `type` and `identifier` columns only occurs when the `tune()` value has a label (as with the final row). 
 
-The output `”nparam[+]”` indicates a numeric parameter, and the plus indicates that it is fully specified. If our pipeline had used $m_{try}$, that value would show `"nparam[?]”`. The rate schedule is a qualitative parameter and has a label of `"dparam[+]"` ("d" for discrete). 
+The output `"nparam[+]"` indicates a numeric parameter, and the plus indicates that it is fully specified. If our pipeline had used $m_{try}$, that value would show `"nparam[?]"`. The rate schedule is a qualitative parameter and has a label of `"dparam[+]"` ("d" for discrete). 
 
 Let’s look at the information for the learning rate parameter by viewing the parameter information set by tidymodels. It is different than the default: 
 
