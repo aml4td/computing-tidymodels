@@ -80,7 +80,7 @@ theme_set(theme_bw())
 
 ## Basic Methods and Data Structures {#sec-resampling-basics}
 
-The `r pkg(rsample)` package provides many functions to facilitate resampling. For now, we’ll assume an initial split into a training and test set has been made (but see @validation-sets below for three-way splits). 
+The `r pkg(rsample)` package provides many functions to facilitate resampling. For now, we’ll assume an initial split into a training and test set has been made (but see @sec-validation-sets below for three-way splits). 
 
 Let’s use the concrete data for illustration: 
 
@@ -168,9 +168,9 @@ Two important functions:
 
 - Monte Carlo cross-validation emulates random sampling to make binary splits via `mc_cv()`. Since these are not created as a set, the `times` argument specifies the number of resamples, and `prop` defines the proportion of the data that should go into the analysis set. 
 
-We'll show an example with basic 10-fold cross-validation below in @sec-estimating-performance.
+We'll show an example with basic 10-fold cross-validation below in @sec-resampled-models.
 
-## Validation Sets {#sec-validation}
+## Validation Sets {#sec-validation-sets}
 
 To create a validation set, the first split should use `rsample::initial_validation_split()`: 
 
@@ -511,7 +511,7 @@ To save the predictions, we can use an R convention of a "control function." The
 ctrl <- control_resamples(save_pred = TRUE)
 ```
 
-Let's also estimate different metrics. As mentioned back in @sec-model-development, a _metric set_ is used to specify statistics for model efficacy. `fit_resamples()` has an option called `metrics` that we can use to pass in a metric set. 
+Let's also estimate different metrics. As mentioned back in @sec-model-development-whole-game, a _metric set_ is used to specify statistics for model efficacy. `fit_resamples()` has an option called `metrics` that we can use to pass in a metric set.
 
 Let's re-run our model with these two changes:
 
