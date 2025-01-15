@@ -103,29 +103,43 @@ There are a few main functions for an initial split:
  
 Most of our applications will use the first function, where the default is to use 75% for training and 25% for testing. This is determined at random; there is no need to randomly sort the rows before splitting. By default, a simple random split is used. 
 
-For the Ames data, we know that the distribution of sale prices has some outlying points. To deal with this, we'll use a stratified split (on the outcome) using 5 quantiles of the data in `ames`: 
+Let's do that with the Ames data:
 
 ```{r}
 #| label: setup-split
 set.seed(3024)
-ames_block_split <- initial_split(ames, strata = Sale_Price, breaks = 5)
+ames_split <- initial_split(ames)
 
-ames_block_split
+ames_split
 ```
 
 The output shows the size of the resulting data sets. To get the two data sets, there are simple accessor functions: 
 
 ```{r}
 #| label: split-data-sets
-ames_train <- training(ames_block_split)
-ames_test  <- testing(ames_block_split)
+ames_train <- training(ames_split)
+ames_test  <- testing(ames_split)
 ```
 
 Consistent with the printed output, there are `r format(nrow(ames_train), big.mark = ",")` data points in the training set and `r nrow(ames_test)` reserved for testing. 
 
-We won't touch on `initial_time_split()` here but only mention that it takes the fraction of the data specified for testing from the bottom/tail of the data frame. Unlike the previous function, the order of the rows matters. 
+We won't touch on `initial_time_split()` here but only mention that it takes the fraction of the data specified for testing from the bottom/tail of the data frame. Unlike the previous function, the order of the rows matters since the rows at the end of the data frame as used as the test set. 
 
-`group_initial_split()` and `initial_validation_split()` are discussed in more detail below.  
+`group_initial_split()` and `initial_validation_split()` are discussed in more detail below.
+
+## Using the Outcome  {#sec-split-with-outcome}
+
+For the Ames data, we know that the distribution of sale prices has some outlying points. To deal with this, we can use a stratified split (on the outcome) using 5 quantiles of the data in `ames`: 
+
+```{r}
+#| label: setup-strata-split
+set.seed(3024)
+ames_block_split <- initial_split(ames, strata = Sale_Price, breaks = 5)
+
+ames_block_split
+```
+  
+Nothing else changes; the same functions can be used to access the training and testing data. 
 
 ## Using the Predictors  {#sec-split-with-predictors}
 
