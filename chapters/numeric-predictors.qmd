@@ -298,6 +298,7 @@ ames_train %>%
 To get started, we initialize a recipe with the `recipe()` function and a data set:
 
 ```{r}
+#| label: unskew-rec
 unskew_rec <- recipe(Sale_Price ~ ., data = ames_train)
 ```
 

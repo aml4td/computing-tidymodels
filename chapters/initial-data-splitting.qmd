@@ -290,6 +290,7 @@ After specifying this, we can set a blocking strategy using `r pkg(spatialsample
 For the blocking method, we need to specify the number of blocks (`n`), whether the block is square or hexagonal (`square`), and (optionally) the radius for a buffer (`buffer`). These options will define how to create blocks. There is another option that designates how the blocks are assigned to the training set: `method`. You should experiment with these for your data. We’ll use `method = "continuous"` in this example. 
 
 ```{r}
+#| label: ames-block-split
 set.seed(318)
 ames_block_split <-
   spatial_initial_split(
@@ -318,6 +319,7 @@ autoplot(ames_block_split, cex = 1 / 2) +
 Let's add a buffer around these blocks to stop adjacent data from being the training and testing sets. We can experiment with the `buffer` argument until we have results that seem acceptable. 
 
 ```{r}
+#| label: ames-block-buff-split
 set.seed(318)
 ames_block_buff_split <-
   spatial_initial_split(

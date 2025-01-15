@@ -205,6 +205,7 @@ The functions `embed::step_pca_sparse()` and `embed::step_pca_sparse_bayes()` ha
 An ICA recipe step can also be found in the `r pkg(recipes)` package. The syntax is virtually identical: 
 
 ```{r}
+#| label: ica-prep-barley
 set.seed(538)
 barley_ica_rec <-
   recipe(barley ~ ., data = barley_train) %>% 
@@ -215,6 +216,7 @@ barley_ica_rec <-
 Similarly, the `tidy()` method returns the ICA loadings: 
 
 ```{r}
+#| label: tidy-ica-barley
 tidy(barley_ica_rec, id = "ica")
 ```
 
@@ -223,6 +225,7 @@ Most other dimension reduction techniques (but not PCA and PLS) depend on random
 For example, when two ICA components are used, the results are not the same but close when using a different random number seed. 
 
 ```{r}
+#| label: ica-redo
 set.seed(955)
 ica_redo <- 
   recipe(barley ~ ., data = barley_train) %>% 
