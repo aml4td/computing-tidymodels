@@ -161,7 +161,7 @@ Once you have everything installed, we recommend installing the underlying torch
 ```{r}
 #| label: contrib-list
 #| include: false
-use_tidy_contrib <- function (repo_spec = NULL, from = NULL, to = NULL) {
+use_tidy_contrib <- function (repo_spec = "https://github.com/aml4td/computing-tidymodels", from = NULL, to = NULL) {
   require("usethis")
   require("rlang")
   repo_spec <- repo_spec %||% usethis:::target_repo_spec()
@@ -195,7 +195,7 @@ use_tidy_contrib <- function (repo_spec = NULL, from = NULL, to = NULL) {
   }
   contributors <- sort(unique(purrr::map_chr(res, c("user", "login"))))
   
-  contributors <- contributors[!(contributors %in% c("topepo"))]
+  # contributors <- contributors[!(contributors %in% c("topepo"))]
   
   contrib_link <- glue::glue("[&#x0040;{contributors}](https://github.com/{contributors})")
   contrib_markup <- glue::glue_collapse(contrib_link, sep = ", ", last = ", and ") +
@@ -203,7 +203,10 @@ use_tidy_contrib <- function (repo_spec = NULL, from = NULL, to = NULL) {
   contrib_markup
 }
 
-contribs <- use_tidy_contrib()
+contribs <- try(use_tidy_contrib(), silent = TRUE)
+if (inherits(contribs, "try-error")) {
+  contribs <- "tbd"
+}
 ```
 
 The would like to thank users who have made a contribution to the project: `r contribs`
