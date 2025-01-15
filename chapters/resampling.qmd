@@ -191,6 +191,22 @@ At this point, we can use `concrete_rs` as if it were any other `rset` object.
 
 ## Monte Carlo Cross-Validation {#sec-cv-mc}
 
+The relevant function here is `mc_cv()` with two main arguments:
+
+ - `times` is the number of resamples
+ - `prop` is the proportion of the data that is allocated to the analysis set. 
+
+For example: 
+
+```{r}
+set.seed(380)
+mc_cv(concrete_tr, times = 3, prop = 9 / 10)
+
+# or 
+
+mc_cv(concrete_tr, times = 2, prop = 2 /  3)
+```
+
 ## V-Fold Cross-Validation {#sec-cv}
 
 Basic V-fold cross-validation is performed using `vfold_cv()`.  The `v` argument defines the number of folds and defaults to `v = 10`.
