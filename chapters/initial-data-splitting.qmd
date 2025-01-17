@@ -152,7 +152,7 @@ Maximum dissimilarity sampling can be conducted using `caret::maxDissim()`. It s
 #| fig-height: 4.5
 #| fig-width: 4.5
 #| fig-align: center
-#| out-width: "40%"
+#| out-width: "50%"
 #| warning: false
 # Since we will be using distances in the calculations, create centered 
 # and scaled versions of the coordinates then add a row index column. 
@@ -204,6 +204,31 @@ selected_data %>%
   theme_bw()
 ```
 
+## Validation Sets  {#sec-three-way-split}
+
+To add a validation set at the outset, `initial_validation_split()` works the same as `initial_split()`. The `prop` argument requires _two values_ now: the first is the training set proportion, and the second is for the validation set. In this example below, we add 80% to training, 10% to validation, and the remaining 10% to the testing set: 
+
+```{r}
+#| label: setup-val-split
+set.seed(4)
+ames_val_split <- initial_validation_split(ames, strata = Sale_Price, prop = c(0.8, 0.1))
+
+ames_val_split
+```
+
+Again, the acquisition of data is the same but has the additional use of the `validation()` function: 
+ 
+```{r}
+#| label: split-val-data-sets
+ames_train <- training(ames_val_split)
+ames_val   <- validation(ames_val_split)
+ames_test  <- testing(ames_val_split)
+```
+
+`rsample::initial_validation_time_split()` does the same thing but based on the ordering of the data (as opposed to random selection). 
+
+Suppose a data frame had 100 rows. Using `prop = c(0.8, 0.1)` would place the first 80 rows into training, the next 10 into validation, and the last 10 into testing. Keeping the data appropriately ordered is important when using validation sets in tidymodels. 
+
 ## Multi-Level Data  {#sec-multilevel-splitting}
 
 This section will focus on data with a rational grouping of data. For example, medical data might follow patient over time so that there are multiple rows per patient. The patient is the independent experimental unit (IEU), meaning that the data between patients are thought to be independent, and those within a patient are (statistically) related. We want to partition the data so that all of the data for each IEU end up in _either_ the training or test sets but not both. We want to sample the data by the group -- where the group in this example is the patient. 
@@ -242,31 +267,6 @@ subjects_test  <- unique(orth_te$Subject)
 
 intersect(subjects_train, subjects_test)
 ```
-
-## Validation Sets  {#sec-three-way-split}
-
-To add a validation set at the outset, `initial_validation_split()` works the same as `initial_split()`. The `prop` argument requires _two values_ now: the first is the training set proportion, and the second is for the validation set. In this example below, we add 80% to training, 10% to validation, and the remaining 10% to the testing set: 
-
-```{r}
-#| label: setup-val-split
-set.seed(4)
-ames_val_split <- initial_validation_split(ames, strata = Sale_Price, prop = c(0.8, 0.1))
-
-ames_val_split
-```
-
-Again, the acquisition of data is the same but has the additional use of the `validation()` function: 
- 
-```{r}
-#| label: split-val-data-sets
-ames_train <- training(ames_val_split)
-ames_val   <- validation(ames_val_split)
-ames_test  <- testing(ames_val_split)
-```
-
-`rsample::initial_validation_time_split()` does the same thing but based on the ordering of the data (as opposed to random selection). 
-
-Suppose a data frame had 100 rows. Using `prop = c(0.8, 0.1)` would place the first 80 rows into training, the next 10 into validation, and the last 10 into testing. Keeping the data appropriately ordered is important when using validation sets in tidymodels. 
 
 ## Splitting Spatial Data {#sec-spatial-splitting}
 
