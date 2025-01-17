@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.6.3">
+<meta name="generator" content="quarto-1.6.39">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <title>11&nbsp; Grid Search – Tidymodels Computing Supplement</title>
 <style>
@@ -66,10 +66,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-e26003cea8cd680ca0c55a263523d882.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light"><script id="quarto-search-options" type="application/json">{
+<link href="../site_libs/bootstrap/bootstrap-63f686b58216a7528468dd5cd819d44e.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/quarto-contrib/fontawesome6-1.2.0/all.min.css" rel="stylesheet">
+<link href="../site_libs/quarto-contrib/fontawesome6-1.2.0/latex-fontsize.css" rel="stylesheet"><script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
   "collapse-after": 3,
@@ -273,10 +275,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
    
   <ul>
 <li><a href="#requirements" id="toc-requirements" class="nav-link active" data-scroll-target="#requirements"><span class="header-section-number">11.1</span> Requirements</a></li>
-  <li><a href="#creating-grids" id="toc-creating-grids" class="nav-link" data-scroll-target="#creating-grids"><span class="header-section-number">11.2</span> Creating grids</a></li>
-  <li><a href="#tuning-models-with-grids" id="toc-tuning-models-with-grids" class="nav-link" data-scroll-target="#tuning-models-with-grids"><span class="header-section-number">11.3</span> Tuning models with grids</a></li>
+  <li><a href="#sec-grid-creation" id="toc-sec-grid-creation" class="nav-link" data-scroll-target="#sec-grid-creation"><span class="header-section-number">11.2</span> Creating Grids</a></li>
+  <li><a href="#sec-grid-tuning" id="toc-sec-grid-tuning" class="nav-link" data-scroll-target="#sec-grid-tuning"><span class="header-section-number">11.3</span> Tuning Models with Grids</a></li>
   <li><a href="#racing" id="toc-racing" class="nav-link" data-scroll-target="#racing"><span class="header-section-number">11.4</span> Racing</a></li>
-  <li><a href="#nested-resampling" id="toc-nested-resampling" class="nav-link" data-scroll-target="#nested-resampling"><span class="header-section-number">11.5</span> Nested resampling</a></li>
+  <li><a href="#sec-nested-resampling" id="toc-sec-nested-resampling" class="nav-link" data-scroll-target="#sec-nested-resampling"><span class="header-section-number">11.5</span> Nested Resampling</a></li>
   </ul></nav>
     </div>
 <!-- main -->
@@ -318,8 +320,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="fu"><a href="https://tidymodels.tidymodels.org/reference/tidymodels_prefer.html">tidymodels_prefer</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu">theme_set</span><span class="op">(</span><span class="fu">theme_bw</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-</section><section id="creating-grids" class="level2" data-number="11.2"><h2 data-number="11.2" class="anchored" data-anchor-id="creating-grids">
-<span class="header-section-number">11.2</span> Creating grids</h2>
+</section><section id="sec-grid-creation" class="level2" data-number="11.2"><h2 data-number="11.2" class="anchored" data-anchor-id="sec-grid-creation">
+<span class="header-section-number">11.2</span> Creating Grids</h2>
 <p>The <span class="pkg"><a href="https://cran.r-project.org/package=dials">dials</a></span> package has several grid creation functions, whose names all start with grid_. The primary input is a <span class="pkg"><a href="https://cran.r-project.org/package=dials">dials</a></span> parameter set object, which can be created from a model, recipe, or workflow. The primary functions are:</p>
 <ul>
 <li>
@@ -329,7 +331,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>
 <code>grid_space_filling()</code> can produce different types of space-filling designs (via the <code>type</code> argument). It also uses a <code>size</code> argument.</li>
 </ul>
-<p>Let’s pick back up from the Cubist example in <a href="resampling.html#sec-resampled-models" class="quarto-xref"><span>Section 10.8</span></a>. We can tag two of the Cubist models’s parameters for tuning:</p>
+<p>Let’s pick back up from the Cubist example in <a href="resampling.html#sec-resampled-models" class="quarto-xref"><span>Section 10.11</span></a>. We can tag two of the Cubist models’s parameters for tuning:</p>
 <ul>
 <li>The number of <code>committee</code> members in the ensemble (usually ranging from one to 100).</li>
 <li>The number of <code>neighbors</code> to use in a post hoc model adjustment phase, ranging from zero neighbors (i.e., no adjustment) to nine.</li>
@@ -405,9 +407,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="co">#&gt; 6        100         9</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Finally, as a reminder, a workflow can contain preprocessing arguments that were tagged for optimization via <code><a href="https://hardhat.tidymodels.org/reference/tune.html">tune()</a></code>. These values are treated the same as model arguments when it comes to extracting the parameter set and creating grids.</p>
-</section><section id="tuning-models-with-grids" class="level2" data-number="11.3"><h2 data-number="11.3" class="anchored" data-anchor-id="tuning-models-with-grids">
-<span class="header-section-number">11.3</span> Tuning models with grids</h2>
-<p>For grids, the three main functions are <code><a href="https://tune.tidymodels.org/reference/tune_grid.html">tune::tune_grid()</a></code> and the two racing functions in the <span class="pkg"><a href="https://cran.r-project.org/package=finetune">finetune</a></span> package: <code><a href="https://finetune.tidymodels.org/reference/tune_race_anova.html">finetune::tune_race_anova()</a></code> and <code>finetune::tune_race_winloss()</code>. The syntax for these is nearly identical and also closely follows the previously described code for <code><a href="https://tune.tidymodels.org/reference/fit_resamples.html">fit_resamples()</a></code> from <a href="resampling.html#sec-resampled-models" class="quarto-xref"><span>Section 10.8</span></a>.</p>
+<p><a href="https://aml4td.org/chapters/grid-search.html#sec-regular-grid" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a> (regular grids) <a href="https://aml4td.org/chapters/grid-search.html#sec-irregular-grid" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a> (irregular)</p>
+</section><section id="sec-grid-tuning" class="level2" data-number="11.3"><h2 data-number="11.3" class="anchored" data-anchor-id="sec-grid-tuning">
+<span class="header-section-number">11.3</span> Tuning Models with Grids</h2>
+<p>For grids, the three main functions are <code><a href="https://tune.tidymodels.org/reference/tune_grid.html">tune::tune_grid()</a></code> and the two racing functions in the <span class="pkg"><a href="https://cran.r-project.org/package=finetune">finetune</a></span> package: <code><a href="https://finetune.tidymodels.org/reference/tune_race_anova.html">finetune::tune_race_anova()</a></code> and <code>finetune::tune_race_winloss()</code>. The syntax for these is nearly identical and also closely follows the previously described code for <code><a href="https://tune.tidymodels.org/reference/fit_resamples.html">fit_resamples()</a></code> from <a href="resampling.html#sec-resampled-models" class="quarto-xref"><span>Section 10.11</span></a>.</p>
 <p>The primary arguments for these tuning functions in tidymodels are:</p>
 <ul>
 <li>
@@ -565,7 +568,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="co">#&gt; Number of committees: 95 </span></span>
 <span><span class="co">#&gt; Number of rules per committee: 11, 13, 10, 10, 12, 10, 11, 12, 4, 13, 8, 16, 5, 23, 5, 14, 4, 15, 12, 13 ...</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Finally, as previously seen in <a href="resampling.html#sec-parallel-resamples" class="quarto-xref"><span>Section 10.8.1</span></a>, we can parallel process these model fits using the same syntax as shown there.</p>
+<p>Finally, as previously seen in <a href="resampling.html#sec-parallel-resamples" class="quarto-xref"><span>Section 10.11.1</span></a>, we can parallel process these model fits using the same syntax as shown there.</p>
 </section><section id="racing" class="level2" data-number="11.4"><h2 data-number="11.4" class="anchored" data-anchor-id="racing">
 <span class="header-section-number">11.4</span> Racing</h2>
 <p>The syntax for these optimization methods is virtually the same. Besides the different function names, the control function has a few options of note:</p>
@@ -634,8 +637,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <p>Each line corresponds to a candidate.</p>
-</section><section id="nested-resampling" class="level2" data-number="11.5"><h2 data-number="11.5" class="anchored" data-anchor-id="nested-resampling">
-<span class="header-section-number">11.5</span> Nested resampling</h2>
+<p><a href="https://aml4td.org/chapters/grid-search.html#sec-racing" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+</section><section id="sec-nested-resampling" class="level2" data-number="11.5"><h2 data-number="11.5" class="anchored" data-anchor-id="sec-nested-resampling">
+<span class="header-section-number">11.5</span> Nested Resampling</h2>
 <p>There are tidymodels experimental APIs for nested resampling (and analytical bias correction). We’ll fill this section in when these are finalized.</p>
 
 
@@ -721,8 +725,6 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   });
   clipboard.on('success', onCopySuccess);
   if (window.document.getElementById('quarto-embedded-source-code-modal')) {
-    // For code content inside modals, clipBoardJS needs to be initialized with a container option
-    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
     const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
       text: getTextToCopy,
       container: window.document.getElementById('quarto-embedded-source-code-modal')
@@ -833,7 +835,6 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       if (window.Quarto?.typesetMath) {
         window.Quarto.typesetMath(note);
       }
-      // TODO in 1.5, we should make sure this works without a callout special case
       if (note.classList.contains("callout")) {
         return note.outerHTML;
       } else {

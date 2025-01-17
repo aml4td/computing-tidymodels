@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.6.3">
+<meta name="generator" content="quarto-1.6.39">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <title>Contributing – Tidymodels Computing Supplement</title>
 <style>
@@ -33,10 +33,10 @@ ul.task-list li input[type="checkbox"] {
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-e26003cea8cd680ca0c55a263523d882.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light"><script id="quarto-search-options" type="application/json">{
+<link href="../site_libs/bootstrap/bootstrap-63f686b58216a7528468dd5cd819d44e.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light"><script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
   "collapse-after": 3,
@@ -303,10 +303,10 @@ ul.task-list li input[type="checkbox"] {
 <p>Regarding R packages, the repository has a DESCRIPTION file as if it were an R package. This lets us specify precisely what packages and their versions should be installed. The packages listed in the imports field contain packages for modeling/analysis and packages used to make the website/book. Some basic system requirements are likely needed to install packages: Fortran, gdal, and others.</p>
 <p>The main requirements are as follows.</p>
 <section id="quarto" class="level3"><h3 class="anchored" data-anchor-id="quarto">Quarto</h3>
-<p>Quarto is an open-source scientific and technical publishing system. <a href="https://quarto.org/docs/get-started/">Quarto</a> version 1.6.3 is used to compile the website.</p>
+<p>Quarto is an open-source scientific and technical publishing system. <a href="https://quarto.org/docs/get-started/">Quarto</a> version 1.6.39 is used to compile the website.</p>
 </section><section id="r-and-renv" class="level3"><h3 class="anchored" data-anchor-id="r-and-renv">R and renv</h3>
 <p>R version 4.4.1 (2024-06-14) is what we are currently using. We suggest using <a href="https://github.com/r-lib/rig">rig</a> to manage R versions. There are several IDEs that you can use. We’ve used RStudio (&gt;= 2023.6.1.524).</p>
-<p>The current strategy is to use the <a href="https://rstudio.github.io/renv/">renv</a> (&gt;= version 1.0.8) package to make this project more isolated, portable and reproducible.</p>
+<p>The current strategy is to use the <a href="https://rstudio.github.io/renv/">renv</a> (&gt;= version 1.0.11) package to make this project more isolated, portable and reproducible.</p>
 <p>To get package dependencies installed…</p>
 <details><p>When you open the <code>computing-tidymodels.Rproj</code> file, the renv package should be automatically installed/updated (if needed). For example:</p>
 <pre><code># Bootstrapping renv 1.0.3 ---------------------------------------------------
@@ -376,7 +376,7 @@ Do you want to proceed? [Y/n]: y
 <p>Depending on whether you have to install packages from source, you may need to install some system dependencies and try again (I had to install <code>libgit2</code> the last time I did this).</p>
 <p>Once you have everything installed, we recommend installing the underlying torch computational libraries. You can do this by loading the torch package A download will automatically begin if you need one.</p>
 </details></section></section><section id="contributor-list" class="level2"><h2 class="anchored" data-anchor-id="contributor-list">Contributor List</h2>
-<p>The would like to thank users who have made a contribution to the project: .</p>
+<p>The would like to thank users who have made a contribution to the project: tbd</p>
 
 
 </section></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">
@@ -461,8 +461,6 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   });
   clipboard.on('success', onCopySuccess);
   if (window.document.getElementById('quarto-embedded-source-code-modal')) {
-    // For code content inside modals, clipBoardJS needs to be initialized with a container option
-    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
     const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
       text: getTextToCopy,
       container: window.document.getElementById('quarto-embedded-source-code-modal')
@@ -573,7 +571,6 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       if (window.Quarto?.typesetMath) {
         window.Quarto.typesetMath(note);
       }
-      // TODO in 1.5, we should make sure this works without a callout special case
       if (note.classList.contains("callout")) {
         return note.outerHTML;
       } else {

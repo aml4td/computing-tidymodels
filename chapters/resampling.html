@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.6.3">
+<meta name="generator" content="quarto-1.6.39">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <title>10&nbsp; Measuring Performance with Resampling – Tidymodels Computing Supplement</title>
 <style>
@@ -67,10 +67,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-e26003cea8cd680ca0c55a263523d882.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light"><script id="quarto-search-options" type="application/json">{
+<link href="../site_libs/bootstrap/bootstrap-63f686b58216a7528468dd5cd819d44e.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/quarto-contrib/fontawesome6-1.2.0/all.min.css" rel="stylesheet">
+<link href="../site_libs/quarto-contrib/fontawesome6-1.2.0/latex-fontsize.css" rel="stylesheet"><script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
   "collapse-after": 3,
@@ -300,22 +302,25 @@ window.Quarto = {
   <ul>
 <li><a href="#requirements" id="toc-requirements" class="nav-link active" data-scroll-target="#requirements"><span class="header-section-number">10.1</span> Requirements</a></li>
   <li>
-<a href="#basic-methods-and-data-structures" id="toc-basic-methods-and-data-structures" class="nav-link" data-scroll-target="#basic-methods-and-data-structures"><span class="header-section-number">10.2</span> Basic methods and data structures</a>
+<a href="#sec-resampling-basics" id="toc-sec-resampling-basics" class="nav-link" data-scroll-target="#sec-resampling-basics"><span class="header-section-number">10.2</span> Basic Methods and Data Structures</a>
   <ul class="collapse">
-<li><a href="#split-objects" id="toc-split-objects" class="nav-link" data-scroll-target="#split-objects"><span class="header-section-number">10.2.1</span> Split objects</a></li>
+<li><a href="#sec-rsplits" id="toc-sec-rsplits" class="nav-link" data-scroll-target="#sec-rsplits"><span class="header-section-number">10.2.1</span> Split Objects</a></li>
   </ul>
 </li>
-  <li><a href="#basic-resampling-tools" id="toc-basic-resampling-tools" class="nav-link" data-scroll-target="#basic-resampling-tools"><span class="header-section-number">10.3</span> Basic resampling tools</a></li>
-  <li><a href="#validation-sets" id="toc-validation-sets" class="nav-link" data-scroll-target="#validation-sets"><span class="header-section-number">10.4</span> Validation sets</a></li>
-  <li><a href="#times-series-resampling" id="toc-times-series-resampling" class="nav-link" data-scroll-target="#times-series-resampling"><span class="header-section-number">10.5</span> Times series resampling</a></li>
-  <li><a href="#sec-multilevel-resampling" id="toc-sec-multilevel-resampling" class="nav-link" data-scroll-target="#sec-multilevel-resampling"><span class="header-section-number">10.6</span> Multi-Level Data</a></li>
-  <li><a href="#sec-spatial-resampling" id="toc-sec-spatial-resampling" class="nav-link" data-scroll-target="#sec-spatial-resampling"><span class="header-section-number">10.7</span> Spatial Resampling</a></li>
+  <li><a href="#sec-resampling-todo" id="toc-sec-resampling-todo" class="nav-link" data-scroll-target="#sec-resampling-todo"><span class="header-section-number">10.3</span> Basic Resampling Tools</a></li>
+  <li><a href="#sec-validation-sets" id="toc-sec-validation-sets" class="nav-link" data-scroll-target="#sec-validation-sets"><span class="header-section-number">10.4</span> Validation Sets</a></li>
+  <li><a href="#sec-cv-mc" id="toc-sec-cv-mc" class="nav-link" data-scroll-target="#sec-cv-mc"><span class="header-section-number">10.5</span> Monte Carlo Cross-Validation</a></li>
+  <li><a href="#sec-cv" id="toc-sec-cv" class="nav-link" data-scroll-target="#sec-cv"><span class="header-section-number">10.6</span> V-Fold Cross-Validation</a></li>
+  <li><a href="#sec-bootstrap" id="toc-sec-bootstrap" class="nav-link" data-scroll-target="#sec-bootstrap"><span class="header-section-number">10.7</span> The Bootstrap</a></li>
+  <li><a href="#sec-time-series-resampling" id="toc-sec-time-series-resampling" class="nav-link" data-scroll-target="#sec-time-series-resampling"><span class="header-section-number">10.8</span> Time Series Data</a></li>
+  <li><a href="#sec-spatial-resampling" id="toc-sec-spatial-resampling" class="nav-link" data-scroll-target="#sec-spatial-resampling"><span class="header-section-number">10.9</span> Spatial Data</a></li>
+  <li><a href="#sec-multilevel-resampling" id="toc-sec-multilevel-resampling" class="nav-link" data-scroll-target="#sec-multilevel-resampling"><span class="header-section-number">10.10</span> Grouped or Multi-Level Data</a></li>
   <li>
-<a href="#sec-resampled-models" id="toc-sec-resampled-models" class="nav-link" data-scroll-target="#sec-resampled-models"><span class="header-section-number">10.8</span> Estimating performance</a>
+<a href="#sec-resampled-models" id="toc-sec-resampled-models" class="nav-link" data-scroll-target="#sec-resampled-models"><span class="header-section-number">10.11</span> Estimating Performance</a>
   <ul class="collapse">
-<li><a href="#sec-parallel-resamples" id="toc-sec-parallel-resamples" class="nav-link" data-scroll-target="#sec-parallel-resamples"><span class="header-section-number">10.8.1</span> Parallel processing</a></li>
-  <li><a href="#other-options" id="toc-other-options" class="nav-link" data-scroll-target="#other-options"><span class="header-section-number">10.8.2</span> Other options</a></li>
-  <li><a href="#extracting-results" id="toc-extracting-results" class="nav-link" data-scroll-target="#extracting-results"><span class="header-section-number">10.8.3</span> Extracting results</a></li>
+<li><a href="#sec-parallel-resamples" id="toc-sec-parallel-resamples" class="nav-link" data-scroll-target="#sec-parallel-resamples"><span class="header-section-number">10.11.1</span> Parallel Processing</a></li>
+  <li><a href="#sec-function-arguments" id="toc-sec-function-arguments" class="nav-link" data-scroll-target="#sec-function-arguments"><span class="header-section-number">10.11.2</span> Other Options</a></li>
+  <li><a href="#sec-extraction" id="toc-sec-extraction" class="nav-link" data-scroll-target="#sec-extraction"><span class="header-section-number">10.11.3</span> Extracting Results</a></li>
   </ul>
 </li>
   </ul></nav>
@@ -336,7 +341,7 @@ window.Quarto = {
   
 
 
-</header><p>This chapter outlines how to create objects to facilitate resampling. At the end, <a href="#sec-resampled-models" class="quarto-xref"><span>Section 10.8</span></a> illustrates how to use the resampling objects to produce good estimates of performance for a model.</p>
+</header><p>This chapter outlines how to create objects to facilitate resampling. At the end, <a href="#sec-resampled-models" class="quarto-xref"><span>Section 10.11</span></a> illustrates how to use the resampling objects to produce good estimates of performance for a model.</p>
 <section id="requirements" class="level2" data-number="10.1"><h2 data-number="10.1" class="anchored" data-anchor-id="requirements">
 <span class="header-section-number">10.1</span> Requirements</h2>
 <p>We will use the <code>ames</code>, <code>concrete</code>, and <code>Chicago</code> data sets from the <span class="pkg"><a href="https://cran.r-project.org/package=modeldata">modeldata</a></span> package (which is automatically loaded below) to illustrate some of the methods. The other data, <code>Orthodont</code>, can be obtained in the <span class="pkg"><a href="https://cran.r-project.org/package=nlme">nlme</a></span> package which comes with each R installation.</p>
@@ -360,9 +365,9 @@ window.Quarto = {
 <span><span class="fu"><a href="https://tidymodels.tidymodels.org/reference/tidymodels_prefer.html">tidymodels_prefer</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu">theme_set</span><span class="op">(</span><span class="fu">theme_bw</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-</section><section id="basic-methods-and-data-structures" class="level2" data-number="10.2"><h2 data-number="10.2" class="anchored" data-anchor-id="basic-methods-and-data-structures">
-<span class="header-section-number">10.2</span> Basic methods and data structures</h2>
-<p>The <span class="pkg"><a href="https://cran.r-project.org/package=rsample">rsample</a></span> package provides many functions to facilitate resampling. For now, we’ll assume an initial split into a training and test set has been made (but see <span class="citation" data-cites="validation-sets">(<a href="#ref-validation-sets" role="doc-biblioref"><strong>validation-sets?</strong></a>)</span> below for three-way splits).</p>
+</section><section id="sec-resampling-basics" class="level2" data-number="10.2"><h2 data-number="10.2" class="anchored" data-anchor-id="sec-resampling-basics">
+<span class="header-section-number">10.2</span> Basic Methods and Data Structures</h2>
+<p>The <span class="pkg"><a href="https://cran.r-project.org/package=rsample">rsample</a></span> package provides many functions to facilitate resampling. For now, we’ll assume an initial split into a training and test set has been made (but see <a href="#sec-validation-sets" class="quarto-xref"><span>Section 10.4</span></a> below for three-way splits).</p>
 <p>Let’s use the concrete data for illustration:</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">82</span><span class="op">)</span></span>
@@ -371,7 +376,7 @@ window.Quarto = {
 <span><span class="va">concrete_te</span> <span class="op">&lt;-</span> <span class="fu">testing</span><span class="op">(</span><span class="va">concrete_split</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>All resampling methods use the training set as the substrate for creating resamples. We’ll demonstrate the main tools and functions using basic bootstrap resampling and then discuss the other resampling methods.</p>
-<p>The function that we’ll use is <code><a href="https://rsample.tidymodels.org/reference/bootstraps.html">rsample::bootstraps()</a></code>. Its main option, <code>times</code>, describes how many resamples to create. Let’s make five resamples:</p>
+<p>The function that we’ll use to demonstrate is <code><a href="https://rsample.tidymodels.org/reference/bootstraps.html">rsample::bootstraps()</a></code>. Its main option, <code>times</code>, describes how many resamples to create. Let’s make five resamples:</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">380</span><span class="op">)</span></span>
 <span><span class="va">concrete_rs</span> <span class="op">&lt;-</span> <span class="fu">bootstraps</span><span class="op">(</span><span class="va">concrete</span>, times <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -403,8 +408,8 @@ window.Quarto = {
 <span><span class="co">#&gt; 4 &lt;split [1030/378]&gt; Bootstrap5</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>The “A tibble: 4 × 2” title is different from the original title of “Bootstrap sampling.” This, and the class values, give away the difference. You can add columns without violating the definition.</p>
-<section id="split-objects" class="level3" data-number="10.2.1"><h3 data-number="10.2.1" class="anchored" data-anchor-id="split-objects">
-<span class="header-section-number">10.2.1</span> Split objects</h3>
+<section id="sec-rsplits" class="level3" data-number="10.2.1"><h3 data-number="10.2.1" class="anchored" data-anchor-id="sec-rsplits">
+<span class="header-section-number">10.2.1</span> Split Objects</h3>
 <p>Note the <code>splits</code> column in the output above. This is a <em>list column</em> in the data frame. It contains an <code>rsplit</code> object that tells us which rows of the training set go into our analysis and assessment sets. As a reminder:</p>
 <ul>
 <li>The <strong>analysis set</strong> (of size <span class="math inline">\(n_{fit}\)</span>) estimates quantities associated with preprocessing, model training, and postprocessing.</li>
@@ -432,18 +437,13 @@ window.Quarto = {
 <span><span class="co">#&gt; [1] 355</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>You shouldn’t really have to interact with these objects at all.</p>
-</section></section><section id="basic-resampling-tools" class="level2" data-number="10.3"><h2 data-number="10.3" class="anchored" data-anchor-id="basic-resampling-tools">
-<span class="header-section-number">10.3</span> Basic resampling tools</h2>
-<p><span class="pkg"><a href="https://cran.r-project.org/package=rsample">rsample</a></span> contains several functions that resample data whose rows are thought to be statistically independent of one another.</p>
-<p>Almost all of these functions contain options for stratified resampling.</p>
-<p>Two important functions:</p>
-<ul>
-<li><p>Basic V-fold cross-validation is performed using <code>vfold_cv()</code>. The <code>v</code> argument defines the number of folds. Another argument of note is <code>repeats</code>, which describes how many sets of V resamples should be created. This generated an additional column called <code>id2</code>.</p></li>
-<li><p>Monte Carlo cross-validation emulates random sampling to make binary splits via <code>mc_cv()</code>. Since these are not created as a set, the <code>times</code> argument specifies the number of resamples, and <code>prop</code> defines the proportion of the data that should go into the analysis set.</p></li>
-</ul>
-<p>We’ll show an example with basic 10-fold cross-validation below in <span class="quarto-unresolved-ref">?sec-estimating-performance</span>.</p>
-</section><section id="validation-sets" class="level2" data-number="10.4"><h2 data-number="10.4" class="anchored" data-anchor-id="validation-sets">
-<span class="header-section-number">10.4</span> Validation sets</h2>
+</section></section><section id="sec-resampling-todo" class="level2" data-number="10.3"><h2 data-number="10.3" class="anchored" data-anchor-id="sec-resampling-todo">
+<span class="header-section-number">10.3</span> Basic Resampling Tools</h2>
+<p><span class="pkg"><a href="https://cran.r-project.org/package=rsample">rsample</a></span> contains several functions that resample data whose rows are thought to be statistically independent of one another. Almost all of these functions contain options for stratified resampling.</p>
+<p>We’ll show an example with basic 10-fold cross-validation below in <a href="#sec-resampled-models" class="quarto-xref"><span>Section 10.11</span></a>.</p>
+<p>Let’s examine each flavor of resampling mentioned in the book chapter.</p>
+</section><section id="sec-validation-sets" class="level2" data-number="10.4"><h2 data-number="10.4" class="anchored" data-anchor-id="sec-validation-sets">
+<span class="header-section-number">10.4</span> Validation Sets</h2>
 <p>To create a validation set, the first split should use <code><a href="https://rsample.tidymodels.org/reference/initial_validation_split.html">rsample::initial_validation_split()</a></code>:</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">426</span><span class="op">)</span></span>
@@ -462,11 +462,93 @@ window.Quarto = {
 <span><span class="co">#&gt; 1 &lt;split [824/103]&gt; validation</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>At this point, we can use <code>concrete_rs</code> as if it were any other <code>rset</code> object.</p>
-</section><section id="times-series-resampling" class="level2" data-number="10.5"><h2 data-number="10.5" class="anchored" data-anchor-id="times-series-resampling">
-<span class="header-section-number">10.5</span> Times series resampling</h2>
+<p><a href="https://aml4td.org/chapters/resampling.html#sec-validation" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+</section><section id="sec-cv-mc" class="level2" data-number="10.5"><h2 data-number="10.5" class="anchored" data-anchor-id="sec-cv-mc">
+<span class="header-section-number">10.5</span> Monte Carlo Cross-Validation</h2>
+<p>The relevant function here is <code>mc_cv()</code> with two main arguments:</p>
+<ul>
+<li>
+<code>times</code> is the number of resamples</li>
+<li>
+<code>prop</code> is the proportion of the data that is allocated to the analysis set.</li>
+</ul>
+<p>For example:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">380</span><span class="op">)</span></span>
+<span><span class="fu">mc_cv</span><span class="op">(</span><span class="va">concrete_tr</span>, times <span class="op">=</span> <span class="fl">3</span>, prop <span class="op">=</span> <span class="fl">9</span> <span class="op">/</span> <span class="fl">10</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # Monte Carlo cross-validation (0.9/0.1) with 3 resamples  </span></span>
+<span><span class="co">#&gt; # A tibble: 3 × 2</span></span>
+<span><span class="co">#&gt;   splits           id       </span></span>
+<span><span class="co">#&gt;   &lt;list&gt;           &lt;chr&gt;    </span></span>
+<span><span class="co">#&gt; 1 &lt;split [741/83]&gt; Resample1</span></span>
+<span><span class="co">#&gt; 2 &lt;split [741/83]&gt; Resample2</span></span>
+<span><span class="co">#&gt; 3 &lt;split [741/83]&gt; Resample3</span></span>
+<span></span>
+<span><span class="co"># or </span></span>
+<span></span>
+<span><span class="fu">mc_cv</span><span class="op">(</span><span class="va">concrete_tr</span>, times <span class="op">=</span> <span class="fl">2</span>, prop <span class="op">=</span> <span class="fl">2</span> <span class="op">/</span>  <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # Monte Carlo cross-validation (0.67/0.33) with 2 resamples  </span></span>
+<span><span class="co">#&gt; # A tibble: 2 × 2</span></span>
+<span><span class="co">#&gt;   splits            id       </span></span>
+<span><span class="co">#&gt;   &lt;list&gt;            &lt;chr&gt;    </span></span>
+<span><span class="co">#&gt; 1 &lt;split [549/275]&gt; Resample1</span></span>
+<span><span class="co">#&gt; 2 &lt;split [549/275]&gt; Resample2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><a href="https://aml4td.org/chapters/resampling.html#sec-cv-mc" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+</section><section id="sec-cv" class="level2" data-number="10.6"><h2 data-number="10.6" class="anchored" data-anchor-id="sec-cv">
+<span class="header-section-number">10.6</span> V-Fold Cross-Validation</h2>
+<p>Basic V-fold cross-validation is performed using <code>vfold_cv()</code>. The <code>v</code> argument defines the number of folds and defaults to <code>v = 10</code>.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">380</span><span class="op">)</span></span>
+<span><span class="va">concrete_rs</span> <span class="op">&lt;-</span> <span class="fu">vfold_cv</span><span class="op">(</span><span class="va">concrete_tr</span><span class="op">)</span></span>
+<span><span class="va">concrete_rs</span></span>
+<span><span class="co">#&gt; #  10-fold cross-validation </span></span>
+<span><span class="co">#&gt; # A tibble: 10 × 2</span></span>
+<span><span class="co">#&gt;   splits           id    </span></span>
+<span><span class="co">#&gt;   &lt;list&gt;           &lt;chr&gt; </span></span>
+<span><span class="co">#&gt; 1 &lt;split [741/83]&gt; Fold01</span></span>
+<span><span class="co">#&gt; 2 &lt;split [741/83]&gt; Fold02</span></span>
+<span><span class="co">#&gt; 3 &lt;split [741/83]&gt; Fold03</span></span>
+<span><span class="co">#&gt; 4 &lt;split [741/83]&gt; Fold04</span></span>
+<span><span class="co">#&gt; 5 &lt;split [742/82]&gt; Fold05</span></span>
+<span><span class="co">#&gt; 6 &lt;split [742/82]&gt; Fold06</span></span>
+<span><span class="co">#&gt; # ℹ 4 more rows</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>As with the other tools, the <code>strata</code> argument can balance the outcome distributions across folds. It takes a single column as input.</p>
+<p>Another argument of note is <code>repeats</code>, which describes how many sets of V resamples should be created. This generated an additional column called <code>id2</code>:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">380</span><span class="op">)</span></span>
+<span><span class="va">concrete_rs</span> <span class="op">&lt;-</span> <span class="fu">vfold_cv</span><span class="op">(</span><span class="va">concrete_tr</span>, repeats <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="va">concrete_rs</span></span>
+<span><span class="co">#&gt; #  10-fold cross-validation repeated 2 times </span></span>
+<span><span class="co">#&gt; # A tibble: 20 × 3</span></span>
+<span><span class="co">#&gt;   splits           id      id2   </span></span>
+<span><span class="co">#&gt;   &lt;list&gt;           &lt;chr&gt;   &lt;chr&gt; </span></span>
+<span><span class="co">#&gt; 1 &lt;split [741/83]&gt; Repeat1 Fold01</span></span>
+<span><span class="co">#&gt; 2 &lt;split [741/83]&gt; Repeat1 Fold02</span></span>
+<span><span class="co">#&gt; 3 &lt;split [741/83]&gt; Repeat1 Fold03</span></span>
+<span><span class="co">#&gt; 4 &lt;split [741/83]&gt; Repeat1 Fold04</span></span>
+<span><span class="co">#&gt; 5 &lt;split [742/82]&gt; Repeat1 Fold05</span></span>
+<span><span class="co">#&gt; 6 &lt;split [742/82]&gt; Repeat1 Fold06</span></span>
+<span><span class="co">#&gt; # ℹ 14 more rows</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><a href="https://aml4td.org/chapters/resampling.html#sec-cv" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+</section><section id="sec-bootstrap" class="level2" data-number="10.7"><h2 data-number="10.7" class="anchored" data-anchor-id="sec-bootstrap">
+<span class="header-section-number">10.7</span> The Bootstrap</h2>
+<p>First, there are special occasions when the regular set of bootstrap samples needs to be supplemented with an additional resample that can be used to measure the resubstitution rate (predicting the analysis set after fitting the data on the same analysis set). The function that produces this extra row is called <code>apparent()</code>, which is the same name as the function argument:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">380</span><span class="op">)</span></span>
+<span><span class="va">concrete_rs</span> <span class="op">&lt;-</span> <span class="fu">bootstraps</span><span class="op">(</span><span class="va">concrete</span>, times <span class="op">=</span> <span class="fl">5</span>, apparent <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Note that the <code>id</code> column reflects this, and the split label shows that the analysis and assessment sets are the same size.</p>
+<p>The tidymodels resampling functions are aware of the potential presence of the “apparent” sample and will <em>not</em> include it at inappropriate times. For example, if we resample a model with and without using <code>apparent = TRUE</code>, we’ll get the same results as long as we use the same random number seed to make each set of resamples.</p>
+<p>Secondly, there is a <code>strata</code> argument for this function. That enables different bootstrap samples to be taken within each stratum, which are combined into the final resampling set. <em>Technically</em>, this isn’t a bootstrap sample, but it is probably close enough to be useful.</p>
+<p><a href="https://aml4td.org/chapters/resampling.html#sec-bootstrap" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+</section><section id="sec-time-series-resampling" class="level2" data-number="10.8"><h2 data-number="10.8" class="anchored" data-anchor-id="sec-time-series-resampling">
+<span class="header-section-number">10.8</span> Time Series Data</h2>
 <p>Usually, the most recent data are used to evaluate performance for time series data. The function <code>initial_time_split()</code> can be used to make the initial split. We’ll use the <code>Chicago</code> data to demonstrate:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">n</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">Chicago</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">n</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">Chicago</span><span class="op">)</span></span>
 <span><span class="co"># To get 30 days of data</span></span>
 <span><span class="va">prop_30</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="va">n</span> <span class="op">-</span> <span class="fl">30</span><span class="op">)</span> <span class="op">/</span> <span class="va">n</span></span>
 <span></span>
@@ -487,7 +569,7 @@ window.Quarto = {
 <p>The data set has a column with the <code>Date</code> class. We can use this to partition the data in case there is an unequal number of data points in our 30-day period. The <code>sliding_period()</code> can be used with a date or date/time input, while <code>sliding_index()</code> can be used for equally spaced data.</p>
 <p>Let’s use <code>sliding_period()</code> for this example, annotate the argument logic in comments, and then compute a few columns for the start/stop dates for the analysis and assessment sets (for illustration):</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">chi_rs</span> <span class="op">&lt;-</span> </span>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">chi_rs</span> <span class="op">&lt;-</span> </span>
 <span>  <span class="fu">sliding_period</span><span class="op">(</span></span>
 <span>    <span class="va">chi_tr</span>,</span>
 <span>    index <span class="op">=</span> <span class="va">date</span>,</span>
@@ -520,7 +602,7 @@ window.Quarto = {
 <p>For the second resample, the analysis and assessment sets both start 30 days later.</p>
 <p>Here is a visualization of the date periods defined by the resampling scheme that illustrates why the method is sometimes called rolling origin forecast resampling. The figure also shows that the assessment sets are very small compared to the analysis sets.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">chi_rs</span> <span class="op">%&gt;%</span> </span>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">chi_rs</span> <span class="op">%&gt;%</span> </span>
 <span>  <span class="fu">ggplot</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>y <span class="op">=</span> <span class="va">id</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>  <span class="fu">geom_segment</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">fit_start</span>,  xend <span class="op">=</span> <span class="va">fit_stop</span>,  yend <span class="op">=</span> <span class="va">id</span><span class="op">)</span>, col <span class="op">=</span> <span class="st">"grey"</span>, linewidth <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">geom_segment</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">perf_start</span>, xend <span class="op">=</span> <span class="va">perf_stop</span>, yend <span class="op">=</span> <span class="va">id</span><span class="op">)</span>, col <span class="op">=</span> <span class="st">"red"</span>, linewidth <span class="op">=</span> <span class="fl">3</span><span class="op">)</span> <span class="op">+</span></span>
@@ -534,7 +616,7 @@ window.Quarto = {
 </div>
 <p>One variation of this approach is to cumulately increase the analysis set by keeping the starting date the same (inside of sliding/rolling). For this, we can make the “lookback” infinite but use the <code>skip</code> argument to remove the large number of resamples that contain fewer than 5,000 days in the analysis sets:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">chi_rs</span> <span class="op">&lt;-</span> </span>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">chi_rs</span> <span class="op">&lt;-</span> </span>
 <span>  <span class="fu">sliding_period</span><span class="op">(</span></span>
 <span>    <span class="va">chi_tr</span>,</span>
 <span>    index <span class="op">=</span> <span class="va">date</span>,</span>
@@ -566,7 +648,7 @@ window.Quarto = {
 </div>
 <p>Note that the values in the <code>fit_stop</code> column are the same. Visually:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">chi_rs</span> <span class="op">%&gt;%</span> </span>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">chi_rs</span> <span class="op">%&gt;%</span> </span>
 <span>  <span class="fu">ggplot</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>y <span class="op">=</span> <span class="va">id</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>  <span class="fu">geom_segment</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">fit_start</span>,  xend <span class="op">=</span> <span class="va">fit_stop</span>,  yend <span class="op">=</span> <span class="va">id</span><span class="op">)</span>, col <span class="op">=</span> <span class="st">"grey"</span>, linewidth <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">geom_segment</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">perf_start</span>, xend <span class="op">=</span> <span class="va">perf_stop</span>, yend <span class="op">=</span> <span class="va">id</span><span class="op">)</span>, col <span class="op">=</span> <span class="st">"red"</span>, linewidth <span class="op">=</span> <span class="fl">3</span><span class="op">)</span> <span class="op">+</span></span>
@@ -578,49 +660,12 @@ window.Quarto = {
 </div>
 </div>
 </div>
-</section><section id="sec-multilevel-resampling" class="level2" data-number="10.6"><h2 data-number="10.6" class="anchored" data-anchor-id="sec-multilevel-resampling">
-<span class="header-section-number">10.6</span> Multi-Level Data</h2>
-<p>Returning to the orthodontal data from <a href="initial-data-splitting.html#sec-multilevel-splitting" class="quarto-xref"><span>Section 3.5</span></a>, we use the initial split:</p>
+<p><a href="https://aml4td.org/chapters/resampling.html#sec-time-series-resampling" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+</section><section id="sec-spatial-resampling" class="level2" data-number="10.9"><h2 data-number="10.9" class="anchored" data-anchor-id="sec-spatial-resampling">
+<span class="header-section-number">10.9</span> Spatial Data</h2>
+<p>We split the Ames data into a training and testing set back in <a href="initial-data-splitting.html#sec-spatial-splitting" class="quarto-xref"><span>Section 3.8</span></a> using this code:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">Orthodont</span>, package <span class="op">=</span> <span class="st">"nlme"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">93</span><span class="op">)</span></span>
-<span><span class="va">orth_split</span> <span class="op">&lt;-</span> <span class="fu">group_initial_split</span><span class="op">(</span><span class="va">Orthodont</span>, group <span class="op">=</span> <span class="va">Subject</span>, prop <span class="op">=</span> <span class="fl">2</span> <span class="op">/</span> <span class="fl">3</span><span class="op">)</span></span>
-<span><span class="va">orth_tr</span> <span class="op">&lt;-</span> <span class="fu">training</span><span class="op">(</span><span class="va">orth_split</span><span class="op">)</span></span>
-<span><span class="va">orth_te</span> <span class="op">&lt;-</span> <span class="fu">testing</span><span class="op">(</span><span class="va">orth_split</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>There are several resampling functions for these data in the <span class="pkg"><a href="https://cran.r-project.org/package=rsample">rsample</a></span> package, including: <code>group_vfold_cv()</code>, <code>group_bootstraps()</code>, and <code>group_mc_cv()</code>. For example:</p>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://vctrs.r-lib.org/">vctrs</a></span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Subjects in the training set: </span></span>
-<span><span class="fu"><a href="https://vctrs.r-lib.org/reference/vec_unique.html">vec_unique_count</a></span><span class="op">(</span><span class="va">orth_tr</span><span class="op">$</span><span class="va">Subject</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 18</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">714</span><span class="op">)</span></span>
-<span><span class="va">orth_rs</span> <span class="op">&lt;-</span> </span>
-<span>  <span class="fu">group_vfold_cv</span><span class="op">(</span><span class="va">orth_tr</span>, group <span class="op">=</span> <span class="va">Subject</span>, v <span class="op">=</span> <span class="fl">10</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
-<span>  <span class="fu">mutate</span><span class="op">(</span>num_subjects <span class="op">=</span> <span class="fu">map_int</span><span class="op">(</span><span class="va">splits</span>, <span class="op">~</span> <span class="fu"><a href="https://vctrs.r-lib.org/reference/vec_unique.html">vec_unique_count</a></span><span class="op">(</span><span class="fu">assessment</span><span class="op">(</span><span class="va">.x</span><span class="op">)</span><span class="op">$</span><span class="va">Subject</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">orth_rs</span></span>
-<span><span class="co">#&gt; # Group 10-fold cross-validation </span></span>
-<span><span class="co">#&gt; # A tibble: 10 × 3</span></span>
-<span><span class="co">#&gt;   splits         id         num_subjects</span></span>
-<span><span class="co">#&gt;   &lt;list&gt;         &lt;chr&gt;             &lt;int&gt;</span></span>
-<span><span class="co">#&gt; 1 &lt;split [64/8]&gt; Resample01            2</span></span>
-<span><span class="co">#&gt; 2 &lt;split [64/8]&gt; Resample02            2</span></span>
-<span><span class="co">#&gt; 3 &lt;split [64/8]&gt; Resample03            2</span></span>
-<span><span class="co">#&gt; 4 &lt;split [64/8]&gt; Resample04            2</span></span>
-<span><span class="co">#&gt; 5 &lt;split [64/8]&gt; Resample05            2</span></span>
-<span><span class="co">#&gt; 6 &lt;split [64/8]&gt; Resample06            2</span></span>
-<span><span class="co">#&gt; # ℹ 4 more rows</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>To leave a single subject out for each resample, we could have set <code>v</code> to be 18.</p>
-</section><section id="sec-spatial-resampling" class="level2" data-number="10.7"><h2 data-number="10.7" class="anchored" data-anchor-id="sec-spatial-resampling">
-<span class="header-section-number">10.7</span> Spatial Resampling</h2>
-<p>We split the Ames data into a training and testing set back in <a href="initial-data-splitting.html#sec-spatial-splitting" class="quarto-xref"><span>Section 3.7</span></a> using this code:</p>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/">sf</a></span><span class="op">)</span></span>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/">sf</a></span><span class="op">)</span></span>
 <span><span class="co">#&gt; Linking to GEOS 3.11.0, GDAL 3.5.3, PROJ 9.1.0; sf_use_s2() is TRUE</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tidymodels/spatialsample">spatialsample</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/EvolEcolGroup/tidysdm">tidysdm</a></span><span class="op">)</span></span>
@@ -645,7 +690,7 @@ window.Quarto = {
 </div>
 <p>The options for resampling are basically the same as the initial split. For example, with block resampling, we create a grid on the training set and allocate specific grids to specific assessment sets. Buffering can also be used for each resample. The <code><a href="https://spatialsample.tidymodels.org/reference/spatial_block_cv.html">spatial_block_cv()</a></code> function in the <span class="pkg"><a href="https://cran.r-project.org/package=spatialsample">spatialsample</a></span> package and has a <code>v</code> argument for the number of resamples:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">652</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">652</span><span class="op">)</span></span>
 <span><span class="va">ames_rs</span> <span class="op">&lt;-</span></span>
 <span>  <span class="fu"><a href="https://spatialsample.tidymodels.org/reference/spatial_block_cv.html">spatial_block_cv</a></span><span class="op">(</span></span>
 <span>    <span class="va">ames_tr</span>, </span>
@@ -669,7 +714,7 @@ window.Quarto = {
 </div>
 <p>There is an overall <code><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot()</a></code> method that can be used to show the grid:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot</a></span><span class="op">(</span><span class="va">ames_rs</span>, cex <span class="op">=</span> <span class="fl">1</span> <span class="op">/</span> <span class="fl">3</span>, show_grid <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot</a></span><span class="op">(</span><span class="va">ames_rs</span>, cex <span class="op">=</span> <span class="fl">1</span> <span class="op">/</span> <span class="fl">3</span>, show_grid <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure"><p><img src="../figures/ames-split-block-rs-all-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:90.0%"></p>
@@ -679,7 +724,7 @@ window.Quarto = {
 </div>
 <p>We can also <code><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot()</a></code> individual splits to see the analysis and assessment set.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot</a></span><span class="op">(</span><span class="va">ames_rs</span><span class="op">$</span><span class="va">splits</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>, cex <span class="op">=</span> <span class="fl">1</span> <span class="op">/</span> <span class="fl">2</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot</a></span><span class="op">(</span><span class="va">ames_rs</span><span class="op">$</span><span class="va">splits</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>, cex <span class="op">=</span> <span class="fl">1</span> <span class="op">/</span> <span class="fl">2</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure"><p><img src="../figures/ames-split-block-rs-single-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%"></p>
@@ -687,14 +732,54 @@ window.Quarto = {
 </div>
 </div>
 </div>
-</section><section id="sec-resampled-models" class="level2" data-number="10.8"><h2 data-number="10.8" class="anchored" data-anchor-id="sec-resampled-models">
-<span class="header-section-number">10.8</span> Estimating performance</h2>
+<p><a href="https://aml4td.org/chapters/resampling.html#sec-spatial-resampling" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+</section><section id="sec-multilevel-resampling" class="level2" data-number="10.10"><h2 data-number="10.10" class="anchored" data-anchor-id="sec-multilevel-resampling">
+<span class="header-section-number">10.10</span> Grouped or Multi-Level Data</h2>
+<p>Returning to the orthodontal data from <a href="initial-data-splitting.html#sec-multilevel-splitting" class="quarto-xref"><span>Section 3.7</span></a>, we use the initial split:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">Orthodont</span>, package <span class="op">=</span> <span class="st">"nlme"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">93</span><span class="op">)</span></span>
+<span><span class="va">orth_split</span> <span class="op">&lt;-</span> <span class="fu">group_initial_split</span><span class="op">(</span><span class="va">Orthodont</span>, group <span class="op">=</span> <span class="va">Subject</span>, prop <span class="op">=</span> <span class="fl">2</span> <span class="op">/</span> <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="va">orth_tr</span> <span class="op">&lt;-</span> <span class="fu">training</span><span class="op">(</span><span class="va">orth_split</span><span class="op">)</span></span>
+<span><span class="va">orth_te</span> <span class="op">&lt;-</span> <span class="fu">testing</span><span class="op">(</span><span class="va">orth_split</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>There are several resampling functions for these data in the <span class="pkg"><a href="https://cran.r-project.org/package=rsample">rsample</a></span> package, including: <code>group_vfold_cv()</code>, <code>group_bootstraps()</code>, and <code>group_mc_cv()</code>. For example:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://vctrs.r-lib.org/">vctrs</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Subjects in the training set: </span></span>
+<span><span class="fu"><a href="https://vctrs.r-lib.org/reference/vec_unique.html">vec_unique_count</a></span><span class="op">(</span><span class="va">orth_tr</span><span class="op">$</span><span class="va">Subject</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 18</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">714</span><span class="op">)</span></span>
+<span><span class="va">orth_rs</span> <span class="op">&lt;-</span> </span>
+<span>  <span class="fu">group_vfold_cv</span><span class="op">(</span><span class="va">orth_tr</span>, group <span class="op">=</span> <span class="va">Subject</span>, v <span class="op">=</span> <span class="fl">10</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu">mutate</span><span class="op">(</span>num_subjects <span class="op">=</span> <span class="fu">map_int</span><span class="op">(</span><span class="va">splits</span>, <span class="op">~</span> <span class="fu"><a href="https://vctrs.r-lib.org/reference/vec_unique.html">vec_unique_count</a></span><span class="op">(</span><span class="fu"><a href="https://rsample.tidymodels.org/reference/as.data.frame.rsplit.html">assessment</a></span><span class="op">(</span><span class="va">.x</span><span class="op">)</span><span class="op">$</span><span class="va">Subject</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">orth_rs</span></span>
+<span><span class="co">#&gt; # Group 10-fold cross-validation </span></span>
+<span><span class="co">#&gt; # A tibble: 10 × 3</span></span>
+<span><span class="co">#&gt;   splits         id         num_subjects</span></span>
+<span><span class="co">#&gt;   &lt;list&gt;         &lt;chr&gt;             &lt;int&gt;</span></span>
+<span><span class="co">#&gt; 1 &lt;split [64/8]&gt; Resample01            2</span></span>
+<span><span class="co">#&gt; 2 &lt;split [64/8]&gt; Resample02            2</span></span>
+<span><span class="co">#&gt; 3 &lt;split [64/8]&gt; Resample03            2</span></span>
+<span><span class="co">#&gt; 4 &lt;split [64/8]&gt; Resample04            2</span></span>
+<span><span class="co">#&gt; 5 &lt;split [64/8]&gt; Resample05            2</span></span>
+<span><span class="co">#&gt; 6 &lt;split [64/8]&gt; Resample06            2</span></span>
+<span><span class="co">#&gt; # ℹ 4 more rows</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>To leave a single subject out for each resample, we could have set <code>v</code> to be 18.</p>
+<p><a href="https://aml4td.org/chapters/resampling.html#sec-multilevel-resampling" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+</section><section id="sec-resampled-models" class="level2" data-number="10.11"><h2 data-number="10.11" class="anchored" data-anchor-id="sec-resampled-models">
+<span class="header-section-number">10.11</span> Estimating Performance</h2>
 <p>Now that we can create different types of resamples for our training set, how do we actually resample a model to get accurate performance statistics?</p>
 <p>tidymodels contains high-level functions for this purpose, so there is typically no need to loop over rows of the resampling objects to get the data sets, train the model, etc.</p>
 <p>The <code>fit_resamples()</code> function can do all of this for you. It takes a model (or workflow) in conjunction with a resampling object as inputs.</p>
 <p>To demonstrate, let’s re-use the concrete data and create an object for a simple 10-fold cross-validation:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">426</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">426</span><span class="op">)</span></span>
 <span><span class="va">concrete_split</span> <span class="op">&lt;-</span> <span class="fu">initial_split</span><span class="op">(</span><span class="va">concrete</span>, prop <span class="op">=</span> <span class="fl">3</span> <span class="op">/</span> <span class="fl">4</span><span class="op">)</span></span>
 <span><span class="va">concrete_tr</span> <span class="op">&lt;-</span> <span class="fu">training</span><span class="op">(</span><span class="va">concrete_split</span><span class="op">)</span></span>
 <span><span class="va">concrete_te</span> <span class="op">&lt;-</span> <span class="fu">testing</span><span class="op">(</span><span class="va">concrete_split</span><span class="op">)</span></span>
@@ -704,7 +789,7 @@ window.Quarto = {
 <p>Let’s use a Cubist model for the data. It creates a set of rules from the data (derived from a regression tree) and, for each rule, creates a corresponding linear regression for the training set points covered by the rule. In the end, a sample is predicted, perhaps using multiple rules, and the average of the linear regression models is used as the prediction.</p>
 <p>Usually, we use a boosting-like process called _model committees _to create an ensemble of rule sets. Instead, we will make a single rule set. We’ll need to load the <span class="pkg"><a href="https://cran.r-project.org/package=rules">rules</a></span> package to load this type of model into the <span class="pkg"><a href="https://cran.r-project.org/package=parsnip">parsnip</a></span> model database.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tidymodels/rules">rules</a></span><span class="op">)</span></span>
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tidymodels/rules">rules</a></span><span class="op">)</span></span>
 <span><span class="va">rules_spec</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://parsnip.tidymodels.org/reference/cubist_rules.html">cubist_rules</a></span><span class="op">(</span>committees <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>To specify the model in <code>fit_resamples()</code>, there are two options:</p>
@@ -716,7 +801,7 @@ window.Quarto = {
 <p>From here, we can run <code>fit_resamples()</code>. Note that the Cubist model does not use any random numbers. If it did, we would probably want to set the random number seed before using <code>fit_resamples()</code>.</p>
 <p>Our code:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">concrete_res</span> <span class="op">&lt;-</span> <span class="fu">fit_resamples</span><span class="op">(</span><span class="va">rules_spec</span>, <span class="va">compressive_strength</span> <span class="op">~</span> <span class="va">.</span>, resamples <span class="op">=</span> <span class="va">concrete_rs</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">concrete_res</span> <span class="op">&lt;-</span> <span class="fu">fit_resamples</span><span class="op">(</span><span class="va">rules_spec</span>, <span class="va">compressive_strength</span> <span class="op">~</span> <span class="va">.</span>, resamples <span class="op">=</span> <span class="va">concrete_rs</span><span class="op">)</span></span>
 <span><span class="va">concrete_res</span></span>
 <span><span class="co">#&gt; # Resampling results</span></span>
 <span><span class="co">#&gt; # 10-fold cross-validation </span></span>
@@ -734,7 +819,7 @@ window.Quarto = {
 <p>This looks a lot like our resampling object. There are some new columns. <code>.metrics</code> contains data frames with performance statistics for the particular resample. The <code>.notes</code> column contains any warnings or error messages that the model produced; none were produced by these 10 model fits. Note that, if there are errors, <code>fit_resamples()</code> does not stop computations.</p>
 <p>How can we get our performance estimates? To aggregate the data in this object, there is a set of <code>collect_*()</code> functions. The first is <code><a href="https://tune.tidymodels.org/reference/collect_predictions.html">collect_metrics()</a></code>. By default, it returns the averages of the resampled estimates:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">collect_metrics</span><span class="op">(</span><span class="va">concrete_res</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">collect_metrics</span><span class="op">(</span><span class="va">concrete_res</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 2 × 6</span></span>
 <span><span class="co">#&gt;   .metric .estimator   mean     n std_err .config             </span></span>
 <span><span class="co">#&gt;   &lt;chr&gt;   &lt;chr&gt;       &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;               </span></span>
@@ -743,7 +828,7 @@ window.Quarto = {
 </div>
 <p>Note the <code>n</code> and <code>std_err</code> columns. To get the per-resample estimates:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">collect_metrics</span><span class="op">(</span><span class="va">concrete_res</span>, summarize <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">collect_metrics</span><span class="op">(</span><span class="va">concrete_res</span>, summarize <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 20 × 5</span></span>
 <span><span class="co">#&gt;   id     .metric .estimator .estimate .config             </span></span>
 <span><span class="co">#&gt;   &lt;chr&gt;  &lt;chr&gt;   &lt;chr&gt;          &lt;dbl&gt; &lt;chr&gt;               </span></span>
@@ -757,8 +842,8 @@ window.Quarto = {
 </div>
 <p>If there were issues with the computations, <code>collect_notes(concrete_res)</code> would print a catalog of messages.</p>
 <p>Next, let’s look at a few customizations for <code>fit_resamples()</code>.</p>
-<section id="sec-parallel-resamples" class="level3" data-number="10.8.1"><h3 data-number="10.8.1" class="anchored" data-anchor-id="sec-parallel-resamples">
-<span class="header-section-number">10.8.1</span> Parallel processing</h3>
+<section id="sec-parallel-resamples" class="level3" data-number="10.11.1"><h3 data-number="10.11.1" class="anchored" data-anchor-id="sec-parallel-resamples">
+<span class="header-section-number">10.11.1</span> Parallel Processing</h3>
 <p>We fit 10 different Cubist models to 10 slightly different data sets. None of these computations depend on one another. This is the case of an “embarrassingly parallel” computing issue. We can increase our computational efficiency by running training the models on multiple “worker” processes on our computer(s).</p>
 <p>The <code>future</code> package can run the resamples in parallel. The <code><a href="https://future.futureverse.org/reference/plan.html">plan()</a></code> function sets the parallel processing engine. There are a few plans that can be used:</p>
 <ul>
@@ -770,25 +855,25 @@ window.Quarto = {
 <p>There are several other packages with plans: <span class="pkg"><a href="https://cran.r-project.org/package=future.batchtools">future.batchtools</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=future.callr">future.callr</a></span>, and <span class="pkg"><a href="https://cran.r-project.org/package=future.mirai">future.mirai</a></span>. The last is (as of this writing) experimental but shows great promise.</p>
 <p>Once we know a plan, we run the following code (once) before running operations that can be done in parallel:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://future.futureverse.org">future</a></span><span class="op">)</span></span>
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://future.futureverse.org">future</a></span><span class="op">)</span></span>
 <span><span class="fu">parallelly</span><span class="fu">::</span><span class="fu"><a href="https://parallelly.futureverse.org/reference/availableCores.html">availableCores</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; system </span></span>
 <span><span class="co">#&gt;     12</span></span>
 <span><span class="fu"><a href="https://future.futureverse.org/reference/plan.html">plan</a></span><span class="op">(</span><span class="st">"multisession"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>This will generally increase the efficiency of the resampling process.</p>
-</section><section id="other-options" class="level3" data-number="10.8.2"><h3 data-number="10.8.2" class="anchored" data-anchor-id="other-options">
-<span class="header-section-number">10.8.2</span> Other options</h3>
+</section><section id="sec-function-arguments" class="level3" data-number="10.11.2"><h3 data-number="10.11.2" class="anchored" data-anchor-id="sec-function-arguments">
+<span class="header-section-number">10.11.2</span> Other Options</h3>
 <p>Let’s look at some other options. First, note that the results did not include the trained models or the out-of-sample predicted results. This is the default because there is no way of knowing how much memory will be required to keep these values.</p>
 <p>We’ll talk about accessing the fitted models in the next sections.</p>
 <p>To save the predictions, we can use an R convention of a “control function.” These functions are reserved for specifying ancillary aspects of the computations. For <code>fit_resamples()</code> the control function is called <code>control_resamples()</code>, and it has an option called <code>save_pred</code>. When set to <code>TRUE</code>, the out-of-sample predictions are retained.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">ctrl</span> <span class="op">&lt;-</span> <span class="fu">control_resamples</span><span class="op">(</span>save_pred <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">ctrl</span> <span class="op">&lt;-</span> <span class="fu">control_resamples</span><span class="op">(</span>save_pred <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Let’s also estimate different metrics. As mentioned back in <span class="quarto-unresolved-ref">?sec-model-development</span>, a <em>metric set</em> is used to specify statistics for model efficacy. <code>fit_resamples()</code> has an option called <code>metrics</code> that we can use to pass in a metric set.</p>
+<p>Let’s also estimate different metrics. As mentioned back in <a href="whole-game.html#sec-model-development-whole-game" class="quarto-xref"><span>Section 2.5</span></a>, a <em>metric set</em> is used to specify statistics for model efficacy. <code>fit_resamples()</code> has an option called <code>metrics</code> that we can use to pass in a metric set.</p>
 <p>Let’s re-run our model with these two changes:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">reg_mtr</span> <span class="op">&lt;-</span> <span class="fu">metric_set</span><span class="op">(</span><span class="va">rmse</span>, <span class="va">rsq</span>, <span class="va">ccc</span>, <span class="va">mae</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">reg_mtr</span> <span class="op">&lt;-</span> <span class="fu">metric_set</span><span class="op">(</span><span class="va">rmse</span>, <span class="va">rsq</span>, <span class="va">ccc</span>, <span class="va">mae</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">concrete_opts_res</span> <span class="op">&lt;-</span> <span class="fu">fit_resamples</span><span class="op">(</span></span>
 <span>  <span class="va">rules_spec</span>,</span>
@@ -813,7 +898,7 @@ window.Quarto = {
 </div>
 <p>The expanded set of metrics:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">collect_metrics</span><span class="op">(</span><span class="va">concrete_opts_res</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">collect_metrics</span><span class="op">(</span><span class="va">concrete_opts_res</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 4 × 6</span></span>
 <span><span class="co">#&gt;   .metric .estimator   mean     n  std_err .config             </span></span>
 <span><span class="co">#&gt;   &lt;chr&gt;   &lt;chr&gt;       &lt;dbl&gt; &lt;int&gt;    &lt;dbl&gt; &lt;chr&gt;               </span></span>
@@ -825,7 +910,7 @@ window.Quarto = {
 <p>Notice that there is now a column named <code>.predictions</code>. The number of rows in the tibbles matches the sizes of the assessment sets shown in the <code>splits</code> column; these are the held-out predicted values.</p>
 <p>To obtain these values, there are <code><a href="https://tune.tidymodels.org/reference/collect_predictions.html">collect_predictions()</a></code> and <code><a href="https://generics.r-lib.org/reference/augment.html">augment()</a></code>:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">heldout_pred</span> <span class="op">&lt;-</span> <span class="fu">collect_predictions</span><span class="op">(</span><span class="va">concrete_opts_res</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">heldout_pred</span> <span class="op">&lt;-</span> <span class="fu">collect_predictions</span><span class="op">(</span><span class="va">concrete_opts_res</span><span class="op">)</span></span>
 <span><span class="va">heldout_pred</span></span>
 <span><span class="co">#&gt; # A tibble: 772 × 5</span></span>
 <span><span class="co">#&gt;   .pred id      .row compressive_strength .config             </span></span>
@@ -856,7 +941,7 @@ window.Quarto = {
 <p>From here, we can do exploratory data analysis to understand where our model can be improved.</p>
 <p>One other option: the <span class="pkg"><a href="https://cran.r-project.org/package=probably">probably</a></span> package has a simple interface for obtaining plots of the observed and predicted values (i.e., a regression “calibration” plot):</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tidymodels/probably">probably</a></span><span class="op">)</span></span>
+<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tidymodels/probably">probably</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://probably.tidymodels.org/reference/cal_plot_regression.html">cal_plot_regression</a></span><span class="op">(</span><span class="va">concrete_opts_res</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
@@ -866,12 +951,12 @@ window.Quarto = {
 </div>
 </div>
 <p>Not too bad but there are fairly large outliers that seem to occur more with mixtures corresponding to larger observed outcomes.</p>
-</section><section id="extracting-results" class="level3" data-number="10.8.3"><h3 data-number="10.8.3" class="anchored" data-anchor-id="extracting-results">
-<span class="header-section-number">10.8.3</span> Extracting results</h3>
+</section><section id="sec-extraction" class="level3" data-number="10.11.3"><h3 data-number="10.11.3" class="anchored" data-anchor-id="sec-extraction">
+<span class="header-section-number">10.11.3</span> Extracting Results</h3>
 <p>How can we get the 10 trained models? The control function has an option for <code>extract</code> that takes a user-defined function. The argument to this function (say <code>x</code>) is the fitted workflow. If you want the whole model, you can return <code>x</code>. Otherwise, we can run computations on the model and return whatever elements or statistics associated with the model that we are interested in.</p>
 <p>For example, a <code><a href="https://generics.r-lib.org/reference/tidy.html">tidy()</a></code> method for Cubist models will save information on the rules, the regression function for each rule, and various statistics. To get this, we need to pull the Cubist model out of the workflow and then run the tidy method on it. Here is an example of that:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">extract_rules</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
+<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">extract_rules</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">x</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
 <span>    <span class="fu"><a href="https://hardhat.tidymodels.org/reference/hardhat-extract.html">extract_fit_engine</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span></span>
 <span>    <span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html">tidy</a></span><span class="op">(</span><span class="op">)</span></span>
@@ -879,11 +964,11 @@ window.Quarto = {
 </div>
 <p>Now we update our control object:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">ctrl</span> <span class="op">&lt;-</span> <span class="fu">control_resamples</span><span class="op">(</span>save_pred <span class="op">=</span> <span class="cn">TRUE</span>, extract <span class="op">=</span> <span class="va">extract_rules</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">ctrl</span> <span class="op">&lt;-</span> <span class="fu">control_resamples</span><span class="op">(</span>save_pred <span class="op">=</span> <span class="cn">TRUE</span>, extract <span class="op">=</span> <span class="va">extract_rules</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>and pass it into <code>fit_resamples()</code>:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">concrete_ext_res</span> <span class="op">&lt;-</span> <span class="fu">fit_resamples</span><span class="op">(</span><span class="va">rules_spec</span>,</span>
+<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">concrete_ext_res</span> <span class="op">&lt;-</span> <span class="fu">fit_resamples</span><span class="op">(</span><span class="va">rules_spec</span>,</span>
 <span>                                  <span class="va">compressive_strength</span> <span class="op">~</span> <span class="va">.</span>,</span>
 <span>                                  resamples <span class="op">=</span> <span class="va">concrete_rs</span>,</span>
 <span>                                  control <span class="op">=</span> <span class="va">ctrl</span><span class="op">)</span></span>
@@ -903,7 +988,7 @@ window.Quarto = {
 </div>
 <p>The new output has an <code>.extracts</code> column. The rows contain a tibble that has the resampling information and another tibble, also with the name <code>.extracts</code>. We can pull that column out via:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">rule_extract</span> <span class="op">&lt;-</span> <span class="fu">collect_extracts</span><span class="op">(</span><span class="va">concrete_ext_res</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">rule_extract</span> <span class="op">&lt;-</span> <span class="fu">collect_extracts</span><span class="op">(</span><span class="va">concrete_ext_res</span><span class="op">)</span></span>
 <span><span class="va">rule_extract</span></span>
 <span><span class="co">#&gt; # A tibble: 10 × 3</span></span>
 <span><span class="co">#&gt;   id     .extracts         .config             </span></span>
@@ -918,7 +1003,7 @@ window.Quarto = {
 </div>
 <p>What is in a specific result?</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">rule_extract</span><span class="op">$</span><span class="va">.extracts</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
+<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">rule_extract</span><span class="op">$</span><span class="va">.extracts</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
 <span><span class="co">#&gt; # A tibble: 10 × 5</span></span>
 <span><span class="co">#&gt;   committee rule_num rule                                         estimate statistic</span></span>
 <span><span class="co">#&gt;       &lt;int&gt;    &lt;int&gt; &lt;chr&gt;                                        &lt;list&gt;   &lt;list&gt;   </span></span>
@@ -932,7 +1017,7 @@ window.Quarto = {
 </div>
 <p>To “flatten out” these results, we’ll <code>unnest()</code> the column of extracted results:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">rule_extract</span> <span class="op">&lt;-</span> </span>
+<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">rule_extract</span> <span class="op">&lt;-</span> </span>
 <span>  <span class="fu">collect_extracts</span><span class="op">(</span><span class="va">concrete_ext_res</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu">unnest</span><span class="op">(</span>col <span class="op">=</span> <span class="va">.extracts</span><span class="op">)</span></span>
 <span><span class="va">rule_extract</span></span>
@@ -949,7 +1034,7 @@ window.Quarto = {
 </div>
 <p>What could we do with these results? Let’s look at what is in the <code>statistics</code> tibble:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">rule_extract</span><span class="op">$</span><span class="va">statistic</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
+<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">rule_extract</span><span class="op">$</span><span class="va">statistic</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
 <span><span class="co">#&gt; # A tibble: 1 × 6</span></span>
 <span><span class="co">#&gt;   num_conditions coverage  mean   min   max error</span></span>
 <span><span class="co">#&gt;            &lt;dbl&gt;    &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;</span></span>
@@ -963,14 +1048,14 @@ window.Quarto = {
 <p>has 6 conditions.</p>
 <p>We can use a <code>mutate()</code> and a <code>map_int()</code> to pull out the frequency of terms included in the rules (captured by the <code>num_conditions</code> column).</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">conditions</span> <span class="op">&lt;-</span> </span>
+<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">conditions</span> <span class="op">&lt;-</span> </span>
 <span>  <span class="va">rule_extract</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu">mutate</span><span class="op">(</span>conditions <span class="op">=</span> <span class="fu">map_int</span><span class="op">(</span><span class="va">statistic</span>, <span class="op">~</span> <span class="va">.x</span><span class="op">$</span><span class="va">num_conditions</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu">select</span><span class="op">(</span><span class="va">id</span>, <span class="va">rule_num</span>, <span class="va">conditions</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Here is the distribution of the number of logical conditions that make up the rules:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">conditions</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">conditions</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu">count</span><span class="op">(</span><span class="va">conditions</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 6 × 2</span></span>
 <span><span class="co">#&gt;   conditions     n</span></span>
@@ -1066,8 +1151,6 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   });
   clipboard.on('success', onCopySuccess);
   if (window.document.getElementById('quarto-embedded-source-code-modal')) {
-    // For code content inside modals, clipBoardJS needs to be initialized with a container option
-    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
     const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
       text: getTextToCopy,
       container: window.document.getElementById('quarto-embedded-source-code-modal')
@@ -1178,7 +1261,6 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       if (window.Quarto?.typesetMath) {
         window.Quarto.typesetMath(note);
       }
-      // TODO in 1.5, we should make sure this works without a callout special case
       if (note.classList.contains("callout")) {
         return note.outerHTML;
       } else {

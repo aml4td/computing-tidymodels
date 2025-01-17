@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.6.3">
+<meta name="generator" content="quarto-1.6.39">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <title>1&nbsp; Introduction – Tidymodels Computing Supplement</title>
 <style>
@@ -67,10 +67,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-e26003cea8cd680ca0c55a263523d882.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light"><script id="quarto-search-options" type="application/json">{
+<link href="../site_libs/bootstrap/bootstrap-63f686b58216a7528468dd5cd819d44e.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light"><script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
   "collapse-after": 3,
@@ -274,8 +274,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
    
   <ul>
 <li><a href="#installation" id="toc-installation" class="nav-link active" data-scroll-target="#installation"><span class="header-section-number">1.1</span> Installation</a></li>
-  <li><a href="#loading-tidymodels" id="toc-loading-tidymodels" class="nav-link" data-scroll-target="#loading-tidymodels"><span class="header-section-number">1.2</span> Loading tidymodels</a></li>
-  <li><a href="#package-versions-and-reproducability" id="toc-package-versions-and-reproducability" class="nav-link" data-scroll-target="#package-versions-and-reproducability"><span class="header-section-number">1.3</span> Package Versions and Reproducability</a></li>
+  <li><a href="#sec-tidymodels-pkg" id="toc-sec-tidymodels-pkg" class="nav-link" data-scroll-target="#sec-tidymodels-pkg"><span class="header-section-number">1.2</span> Loading Tidymodels</a></li>
+  <li><a href="#sec-repro" id="toc-sec-repro" class="nav-link" data-scroll-target="#sec-repro"><span class="header-section-number">1.3</span> Package Versions and Reproducability</a></li>
   </ul></nav>
     </div>
 <!-- main -->
@@ -318,13 +318,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span>  <span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html">pak</a></span><span class="op">(</span><span class="st">"tidymodels"</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-</section><section id="loading-tidymodels" class="level2" data-number="1.2"><h2 data-number="1.2" class="anchored" data-anchor-id="loading-tidymodels">
-<span class="header-section-number">1.2</span> Loading tidymodels</h2>
+</section><section id="sec-tidymodels-pkg" class="level2" data-number="1.2"><h2 data-number="1.2" class="anchored" data-anchor-id="sec-tidymodels-pkg">
+<span class="header-section-number">1.2</span> Loading Tidymodels</h2>
 <p>Once you do that, load <span class="pkg"><a href="https://cran.r-project.org/package=tidymodels">tidymodels</a></span>:</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidymodels.tidymodels.org">tidymodels</a></span><span class="op">)</span></span>
 <span><span class="co">#&gt; ── Attaching packages ─────────────────────────────────────────── tidymodels 1.2.0 ──</span></span>
-<span><span class="co">#&gt; ✔ broom        1.0.6     ✔ recipes      1.1.0</span></span>
+<span><span class="co">#&gt; ✔ broom        1.0.7     ✔ recipes      1.1.0</span></span>
 <span><span class="co">#&gt; ✔ dials        1.3.0     ✔ rsample      1.2.1</span></span>
 <span><span class="co">#&gt; ✔ dplyr        1.1.4     ✔ tibble       3.2.1</span></span>
 <span><span class="co">#&gt; ✔ ggplot2      3.5.1     ✔ tidyr        1.3.1</span></span>
@@ -337,7 +337,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="co">#&gt; ✖ dplyr::filter()  masks stats::filter()</span></span>
 <span><span class="co">#&gt; ✖ dplyr::lag()     masks stats::lag()</span></span>
 <span><span class="co">#&gt; ✖ recipes::step()  masks stats::step()</span></span>
-<span><span class="co">#&gt; • Search for functions across packages at https://www.tidymodels.org/find/</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; • Use tidymodels_prefer() to resolve common conflicts.</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>The default output shows the packages that are automatically attached. There are a lot of functions in tidy models, but by loading this meta-package, you don’t have to remember which functions come from which packages.</p>
 <p>Note the lines at the bottom that messages like :</p>
@@ -389,7 +389,7 @@ To handle this, we have a function called <code><a href="https://tidymodels.tidy
 <span><span class="co">#&gt; ── Conflicts ───────────────────────────────────────────────── tidymodels_prefer() ──</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </details><p>If you want to know more about <em>why</em> tidymodels exists, we’ve written a bit about this in the <a href="https://www.tmwr.org/software-modeling">tidymodels book</a>. The second chapter describes how <a href="https://www.tmwr.org/tidyverse">tidyverse principles can be used for modeling</a>.</p>
-</section><section id="package-versions-and-reproducability" class="level2" data-number="1.3"><h2 data-number="1.3" class="anchored" data-anchor-id="package-versions-and-reproducability">
+</section><section id="sec-repro" class="level2" data-number="1.3"><h2 data-number="1.3" class="anchored" data-anchor-id="sec-repro">
 <span class="header-section-number">1.3</span> Package Versions and Reproducability</h2>
 <p>We will do our best to use versions of our packages corresponding to the CRAN versions. We can’t always do that, and, for many packages, a version number ending with a value in the 9000 range (e.g., version “1.1.4.9001”) means that it was a development version of the package and was most likely installed from a GitHub repository.</p>
 <p>At the end of each session, we’ll show which packages were loaded and used:</p>
@@ -398,33 +398,33 @@ To handle this, we have a function called <code><a href="https://tidymodels.tidy
 <span><span class="co">#&gt; ─ Session info ────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt;  setting  value</span></span>
 <span><span class="co">#&gt;  version  R version 4.4.1 (2024-06-14)</span></span>
-<span><span class="co">#&gt;  os       macOS Sonoma 14.6.1</span></span>
+<span><span class="co">#&gt;  os       macOS 15.1.1</span></span>
 <span><span class="co">#&gt;  system   aarch64, darwin20</span></span>
 <span><span class="co">#&gt;  ui       X11</span></span>
 <span><span class="co">#&gt;  language (EN)</span></span>
 <span><span class="co">#&gt;  collate  en_US.UTF-8</span></span>
 <span><span class="co">#&gt;  ctype    en_US.UTF-8</span></span>
 <span><span class="co">#&gt;  tz       America/New_York</span></span>
-<span><span class="co">#&gt;  date     2024-09-23</span></span>
-<span><span class="co">#&gt;  pandoc   3.2 @ /Applications/quarto/bin/tools/ (via rmarkdown)</span></span>
+<span><span class="co">#&gt;  date     2025-01-15</span></span>
+<span><span class="co">#&gt;  pandoc   3.4 @ /Applications/quarto/bin/tools/ (via rmarkdown)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ─ Packages ────────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt;  ! package      * version    date (UTC) lib source</span></span>
 <span><span class="co">#&gt;  P backports      1.5.0      2024-05-23 [?] CRAN (R 4.4.0)</span></span>
-<span><span class="co">#&gt;  P BiocManager    1.30.25    2024-08-28 [?] CRAN (R 4.4.1)</span></span>
-<span><span class="co">#&gt;  P broom        * 1.0.6      2024-05-17 [?] CRAN (R 4.4.0)</span></span>
+<span><span class="co">#&gt;  P BiocManager    1.30.23    2024-05-04 [?] CRAN (R 4.4.0)</span></span>
+<span><span class="co">#&gt;  P broom        * 1.0.7      2024-09-26 [?] RSPM</span></span>
 <span><span class="co">#&gt;  P cachem         1.1.0      2024-05-16 [?] CRAN (R 4.4.0)</span></span>
 <span><span class="co">#&gt;  P class          7.3-22     2023-05-03 [?] CRAN (R 4.4.1)</span></span>
 <span><span class="co">#&gt;  P cli            3.6.3      2024-06-21 [?] CRAN (R 4.4.0)</span></span>
 <span><span class="co">#&gt;  P codetools      0.2-20     2024-03-31 [?] CRAN (R 4.4.1)</span></span>
 <span><span class="co">#&gt;  P colorspace     2.1-1      2024-07-26 [?] RSPM</span></span>
 <span><span class="co">#&gt;  P conflicted     1.2.0      2023-02-01 [?] CRAN (R 4.4.0)</span></span>
-<span><span class="co">#&gt;  P data.table     1.16.0     2024-08-27 [?] RSPM</span></span>
+<span><span class="co">#&gt;  P data.table     1.16.4     2024-12-06 [?] CRAN (R 4.4.1)</span></span>
 <span><span class="co">#&gt;  P dials        * 1.3.0      2024-07-30 [?] RSPM</span></span>
 <span><span class="co">#&gt;  P DiceDesign     1.10       2023-12-07 [?] CRAN (R 4.4.0)</span></span>
-<span><span class="co">#&gt;  P digest         0.6.37     2024-08-19 [?] RSPM</span></span>
+<span><span class="co">#&gt;  P digest         0.6.36     2024-06-23 [?] CRAN (R 4.4.0)</span></span>
 <span><span class="co">#&gt;  P dplyr        * 1.1.4      2023-11-17 [?] CRAN (R 4.4.0)</span></span>
-<span><span class="co">#&gt;  P evaluate       1.0.0      2024-09-17 [?] CRAN (R 4.4.1)</span></span>
+<span><span class="co">#&gt;  P evaluate       0.23       2023-11-01 [?] CRAN (R 4.4.0)</span></span>
 <span><span class="co">#&gt;  P fansi          1.0.6      2023-12-08 [?] CRAN (R 4.4.0)</span></span>
 <span><span class="co">#&gt;  P fastmap        1.2.0      2024-05-15 [?] CRAN (R 4.4.0)</span></span>
 <span><span class="co">#&gt;  P foreach        1.5.2      2022-02-02 [?] CRAN (R 4.4.0)</span></span>
@@ -444,8 +444,8 @@ To handle this, we have a function called <code><a href="https://tidymodels.tidy
 <span><span class="co">#&gt;  P infer        * 1.0.7      2024-03-25 [?] CRAN (R 4.4.0)</span></span>
 <span><span class="co">#&gt;  P ipred          0.9-15     2024-07-18 [?] RSPM</span></span>
 <span><span class="co">#&gt;  P iterators      1.0.14     2022-02-05 [?] CRAN (R 4.4.0)</span></span>
-<span><span class="co">#&gt;  P jsonlite       1.8.9      2024-09-20 [?] CRAN (R 4.4.1)</span></span>
-<span><span class="co">#&gt;  P knitr          1.48       2024-07-07 [?] CRAN (R 4.4.0)</span></span>
+<span><span class="co">#&gt;  P jsonlite       1.8.8      2023-12-04 [?] CRAN (R 4.4.0)</span></span>
+<span><span class="co">#&gt;  P knitr          1.49       2024-11-08 [?] CRAN (R 4.4.1)</span></span>
 <span><span class="co">#&gt;  P lattice        0.22-6     2024-03-20 [?] CRAN (R 4.4.1)</span></span>
 <span><span class="co">#&gt;  P lava           1.8.0      2024-03-05 [?] CRAN (R 4.4.0)</span></span>
 <span><span class="co">#&gt;  P lhs            1.2.0      2024-06-30 [?] CRAN (R 4.4.0)</span></span>
@@ -453,12 +453,12 @@ To handle this, we have a function called <code><a href="https://tidymodels.tidy
 <span><span class="co">#&gt;  P listenv        0.9.1      2024-01-29 [?] CRAN (R 4.4.0)</span></span>
 <span><span class="co">#&gt;  P lubridate      1.9.3      2023-09-27 [?] CRAN (R 4.4.0)</span></span>
 <span><span class="co">#&gt;  P magrittr       2.0.3      2022-03-30 [?] CRAN (R 4.4.0)</span></span>
-<span><span class="co">#&gt;  P MASS           7.3-61     2024-06-13 [?] CRAN (R 4.4.0)</span></span>
+<span><span class="co">#&gt;  P MASS           7.3-64     2025-01-04 [?] CRAN (R 4.4.1)</span></span>
 <span><span class="co">#&gt;  P Matrix         1.7-0      2024-04-26 [?] CRAN (R 4.4.1)</span></span>
 <span><span class="co">#&gt;  P memoise        2.0.1      2021-11-26 [?] CRAN (R 4.4.0)</span></span>
 <span><span class="co">#&gt;  P modeldata    * 1.4.0      2024-06-19 [?] CRAN (R 4.4.0)</span></span>
 <span><span class="co">#&gt;  P munsell        0.5.1      2024-04-01 [?] CRAN (R 4.4.0)</span></span>
-<span><span class="co">#&gt;  P nnet           7.3-19     2023-05-03 [?] CRAN (R 4.4.1)</span></span>
+<span><span class="co">#&gt;  P nnet           7.3-20     2025-01-01 [?] CRAN (R 4.4.1)</span></span>
 <span><span class="co">#&gt;  P parallelly     1.38.0     2024-07-27 [?] RSPM</span></span>
 <span><span class="co">#&gt;  P parsnip      * 1.2.1      2024-03-22 [?] CRAN (R 4.4.0)</span></span>
 <span><span class="co">#&gt;  P pillar         1.9.0      2023-03-22 [?] CRAN (R 4.4.0)</span></span>
@@ -468,10 +468,10 @@ To handle this, we have a function called <code><a href="https://tidymodels.tidy
 <span><span class="co">#&gt;  P R6             2.5.1      2021-08-19 [?] CRAN (R 4.4.0)</span></span>
 <span><span class="co">#&gt;  P Rcpp           1.0.13     2024-07-17 [?] RSPM</span></span>
 <span><span class="co">#&gt;  P recipes      * 1.1.0      2024-07-04 [?] RSPM</span></span>
-<span><span class="co">#&gt;  P renv           1.0.8      2024-09-20 [?] CRAN (R 4.4.1)</span></span>
+<span><span class="co">#&gt;    renv           1.0.11     2024-10-12 [1] CRAN (R 4.4.1)</span></span>
 <span><span class="co">#&gt;  P rlang          1.1.4      2024-06-04 [?] CRAN (R 4.4.0)</span></span>
-<span><span class="co">#&gt;  P rmarkdown      2.28       2024-08-17 [?] CRAN (R 4.4.0)</span></span>
-<span><span class="co">#&gt;  P rpart          4.1.23     2023-12-05 [?] CRAN (R 4.4.0)</span></span>
+<span><span class="co">#&gt;  P rmarkdown      2.27       2024-05-17 [?] CRAN (R 4.4.0)</span></span>
+<span><span class="co">#&gt;  P rpart          4.1.24     2025-01-07 [?] CRAN (R 4.4.1)</span></span>
 <span><span class="co">#&gt;  P rsample      * 1.2.1      2024-03-25 [?] CRAN (R 4.4.0)</span></span>
 <span><span class="co">#&gt;  P rstudioapi     0.16.0     2024-03-24 [?] CRAN (R 4.4.0)</span></span>
 <span><span class="co">#&gt;  P scales       * 1.3.0      2023-11-28 [?] CRAN (R 4.4.0)</span></span>
@@ -482,15 +482,15 @@ To handle this, we have a function called <code><a href="https://tidymodels.tidy
 <span><span class="co">#&gt;  P tidyr        * 1.3.1      2024-01-24 [?] CRAN (R 4.4.0)</span></span>
 <span><span class="co">#&gt;  P tidyselect     1.2.1      2024-03-11 [?] CRAN (R 4.4.0)</span></span>
 <span><span class="co">#&gt;  P timechange     0.3.0      2024-01-18 [?] CRAN (R 4.4.0)</span></span>
-<span><span class="co">#&gt;  P timeDate       4041.110   2024-09-22 [?] CRAN (R 4.4.1)</span></span>
+<span><span class="co">#&gt;  P timeDate       4032.109   2023-12-14 [?] CRAN (R 4.4.0)</span></span>
 <span><span class="co">#&gt;  P tune         * 1.2.1      2024-04-18 [?] CRAN (R 4.4.0)</span></span>
 <span><span class="co">#&gt;  P utf8           1.2.4      2023-10-22 [?] CRAN (R 4.4.0)</span></span>
 <span><span class="co">#&gt;  P vctrs          0.6.5      2023-12-01 [?] CRAN (R 4.4.0)</span></span>
 <span><span class="co">#&gt;  P withr          3.0.1      2024-07-31 [?] RSPM</span></span>
 <span><span class="co">#&gt;  P workflows    * 1.1.4      2024-02-19 [?] CRAN (R 4.4.0)</span></span>
 <span><span class="co">#&gt;  P workflowsets * 1.1.0      2024-03-21 [?] CRAN (R 4.4.0)</span></span>
-<span><span class="co">#&gt;  P xfun           0.47       2024-08-17 [?] CRAN (R 4.4.0)</span></span>
-<span><span class="co">#&gt;  P yaml           2.3.10     2024-07-26 [?] CRAN (R 4.4.0)</span></span>
+<span><span class="co">#&gt;  P xfun           0.49       2024-10-31 [?] CRAN (R 4.4.1)</span></span>
+<span><span class="co">#&gt;  P yaml           2.3.8      2023-12-11 [?] CRAN (R 4.4.0)</span></span>
 <span><span class="co">#&gt;  P yardstick    * 1.3.1      2024-03-21 [?] CRAN (R 4.4.0)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  [1] /Users/max/content/computing-tidymodels/renv/library/macos/R-4.4/aarch64-apple-darwin20</span></span>
@@ -589,8 +589,6 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   });
   clipboard.on('success', onCopySuccess);
   if (window.document.getElementById('quarto-embedded-source-code-modal')) {
-    // For code content inside modals, clipBoardJS needs to be initialized with a container option
-    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
     const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
       text: getTextToCopy,
       container: window.document.getElementById('quarto-embedded-source-code-modal')
@@ -701,7 +699,6 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       if (window.Quarto?.typesetMath) {
         window.Quarto.typesetMath(note);
       }
-      // TODO in 1.5, we should make sure this works without a callout special case
       if (note.classList.contains("callout")) {
         return note.outerHTML;
       } else {

@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.6.3">
+<meta name="generator" content="quarto-1.6.39">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <title>5&nbsp; Transforming Numeric Predictors – Tidymodels Computing Supplement</title>
 <style>
@@ -67,10 +67,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-e26003cea8cd680ca0c55a263523d882.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light"><script id="quarto-search-options" type="application/json">{
+<link href="../site_libs/bootstrap/bootstrap-63f686b58216a7528468dd5cd819d44e.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/quarto-contrib/fontawesome6-1.2.0/all.min.css" rel="stylesheet">
+<link href="../site_libs/quarto-contrib/fontawesome6-1.2.0/latex-fontsize.css" rel="stylesheet"><script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
   "collapse-after": 3,
@@ -304,9 +306,9 @@ window.Quarto = {
   <li><a href="#sec-recipe-intro" id="toc-sec-recipe-intro" class="nav-link" data-scroll-target="#sec-recipe-intro"><span class="header-section-number">5.4</span> What is a Recipe?</a></li>
   <li><a href="#sec-recipe-skewness" id="toc-sec-recipe-skewness" class="nav-link" data-scroll-target="#sec-recipe-skewness"><span class="header-section-number">5.5</span> Resolving Skewness</a></li>
   <li><a href="#sec-recipe-selectors" id="toc-sec-recipe-selectors" class="nav-link" data-scroll-target="#sec-recipe-selectors"><span class="header-section-number">5.6</span> More on Recipe Selectors</a></li>
-  <li><a href="#sec-recipe-standardize" id="toc-sec-recipe-standardize" class="nav-link" data-scroll-target="#sec-recipe-standardize"><span class="header-section-number">5.7</span> Standardizing to a common scale</a></li>
+  <li><a href="#sec-recipe-standardize" id="toc-sec-recipe-standardize" class="nav-link" data-scroll-target="#sec-recipe-standardize"><span class="header-section-number">5.7</span> Standardizing to a Common Scale</a></li>
   <li><a href="#sec-recipe-spatialp-sign" id="toc-sec-recipe-spatialp-sign" class="nav-link" data-scroll-target="#sec-recipe-spatialp-sign"><span class="header-section-number">5.8</span> Spatial Sign</a></li>
-  <li><a href="#sec-recipe-resources" id="toc-sec-recipe-resources" class="nav-link" data-scroll-target="#sec-recipe-resources"><span class="header-section-number">5.9</span> Other resources for learning about recipes</a></li>
+  <li><a href="#sec-recipe-resources" id="toc-sec-recipe-resources" class="nav-link" data-scroll-target="#sec-recipe-resources"><span class="header-section-number">5.9</span> Other Resources for Learning About Recipes</a></li>
   </ul></nav>
     </div>
 <!-- main -->
@@ -536,9 +538,9 @@ window.Quarto = {
 <span></span>
 <span><span class="co"># The number of objects in the session used to create this web page (up to now):</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ls.html">ls</a></span><span class="op">(</span>envir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/environment.html">environment</a></span><span class="op">(</span><span class="va">f_12</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 24</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; [1] 25</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>If an object that used <code>f_12</code> is saved to disk, it will also contain the 24 objects in the global environment. If any of these objects are large, it can unintentionally make the saved data object large. Note that using the base function <code><a href="https://rdrr.io/r/utils/object.size.html">object.size()</a></code> will not take into account anything stored in the environment (so the binary file size is underestimated). <code><a href="https://lobstr.r-lib.org/reference/obj_size.html">lobstr::obj_size()</a></code> will give a more accurate estimate.</p>
+<p>If an object that used <code>f_12</code> is saved to disk, it will also contain the 25 objects in the global environment. If any of these objects are large, it can unintentionally make the saved data object large. Note that using the base function <code><a href="https://rdrr.io/r/utils/object.size.html">object.size()</a></code> will not take into account anything stored in the environment (so the binary file size is underestimated). <code><a href="https://lobstr.r-lib.org/reference/obj_size.html">lobstr::obj_size()</a></code> will give a more accurate estimate.</p>
 <p>The <span class="pkg"><a href="https://cran.r-project.org/package=butcher">butcher</a></span> package has tools to strip off these unneeded objects from formulas (or objects that contain formulas). Also, <code><a href="https://butcher.tidymodels.org/reference/weigh.html">butcher::weigh()</a></code> returns a tibble with the size of each element contained in the object (if any).</p>
 </section><section id="sec-recipe-intro" class="level2" data-number="5.4"><h2 data-number="5.4" class="anchored" data-anchor-id="sec-recipe-intro">
 <span class="header-section-number">5.4</span> What is a Recipe?</h2>
@@ -689,6 +691,7 @@ window.Quarto = {
 <div class="sourceCode" id="cb26"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">recipe</span><span class="op">(</span><span class="va">Sale_Price</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">ames_train</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
 <span>  <span class="fu">step_mutate</span><span class="op">(</span>Lot_Area <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">log10</a></span><span class="op">(</span><span class="va">Lot_Area</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Other single variable transformations can be found in the following R packages: <span class="pkg"><a href="https://cran.r-project.org/package=car">car</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=trafo">trafo</a></span>, and <span class="pkg"><a href="https://cran.r-project.org/package=Transform">Transform</a></span>.</p>
+<p><a href="https://aml4td.org/chapters/numeric-predictors.html#sec-skewness" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section><section id="sec-recipe-selectors" class="level2" data-number="5.6"><h2 data-number="5.6" class="anchored" data-anchor-id="sec-recipe-selectors">
 <span class="header-section-number">5.6</span> More on Recipe Selectors</h2>
 <p>The previous section showed a recipe step that operated on a single column. You can select one or more predictors in a variety of different ways within a recipe:</p>
@@ -708,7 +711,7 @@ window.Quarto = {
 <p>This is important for a few reasons. Some steps can combine or eliminate columns. A recipe should be fault tolerant; if the previous step removed column <code>A</code> and the next step strictly requires it, it will fail. However, if <code>any_of(c("A"))</code> is used, it will not <a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>.</p>
 <p>There is a <a href="https://recipes.tidymodels.org/reference/selections.html">documentation page</a> for recipe selectors as well as the <a href="https://recipes.tidymodels.org/reference/has_role.html">reference page</a>.</p>
 </section><section id="sec-recipe-standardize" class="level2" data-number="5.7"><h2 data-number="5.7" class="anchored" data-anchor-id="sec-recipe-standardize">
-<span class="header-section-number">5.7</span> Standardizing to a common scale</h2>
+<span class="header-section-number">5.7</span> Standardizing to a Common Scale</h2>
 <p>The two main steps for standardizing columns to have the same units are <code>step_normalize()</code> and <code>step_range()</code>. A common pattern for the former is:</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb27"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">norm_rec</span> <span class="op">&lt;-</span> </span>
@@ -737,6 +740,7 @@ window.Quarto = {
 <p>We recycled the previous recipe, which has already been trained. Note that in the output above, only the first step is labeled as “<code>Trained</code>”. When we run <code>prep()</code> on this recipe, it only estimates the remaining two steps.</p>
 <p>Again, once we prep(are) the recipe, we can use <code>bake()</code> to get the normalized data.</p>
 <p>Another important point is that recipes are designed to utilize different data sets appropriately. The training set is used with <code>prep()</code> and ensures that all the estimations are based on it. There is, as is appropriate, no re-estimation of quantities when new data are processed.</p>
+<p><a href="https://aml4td.org/chapters/numeric-predictors.html#sec-common-scale" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section><section id="sec-recipe-spatialp-sign" class="level2" data-number="5.8"><h2 data-number="5.8" class="anchored" data-anchor-id="sec-recipe-spatialp-sign">
 <span class="header-section-number">5.8</span> Spatial Sign</h2>
 <p>Unsurprisingly, the step to compute the spatial sign is <code>step_spatialsign()</code>. It projects two or more numeric columns onto a multidimensional hypersphere. The resulting data has columns the same name as the input:</p>
@@ -776,8 +780,9 @@ window.Quarto = {
 </div>
 </div>
 </div>
+<p><a href="https://aml4td.org/chapters/numeric-predictors.html#sec-spatial-sign" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section><section id="sec-recipe-resources" class="level2" data-number="5.9"><h2 data-number="5.9" class="anchored" data-anchor-id="sec-recipe-resources">
-<span class="header-section-number">5.9</span> Other resources for learning about recipes</h2>
+<span class="header-section-number">5.9</span> Other Resources for Learning About Recipes</h2>
 <ul>
 <li>
 <code>tidymodels.org</code>: <a href="https://www.tidymodels.org/start/recipes/"><em>Preprocess your data with recipes</em></a>
@@ -885,8 +890,6 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   });
   clipboard.on('success', onCopySuccess);
   if (window.document.getElementById('quarto-embedded-source-code-modal')) {
-    // For code content inside modals, clipBoardJS needs to be initialized with a container option
-    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
     const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
       text: getTextToCopy,
       container: window.document.getElementById('quarto-embedded-source-code-modal')
@@ -997,7 +1000,6 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       if (window.Quarto?.typesetMath) {
         window.Quarto.typesetMath(note);
       }
-      // TODO in 1.5, we should make sure this works without a callout special case
       if (note.classList.contains("callout")) {
         return note.outerHTML;
       } else {

@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.6.3">
+<meta name="generator" content="quarto-1.6.39">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <title>9&nbsp; Overfitting – Tidymodels Computing Supplement</title>
 <style>
@@ -67,10 +67,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-e26003cea8cd680ca0c55a263523d882.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light"><script id="quarto-search-options" type="application/json">{
+<link href="../site_libs/bootstrap/bootstrap-63f686b58216a7528468dd5cd819d44e.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light"><script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
   "collapse-after": 3,
@@ -300,9 +300,9 @@ window.Quarto = {
   <ul>
 <li><a href="#requirements" id="toc-requirements" class="nav-link active" data-scroll-target="#requirements"><span class="header-section-number">9.1</span> Requirements</a></li>
   <li><a href="#sec-tuning-parameters" id="toc-sec-tuning-parameters" class="nav-link" data-scroll-target="#sec-tuning-parameters"><span class="header-section-number">9.2</span> Tuning Paramters</a></li>
-  <li><a href="#marking-parameters-for-optimization" id="toc-marking-parameters-for-optimization" class="nav-link" data-scroll-target="#marking-parameters-for-optimization"><span class="header-section-number">9.3</span> Marking Parameters for Optimization</a></li>
-  <li><a href="#parameter-functions" id="toc-parameter-functions" class="nav-link" data-scroll-target="#parameter-functions"><span class="header-section-number">9.4</span> Parameter Functions</a></li>
-  <li><a href="#sets-of-parameters" id="toc-sets-of-parameters" class="nav-link" data-scroll-target="#sets-of-parameters"><span class="header-section-number">9.5</span> Sets of Parameters</a></li>
+  <li><a href="#sec-tag-for-tuning" id="toc-sec-tag-for-tuning" class="nav-link" data-scroll-target="#sec-tag-for-tuning"><span class="header-section-number">9.3</span> Marking Parameters for Optimization</a></li>
+  <li><a href="#sec-param-functions" id="toc-sec-param-functions" class="nav-link" data-scroll-target="#sec-param-functions"><span class="header-section-number">9.4</span> Parameter Functions</a></li>
+  <li><a href="#sec-param-sets" id="toc-sec-param-sets" class="nav-link" data-scroll-target="#sec-param-sets"><span class="header-section-number">9.5</span> Sets of Parameters</a></li>
   </ul></nav>
     </div>
 <!-- main -->
@@ -382,7 +382,7 @@ window.Quarto = {
 <span><span class="va">pls_nnet_wflow</span> <span class="op">&lt;-</span> <span class="fu">workflow</span><span class="op">(</span><span class="va">pls_rec</span>, <span class="va">nnet_spec</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We’ve filled in specific values for each of these arguments, although we don’t know if these are best that we can do.</p>
-</section><section id="marking-parameters-for-optimization" class="level2" data-number="9.3"><h2 data-number="9.3" class="anchored" data-anchor-id="marking-parameters-for-optimization">
+</section><section id="sec-tag-for-tuning" class="level2" data-number="9.3"><h2 data-number="9.3" class="anchored" data-anchor-id="sec-tag-for-tuning">
 <span class="header-section-number">9.3</span> Marking Parameters for Optimization</h2>
 <p>To tune these parameters, we can give them a value of the function <code>tune()</code>. This special function just returns an expression with the value “<code>tune()</code>”. For example:</p>
 <div class="cell" data-layout-align="center">
@@ -414,7 +414,7 @@ window.Quarto = {
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/str.html">str</a></span><span class="op">(</span><span class="fu">tune</span><span class="op">(</span><span class="st">"#PCA components"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  language tune("#PCA components")</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>This is useful when the pipeline has two arguments with the same name. For example, if you wanted to use splines for two predictors but allow them to have different degrees of freedom, the resulting set of parameters would not be unique since both of them would have the default label of <code>deg_free</code>. In this case, one recipe step could use <code>tune(“predictor 1 deg free”)</code> and another could be <code>tune(“predictor 2 deg free”)</code>.</p>
+<p>This is useful when the pipeline has two arguments with the same name. For example, if you wanted to use splines for two predictors but allow them to have different degrees of freedom, the resulting set of parameters would not be unique since both of them would have the default label of <code>deg_free</code>. In this case, one recipe step could use <code>tune("predictor 1 deg free")</code> and another could be <code>tune("predictor 2 deg free")</code>.</p>
 <p>Engine arguments are set by <code>set_engine()</code>. For example:</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">nnet_spec</span> <span class="op">&lt;-</span></span>
@@ -430,7 +430,7 @@ window.Quarto = {
 <span></span>
 <span><span class="va">pls_nnet_wflow</span> <span class="op">&lt;-</span> <span class="fu">workflow</span><span class="op">(</span><span class="va">pls_rec</span>, <span class="va">nnet_spec</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-</section><section id="parameter-functions" class="level2" data-number="9.4"><h2 data-number="9.4" class="anchored" data-anchor-id="parameter-functions">
+</section><section id="sec-param-functions" class="level2" data-number="9.4"><h2 data-number="9.4" class="anchored" data-anchor-id="sec-param-functions">
 <span class="header-section-number">9.4</span> Parameter Functions</h2>
 <p>Each tuning parameter has a corresponding function from the <span class="pkg"><a href="https://cran.r-project.org/package=dials">dials</a></span> package containing information on the parameter type, parameter ranges (or possible values), and other data.</p>
 <p>For example, the function for the <code>penalty</code> argument is:</p>
@@ -482,7 +482,7 @@ window.Quarto = {
 <span><span class="fu">value_seq</span><span class="op">(</span><span class="fu">hidden_units</span><span class="op">(</span><span class="op">)</span>, n <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1]  1  4  7 10</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-</section><section id="sets-of-parameters" class="level2" data-number="9.5"><h2 data-number="9.5" class="anchored" data-anchor-id="sets-of-parameters">
+</section><section id="sec-param-sets" class="level2" data-number="9.5"><h2 data-number="9.5" class="anchored" data-anchor-id="sec-param-sets">
 <span class="header-section-number">9.5</span> Sets of Parameters</h2>
 <p>For our pipeline <code>pls_nnet_wflow</code>, we can extract a <em>parameter set</em> that collects all of the parameters and their suggested information. There is a function to do this:</p>
 <div class="cell" data-layout-align="center">
@@ -508,7 +508,7 @@ window.Quarto = {
 <span><span class="co">#&gt;      pca comps      num_comp nparam[+]</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>The difference in the <code>type</code> and <code>identifier</code> columns only occurs when the <code>tune()</code> value has a label (as with the final row).</p>
-<p>The output <code>”nparam[+]”</code> indicates a numeric parameter, and the plus indicates that it is fully specified. If our pipeline had used <span class="math inline">\(m_{try}\)</span>, that value would show <code>"nparam[?]”</code>. The rate schedule is a qualitative parameter and has a label of <code>"dparam[+]"</code> (“d” for discrete).</p>
+<p>The output <code>"nparam[+]"</code> indicates a numeric parameter, and the plus indicates that it is fully specified. If our pipeline had used <span class="math inline">\(m_{try}\)</span>, that value would show <code>"nparam[?]"</code>. The rate schedule is a qualitative parameter and has a label of <code>"dparam[+]"</code> (“d” for discrete).</p>
 <p>Let’s look at the information for the learning rate parameter by viewing the parameter information set by tidymodels. It is different than the default:</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">pls_nnet_param</span> <span class="op">%&gt;%</span> </span>
@@ -637,8 +637,6 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   });
   clipboard.on('success', onCopySuccess);
   if (window.document.getElementById('quarto-embedded-source-code-modal')) {
-    // For code content inside modals, clipBoardJS needs to be initialized with a container option
-    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
     const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
       text: getTextToCopy,
       container: window.document.getElementById('quarto-embedded-source-code-modal')
@@ -749,7 +747,6 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       if (window.Quarto?.typesetMath) {
         window.Quarto.typesetMath(note);
       }
-      // TODO in 1.5, we should make sure this works without a callout special case
       if (note.classList.contains("callout")) {
         return note.outerHTML;
       } else {
