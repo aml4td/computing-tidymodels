@@ -92,6 +92,8 @@ glimpse(ames)
 
 tidymodels requires that, for outcome data, any basic transformations should occur before data splitting. 
 
+`r back("initial-data-splitting.html#sec-ames-intro")`
+
 ## Simple Data Splitting  {#sec-basic-splitting}
 
 There are a few main functions for an initial split: 
@@ -127,6 +129,8 @@ We won't touch on `initial_time_split()` here but only mention that it takes the
 
 `group_initial_split()` and `initial_validation_split()` are discussed in more detail below.
 
+`r back("initial-data-splitting.html#sec-basic-splitting")`
+
 ## Using the Outcome  {#sec-split-with-outcome}
 
 For the Ames data, we know that the distribution of sale prices has some outlying points. To deal with this, we can use a stratified split (on the outcome) using 5 quantiles of the data in `ames`: 
@@ -140,6 +144,8 @@ ames_block_split
 ```
   
 Nothing else changes; the same functions can be used to access the training and testing data. 
+
+`r back("initial-data-splitting.html#sec-split-with-outcome")`
 
 ## Using the Predictors  {#sec-split-with-predictors}
 
@@ -204,6 +210,8 @@ selected_data %>%
   theme_bw()
 ```
 
+`r back("initial-data-splitting.html#sec-split-with-predictors")`
+
 ## Validation Sets  {#sec-three-way-split}
 
 To add a validation set at the outset, `initial_validation_split()` works the same as `initial_split()`. The `prop` argument requires _two values_ now: the first is the training set proportion, and the second is for the validation set. In this example below, we add 80% to training, 10% to validation, and the remaining 10% to the testing set: 
@@ -228,6 +236,8 @@ ames_test  <- testing(ames_val_split)
 `rsample::initial_validation_time_split()` does the same thing but based on the ordering of the data (as opposed to random selection). 
 
 Suppose a data frame had 100 rows. Using `prop = c(0.8, 0.1)` would place the first 80 rows into training, the next 10 into validation, and the last 10 into testing. Keeping the data appropriately ordered is important when using validation sets in tidymodels. 
+
+`r back("initial-data-splitting.html#sec-three-way-split")`
 
 ## Multi-Level Data  {#sec-multilevel-splitting}
 
@@ -267,6 +277,8 @@ subjects_test  <- unique(orth_te$Subject)
 
 intersect(subjects_train, subjects_test)
 ```
+
+`r back("initial-data-splitting.html#sec-multilevel-splitting")`
 
 ## Splitting Spatial Data {#sec-spatial-splitting}
 
@@ -361,3 +373,6 @@ autoplot(ames_block_buff_split, cex = 1 / 2) +
 ```
 
 As with the previous methods, the `training()` and `testing()` functions are used to obtain those data sets. 
+
+`r back("initial-data-splitting.html#sec-spatial-splitting")`
+

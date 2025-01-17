@@ -87,6 +87,8 @@ hotel_rate_test  <- testing(hotel_rate_split)
 
 `initial_time_split()` will reserve that most recent 25% for the test set. It assumes that the data are arranged in time and takes that last part of the data for testing (assumed to be the most recent). 
 
+`r back("categorical-predictors.html#sec-hotel-rates")`
+
 ## Simple Indicator Variables {#sec-indicators}
 
 We'll look at two primary methods for creating indicator (a.k.a. "dummy") variables. 
@@ -188,6 +190,8 @@ Also, the naming of features is more rational, with names and levels separated b
 
 There is also an option to produce one-hot encodings called... `one_hot`.
 
+`r back("categorical-predictors.html#sec-indicators")`
+
 ## Novel Categories {#sec-recipe-novel}
 
 When we think the recipe or model will encounter new values of a factor predictor, we can use `step_novel()` to add a new factor level: 
@@ -204,6 +208,8 @@ recipe(avg_price_per_room ~ customer_type, data = hotel_rate_train) %>%
 ```
 
 For the training set, this new level will never have any data associated with it. 
+
+`r back("categorical-predictors.html#sec-novel-categories")`
 
 ## "Othering" {#sec-recipe-other}
 
@@ -225,6 +231,8 @@ recipe(avg_price_per_room ~ agent, data = hotel_rate_train) %>%
 
 If you are interested in which levels are combined, the `tidy()` method on the recipe can tell you. 
 
+`r back("categorical-predictors.html#sec-other")`
+
 ## Feature Hashing {#sec-recipe-hashing}
 
 Feature hashing converts qualitative predictors to a set of binary indicators based solely on the value of their category. It is most useful when many categories and/or novel levels might be encountered. 
@@ -240,6 +248,8 @@ recipe(avg_price_per_room ~ agent, data = hotel_rate_train) %>%
   prep() %>% 
   bake(new_data = NULL, contains("agent")) 
 ```
+
+`r back("categorical-predictors.html#sec-feature-hashing")`
 
 ## Effect Encodings  {#sec-recipe-effect-encode}
 
@@ -286,6 +296,8 @@ bake(encoded_agent_rec, hotel_rate_test) %>%
 
 For categorical outcomes, the effect estimate is the log-odds of an event (the first factor level).
 
+`r back("categorical-predictors.html#sec-effect-encodings")`
+
 ## Supervised Combining of Categories  {#sec-recipe-collapse}
 
 To [collapse](https://aml4td.org/chapters/categorical-predictors.html#sec-combining-categories) a large number of factor levels to a smaller set using a supervised model, we can use `step_collapse_cart()`  in the `r pkg(embed)` package. 
@@ -322,6 +334,8 @@ There are two main tuning parameters (described later in section TODO):
  - minimum n: the minimum number of rows in a group to enable it to keep splitting. Smaller values should result in more groupings. 
  
 These values can be tuned. 
+
+`r back("categorical-predictors.html#sec-combining-categories")`
 
 ## Working with Ordinal Predictors  {#sec-recipe-ordinal}
 
@@ -368,6 +382,8 @@ recipe(~ quality, data = quality) %>%
 ```
 
 `step_integer()` does the same for either type of factor but converts them to consecutive one-based integers.  
+
+`r back("categorical-predictors.html#sec-encodings-for-ordinal-predictors")`
 
 ## Other Relevant Recipe Steps {#sec-other-recipe-steps}
 

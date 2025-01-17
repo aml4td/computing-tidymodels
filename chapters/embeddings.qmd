@@ -115,6 +115,8 @@ barley_rec
 
 If you use a recipe, most of the embedding methods can be computed with a common interface. The recipe step functions are mostly in the `r pkg(recipes)` package, although some live in "side packages," such as the `r pkg(embed)` package. We’ll be clear about which package is needed for each. 
 
+`r back("embeddings.html#sec-barley")`
+
 ## Linear Transformations  {#sec-linear-embed}
 
 We'll look at the three _linear_ methods described in the text. 
@@ -200,6 +202,8 @@ This helps avoid over-interpreting proportionally small patterns in the later co
 
 The functions `embed::step_pca_sparse()` and `embed::step_pca_sparse_bayes()` have sparse/regularized estimation methods for PCA. Each has an argument called `predictor_prop()` that attempts to control how much sparsity should be used. `predictor_prop = 0` should approximate regular PCA, and values near 1.0 would produce very few non-zero loadings. 
 
+`r back("embeddings.html#sec-pca")`
+
 ### Independent Component Analysis {#sec-ica}
 
 An ICA recipe step can also be found in the `r pkg(recipes)` package. The syntax is virtually identical: 
@@ -267,6 +271,8 @@ ica_1 + ica_2
 
 This might not cause a difference in performance when the features are used in a predictive model, but if the model uses slopes and intercepts, the parameter estimates will be different each time it is run. 
 
+`r back("embeddings.html#sec-ica")`
+
 ### Partial Least Squares {#numeric-pls} {#sec-pls}
 
 The syntax for PLS is also very similar. However, it is a supervised method, so we need to specify the column containing the outcome (the outcome column is not needed after model training). The code below uses `dplyr::vars()` to declare the column name, but a simple character string can also be used. 
@@ -282,6 +288,8 @@ barley_pls_rec <-
 # Loadings: 
 tidy(barley_pls_rec, id = "pls")
 ```
+
+`r back("embeddings.html#sec-pls")`
 
 ## Multidimensional Scaling {#sec-mds}
 
@@ -321,6 +329,8 @@ barley_isomap_rec %>%
   coord_obs_pred()
 ```
 
+`r back("embeddings.html#sec-isomap")`
+
 ### UMAP {#sec-umap}
 
 `step_umap()`, in the `r pkg(embed)` package, has a number of tuning parameters: `neighbors`, `num_comp`, `min_dist`, `learn_rate`, `epochs`, `initial` (initialization method, e.g. "pca"), and the optional `target_weight`. 
@@ -354,6 +364,8 @@ barley_umap_rec %>%
 ```
 
 For a _supervised_ embedding, the `target_weight` argument is used. A value of zero is unsupervised, and values near 1.0 are completely supervised. As with PLS, the argument for the outcome column is called `outcome` and can be a string of an unquoted name wrapped in `vars()`. 
+
+`r back("embeddings.html#sec-umap")`
 
 ## Centroid-Based Methods  {#sec-centroids}
 
@@ -404,3 +416,5 @@ centroid_shrunk_rec <-
   step_classdist_shrunken(all_numeric_predictors(), threshold = 1 / 6, class = "Class") %>% 
   prep()
 ```
+
+`r back("embeddings.html#sec-centroids")`
