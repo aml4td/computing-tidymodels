@@ -95,7 +95,7 @@ concrete_te <- testing(concrete_split)
 
 All resampling methods use the training set as the substrate for creating resamples. We’ll demonstrate the main tools and functions using basic bootstrap resampling and then discuss the other resampling methods. 
 
-The function that we’ll use is `rsample::bootstraps()`. Its main option, `times`, describes how many resamples to create. Let’s make five resamples: 
+The function that we’ll use to demonstrate is `rsample::bootstraps()`. Its main option, `times`, describes how many resamples to create. Let’s make five resamples: 
 
 ```{r}
 #| label: bt
@@ -158,17 +158,11 @@ You shouldn't really have to interact with these objects at all.
 
 ## Basic Resampling Tools {#sec-resampling-todo}
 
-`r pkg(rsample)` contains several functions that resample data whose rows are thought to be statistically independent of one another. 
-
-Almost all of these functions contain options for stratified resampling. 
-
-Two important functions: 
-
-- Basic V-fold cross-validation is performed using `vfold_cv()`.  The `v` argument defines the number of folds. Another argument of note is `repeats`, which describes how many sets of V resamples should be created. This generated an additional column called `id2`. 
-
-- Monte Carlo cross-validation emulates random sampling to make binary splits via `mc_cv()`. Since these are not created as a set, the `times` argument specifies the number of resamples, and `prop` defines the proportion of the data that should go into the analysis set. 
+`r pkg(rsample)` contains several functions that resample data whose rows are thought to be statistically independent of one another. Almost all of these functions contain options for stratified resampling. 
 
 We'll show an example with basic 10-fold cross-validation below in @sec-resampled-models.
+
+Let's examine each flavor of resampling mentioned in the book chapter. 
 
 ## Validation Sets {#sec-validation-sets}
 
@@ -195,7 +189,63 @@ concrete_rs
 
 At this point, we can use `concrete_rs` as if it were any other `rset` object. 
 
-## Times Series Resampling {#sec-time-series-resampling}
+## Monte Carlo Cross-Validation {#sec-cv-mc}
+
+The relevant function here is `mc_cv()` with two main arguments:
+
+ - `times` is the number of resamples
+ - `prop` is the proportion of the data that is allocated to the analysis set. 
+
+For example: 
+
+```{r}
+set.seed(380)
+mc_cv(concrete_tr, times = 3, prop = 9 / 10)
+
+# or 
+
+mc_cv(concrete_tr, times = 2, prop = 2 /  3)
+```
+
+## V-Fold Cross-Validation {#sec-cv}
+
+Basic V-fold cross-validation is performed using `vfold_cv()`.  The `v` argument defines the number of folds and defaults to `v = 10`.
+
+```{r}
+#| label: v-fold
+set.seed(380)
+concrete_rs <- vfold_cv(concrete_tr)
+concrete_rs
+```
+
+As with the other tools, the `strata` argument can balance the outcome distributions across folds. It takes a single column as input. 
+
+Another argument of note is `repeats`, which describes how many sets of V resamples should be created. This generated an additional column called `id2`:
+
+```{r}
+#| label: repeated-v-fold
+set.seed(380)
+concrete_rs <- vfold_cv(concrete_tr, repeats = 2)
+concrete_rs
+```
+
+## The Bootstrap {#sec-bootstrap}
+
+First, there are special occasions when the regular set of bootstrap samples needs to be supplemented with an additional resample that can be used to measure the resubstitution rate (predicting the analysis set after fitting the data on the same analysis set). The function that produces this extra row is called `apparent()`, which is the same name as the function argument: 
+
+```{r}
+#| label: bt-apprent
+set.seed(380)
+concrete_rs <- bootstraps(concrete, times = 5, apparent = TRUE)
+```
+
+Note that the `id` column reflects this, and the split label shows that the analysis and assessment sets are the same size. 
+
+The tidymodels resampling functions are aware of the potential presence of the “apparent” sample and will _not_ include it at inappropriate times. For example, if we resample a model with and without using `apparent = TRUE`, we’ll get the same results as long as we use the same random number seed to make each set of resamples. 
+
+Secondly, there is a `strata` argument for this function. That enables different bootstrap samples to be taken within each stratum, which are combined into the final resampling set. _Technically_, this isn’t a bootstrap sample, but it is probably close enough to be useful. 
+
+## Time Series Data {#sec-time-series-resampling}
 
 Usually, the most recent data are used to evaluate performance for time series data. The function `initial_time_split()` can be used to make the initial split. We’ll use the `Chicago` data to demonstrate: 
 
@@ -302,40 +352,7 @@ chi_rs %>%
   labs(y = NULL, x = "Date") 
 ```
 
-##  Multi-Level Data {#sec-multilevel-resampling}
-
-Returning to the orthodontal data from @sec-multilevel-splitting, we use the initial split: 
-
-```{r}
-#| label: orthodont-again
-data(Orthodont, package = "nlme")
-
-set.seed(93)
-orth_split <- group_initial_split(Orthodont, group = Subject, prop = 2 / 3)
-orth_tr <- training(orth_split)
-orth_te <- testing(orth_split)
-```
-
-There are several resampling functions for these data in the `r pkg(rsample)` package, including: `group_vfold_cv()`,  `group_bootstraps()`, and `group_mc_cv()`. For example: 
-
-```{r}
-#| label: orthodont-rs
-library(vctrs)
-
-# Subjects in the training set: 
-vec_unique_count(orth_tr$Subject)
-
-set.seed(714)
-orth_rs <- 
-  group_vfold_cv(orth_tr, group = Subject, v = 10) %>% 
-  mutate(num_subjects = map_int(splits, ~ vec_unique_count(assessment(.x)$Subject)))
-
-orth_rs
-```
-
-To leave a single subject out for each resample, we could have set `v` to be `r vec_unique_count(orth_tr$Subject)`. 
-
-## Spatial Resampling {#sec-spatial-resampling}
+## Spatial Data {#sec-spatial-resampling}
 
 We split the Ames data into a training and testing set back in @sec-spatial-splitting using this code: 
 
@@ -405,6 +422,40 @@ We can also `autoplot()` individual splits to see the analysis and assessment se
 
 autoplot(ames_rs$splits[[1]], cex = 1 / 2)
 ```
+
+## Grouped or Multi-Level Data {#sec-multilevel-resampling}
+
+Returning to the orthodontal data from @sec-multilevel-splitting, we use the initial split: 
+
+```{r}
+#| label: orthodont-again
+data(Orthodont, package = "nlme")
+
+set.seed(93)
+orth_split <- group_initial_split(Orthodont, group = Subject, prop = 2 / 3)
+orth_tr <- training(orth_split)
+orth_te <- testing(orth_split)
+```
+
+There are several resampling functions for these data in the `r pkg(rsample)` package, including: `group_vfold_cv()`,  `group_bootstraps()`, and `group_mc_cv()`. For example: 
+
+```{r}
+#| label: orthodont-rs
+library(vctrs)
+
+# Subjects in the training set: 
+vec_unique_count(orth_tr$Subject)
+
+set.seed(714)
+orth_rs <- 
+  group_vfold_cv(orth_tr, group = Subject, v = 10) %>% 
+  mutate(num_subjects = map_int(splits, ~ vec_unique_count(assessment(.x)$Subject)))
+
+orth_rs
+```
+
+To leave a single subject out for each resample, we could have set `v` to be `r vec_unique_count(orth_tr$Subject)`. 
+
 
 ## Estimating Performance {#sec-resampled-models}
 
