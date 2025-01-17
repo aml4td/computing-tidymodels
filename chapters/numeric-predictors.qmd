@@ -399,6 +399,8 @@ recipe(Sale_Price ~ ., data = ames_train) %>%
 
 Other single variable transformations can be found in the following R packages: `r pkg(car)`, `r pkg(trafo)`, and `r pkg(Transform)`. 
 
+`r back("numeric-predictors.html#sec-skewness")`
+
 ## More on Recipe Selectors {#sec-recipe-selectors}
 
 The previous section showed a recipe step that operated on a single column. You can select one or more predictors in a variety of different ways within a recipe: 
@@ -439,6 +441,8 @@ Again, once we prep(are) the recipe, we can use `bake()` to get the normalized d
 
 Another important point is that recipes are designed to utilize different data sets appropriately. The training set is used with `prep()` and ensures that all the estimations are based on it. There is, as is appropriate, no re-estimation of quantities when new data are processed. 
 
+`r back("numeric-predictors.html#sec-common-scale")`
+
 ## Spatial Sign {#sec-recipe-spatialp-sign}
 
 Unsurprisingly, the step to compute the spatial sign is `step_spatialsign()`. It projects two or more numeric columns onto a multidimensional hypersphere. The resulting data has columns the same name as the input: 
@@ -470,6 +474,8 @@ sp_sign_data %>%
   geom_point(cex =  2, alpha = 1 / 10, pch = 1) +
   coord_equal() 
 ```
+
+`r back("numeric-predictors.html#sec-spatial-sign")`
 
 ## Other Resources for Learning About Recipes {#sec-recipe-resources}
 

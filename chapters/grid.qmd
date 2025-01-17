@@ -148,6 +148,8 @@ crossing(committees = c(1, 8, 100), neighbors = c(0, 9))
 
 Finally, as a reminder, a workflow can contain preprocessing arguments that were tagged for optimization via `tune()`. These values are treated the same as model arguments when it comes to extracting the parameter set and creating grids. 
 
+`r back("grid-search.html#sec-regular-grid")` (regular grids) `r back("grid-search.html#sec-irregular-grid")` (irregular)
+
 ## Tuning Models with Grids {#sec-grid-tuning}
 
 For grids, the three main functions are `tune::tune_grid()` and the two racing functions in the `r pkg(finetune)` package: `finetune::tune_race_anova()` and `finetune::tune_race_winloss()`. The syntax for these is nearly identical and also closely follows the previously described code for `fit_resamples()` from @sec-resampled-models.
@@ -323,6 +325,8 @@ plot_race(cubist_race_res)
 ```
 
 Each line corresponds to a candidate. 
+
+`r back("grid-search.html#sec-racing")`
 
 ## Nested Resampling {#sec-nested-resampling}
 

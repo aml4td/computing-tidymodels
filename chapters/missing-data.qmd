@@ -132,6 +132,8 @@ From this, we might notice that there might be two different mechanisms causing 
 
 The steps we would take to address missingness in the predictors is a preprocessing step; the tidymodels approach is to handle these in a recipes object. Recipes are more thoroughly introduced in @sec-recipe-intro. For now, we’ll show their usage and defer the broader information on how recipes work (and why you might want to use them) to the next chapter. 
 
+`r back("missing-data.html")`
+
 ## Filtering 
 
 A recipe consists of an initialized object and a sequence of one or more "steps" that define specific actions/computations that should be done to the data prior to modeling. 
@@ -217,6 +219,8 @@ bake(filter_features_rec, new_data = NULL) %>% ncol()
 tidy(filter_features_rec, number = 1)
 ```
 
+`r back("missing-data.html#removal")`
+
 ## Imputation
 
 ```{r}
@@ -280,6 +284,8 @@ group_impute_rec %>%
   count(Taper, Location)
 ```
 
+`r back("missing-data.html#linear-methods")`
+
 ### Nearest-Neighbor Imputation {#sec-imputation-knn}
 
 The syntax for imputation steps is very consistent, so the only change that would be made to move from linear imputation to a nonlinear, nearest-neighbor method would be to change the name. 
@@ -305,6 +311,8 @@ mean(complete.cases(imputed_train))
 ```
 
 Note that this step uses [Gower distance]() to define the neighbors. This method does _not_ require the predictors to be numeric or in the same units; they can be left as-is. Also, the function keeps the imputed data in the same format. A categorical predictor being imputed will remain a categorical predictor. 
+
+`r back("missing-data.html#nearest-neighbors")`
 
 ### Tuning the Preprocessors {#sec-imputation-within-tuning}
 

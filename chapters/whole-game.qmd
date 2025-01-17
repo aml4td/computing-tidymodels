@@ -150,6 +150,8 @@ delivery_hist + delivery_log_hist
 
 In the code above, we use an option called `"alpha"`. This is jargon for transparency; a value of `1/4` means that the points in the rug are 25% opaque. 
 
+`r back("whole-game.html#sec-delivery-times")`
+
 ## Data Spending  {#sec-data-spending-whole-game}
 
 tidymodels has a variety of ways to split the data at the outset of your modeling project. We will create a three-way split of the data using a function called `initial_validation_split()`.  
@@ -196,6 +198,8 @@ delivery_val   <- validation(delivery_split)
 ```
 
 We will mostly work with the training set of `r format(nrow(delivery_train), big.mark = ",")` deliveries. We'll use that to explore the data, fit models, and so on. 
+
+`r back("whole-game.html#sec-data-spending-whole-game")`
 
 ## Exploratory Data Analysis {#sec-eda-whole-game}
 
@@ -369,6 +373,8 @@ resampled_intervals %>%
   labs(y = NULL, x = "Increase in Delivery Time When Ordered") +
   theme(axis.text.y = element_text(hjust = 0))
 ```
+
+`r back("whole-game.html#sec-eda-whole-game")`
 
 ## Model Development {#sec-model-development-whole-game}
 
@@ -600,6 +606,8 @@ The `r pkg(probably)` package also has a nice helper to check the calibration of
 cal_plot_regression(lin_reg_res)
 ```
 
+`r back("whole-game.html#linear-regression")`
+
 ### Rule-Based Ensemble {.unnumbered}
 
 To fit the Cubist model, we need to load one of the tidymodels _extension packages_ called `r pkg(rules)`. It has the tools to fit this model and will automatically (and silently) use the `r pkg(Cubist)` package when the model fit occurs. 
@@ -683,6 +691,8 @@ rule_details %>%
   pluck(1) %>% 
   pluck(1)
 ```
+
+`r back("whole-game.html#rule-based-ensemble")`
 
 ### Neural Network {.unnumbered}
 
@@ -813,6 +823,8 @@ nnet_fit <-
   fit(data = delivery_train)
 ```
 
+`r back("whole-game.html#neural-network")`
+
 ## Aside: Parallel Processing {#sec-parallel-processing}
 
 For model tuning, we are fitting many models. With grid search, these models are not dependent on one another. For this reason, it is possible to compute these model fits simultaneously (i.e., in parallel).  
@@ -853,6 +865,8 @@ lin_reg_cal
 ```
 
 As you'll see in a minute, the function `probably::cal_apply()` calibrates new predictions.  
+ 
+`r back("whole-game.html#sec-calibration-whole-game")` 
  
 ## Test Set Results {#sec-test-results-whole-game}
 
@@ -923,6 +937,8 @@ lin_reg_test_pred_cal %>%
 lin_reg_test_pred_cal %>% 
   cal_plot_regression(truth = time_to_delivery, estimate = .pred)
 ```
+
+`r back("whole-game.html#sec-test-results-whole-game")` 
 
 ## Conclusion
 

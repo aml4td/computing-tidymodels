@@ -174,6 +174,8 @@ recipe(~ day + hour, data = interaction_example) %>%
   gt()
 ```
 
+`r back("interactions-nonlinear.html#sec-interactions")`
+
 ### Detecting Interactions {#sec-interactions-detection} 
 
 A few different packages can compute $H$-statistics (and similar quantities): 
@@ -225,6 +227,8 @@ orf_two_way_int_obj
 
 From these results, we could add more terms by adding another layer of `step_interact()` to our recipe.
 
+`r back("interactions-nonlinear.html#sec-interactions-detection")`
+
 ## Polynomial Basis Expansions {#sec-polynomials}
 
 There are two main functions that produce different types of orthogonal polynomials: 
@@ -251,6 +255,8 @@ recipe(time_to_delivery ~ ., data = delivery_train) %>%
 
 If we would like different polynomial degrees for different columns, we would call the step multiple times. 
 
+`r back("interactions-nonlinear.html#sec-polynomials")`
+
 ## Spline Functions {#sec-splines}
 
 `r pkg(recipes)` has several spline steps: 
@@ -271,6 +277,8 @@ recipe(time_to_delivery ~ ., data = delivery_train) %>%
 ```
 
 Some steps also have arguments for the spline degree called `degree`. Also, most basis expansion function steps have an option called `options` to pass additional specifications, such as a vector of knots. 
+
+`r back("interactions-nonlinear.html#sec-splines")`
 
 ## Discretization
 
@@ -326,3 +334,5 @@ tidy(cart_binning, number = 1)
 ```
 
 As you can see, the breakpoints are built into the factor levels. 
+
+`r back("interactions-nonlinear.html#sec-discretization")`
