@@ -1,0 +1,64 @@
+---
+knitr:
+  opts_chunk:
+    cache.path: "../_cache/iterative/"
+---
+
+# Iterative Search {#sec-iterative-search}
+
+```{r}
+#| label: iterative-setup
+#| include: false
+
+library(tidymodels)
+library(finetune)
+library(future)
+
+plan("multisession")
+tidymodels_prefer()
+theme_set(theme_transparent())
+
+num_workers <- parallel::detectCores()
+```
+
+## Example: Predicting Barley Amounts using Support Vector Machines {#sec-barley-svm}
+
+## Sidebar: Gradient-Based Optimization {#sec-gradient-opt}
+
+## Simulated Annealing  {#sec-sim-anneal}
+
+## Genetic Algorithms  {#sec-genetic-algo}
+
+#### Real-Valued Parameters {.unnumbered}
+
+#### Integer Parameters {.unnumbered}
+
+
+#### Qualitative Parameters {.unnumbered}
+
+### Assembling Generations {#sec-ga-generations}
+
+### Two Parameter Example {#sec-2D-example}
+
+### Summary {#sec-ga-summary}
+
+## Sidebar: Bayesian Models {#sec-bayes}
+
+### A Single Proportion  {#sec-single-proportion}
+
+## Bayesian Optimization {#sec-bayes-opt}
+
+### How Does Bayesian Optimization Work? {#sec-acquisition}
+
+### Gaussian Process Models {#sec-gp}
+
+### A Two Dimensional Illustration {#sec-ba-2D}
+
+
+### Advantages and Disadvantages {#sec-ba-pros-cons}
+
+## Example: Tuning a Neural Network {#sec-bayes-opt-nnet}
+
+## Summary {#sec-iterative-summary}
+
+## Chapter References {.unnumbered}
