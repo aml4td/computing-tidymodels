@@ -7,58 +7,435 @@ knitr:
 # Iterative Search {#sec-iterative-search}
 
 ```{r}
-#| label: iterative-setup
+#| label: iterative-knitr-setup
 #| include: false
 
+knitr::opts_chunk$set(
+    comment = "#>",
+    collapse = TRUE,
+    fig.align = 'center',
+    fig.path = "../figures/",
+    fig.width = 10,
+    fig.height = 6,
+    out.width = "95%",
+    dev = 'svg',
+    dev.args = list(bg = "transparent"),
+    tidy = FALSE,
+    echo = TRUE
+  )
+
+options(digits = 4, width = 84)
+options(dplyr.print_min = 6, dplyr.print_max = 6)
+options(cli.width = 85)
+options(crayon.enabled = FALSE)
+options(pillar.advice = FALSE, pillar.min_title_chars = Inf, pillar.sigfig = 4)
+
+source("../R/_common.R")
+req_pkg <- c("finetune", "future", "GA", "GauPro", "probably", "tidymodels", "xgboost")
+
+req_pkg_fmt <- purrr::map_chr(req_pkg, ~ pkg_chr(.x))
+```
+
+## Requirements
+
+You’ll need `r length(req_pkg)` packages (`r req_pkg_fmt`) for this chapter. The `r pkg(mixOmics)` is a Bioconductor package and is not on CRAN. For the others, we can install them as usual but we'll get `r pkg(mixOmics)` from GitHub:
+
+```{r}
+#| label: iterative-installs
+#| eval: false
+#| echo: true
+req_pkg <- c("finetune", "future", "GA", "GauPro", "probably", "tidymodels", "xgboost")
+
+# Check to see if they are installed: 
+pkg_installed <- vapply(req_pkg, rlang::is_installed, logical(1))
+
+# Install missing packages: 
+if ( any(!pkg_installed) ) {
+  install_list <- names(pkg_installed)[!pkg_installed]
+  pak::pak(install_list)
+}
+```
+
+
+```{r}
+#| label: sshhh-startup
+#| include: false
+
+library(GA)
 library(tidymodels)
 library(finetune)
 library(future)
-
-plan("multisession")
-tidymodels_prefer()
-theme_set(theme_transparent())
-
-num_workers <- parallel::detectCores()
+library(probably)
 ```
 
-## Example: Predicting Barley Amounts using Support Vector Machines {#sec-barley-svm}
+```{r}
+#| label: startup
 
-## Sidebar: Gradient-Based Optimization {#sec-gradient-opt}
+library(GA)
+library(tidymodels)
+library(finetune)
+library(probably)
+library(future)
+
+
+tidymodels_prefer()
+theme_set(theme_bw())
+plan("multisession")
+```
+
+To reduce the complexity of the example, we’ll use a simulated classification data set containing numeric predictors. We’ll simulate 1,000 samples using a simulation system, the details of which can be found in the [`r pkg(modeldata)` documentation](https://modeldata.tidymodels.org/reference/sim_classification.html#details). There are linear, nonlinear, and interacting features in the data set, and the classes are fairly balanced. We’ll use a 3:1 split for training and testing as well as 10-fold cross-validation:
+
+```{r}
+#| label: get-sim-data
+
+set.seed(2783)
+sim_dat <- sim_classification(1000)
+
+set.seed(101)
+sim_split <- initial_split(sim_dat)
+sim_train <- training(sim_split)
+sim_test <- testing(sim_split)
+sim_rs <- vfold_cv(sim_train)
+```
+
+We’ll tune a boosted classification model using the `r pkg(xgboost)` package, described in a later chapter. We tune multiple parameters and set an additional parameter, `validation`, to be zero. This is used when early stopping, which we will not use:
+
+
+```{r}
+#| label: sim-spec
+
+bst_spec <-
+  boost_tree(
+    mtry = tune(),
+    tree_depth = tune(),
+    trees = tune(),
+    learn_rate = tune(),
+    min_n = tune(),
+    loss_reduction = tune(),
+    sample_size = tune()
+  ) %>%
+  set_engine('xgboost', validation = 0) %>%
+  set_mode('classification')
+```
+
+Tree-based models require little to no preprocessing so we will use a simple R formula to define the roles of variables: 
+
+```{r}
+#| label: sim-worflow
+bst_wflow <- workflow(class ~ ., bst_spec)
+```
+
+From the workflow, we create a _parameters_ object and set the ranges for two parameters. `mtry` requires an upper bound to be set since it is dependent on the number of model terms in the data set. We’ll need parameter information since most iterative methods need to know the possible ranges as well as the type of parameter (e.g., integer, character, etc.) and/or any transformations of the values. 
+
+```{r}
+#| label: sim-param
+bst_param <-
+  bst_wflow %>%
+  extract_parameter_set_dials() %>%
+  update(
+    mtry = mtry(c(3, 15)),
+    trees = trees(c(10, 500))
+  )
+```
+
+We can now fit and/or tune, models. We’ll declare what metrics should be collected and then create a small space-filling design that is used as the starting point for simulated annealing and Bayesian optimization. We _could_ let the system make these initial values for us, but we’ll create them now so that we can reuse the results and have a common starting place. 
+
+```{r}
+#| label: initial
+#| cache: true
+
+cls_mtr <- metric_set(brier_class, roc_auc)
+
+init_grid <- grid_space_filling(bst_param, size = 6)
+
+set.seed(21)
+initial_res <-
+  bst_wflow %>%
+  tune_grid(
+    resamples = sim_rs,
+    grid = init_grid,
+    metrics = cls_mtr,
+    control = control_grid(save_pred = TRUE)
+  )
+```
+
+From these siz candidates, the smallest Brier score was `r round(show_best(initial_res, metric = "brier_class", n = 1)$mean, 3)`, a mediocre value: 
+
+```{r}
+#| label: initial-res
+show_best(initial_res, metric = "brier_class") %>% 
+  select(-.estimator, -.config, -.metric) %>% 
+  relocate(mean)
+```
+
+We will show how to use three iterative search methods. 
 
 ## Simulated Annealing  {#sec-sim-anneal}
 
+```{r}
+#| label: s-sim-anneal
+#| cache: true
+
+set.seed(381)
+sa_res <-
+  bst_wflow %>%
+  tune_sim_anneal(
+    resamples = sim_rs,
+    initial = initial_res,
+    iter = 50,
+    param_info = bst_param,
+    metrics = cls_mtr,
+    control = control_sim_anneal(
+      no_improve = Inf,
+      verbose_iter = TRUE,
+      save_pred = TRUE
+    )
+  )
+```  
+
+The Brier score has been reduced from the intial value of `r round(show_best(initial_res, metric = "brier_class", n = 1)$mean, 3)` to a new best of `r round(show_best(sa_res, metric = "brier_class", n = 1)$mean, 3)`. We'll estimate 
+
+```{r}
+#| label: sa-intervals
+#| cache: true
+show_best(sa_res, metric = "brier_class") %>% 
+  select(-.estimator, -.config, -.metric) %>% 
+  relocate(mean)
+```
+
+There are several ways to use `autoplot()` to investigate the results. The default methods plots the metric(s) versus the parameters. Here is it for just the Brier score: 
+
+```{r}
+#| label: sa-profile
+#| fig-width: 7
+#| fig-height: 6
+#| out-width: 65%
+autoplot(sa_res, metric = "brier_class")
+```
+
+Next, we can see how the parameter values change over the search by adding `type = "parameters"`: 
+
+```{r}
+#| label: sa-history
+#| fig-width: 7
+#| fig-height: 6
+#| out-width: 65%
+autoplot(sa_res, metric = "brier_class", type = "parameters")
+```
+
+Finally, a plot of performance metrics can be used via `type = "performance"`: 
+
+
+```{r}
+#| label: sa-performance
+#| fig-width: 6
+#| fig-height: 3.75
+#| out-width: 65%
+autoplot(sa_res, metric = "brier_class", type = "performance")
+```
+
+
 ## Genetic Algorithms  {#sec-genetic-algo}
 
-#### Real-Valued Parameters {.unnumbered}
 
-#### Integer Parameters {.unnumbered}
+```{r}
+#| label: ga-fitness
+
+yardstick_fitness <- function(values, wflow, param_info, metrics, ...) {
+
+  # load reqired packages if run in parallel
+	require(tidymodels)
+
+	info <- as_tibble(metrics)
+	
+	# Check to see if there are any qualitative parameters and stop if so.
+	qual_check <- map_lgl(param_info$object, ~ inherits(.x, "qual_param"))
+	if (any(qual_check)) {
+	  cli::cli_abort("The function only works for quantitative tuning parameters.")
+	}
+
+	# Back-transform parameters if they use a transformation (inputs are in 
+	# transformed scales)
+	values <- purrr::map2_dbl(
+		values,
+		param_info$object,
+		~ dials::value_inverse(.y, .x)
+	)
+	
+	# Convert integer parameters to integers
+	is_int <- map_lgl(param_info$object, ~ .x$type == "integer")
+	int_param <- param_info$id[is_int]
+	for (i in int_param) {
+	  ind <- which(param_info$id == i)
+	  values[[ind]] <- floor(values[[ind]])
+	}
+	
+	# Convert from vector to a tibble
+	values <- matrix(values, nrow = 1)
+	colnames(values) <- param_info$id
+	values <- as_tibble(values)
+	ctrl <- control_grid(allow_par = FALSE)
+
+	# Resample / validate metrics
+	res <- tune_grid(
+		wflow,
+		metrics = metrics,
+		param_info = param_info,
+		grid = values,
+		control = ctrl,
+		...
+	)
+
+	# Fitness is to be maximized so change direction if needed
+	best_res <- show_best(res, metric = info$metric[1])
+	if (info$direction[1] == "minimize") {
+		obj_value <- -best_res$mean
+	} else {
+		obj_value <- best_res$mean
+	}
+	obj_value
+}
+```
+
+```{r}
+#| label: ga-prep
+min_vals <- map_dbl(bst_param$object, ~ .x$range[[1]])
+max_vals <- map_dbl(bst_param$object, ~ .x$range[[2]])
+
+pop_size <- 10
+grid_ga <- grid_space_filling(bst_param, size = pop_size, original = FALSE)
+grid_ga$learn_rate <- log10(grid_ga$learn_rate)
+grid_ga$loss_reduction <- log10(grid_ga$loss_reduction)
+```
 
 
-#### Qualitative Parameters {.unnumbered}
+```{r}
+#| label: ga-execute
+#| cache: true
 
-### Assembling Generations {#sec-ga-generations}
+set.seed(158)
+ga_res <-
+  ga(
+    type = "real-valued",
+    fitness = yardstick_fitness,
+    lower = min_vals,
+    upper = max_vals,
+    popSize = pop_size,
+    suggestions = as.matrix(grid_ga),
+    maxiter = 25,
+    keepBest = TRUE,
+    seed = 39,
+    wflow = bst_wflow,
+    param_info = bst_param,
+    metrics = cls_mtr,
+    resamples = sim_rs,
+    parallel = "multicore"
+  )
+```
 
-### Two Parameter Example {#sec-2D-example}
+```{r}
+#| label: ga-best
+
+ga_best <- 
+  # There could be multiple solutions for the same fitness; we take the first. 
+  ga_res@solution[1,] %>% 
+  # Back-transform
+  map2(bst_param$object, ~ value_inverse(.y, .x)) %>% 
+  as_tibble() %>% 
+  set_names(bst_param$id) %>% 
+  # Attach fitness and coerce to integer if needed.
+  mutate(
+    mtry = floor(mtry),
+    trees = floor(trees),
+    min_n = floor(min_n),
+    tree_depth = floor(tree_depth),
+    brier = -ga_res@fitnessValue
+  ) %>% 
+  relocate(brier)
+
+ga_best
+```
+
+```{r}
+#| label: ga-profile
+#| fig-width: 6
+#| fig-height: 3.75
+#| out-width: 65%
+
+-attr(ga_res,"summary") %>% 
+  as_tibble() %>% 
+  mutate(iteration = row_number()) %>% 
+  select(best = max, mean = mean, iteration) %>% 
+  pivot_longer(c(best, mean), names_to = "summary", values_to = "fitness") %>% 
+  ggplot(aes(iteration, fitness, col = summary, pch = summary)) + 
+  geom_point() + 
+  labs(x = "Iteration", y = "Brier Score (CV)")
+```
 
 ### Summary {#sec-ga-summary}
 
 ## Sidebar: Bayesian Models {#sec-bayes}
 
-### A Single Proportion  {#sec-single-proportion}
 
 ## Bayesian Optimization {#sec-bayes-opt}
-
-### How Does Bayesian Optimization Work? {#sec-acquisition}
 
 ### Gaussian Process Models {#sec-gp}
 
 ### A Two Dimensional Illustration {#sec-ba-2D}
 
+```{r}
+#| label: s-bayes
+#| cache: true
 
-### Advantages and Disadvantages {#sec-ba-pros-cons}
+set.seed(221)
+bo_res <- bst_wflow %>%
+  tune_bayes(
+    resamples = sim_rs,
+    initial = initial_res,
+    iter = 25,
+    param_info = bst_param,
+    metrics = cls_mtr,
+    control = control_bayes(
+      no_improve = Inf,
+      verbose_iter = TRUE,
+      save_pred = TRUE,
+    )
+  )
+```
+
+
+```{r}
+#| label: bo-intervals
+#| cache: true
+show_best(bo_res, metric = "brier_class") %>% 
+  select(-.estimator, -.config, -.metric) %>% 
+  relocate(mean)
+```
+
+
+```{r}
+#| label: bo-profile
+#| fig-width: 6
+#| fig-height: 3.75
+#| out-width: 65%
+bo_res %>% 
+  collect_metrics() %>% 
+  filter(.metric == "brier_class") %>% 
+  mutate(
+    .lower = mean - qnorm(.95) * std_err,
+    .upper = mean + qnorm(.95) * std_err
+  ) %>% 
+  ggplot(aes(.iter, mean)) + 
+  geom_point() + 
+  geom_errorbar(aes(ymin = .lower, ymax = .upper), width = 1 / 4, alpha = 1 / 4) + 
+  labs(x = "Iteration", y = "Brier Score (CV)")
+```
+
+
 
 ## Example: Tuning a Neural Network {#sec-bayes-opt-nnet}
 
-## Summary {#sec-iterative-summary}
+use a different data set for now
+
 
 ## Chapter References {.unnumbered}
