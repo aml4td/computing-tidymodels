@@ -159,7 +159,7 @@ initial_res <-
   )
 ```
 
-From these siz candidates, the smallest Brier score was `r round(show_best(initial_res, metric = "brier_class", n = 1)$mean, 3)`, a mediocre value: 
+From these six candidates, the smallest Brier score was `r round(show_best(initial_res, metric = "brier_class", n = 1)$mean, 3)`, a mediocre value: 
 
 ```{r}
 #| label: initial-res
@@ -172,6 +172,19 @@ We will show how to use three iterative search methods.
 
 ## Simulated Annealing  {#sec-sim-anneal}
 
+The finetune package contains `finetune::tune_sim_anneal()` that can incrementally search the parameter space in a non-greedy way. Its syntax is very similar to `tune_grid()` with two additional arguments of note: 
+
+- `initial`: Either: 
+	- An integer that declares how many points in a space-filling design should be created and evaluated before proceeding. 
+	- An object from a previous run of `tune_grid()` or one of the other `tune_*()` functions. 
+- `iter`: An integer for the maximum number of search iterations. 
+
+Also of note is `control_sim_anneal()`, which helps save additional results and controls logging, and if restarts or early stopping should be used. 
+
+One important note: the first metric in the metric set guides the optimization. All of the other metric values are recorded for each iteration but only one is used to improve the model fit.  
+
+Here's some example code: 
+
 ```{r}
 #| label: s-sim-anneal
 #| cache: true
@@ -181,10 +194,13 @@ sa_res <-
   bst_wflow %>%
   tune_sim_anneal(
     resamples = sim_rs,
-    initial = initial_res,
-    iter = 50,
     param_info = bst_param,
     metrics = cls_mtr,
+    # Additional options:
+    initial = initial_res,
+    iter = 50,
+    # Prevent early stopping, save out-of-sample predictions, 
+    # and log the process to the console: 
     control = control_sim_anneal(
       no_improve = Inf,
       verbose_iter = TRUE,
@@ -193,7 +209,7 @@ sa_res <-
   )
 ```  
 
-The Brier score has been reduced from the intial value of `r round(show_best(initial_res, metric = "brier_class", n = 1)$mean, 3)` to a new best of `r round(show_best(sa_res, metric = "brier_class", n = 1)$mean, 3)`. We'll estimate 
+The Brier score has been reduced from the intial value of `r round(show_best(initial_res, metric = "brier_class", n = 1)$mean, 3)` to a new best of `r round(show_best(sa_res, metric = "brier_class", n = 1)$mean, 3)`. We'll estimate:
 
 ```{r}
 #| label: sa-intervals
@@ -225,7 +241,6 @@ autoplot(sa_res, metric = "brier_class", type = "parameters")
 
 Finally, a plot of performance metrics can be used via `type = "performance"`: 
 
-
 ```{r}
 #| label: sa-performance
 #| fig-width: 6
@@ -234,9 +249,27 @@ Finally, a plot of performance metrics can be used via `type = "performance"`:
 autoplot(sa_res, metric = "brier_class", type = "performance")
 ```
 
+If we had used `control_sim_anneal(save_worflow = TRUE)`, we could use `fit_best()` to determine the candidate with the best metric value then fit that model to the training set. 
 
 ## Genetic Algorithms  {#sec-genetic-algo}
 
+tidymodels has no API or function for optimizing models using genetic algorithms. However, there is unsupported code below to do this as long as the tuning parameters are all numeric. We’ll using the `r pkg(GA)` package for the computations, and this will require: 
+
+- The upper and lower bounds of the parameters
+- Code to transform the parameter values (if needed)
+- A means to resample/evaluate a model on an out-of-sample data set. 
+- A method to compute a single performance metric such that larger values are more desirable.
+
+To get started, let’s work with the parameter object named `bst_param`. We can use `purrr::map_dbl()` to get vectors of the minimum and maximum values. These should be in the transformed space (if needed):
+
+
+```{r}
+#| label: ga-prep
+min_vals <- map_dbl(bst_param$object, ~ .x$range[[1]])
+max_vals <- map_dbl(bst_param$object, ~ .x$range[[2]])
+```
+
+The remainder of the tasks should occur within the GA's processing. This function shows code with comments to help understand: 
 
 ```{r}
 #| label: ga-fitness
@@ -274,6 +307,9 @@ yardstick_fitness <- function(values, wflow, param_info, metrics, ...) {
 	values <- matrix(values, nrow = 1)
 	colnames(values) <- param_info$id
 	values <- as_tibble(values)
+	
+	# We'll run _populations_ within a generation in parallel. Let's make
+	# sure to turn off parallelization of resamples here: 
 	ctrl <- control_grid(allow_par = FALSE)
 
 	# Resample / validate metrics
@@ -297,17 +333,17 @@ yardstick_fitness <- function(values, wflow, param_info, metrics, ...) {
 }
 ```
 
-```{r}
-#| label: ga-prep
-min_vals <- map_dbl(bst_param$object, ~ .x$range[[1]])
-max_vals <- map_dbl(bst_param$object, ~ .x$range[[2]])
+Now, let's initialize the search using a space-filling design (with 10 candidates per population): 
 
+```{r}
+#| label: ga-initial-pop
 pop_size <- 10
 grid_ga <- grid_space_filling(bst_param, size = pop_size, original = FALSE)
 grid_ga$learn_rate <- log10(grid_ga$learn_rate)
 grid_ga$loss_reduction <- log10(grid_ga$loss_reduction)
 ```
 
+Now we can run `GA::ga()` to begin the process: 
 
 ```{r}
 #| label: ga-execute
@@ -316,6 +352,7 @@ grid_ga$loss_reduction <- log10(grid_ga$loss_reduction)
 set.seed(158)
 ga_res <-
   ga(
+    # GA options:
     type = "real-valued",
     fitness = yardstick_fitness,
     lower = min_vals,
@@ -323,15 +360,39 @@ ga_res <-
     popSize = pop_size,
     suggestions = as.matrix(grid_ga),
     maxiter = 25,
+    # Save the best solutions at each iteration
     keepBest = TRUE,
     seed = 39,
+    # Run _populations_ within a generation in parallel
+    parallel = "multicore",
+    # Now options to pass to the `...` in yardstick_fitness()
     wflow = bst_wflow,
     param_info = bst_param,
     metrics = cls_mtr,
-    resamples = sim_rs,
-    parallel = "multicore"
+    resamples = sim_rs
   )
 ```
+
+Here is a plot of the best results per population and the mean result (both are Brier scores): 
+
+```{r}
+#| label: ga-profile
+#| fig-width: 6
+#| fig-height: 3.75
+#| out-width: 65%
+
+# Negate the fitness value since Brier score should be minimized.
+-attr(ga_res,"summary") %>% 
+  as_tibble() %>% 
+  mutate(iteration = row_number()) %>% 
+  select(best = max, mean = mean, iteration) %>% 
+  pivot_longer(c(best, mean), names_to = "summary", values_to = "fitness") %>% 
+  ggplot(aes(iteration, fitness, col = summary, pch = summary)) + 
+  geom_point() + 
+  labs(x = "Iteration", y = "Brier Score (CV)")
+```
+
+The best results are in a slot called `solution`. Let's remap that to the original parameter values: 
 
 ```{r}
 #| label: ga-best
@@ -356,45 +417,43 @@ ga_best <-
 ga_best
 ```
 
-```{r}
-#| label: ga-profile
-#| fig-width: 6
-#| fig-height: 3.75
-#| out-width: 65%
-
--attr(ga_res,"summary") %>% 
-  as_tibble() %>% 
-  mutate(iteration = row_number()) %>% 
-  select(best = max, mean = mean, iteration) %>% 
-  pivot_longer(c(best, mean), names_to = "summary", values_to = "fitness") %>% 
-  ggplot(aes(iteration, fitness, col = summary, pch = summary)) + 
-  geom_point() + 
-  labs(x = "Iteration", y = "Brier Score (CV)")
-```
-
-### Summary {#sec-ga-summary}
 
 ## Sidebar: Bayesian Models {#sec-bayes}
+
+Bayes rules, rstanarm. brms
 
 
 ## Bayesian Optimization {#sec-bayes-opt}
 
-### Gaussian Process Models {#sec-gp}
 
-### A Two Dimensional Illustration {#sec-ba-2D}
+There are other packages that use Bayesian optimization: 
+
+- [`r pkg(BayesGP)`](https://cran.r-project.org/package=BayesGP)
+- [`r pkg(BayesGPfit)`](https://cran.r-project.org/package=BayesGPfit)
+- [`r pkg(FastGP)`](https://cran.r-project.org/package=FastGP)
+- [`r pkg(GauPro)`](https://github.com/CollinErickson/GauPro)
+- [`r pkg(GPBayes)`](https://github.com/pulongma/GPBayes)
+- [`r pkg(GPfit)`](https://cran.r-project.org/package=GPfit)
+
+and many others. The book [_Gaussian process modeling, design and optimization for the applied sciences_](https://bookdown.org/rbg/surrogates/) also contains descriptions of many other GO packages. 
+
+Currently, tidymodels uses `r pkg(GPfit)` but is moving to `r pkg(GauPro)`.
+
+The `r pkg(tune)` package contains `tune_bayes()` for Bayesian optimization. The syntax is identical to what we've already seen with `tune_sim_anneal()`. 
+
 
 ```{r}
-#| label: s-bayes
+#| label: sa-bayes
 #| cache: true
-
 set.seed(221)
 bo_res <- bst_wflow %>%
   tune_bayes(
     resamples = sim_rs,
-    initial = initial_res,
-    iter = 25,
     param_info = bst_param,
     metrics = cls_mtr,
+    # These options work as before: 
+    initial = initial_res,
+    iter = 50,
     control = control_bayes(
       no_improve = Inf,
       verbose_iter = TRUE,
@@ -403,6 +462,7 @@ bo_res <- bst_wflow %>%
   )
 ```
 
+The same helper functions are used to interogate the results and to create diagnostic plots: 
 
 ```{r}
 #| label: bo-intervals
@@ -412,30 +472,33 @@ show_best(bo_res, metric = "brier_class") %>%
   relocate(mean)
 ```
 
-
 ```{r}
 #| label: bo-profile
+#| fig-width: 7
+#| fig-height: 6
+#| out-width: 65%
+autoplot(bo_res, metric = "brier_class")
+```
+
+```{r}
+#| label: bo-history
+#| fig-width: 7
+#| fig-height: 6
+#| out-width: 65%
+autoplot(bo_res, metric = "brier_class", type = "parameters")
+```
+
+```{r}
+#| label: bo-performance
 #| fig-width: 6
 #| fig-height: 3.75
 #| out-width: 65%
-bo_res %>% 
-  collect_metrics() %>% 
-  filter(.metric == "brier_class") %>% 
-  mutate(
-    .lower = mean - qnorm(.95) * std_err,
-    .upper = mean + qnorm(.95) * std_err
-  ) %>% 
-  ggplot(aes(.iter, mean)) + 
-  geom_point() + 
-  geom_errorbar(aes(ymin = .lower, ymax = .upper), width = 1 / 4, alpha = 1 / 4) + 
-  labs(x = "Iteration", y = "Brier Score (CV)")
+autoplot(bo_res, metric = "brier_class", type = "performance")
 ```
 
+There are other packages that use Bayesian optimization: 
 
-
-## Example: Tuning a Neural Network {#sec-bayes-opt-nnet}
-
-use a different data set for now
-
-
-## Chapter References {.unnumbered}
+- [`r pkg(mlr3mbo)`](https://mlr3mbo.mlr-org.com/)
+- [`r pkg(mlrMBO)`](https://mlrmbo.mlr-org.com/)
+- [`r pkg(ParBayesianOptimization)`](https://github.com/AnotherSamWilson/ParBayesianOptimization)
+- [`r pkg(rBayesianOptimization)`](https://github.com/yanyachen/rBayesianOptimization)
