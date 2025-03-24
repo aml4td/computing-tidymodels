@@ -63,6 +63,7 @@ book:
   - chapters/overfitting.qmd
   - chapters/resampling.qmd
   - chapters/grid.qmd
+  - chapters/feature-selection.qmd
   - part: "Classification"  
   - part: "Regression"  
   - part: "Characterization"  

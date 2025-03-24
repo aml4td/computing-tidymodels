@@ -1,0 +1,115 @@
+---
+knitr:
+  opts_chunk:
+    cache.path: "../_cache/feature-selection/"
+---
+
+# Feature Selection {#sec-feature-selection}
+
+```{r}
+#| label: feature-selection-knitr-setup
+#| include: false
+
+knitr::opts_chunk$set(
+    comment = "#>",
+    collapse = TRUE,
+    fig.align = 'center',
+    fig.path = "../figures/",
+    fig.width = 10,
+    fig.height = 6,
+    out.width = "95%",
+    dev = 'svg',
+    dev.args = list(bg = "transparent"),
+    tidy = FALSE,
+    echo = TRUE
+  )
+
+options(digits = 4, width = 84)
+options(dplyr.print_min = 6, dplyr.print_max = 6)
+options(cli.width = 85)
+options(crayon.enabled = FALSE)
+options(pillar.advice = FALSE, pillar.min_title_chars = Inf, pillar.sigfig = 4)
+
+source("../R/_common.R")
+req_pkg <- c("colino", "future", "tidymodels")
+```
+```{r}
+#| label: for-downlit
+#| include: false
+
+downlit:::add_depends(c("colino", "recipes", "textrecipes", "
+                        future", "tidymodels"))
+```
+
+## Requirements
+
+We will use the ...
+
+`r pkg_list(req_pkg)`
+
+```{r}
+#| label: feature-selection-installs
+#| eval: false
+#| echo: true
+req_pkg <- c("future", "tidymodels")
+
+# Check to see if they are installed: 
+pkg_installed <- vapply(req_pkg, rlang::is_installed, logical(1))
+
+# Install missing packages: 
+if ( any(!pkg_installed) ) {
+  install_list <- names(pkg_installed)[!pkg_installed]
+  pak::pak(install_list)
+}
+
+# For coliono, install from GitHub
+pak::pak("stevenpawley/colino")
+```
+
+Let's load the meta package and manage some between-package function conflicts. 
+
+```{r}
+#| label: start-tidymodels
+#| results: hide
+#| message: false
+#| warning: false
+library(tidymodels)
+library(colino)
+library(future)
+
+tidymodels_prefer()
+theme_set(theme_bw())
+```
+
+
+## Unsupervised Selection {#sec-unsupervised-selection}
+
+
+- `step_zv()`
+- `step_nzv(freq_cut = double(1), unique_cut = double(1))`
+- `step_corr(threshold = double(1))`
+- `step_lincomb()`
+- `step_filter_missing(threshold = double(1))`
+- `step_tokenfilter()`
+- `step_stopwords()`
+- `step_pos_filter()`
+
+
+## Automatic Selection {#sec-automatic-selection}
+
+## Wrapper Methods  {#sec-wrappers}
+
+tidymodels does not contain any wrapper methods, primarily due to their computational costs. 
+
+Several other packages do, most notably `r pkg(caret)`. For more information on what that package can do, see the feature selection chapters of the documentation: 
+
+ - [_Feature Selection Overview_](https://topepo.github.io/caret/feature-selection-overview.html)
+ - [_Feature Selection using Univariate Filters_](https://topepo.github.io/caret/feature-selection-using-univariate-filters.html)
+ - [_Recursive Feature Elimination_](https://topepo.github.io/caret/recursive-feature-elimination.html)
+ - [_Feature Selection using Genetic Algorithms_](https://topepo.github.io/caret/feature-selection-using-genetic-algorithms.html)
+ - [_Feature Selection using Simulated Annealing_](https://topepo.github.io/caret/feature-selection-using-simulated-annealing.html)
+
+There is also R code from the _Feature Engineering and Selection_ book that can be found at [`https://github.com/topepo/FES`](https://github.com/topepo/FES).
+
+## Filter Methods {#sec-filters}
+
