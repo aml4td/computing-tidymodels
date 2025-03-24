@@ -31,14 +31,14 @@ options(crayon.enabled = FALSE)
 options(pillar.advice = FALSE, pillar.min_title_chars = Inf, pillar.sigfig = 4)
 
 source("../R/_common.R")
-req_pkg <- c("colino", "future", "tidymodels")
+req_pkg <- c("colino", "tidymodels", "rpart", "partykit")
 ```
 ```{r}
 #| label: for-downlit
 #| include: false
 
-downlit:::add_depends(c("colino", "recipes", "textrecipes", "
-                        future", "tidymodels"))
+downlit:::add_depends(c("colino", "recipes", "textrecipes", 
+                        "future", "tidymodels", "rpart", "partykit"))
 ```
 
 ## Requirements
@@ -51,7 +51,7 @@ We will use the ...
 #| label: feature-selection-installs
 #| eval: false
 #| echo: true
-req_pkg <- c("future", "tidymodels")
+req_pkg <- c("colino", "tidymodels", "rpart", "partykit")
 
 # Check to see if they are installed: 
 pkg_installed <- vapply(req_pkg, rlang::is_installed, logical(1))
@@ -73,6 +73,7 @@ Let's load the meta package and manage some between-package function conflicts.
 #| results: hide
 #| message: false
 #| warning: false
+library(partykit)
 library(tidymodels)
 library(colino)
 library(future)
@@ -81,21 +82,239 @@ tidymodels_prefer()
 theme_set(theme_bw())
 ```
 
+We'll demonstrate these tools using the `hepatic_injury_qsar` data set from the `r pkg(modeldata)` package. These data are an example data set used in drug discovery to help predict when compounds have unwanted side effects (i.e., toxicity).
+
+There are two predictor sets. One consists of a series of biological assays (i.e., laboratory tests) and a set of binary indicators for specific structures in the equations that make up the molecules. The outcome has three classes that cause the risk of toxicity for each molecule: none, mild, and severe. There are few molecules with severe toxicity.
+
+Even before initial splitting, there are more predictors (`r ncol(hepatic_injury_qsar)`) than data points (`r nrow(hepatic_injury_qsar)`), making feature selection an essential task for these data. 
+
+We’ll start with a stratified initial split using a 4:1 data partition and use a large number of resamples to evaluate our model pipelines:
+
+```{r}
+#| label: start
+library(tidymodels)
+library(colino)
+library(future)
+
+tidymodels_prefer()
+theme_set(theme_bw())
+plan("multisession")
+
+set.seed(106)
+drug_split <- initial_split(hepatic_injury_qsar, prop = 0.8, strata = class)
+drug_train <- training(drug_split)
+drug_test <- testing(drug_split)
+drug_rs <- vfold_cv(drug_train, repeats = 10, strata = class)
+
+dim(drug_train)
+drug_train %>% count(class)
+```
+
 
 ## Unsupervised Selection {#sec-unsupervised-selection}
 
+In tidymodels, most preprocessing methods for feature selection are recipe steps. 
 
-- `step_zv()`
-- `step_nzv(freq_cut = double(1), unique_cut = double(1))`
-- `step_corr(threshold = double(1))`
-- `step_lincomb()`
-- `step_filter_missing(threshold = double(1))`
-- `step_tokenfilter()`
-- `step_stopwords()`
-- `step_pos_filter()`
+There are several unsupervised feature filters in `r pkg(recipes)`: 
 
+- `step_zv()`: Removes predictors with a single value. 
+- `step_nzv(freq_cut = double(1), unique_cut = double(1))`: Removes predictors that have a few unique values that are out of the mainstream.
+- `step_corr(threshold = double(1))`: Reduces the pairwise correlations between predictors. 
+- `step_lincomb()`: Eliminates strict linear dependencies between predictors. 
+- `step_filter_missing(threshold = double(1))`: Remove predictors that have too many missing values.
+
+The `r pkg(textrecipes)` package also has a few unsupervised methods for screening tokens (i.e., words): 
+
+- `step_tokenfilter()`: filter tokens based on term frequency. 
+- `step_stopwords()`: Removes top words (e.g., "and", "or", etc.)
+- `step_pos_filter()`: Part of speech filtering of tokens.
+ 
+It is suggested that these steps occur early in a recipe, perhaps after any imputation methods.
+ 
+We suggest adding these to a recipe early, after any imputation methods. 
+
+For the drug toxicity data, we can visualize the amount of between-assay correlations by first computing the correlation matrix: 
+
+```{r}
+#| label: cor-mat
+cor_mat <- 
+  drug_train %>% 
+  select(starts_with("bio")) %>% 
+  cor()
+```
+
+Note the warning: some columns have a single unique value. Let's look at this across the entire set of predictors via a function in the `r pkg(vctrs)` package: 
+
+```{r}
+#| label: num-unique
+num_unique <- map_int(drug_train %>% select(-class), vctrs::vec_unique_count)
+names(num_unique)[num_unique == 1]
+```
+
+We’ll start a recipe with the step that will eliminate these: 
+
+```{r}
+#| label: drug-rec
+drug_rec <- 
+  recipe(class ~ ., data = drug_train) %>% 
+  step_zv(all_predictors())
+```
+
+Returning to correlations, let's plot the distribution of pairwise correlation between assays: 
+
+```{r}
+#| label: cor-dist
+#| fig-height: 3.75
+#| fig-width: 6
+#| out-width: 60%
+tibble(correlation = cor_mat[upper.tri(cor_mat)]) %>% 
+  filter(!is.na(correlation)) %>% 
+  ggplot(aes(x = correlation)) + 
+  geom_histogram(binwidth = 0.1, col = "white")
+```
+
+This isn't too bad, but if we wanted to reduce the extreme pairwise correlations, we could use: 
+
+```{r}
+#| label: low-cor
+drug_rec %>% 
+  step_corr(starts_with("bio_assay"), threshold = 0.75)
+```
+
+or search for an optimal cutoff using `threshold = tune()`. 
 
 ## Automatic Selection {#sec-automatic-selection}
+
+The text mentioned that there are types of models that automatically select predictors. Tree-based models typically fall into this category. 
+
+To demonstrate, let’s fit a Classification and Regression Tree ([CART](https://www.nature.com/articles/nmeth.4370)) to the training set and see how many predictors are removed. 
+
+Before doing so, let’s _turn off_ a feature of this model. CART computes special alternate splits during training (“surrogate” and “competing” splits) to aid with things like missing value imputation. We’ll use the built-in feature importance measure to see how many predictors were used. Unfortunately, those measures will include splits not actually used by the model, so we prohibit these from being listed using `rpart.control()`. 
+
+We can pass that to the model fit when we set the engine: 
+
+```{r}
+#| label: cart-spec
+
+cart_ctrl <- rpart::rpart.control(maxcompete = 0, maxsurrogate = 0)
+
+cart_spec <- 
+  decision_tree(mode = "classification") %>% 
+  set_engine("rpart", control = !!cart_ctrl)
+```
+
+**Note** the use of `!!` (“bang-bang”) when adding `cart_ctrl` as an engine option. If we had just used `control = cart_ctrl`, it tells R to look for a reference to object “`cart_ctrl`”, which resides in the global environment. Ordinarily, that works fine. However, if we use parallel processing, that reference is not available to the worker processes, and an error will occur. 
+
+Using the bang-bang operator, we replace the _reference_ to “`cart_ctrl`” with the actual value of that object. It splices the actual data into the model specification so parallel workers can find it. 
+Here’s the model fit: 
+
+```{r}
+#| label: cart-fit
+cart_drug_fit <- cart_spec %>% fit(class ~ ., data = drug_train)
+cart_drug_fit
+```
+
+Of the `r ncol(drug_train) - 1` predictors, only `r length(cart_drug_fit$fit$variable.importance)` were actually part of the prediction equations. The `r pkg(partykit)` package has a nice plot method to visualize the tree:
+
+```{r}
+#| label: cart-plot
+#| fig-height: 6
+#| fig-width: 14
+#| out-width: 100%
+library(partykit)
+
+cart_drug_party <- 
+  cart_drug_fit %>% 
+  extract_fit_engine() %>% 
+  as.party()
+plot(cart_drug_party)
+```
+
+As previously mentioned, trees produced by the `r pkg(rpart)` package have an internal importance score. To return this, let’s write a small function to pull the `rpart` object out, extract the importance scores, and then return a data frame with that data: 
+
+```{r}
+#| label: cart-imp
+get_active_features <- function(x) {
+  require(tidymodels)
+  x %>% 
+    extract_fit_engine() %>% 
+    pluck("variable.importance") %>% 
+    enframe() %>% 
+    setNames(c("predictor", "importance"))
+}
+
+get_active_features(cart_drug_fit) 
+```
+
+This shows us the `r length(cart_drug_fit$fit$variable.importance)` predictors that were used along with their relative effect on the model. 
+
+These results show what happens with the training set but would a predictor like ``r get_active_features(cart_drug_fit)$predictor[1]`` be consistently selected? 
+
+To determine this, we can resample the model and save the importance scores for each of the `r nrow(drug_rs)` analysis sets. Let’s take the `get_active_features()` function and add it to a different `control` function that will be executed during resampling: 
+
+```{r}
+#| label: cart-resample
+
+ctrl <- control_resamples(extract = get_active_features)
+cart_drug_res <- 
+  cart_spec %>% 
+  fit_resamples(
+    class ~ ., 
+    resamples = drug_rs, 
+    control = ctrl
+  )
+```
+
+Our results will have an extra column called `.extract` that contains the results for the resample. Since we didn’t tune this model, `.extract` contains a simple tibble with the results: 
+
+```{r}
+#| label: show-extract
+cart_drug_res$.extracts[[1]]
+
+cart_drug_res$.extracts[[1]]$.extracts
+```
+
+We can extract the results from all the resamples, unnest, and count the number of times each predictor was selected: 
+
+```{r}
+#| label: all-extract
+resampled_selection <- 
+  cart_drug_res %>% 
+  collect_extracts() %>% 
+  unnest(.extracts) %>% 
+  count(predictor) %>%
+  arrange(desc(n))
+
+resampled_selection %>% slice_head(n = 5)
+```
+
+A visualization illustrates that a small number of predictors were reliably selected:
+
+```{r}
+#| label: cart-freq
+#| fig-height: 3.75
+#| fig-width: 6
+#| out-width: 80%
+
+resampled_selection %>% 
+  ggplot(aes(n)) +
+  geom_histogram(binwidth = 2, col = "white") +
+  labs(x = "# Times Selected (of 100)")
+```
+
+We can also see that this model has poor performance characteristics: 
+
+```{r}
+#| label: cart-perf
+
+collect_metrics(cart_drug_res)
+```
+
+One additional note about using tree-based models to automatically select predictors. Many tree ensembles create a collection of individual tree models. For ensembles to work well, this collection should have a diverse set of trees (rather than those with the same splits). To encourage diversity, many tree models have an `mtry` parameter. This parameter is an integer for the number of predictors in the data set that should be randomly selected when making a split. For example, if `mtry = 3`, a different random selection of three predictors would be the only ones considered for each split in the tree. This facilitates diversity but also forces irrelevant predictors to be included in the model. 
+
+However, this also means that many tree ensembles will have prediction functions that include predictors that have no effect. If we take the same strategy as above, we will vastly overestimate the number of predictors that affect the model. 
+
+For this reason, we might consider setting `mtry` to use the complete predictor set during splitting _if we are trying to select predictors_. While this might slightly decrease the model’s performance, the false positive rate of finding “important predictors” will be significantly reduced. 
 
 ## Wrapper Methods  {#sec-wrappers}
 
@@ -112,4 +331,20 @@ Several other packages do, most notably `r pkg(caret)`. For more information on 
 There is also R code from the _Feature Engineering and Selection_ book that can be found at [`https://github.com/topepo/FES`](https://github.com/topepo/FES).
 
 ## Filter Methods {#sec-filters}
+
+Currently, the majority of supervised filters live in the `r pkg(colino)` package (although this will change in the Autumn of 2025). Those steps include: 
+
+- `step_select_aov()`: filter categorical predictors using the ANOVA F-test.
+- `step_select_boruta()`: feature selection step using the Boruta algorithm [(pdf)](https://www.jmlr.org/papers/volume3/stoppiglia03a/stoppiglia03a.pdf).
+- `step_select_carscore()`: feature selection step using [CAR scores](https://arxiv.org/abs/1007.5516).
+- `step_select_fcbf()`: fast correlation-based filter.
+- `step_select_forests()`: feature selection step using random forest feature importance scores.
+- `step_select_infgain()`: information gain feature selection step.
+- `step_select_linear()`: feature selection step using the magnitude of a linear models' coefficients.
+- `step_select_mrmr()`: apply minimum redundancy maximum relevance feature selection (MRMR).
+- `step_select_relief()`: feature selection step using the Relief algorithm.
+- `step_select_roc()`: filter numeric predictors using ROC curve.
+- `step_select_tree()`: feature selection step using a decision tree importance scores.
+- `step_select_vip()`: feature selection step using a model's feature importance scores or coefficients.
+- `step_select_xtab()`: filter categorical predictors using contingency tables.
 
