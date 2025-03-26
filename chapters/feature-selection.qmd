@@ -31,8 +31,10 @@ options(crayon.enabled = FALSE)
 options(pillar.advice = FALSE, pillar.min_title_chars = Inf, pillar.sigfig = 4)
 
 source("../R/_common.R")
-req_pkg <- c("colino", "tidymodels", "rpart", "partykit")
+req_pkg <- c("bestNormalize", "colino", "janitor", "kernlab", "partykit", 
+             "QSARdata", "ranger", "rpart", "tidymodels")
 ```
+
 ```{r}
 #| label: for-downlit
 #| include: false
@@ -51,7 +53,7 @@ We will use the ...
 #| label: feature-selection-installs
 #| eval: false
 #| echo: true
-req_pkg <- c("colino", "tidymodels", "rpart", "partykit")
+req_pkg <- c("tidymodels", "rpart", "partykit")
 
 # Check to see if they are installed: 
 pkg_installed <- vapply(req_pkg, rlang::is_installed, logical(1))
@@ -66,8 +68,6 @@ if ( any(!pkg_installed) ) {
 pak::pak("stevenpawley/colino")
 ```
 
-Let's load the meta package and manage some between-package function conflicts. 
-
 ```{r}
 #| label: start-tidymodels
 #| results: hide
@@ -76,39 +76,77 @@ Let's load the meta package and manage some between-package function conflicts.
 library(partykit)
 library(tidymodels)
 library(colino)
+library(bestNormalize)
 library(future)
+library(janitor)
 
 tidymodels_prefer()
 theme_set(theme_bw())
 ```
 
-We'll demonstrate these tools using the `hepatic_injury_qsar` data set from the `r pkg(modeldata)` package. These data are an example data set used in drug discovery to help predict when compounds have unwanted side effects (i.e., toxicity).
+```{r}
+#| label: data-import
+#| echo: false
 
-There are two predictor sets. One consists of a series of biological assays (i.e., laboratory tests) and a set of binary indicators for specific structures in the equations that make up the molecules. The outcome has three classes that cause the risk of toxicity for each molecule: none, mild, and severe. There are few molecules with severe toxicity.
+data(PLD, package = "QSARdata")
 
-Even before initial splitting, there are more predictors (`r ncol(hepatic_injury_qsar)`) than data points (`r nrow(hepatic_injury_qsar)`), making feature selection an essential task for these data. 
+drug_data <- 
+  # Merge the outcome data with a subset of possible predictors.
+  PLD_Outcome %>% 
+  full_join(PLD_VolSurfPlus, by = "Molecule") %>% 
+  full_join(PLD_PipelinePilot_FP %>% select(1, contains("FCFP")), 
+            by = "Molecule") %>% 
+  select(-Molecule) %>% 
+  clean_names() %>% 
+  as_tibble() %>% 
+  # Make shorter names:
+  rename_with(~ gsub("vol_surf_plus_", "", .x), everything()) %>% 
+  rename_with(~ gsub("ppfp_fcfp_", "fp_", .x), everything())
 
-We’ll start with a stratified initial split using a 4:1 data partition and use a large number of resamples to evaluate our model pipelines:
+set.seed(106)
+drug_split <- initial_split(drug_data, prop = 0.8, strata = class)
+drug_train <- training(drug_split)
+drug_test <- testing(drug_split)
+drug_rs <- vfold_cv(drug_train, repeats = 3, strata = class)
+```
+
+We'll demonstrate these tools using the [phospholipidosis](https://scholar.google.com/scholar?hl=en&as_sdt=0%2C7&q=%22Drug-induced+phospholipidosis%22&btnG=) (PLD) data set from the `r pkg(QSARdata)` package. These data are an example of a data set used in drug discovery to help predict when compounds have unwanted side effects (e.g., toxicity).
+
+We'll consider two predictor sets. One consists of a series of descriptors of molecules (such as size or weight) and a set of predictors that are binary indicators for important sub-structures in the equations that make up the molecules. The response has two classes ("clean" and toxic outcomes).
+
+Even before initial splitting, there are more predictors (`r ncol(drug_data) - 1`) than data points (`r nrow(drug_data)`), making feature selection an essential task for these data. 
+
+Let's load the meta package, manage some between-package function conflicts, and initialize parallel processing: 
 
 ```{r}
 #| label: start
 library(tidymodels)
 library(colino)
+library(bestNormalize)
 library(future)
+library(janitor)
 
 tidymodels_prefer()
 theme_set(theme_bw())
 plan("multisession")
+```
 
-set.seed(106)
-drug_split <- initial_split(hepatic_injury_qsar, prop = 0.8, strata = class)
-drug_train <- training(drug_split)
-drug_test <- testing(drug_split)
-drug_rs <- vfold_cv(drug_train, repeats = 10, strata = class)
+There are a few different data frames for these data. We'll merge two and clean up and shorten the variable names, then a 4:1 split of the data:
 
+```{r}
+#| label: show-data-import
+#| ref-label: data-import
+```
+
+There is a class imbalance for these data: 
+
+```{r}
+#| label: data-dims
 dim(drug_train)
 drug_train %>% count(class)
 ```
+
+The level "inducer" indicates that the molecule has been proven to cause phospholipidosis.
 
 
 ## Unsupervised Selection {#sec-unsupervised-selection}
@@ -133,13 +171,13 @@ It is suggested that these steps occur early in a recipe, perhaps after any impu
  
 We suggest adding these to a recipe early, after any imputation methods. 
 
-For the drug toxicity data, we can visualize the amount of between-assay correlations by first computing the correlation matrix: 
+For the drug toxicity data, we can visualize the amount of predictor correlations by first computing the correlation matrix: 
 
 ```{r}
 #| label: cor-mat
 cor_mat <- 
   drug_train %>% 
-  select(starts_with("bio")) %>% 
+  select(-class) %>% 
   cor()
 ```
 
@@ -160,14 +198,18 @@ drug_rec <-
   step_zv(all_predictors())
 ```
 
-Returning to correlations, let's plot the distribution of pairwise correlation between assays: 
+Returning to correlations, let's plot the distribution of pairwise correlation between predictors: 
 
 ```{r}
 #| label: cor-dist
 #| fig-height: 3.75
 #| fig-width: 6
 #| out-width: 60%
-tibble(correlation = cor_mat[upper.tri(cor_mat)]) %>% 
+pairwise_cor <- cor_mat[upper.tri(cor_mat)]
+
+sum(abs(pairwise_cor) >= 3 / 4, na.rm = TRUE)
+
+tibble(correlation = pairwise_cor) %>% 
   filter(!is.na(correlation)) %>% 
   ggplot(aes(x = correlation)) + 
   geom_histogram(binwidth = 0.1, col = "white")
@@ -178,10 +220,10 @@ This isn't too bad, but if we wanted to reduce the extreme pairwise correlations
 ```{r}
 #| label: low-cor
 drug_rec %>% 
-  step_corr(starts_with("bio_assay"), threshold = 0.75)
+  step_corr(all_predictors(), threshold = 0.75)
 ```
 
-or search for an optimal cutoff using `threshold = tune()`. 
+or search for an optimal cutoff using `threshold = tune()` (as we will below). 
 
 ## Automatic Selection {#sec-automatic-selection}
 
@@ -246,9 +288,9 @@ get_active_features <- function(x) {
 get_active_features(cart_drug_fit) 
 ```
 
-This shows us the `r length(cart_drug_fit$fit$variable.importance)` predictors that were used along with their relative effect on the model. 
+This shows us the `r length(cart_drug_fit$fit$variable.importance)` predictors used, along with their relative effect on the model. 
 
-These results show what happens with the training set but would a predictor like ``r get_active_features(cart_drug_fit)$predictor[1]`` be consistently selected? 
+These results show what happens with the training set, but would a predictor like ``r get_active_features(cart_drug_fit)$predictor[1]`` be consistently selected? 
 
 To determine this, we can resample the model and save the importance scores for each of the `r nrow(drug_rs)` analysis sets. Let’s take the `get_active_features()` function and add it to a different `control` function that will be executed during resampling: 
 
@@ -294,7 +336,7 @@ A visualization illustrates that a small number of predictors were reliably sele
 #| label: cart-freq
 #| fig-height: 3.75
 #| fig-width: 6
-#| out-width: 80%
+#| out-width: 70%
 
 resampled_selection %>% 
   ggplot(aes(n)) +
@@ -302,7 +344,7 @@ resampled_selection %>%
   labs(x = "# Times Selected (of 100)")
 ```
 
-We can also see that this model has poor performance characteristics: 
+We can also see the model's performance characteristics: 
 
 ```{r}
 #| label: cart-perf
@@ -328,7 +370,7 @@ Several other packages do, most notably `r pkg(caret)`. For more information on 
  - [_Feature Selection using Genetic Algorithms_](https://topepo.github.io/caret/feature-selection-using-genetic-algorithms.html)
  - [_Feature Selection using Simulated Annealing_](https://topepo.github.io/caret/feature-selection-using-simulated-annealing.html)
 
-There is also R code from the _Feature Engineering and Selection_ book that can be found at [`https://github.com/topepo/FES`](https://github.com/topepo/FES).
+R code from the Feature Engineering and Selection book can also be found at [`https://github.com/topepo/FES`](https://github.com/topepo/FES).
 
 ## Filter Methods {#sec-filters}
 
@@ -348,3 +390,169 @@ Currently, the majority of supervised filters live in the `r pkg(colino)` packag
 - `step_select_vip()`: feature selection step using a model's feature importance scores or coefficients.
 - `step_select_xtab()`: filter categorical predictors using contingency tables.
 
+These steps contain tuning parameters that control how many predictors to retain: 
+
+ - `top_n` specifies the number to retain while
+ - `threshold` describes the cut-point for the metric being used to filter
+
+Let’s add a supervised filter based on the popular random forest importance scores to demonstrate. The step requires a model declaration via a `r pkg(parsnip)` specification. We’ll choose random forest model and optimize the number of top predictors that should be retained and then given to the model. 
+
+```{r}
+#| label: vip-rec
+
+base_model <- 
+  rand_forest(trees = 1000, mode = "classification") %>%
+  set_engine("ranger", importance = "permutation")
+
+drug_rec <- 
+  recipe(class ~ ., data = drug_train) %>% 
+  step_zv(all_predictors(), id = "zv") %>% 
+  step_corr(all_numeric_predictors(), threshold = tune(), id = "cor")  %>%
+  step_select_vip(
+    all_numeric_predictors(),
+    outcome = "class",
+    model = base_model,
+    top_p = tune(),
+    id = "vip"
+  ) %>%
+  step_orderNorm(all_numeric_predictors())
+```
+
+Note that we also add a correlation filter and optimize the exclusion threshold. This helps the random forest model since the inclusion of highly correlated predictors [can dilute the importance](https://bookdown.org/max/FES/recursive-feature-elimination.html#fig:greedy-rf-imp) of the set of related predictors. 
+
+We’ll fit a support vector machine model to these data, so the recipe concludes with a step that will normalize the features to have the same distribution (even the binary values). 
+
+Now we can specify the supervised model, tag two parameters for optimization, and then add the model and recipe to a workflow: 
+
+```{r}
+#| label: vip-wflow
+svm_spec <- 
+  svm_rbf(cost = tune(), rbf_sigma = tune()) %>% 
+  set_mode("classification")
+
+vip_svm_wflow <- workflow(drug_rec, svm_spec)
+```
+
+Let’s add specific ranges for the supervised filter parameter since its upper range depends on the data dimensions. We’re not sure how many predictors will pass the unsupervised filter steps, but we’ll guess that we should include, at most, 100 predictors. If we overestimate this number, `step_select_vip()` will adjust the range to the upper limit. 
+
+We'll also adjust the range of the correlation filter to make it more aggressively remove highly correlated predictors: 
+
+```{r}
+#| label: vip-wflow-param
+vip_svm_param <- 
+  vip_svm_wflow %>% 
+  extract_parameter_set_dials() %>% 
+  update(
+  top_p = top_p(c(1L, 100L)), 
+  threshold = threshold(c(0.50, 0.99))
+  )
+```
+
+_Finally_, let’s tune the model via Bayesian optimization and use the Brier score to guide the process to the best values of the tuning parameters: 
+
+```{r}
+#| label: vip-results
+
+ctrl <- control_bayes(no_improve = Inf)
+
+vip_svm_res <- 
+  vip_svm_wflow %>% 
+  tune_bayes(
+    resamples = drug_rs,
+    metrics = metric_set(brier_class, roc_auc),
+    initial = 10L,
+    iter = 50L,
+    control = ctrl,
+    param_info = vip_svm_param
+  )
+```
+
+A visualization of the process shows that the search does reduce the Brier score during the search: 
+
+```{r}
+#| label: vip-performance
+#| fig-height: 3.5
+#| fig-width: 7
+#| out-width: 80%
+
+autoplot(vip_svm_res, metric = "brier_class", type = "performance")
+```
+
+When we plot the parameter choices over iterations, we see that the SVM cost, correlation threshold, and kernel parameter (`rbf_sigma`) all converge to specific ranges. The number of predictors retained fluctuates, and a few choices could be used. 
+
+```{r}
+#| label: vip-param
+#| fig-height: 4
+#| fig-width: 8
+#| out-width: 80%
+
+autoplot(vip_svm_res, type = "parameters")
+```
+
+A plot of the parameter values versus the Brier score tells a similar story:
+
+```{r}
+#| label: vip-profile
+#| fig-height: 4
+#| fig-width: 8
+#| out-width: 80%
+
+autoplot(vip_svm_res, metric = "brier_class")
+```
+
+The numerically best results are:
+
+```{r}
+#| label: vip-best
+show_best(vip_svm_res, metric = "brier_class")
+
+best_param <- select_best(vip_svm_res, metric = "brier_class")
+```
+
+Let's update our workflow with the best parameters, then fit the final model on the entire training set: 
+
+```{r}
+#| label: best-fit
+set.seed(124)
+final_model <- 
+  vip_svm_wflow %>% 
+  finalize_workflow(best_param) %>% 
+  fit(drug_train)
+final_model
+```
+
+How many predictors were removed, and how many made it to the final model? We can write a function to use the `tidy()` method on the recipe steps to assess what was eliminated. The "mold" for the workflow can also tell us how many predictors were passed to the SVM model: 
+
+```{r}
+#| label: function-tidy
+get_filter_info <- function(x) {
+  fit_rec <- extract_recipe(x)
+  # The tidy methods show the predictors that were eliminated:
+  corr_rm <- nrow(tidy(fit_rec, id = "cor"))
+  zv_rm <- nrow(tidy(fit_rec, id = "zv"))
+  vip_rm <- nrow(tidy(fit_rec, id = "vip"))
+  
+  # The mold has a 'predictors' element that describes the
+  # columns which are given to the model: 
+  kept <- 
+    x %>% 
+    extract_mold() %>% 
+    pluck("predictors") %>% 
+    ncol()
+  # We'll save them as a tibble:
+  tibble(corr_rm, zv_rm, vip_rm, kept)
+}
+
+get_filter_info(final_model)
+```
+
+The correlation filter removes a large number of predictors, which is not surprising for this type of data set. 
+
+How does the model work on the test set of `r nrow(drug_test)` molecules?
+
+```{r}
+#| label: test-pred
+test_pred <- augment(final_model, drug_test)
+test_pred %>% brier_class(class, .pred_inducer)
+test_pred %>% roc_auc(class, .pred_inducer)
+```
