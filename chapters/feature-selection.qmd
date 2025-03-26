@@ -479,7 +479,7 @@ A visualization of the process shows that the search does reduce the Brier score
 autoplot(vip_svm_res, metric = "brier_class", type = "performance")
 ```
 
-When we plot the parameter choices over iterations, we see that the SVM cost, correlation threshold, and kernel parameter (`rbf_sigma`) all converge to specific ranges. The number of predictors retained fluctuates, and a few choices could be used. 
+When we plot the parameter choices over iterations, we see that each tuning parameter converges to specific ranges. The number of predictors retained fluctuates, and a few choices could be used (say, between 5 and 15 predictors). 
 
 ```{r}
 #| label: vip-param
