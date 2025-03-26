@@ -109,7 +109,7 @@ set.seed(106)
 drug_split <- initial_split(drug_data, prop = 0.8, strata = class)
 drug_train <- training(drug_split)
 drug_test <- testing(drug_split)
-drug_rs <- vfold_cv(drug_train, repeats = 3, strata = class)
+drug_rs <- vfold_cv(drug_train, repeats = 10, strata = class)
 ```
 
 We'll demonstrate these tools using the [phospholipidosis](https://scholar.google.com/scholar?hl=en&as_sdt=0%2C7&q=%22Drug-induced+phospholipidosis%22&btnG=) (PLD) data set from the `r pkg(QSARdata)` package. These data are an example of a data set used in drug discovery to help predict when compounds have unwanted side effects (e.g., toxicity).
@@ -118,7 +118,7 @@ We'll consider two predictor sets. One consists of a series of descriptors of mo
 
 Even before initial splitting, there are more predictors (`r ncol(drug_data) - 1`) than data points (`r nrow(drug_data)`), making feature selection an essential task for these data. 
 
-Let's load the meta package, manage some between-package function conflicts, and initialize parallel processing: 
+Let's load the meta package, manage some between-package function conflicts, and initialize parallel processing:
 
 ```{r}
 #| label: start
@@ -133,7 +133,7 @@ theme_set(theme_bw())
 plan("multisession")
 ```
 
-There are a few different data frames for these data. We'll merge two and clean up and shorten the variable names, then a 4:1 split of the data:
+There are a few different data frames for these data. We'll merge two and clean up and shorten the variable names, use a 4:1 split of the data, and then initialize multiple repeats of 10-fold cross-validation:
 
 ```{r}
 #| label: show-data-import

@@ -38,7 +38,7 @@ book:
     email: mxkuhn@gmail.com
   date: last-modified
   date-format: YYYY-MM-DD
-  site-url: https://tidymodels.aml4td.org
+  site-url: https://tidymodels.aml4td.org/
   repo-url: https://github.com/aml4td/computing-tidymodels/
   sharing: [twitter, facebook, linkedin]  
   sidebar:
@@ -63,6 +63,7 @@ book:
   - chapters/overfitting.qmd
   - chapters/resampling.qmd
   - chapters/grid.qmd
+  - chapters/iterative-search.qmd
   - chapters/feature-selection.qmd
   - part: "Classification"  
   - part: "Regression"  
