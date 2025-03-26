@@ -100,7 +100,6 @@ sim_rs <- vfold_cv(sim_train)
 
 We’ll tune a boosted classification model using the `r pkg(xgboost)` package, described in a later chapter. We tune multiple parameters and set an additional parameter, `validation`, to be zero. This is used when early stopping, which we will not use:
 
-
 ```{r}
 #| label: sim-spec
 
@@ -417,14 +416,7 @@ ga_best <-
 ga_best
 ```
 
-
-## Sidebar: Bayesian Models {#sec-bayes}
-
-Bayes rules, rstanarm. brms
-
-
 ## Bayesian Optimization {#sec-bayes-opt}
-
 
 There are other packages that use Bayesian optimization: 
 
@@ -440,7 +432,6 @@ and many others. The book [_Gaussian process modeling, design and optimization f
 Currently, tidymodels uses `r pkg(GPfit)` but is moving to `r pkg(GauPro)`.
 
 The `r pkg(tune)` package contains `tune_bayes()` for Bayesian optimization. The syntax is identical to what we've already seen with `tune_sim_anneal()`. 
-
 
 ```{r}
 #| label: sa-bayes

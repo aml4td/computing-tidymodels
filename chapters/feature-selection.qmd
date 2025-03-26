@@ -109,7 +109,7 @@ set.seed(106)
 drug_split <- initial_split(drug_data, prop = 0.8, strata = class)
 drug_train <- training(drug_split)
 drug_test <- testing(drug_split)
-drug_rs <- vfold_cv(drug_train, repeats = 3, strata = class)
+drug_rs <- vfold_cv(drug_train, repeats = 10, strata = class)
 ```
 
 We'll demonstrate these tools using the [phospholipidosis](https://scholar.google.com/scholar?hl=en&as_sdt=0%2C7&q=%22Drug-induced+phospholipidosis%22&btnG=) (PLD) data set from the `r pkg(QSARdata)` package. These data are an example of a data set used in drug discovery to help predict when compounds have unwanted side effects (e.g., toxicity).
