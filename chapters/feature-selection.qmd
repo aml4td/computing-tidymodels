@@ -44,11 +44,11 @@ downlit:::add_depends(
     "ranger", "rpart", "tidymodels"))
 ```
 
+The book’s [_Feature Selection_](https://aml4td.org/chapters/feature-selection.html) chapter focuses on different methods to reduce the number of predictors used by the model
+
 ## Requirements
 
-We will use the ...
-
-`r pkg_list(req_pkg)`
+We will use the following package in this chapter: `r pkg_list(req_pkg)`. To install them:
 
 ```{r}
 #| label: feature-selection-installs
@@ -72,7 +72,7 @@ pak::pak("stevenpawley/colino")
 
 ```{r}
 #| label: start-tidymodels
-#| results: hide
+#| include: false
 #| message: false
 #| warning: false
 library(partykit)
