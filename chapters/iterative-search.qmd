@@ -24,27 +24,29 @@ knitr::opts_chunk$set(
     echo = TRUE
   )
 
-options(digits = 4, width = 84)
+options(digits = 4, width = 90)
 options(dplyr.print_min = 6, dplyr.print_max = 6)
 options(cli.width = 85)
 options(crayon.enabled = FALSE)
 options(pillar.advice = FALSE, pillar.min_title_chars = Inf, pillar.sigfig = 4)
 
 source("../R/_common.R")
-req_pkg <- c("finetune", "future", "GA", "GauPro", "probably", "tidymodels", "xgboost")
+req_pkg <- c("finetune", "GA", "probably", "tidymodels", "xgboost")
 
 req_pkg_fmt <- purrr::map_chr(req_pkg, ~ pkg_chr(.x))
 ```
 
+This [book chapter](https://tidymodels.aml4td.org/chapters/iterative-search.html) discusses several search procedures for finding optimal (or at least acceptable) tuning parameter values. 
+
 ## Requirements
 
-You’ll need `r length(req_pkg)` packages (`r req_pkg_fmt`) for this chapter. The `r pkg(mixOmics)` is a Bioconductor package and is not on CRAN. For the others, we can install them as usual but we'll get `r pkg(mixOmics)` from GitHub:
+This chapter requires `r length(req_pkg)` packages (`r req_pkg_fmt`). To install: 
 
 ```{r}
 #| label: iterative-installs
 #| eval: false
 #| echo: true
-req_pkg <- c("finetune", "future", "GA", "GauPro", "probably", "tidymodels", "xgboost")
+req_pkg <- c("finetune", "GA", "probably", "tidymodels", "xgboost")
 
 # Check to see if they are installed: 
 pkg_installed <- vapply(req_pkg, rlang::is_installed, logical(1))
@@ -68,6 +70,8 @@ library(future)
 library(probably)
 ```
 
+Let's load the packages and set some preferences:
+
 ```{r}
 #| label: startup
 
@@ -77,13 +81,12 @@ library(finetune)
 library(probably)
 library(future)
 
-
 tidymodels_prefer()
 theme_set(theme_bw())
 plan("multisession")
 ```
 
-To reduce the complexity of the example, we’ll use a simulated classification data set containing numeric predictors. We’ll simulate 1,000 samples using a simulation system, the details of which can be found in the [`r pkg(modeldata)` documentation](https://modeldata.tidymodels.org/reference/sim_classification.html#details). There are linear, nonlinear, and interacting features in the data set, and the classes are fairly balanced. We’ll use a 3:1 split for training and testing as well as 10-fold cross-validation:
+To reduce the complexity of the example, we’ll use a simulated classification data set containing numeric predictors. We’ll simulate 1,000 samples using a simulation system, the details of which can be found in the [`r pkg(modeldata)` documentation](https://modeldata.tidymodels.org/reference/sim_classification.html#details). The data set has linear, nonlinear, and interacting features, and the classes are fairly balanced. We’ll use a 3:1 split for training and testing as well as 10-fold cross-validation:
 
 ```{r}
 #| label: get-sim-data
@@ -124,7 +127,7 @@ Tree-based models require little to no preprocessing so we will use a simple R f
 bst_wflow <- workflow(class ~ ., bst_spec)
 ```
 
-From the workflow, we create a _parameters_ object and set the ranges for two parameters. `mtry` requires an upper bound to be set since it is dependent on the number of model terms in the data set. We’ll need parameter information since most iterative methods need to know the possible ranges as well as the type of parameter (e.g., integer, character, etc.) and/or any transformations of the values. 
+From the workflow, we create a _parameters_ object and set the ranges for two parameters. `mtry` requires an upper bound to be set since it depends on the number of model terms in the data set. We’ll need parameter information since most iterative methods need to know the possible ranges as well as the type of parameter (e.g., integer, character, etc.) and/or any transformations of the values. 
 
 ```{r}
 #| label: sim-param
@@ -137,7 +140,7 @@ bst_param <-
   )
 ```
 
-We can now fit and/or tune, models. We’ll declare what metrics should be collected and then create a small space-filling design that is used as the starting point for simulated annealing and Bayesian optimization. We _could_ let the system make these initial values for us, but we’ll create them now so that we can reuse the results and have a common starting place. 
+We can now fit and/or tune models. We’ll declare what metrics should be collected and then create a small space-filling design that is used as the starting point for simulated annealing and Bayesian optimization. We _could_ let the system make these initial values for us, but we’ll create them now so that we can reuse the results and have a common starting place. 
 
 ```{r}
 #| label: initial
@@ -176,7 +179,7 @@ The finetune package contains `finetune::tune_sim_anneal()` that can incremental
 - `initial`: Either: 
 	- An integer that declares how many points in a space-filling design should be created and evaluated before proceeding. 
 	- An object from a previous run of `tune_grid()` or one of the other `tune_*()` functions. 
-- `iter`: An integer for the maximum number of search iterations. 
+- `iter`: An integer for the maximum search iterations. 
 
 Also of note is `control_sim_anneal()`, which helps save additional results and controls logging, and if restarts or early stopping should be used. 
 
@@ -208,7 +211,7 @@ sa_res <-
   )
 ```  
 
-The Brier score has been reduced from the intial value of `r round(show_best(initial_res, metric = "brier_class", n = 1)$mean, 3)` to a new best of `r round(show_best(sa_res, metric = "brier_class", n = 1)$mean, 3)`. We'll estimate:
+The Brier score has been reduced from the initial value of `r round(show_best(initial_res, metric = "brier_class", n = 1)$mean, 3)` to a new best of `r round(show_best(sa_res, metric = "brier_class", n = 1)$mean, 3)`. We'll estimate:
 
 ```{r}
 #| label: sa-intervals
@@ -248,11 +251,11 @@ Finally, a plot of performance metrics can be used via `type = "performance"`:
 autoplot(sa_res, metric = "brier_class", type = "performance")
 ```
 
-If we had used `control_sim_anneal(save_worflow = TRUE)`, we could use `fit_best()` to determine the candidate with the best metric value then fit that model to the training set. 
+If we had used `control_sim_anneal(save_worflow = TRUE)`, we could use `fit_best()` to determine the candidate with the best metric value and then fit that model to the training set. 
 
 ## Genetic Algorithms  {#sec-genetic-algo}
 
-tidymodels has no API or function for optimizing models using genetic algorithms. However, there is unsupported code below to do this as long as the tuning parameters are all numeric. We’ll using the `r pkg(GA)` package for the computations, and this will require: 
+tidymodels has no API or function for optimizing models using genetic algorithms. However, there is unsupported code (below) for doing this as long as the tuning parameters are all numeric. We’ll use the `r pkg(GA)` package for the computations, and this will require: 
 
 - The upper and lower bounds of the parameters
 - Code to transform the parameter values (if needed)
@@ -275,7 +278,7 @@ The remainder of the tasks should occur within the GA's processing. This functio
 
 yardstick_fitness <- function(values, wflow, param_info, metrics, ...) {
 
-  # load reqired packages if run in parallel
+  # load required packages if run in parallel
 	require(tidymodels)
 
 	info <- as_tibble(metrics)
@@ -338,6 +341,9 @@ Now, let's initialize the search using a space-filling design (with 10 candidate
 #| label: ga-initial-pop
 pop_size <- 10
 grid_ga <- grid_space_filling(bst_param, size = pop_size, original = FALSE)
+
+# We apply the GA operators on the transformed scale of the parameters (if any).
+# For this example, two use a log-transform: 
 grid_ga$learn_rate <- log10(grid_ga$learn_rate)
 grid_ga$loss_reduction <- log10(grid_ga$loss_reduction)
 ```
@@ -351,7 +357,7 @@ Now we can run `GA::ga()` to begin the process:
 set.seed(158)
 ga_res <-
   ga(
-    # GA options:
+    # ga() options:
     type = "real-valued",
     fitness = yardstick_fitness,
     lower = min_vals,
@@ -380,7 +386,7 @@ Here is a plot of the best results per population and the mean result (both are 
 #| fig-height: 3.75
 #| out-width: 65%
 
-# Negate the fitness value since Brier score should be minimized.
+# Negate the fitness value since the Brier score should be minimized.
 -attr(ga_res,"summary") %>% 
   as_tibble() %>% 
   mutate(iteration = row_number()) %>% 
@@ -418,7 +424,7 @@ ga_best
 
 ## Bayesian Optimization {#sec-bayes-opt}
 
-There are other packages that use Bayesian optimization: 
+Numerous packages use Bayesian optimization: 
 
 - [`r pkg(BayesGP)`](https://cran.r-project.org/package=BayesGP)
 - [`r pkg(BayesGPfit)`](https://cran.r-project.org/package=BayesGPfit)
@@ -453,7 +459,7 @@ bo_res <- bst_wflow %>%
   )
 ```
 
-The same helper functions are used to interogate the results and to create diagnostic plots: 
+The same helper functions are used to interrogate the results and to create diagnostic plots: 
 
 ```{r}
 #| label: bo-intervals
@@ -463,6 +469,8 @@ show_best(bo_res, metric = "brier_class") %>%
   relocate(mean)
 ```
 
+These results are about the same as those of the SA search. We can plot the data and see that some parameters (number of trees, learning rate, minimum node size, and the sampling proportion) appear to converge to specific values: 
+
 ```{r}
 #| label: bo-profile
 #| fig-width: 7
@@ -470,6 +478,8 @@ show_best(bo_res, metric = "brier_class") %>%
 #| out-width: 65%
 autoplot(bo_res, metric = "brier_class")
 ```
+
+Here we see that the learning rate and the minumum node size reach a steady-state: 
 
 ```{r}
 #| label: bo-history
@@ -479,6 +489,8 @@ autoplot(bo_res, metric = "brier_class")
 autoplot(bo_res, metric = "brier_class", type = "parameters")
 ```
 
+A plot of the overall progress: 
+
 ```{r}
 #| label: bo-performance
 #| fig-width: 6
@@ -487,7 +499,7 @@ autoplot(bo_res, metric = "brier_class", type = "parameters")
 autoplot(bo_res, metric = "brier_class", type = "performance")
 ```
 
-There are other packages that use Bayesian optimization: 
+Other packages use Bayesian optimization: 
 
 - [`r pkg(mlr3mbo)`](https://mlr3mbo.mlr-org.com/)
 - [`r pkg(mlrMBO)`](https://mlrmbo.mlr-org.com/)

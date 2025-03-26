@@ -78,6 +78,7 @@ Imports:
     viridis,
     workflows,
     workflowsets,
+    xgboost,
     xml2,
     yaml,
     yardstick (>= 1.1.0.9000)
