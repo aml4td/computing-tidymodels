@@ -39,8 +39,9 @@ req_pkg <- c("bestNormalize", "colino", "janitor", "kernlab", "partykit",
 #| label: for-downlit
 #| include: false
 
-downlit:::add_depends(c("colino", "recipes", "textrecipes", 
-                        "future", "tidymodels", "rpart", "partykit"))
+downlit:::add_depends(
+  c("bestNormalize", "colino", "janitor", "kernlab", "partykit", "QSARdata",
+    "ranger", "rpart", "tidymodels"))
 ```
 
 ## Requirements
@@ -53,7 +54,8 @@ We will use the ...
 #| label: feature-selection-installs
 #| eval: false
 #| echo: true
-req_pkg <- c("tidymodels", "rpart", "partykit")
+req_pkg <- c("bestNormalize", "janitor", "kernlab", "partykit", 
+             "QSARdata", "ranger", "rpart", "tidymodels")
 
 # Check to see if they are installed: 
 pkg_installed <- vapply(req_pkg, rlang::is_installed, logical(1))
@@ -147,7 +149,6 @@ drug_train %>% count(class)
 ```
 
 The level "inducer" indicates that the molecule has been proven to cause phospholipidosis.
-
 
 ## Unsupervised Selection {#sec-unsupervised-selection}
 
