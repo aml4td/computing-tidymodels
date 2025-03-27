@@ -39,3 +39,15 @@ back <- function(stub) {
   )
 }
 
+# ------------------------------------------------------------------------------
+
+dl_pkgs <- 
+  c("bestNormalize", "bonsai", "broom", "colino", "dials", "dplyr", 
+    "embed", "finetune", "future", "GA", "ggplot2", "janitor", "naniar", 
+    "parsnip", "partykit", "patchwork", "probably", "purrr", "recipes", 
+    "rsample", "rules", "rules", "sf", "spatialsample", "textrecipes", 
+    "tibble", "tidymodels", "tidyr", "tidysdm", "tune", "workflows", 
+    "workflowsets", "yardstick")
+
+downlit:::add_depends(dl_pkgs)
+

@@ -36,12 +36,6 @@ source("../R/_common.R")
 req_pkg <- c("Cubist", "future", "parallelly", "probably", "rules", "spatialsample", 
              "tidymodels", "tidysdm")
 ```
-```{r}
-#| label: for-downlit
-#| include: false
-
-downlit:::add_depends(c("rsample", "spatialsample", "parallelly"))
-```
 
 ## Requirements
 

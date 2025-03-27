@@ -35,15 +35,6 @@ req_pkg <- c("bestNormalize", "colino", "janitor", "kernlab", "partykit",
              "QSARdata", "ranger", "rpart", "tidymodels")
 ```
 
-```{r}
-#| label: for-downlit
-#| include: false
-
-downlit:::add_depends(
-  c("bestNormalize", "colino", "janitor", "kernlab", "partykit", "QSARdata",
-    "ranger", "rpart", "tidymodels"))
-```
-
 The book’s [_Feature Selection_](https://aml4td.org/chapters/feature-selection.html) chapter focuses on different methods to reduce the number of predictors used by the model
 
 ## Requirements

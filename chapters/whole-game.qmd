@@ -836,18 +836,8 @@ To do so, tidymodels requires you to specify a _parallel backend_. There are sev
 #| eval: false
 
 cores <- parallel::detectCores(logical = FALSE)
-library(doParallel)
-cl <- makePSOCKcluster(cores)
-registerDoParallel(cl)
-```
-
-After we are finished, we also close down the cluster: 
-
-```{r}
-#| label: parallel-stop
-#| eval: false
-
-parallel::stopCluster(cl)
+library(future)
+plan(multisession, workers = cores)
 ```
 
 There can be significant speed-ups when running in parallel. See the [section in the tidymodels book](https://www.tmwr.org/grid-search#parallel-processing) for more details. 
