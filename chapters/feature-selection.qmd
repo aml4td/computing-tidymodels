@@ -326,6 +326,7 @@ A visualization illustrates that a small number of predictors were reliably sele
 
 ```{r}
 #| label: cart-freq
+#| renderings: [light, dark]
 #| fig-height: 3.75
 #| fig-width: 6
 #| out-width: 70%
@@ -333,6 +334,11 @@ A visualization illustrates that a small number of predictors were reliably sele
 resampled_selection %>% 
   ggplot(aes(n)) +
   geom_histogram(binwidth = 2, col = "white") +
+  labs(x = "# Times Selected (of 100)")
+
+resampled_selection %>% 
+  ggplot(aes(n)) +
+  geom_histogram(binwidth = 2, col = "red") +
   labs(x = "# Times Selected (of 100)")
 ```
 

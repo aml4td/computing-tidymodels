@@ -5,12 +5,18 @@ project:
 format:
   html:
     toc: true
-    theme: [simplex, includes/aml4td.scss]
+    theme:
+      light:
+        - simplex
+        - includes/aml4td-light.scss
+      dark:
+        - darkly    
+        - includes/aml4td-dark.scss        
     mainfont: 'Libre Franklin'
-    highlight-style: arrow
+    highlight-style: github
+    #   light: arrow
+    #   dark: arrow-dark
     code-link: true
-    code-block-bg: "#f9fafd"
-    code-block-border-left: "#e1e7f6"
     fig-width: 6
     fig-height: 4.25
     fig-align: center
