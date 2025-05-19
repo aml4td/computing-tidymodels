@@ -35,6 +35,7 @@ options(pillar.advice = FALSE, pillar.min_title_chars = Inf, pillar.sigfig = 4)
 source("../R/_common.R")
 req_pkg <- c("Cubist", "future", "parallelly", "probably", "rules", "spatialsample", 
              "tidymodels", "tidysdm")
+
 ```
 
 ## Requirements
@@ -542,7 +543,7 @@ The `future` package can run the resamples in parallel. The `plan()` function se
  - The "cluster" option is most useful for having worker processes on different machines. 
  - The "sequential" plan is regular, non-parallel computing. 
  
-There are several other packages with plans: `r pkg(future.batchtools)`, `r pkg(future.callr)`, and `r pkg(future.mirai)`. The last is (as of this writing) experimental but shows great promise. 
+There are several other packages with plans: `r pkg(future.batchtools)`, `r pkg(future.callr)`, and `r pkg(future.mirai)`. 
 
 Once we know a plan, we run the following code (once) before running operations that can be done in parallel: 
 

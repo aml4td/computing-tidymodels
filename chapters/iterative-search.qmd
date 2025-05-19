@@ -435,7 +435,7 @@ Numerous packages use Bayesian optimization:
 
 and many others. The book [_Gaussian process modeling, design and optimization for the applied sciences_](https://bookdown.org/rbg/surrogates/) also contains descriptions of many other GO packages. 
 
-Currently, tidymodels uses `r pkg(GPfit)` but is moving to `r pkg(GauPro)`.
+Currently, tidymodels uses `r pkg(GPfit)`.
 
 The `r pkg(tune)` package contains `tune_bayes()` for Bayesian optimization. The syntax is identical to what we've already seen with `tune_sim_anneal()`. 
 

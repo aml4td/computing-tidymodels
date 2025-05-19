@@ -85,8 +85,8 @@ Imports:
 Suggests: 
     testthat (>= 3.0.0)
 Remotes:
-    mixOmicsTeam/mixOmics,
     r-lib/downlit,
+    tidymodels/recipes@v1.2.1,
     stevenpawley/colino
 Config/testthat/edition: 3
 Encoding: UTF-8

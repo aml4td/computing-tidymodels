@@ -59,7 +59,7 @@ if ( any(!pkg_installed) ) {
 
 Once you've installed `r pkg(brulee)`, you should load it using `library(brulee)` to install the underlying `torch` executables. You only have to do this once. 
 
-Two other packages are described but not directly used: `r pkg(parallel)` and `r pkg(doParallel)`. 
+Two other packages are described but not directly used: `r pkg(parallel)` and `r pkg(future)`. 
 
 Let's run some code to get started: 
 

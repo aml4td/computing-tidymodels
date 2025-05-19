@@ -85,7 +85,7 @@ make_matrix <- function(x, cols = 3) {
 
 write_pkg_list <- function() {
   pkgs <- get_pkg_depends()
-  excld <- c("sessioninfo", "tinytex", "cli", "devtools", "doParallel",
+  excld <- c("sessioninfo", "tinytex", "cli", "devtools", "future",
              "kableExtra", "knitr", "pak", "renv", "BiocParallel",  "magick",  
              "rsvg",  "pillar",  "jsonlite",  "gifski",  "future",  "text2vec",  
              "tibble",  "waldo",  "xfun",  "yaml")
