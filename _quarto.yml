@@ -44,27 +44,32 @@ book:
   sidebar:
       style: "docked"
       title: " "
+      collapse-level: 1
   reader-mode: true
   bread-crumbs: false
   chapters:
   - index.qmd
   - chapters/news.qmd
   - chapters/contributing.qmd  
-  - chapters/introduction.qmd
-  - chapters/whole-game.qmd
+  - part: "Introduction"  
+    chapters:  
+    - chapters/introduction.qmd
+    - chapters/whole-game.qmd
   - part: "Preparation"
-  - chapters/initial-data-splitting.qmd
-  - chapters/missing-data.qmd
-  - chapters/numeric-predictors.qmd
-  - chapters/categorical-predictors.qmd  
-  - chapters/embeddings.qmd  
-  - chapters/interactions-nonlinear.qmd
+    chapters: 
+    - chapters/initial-data-splitting.qmd
+    - chapters/missing-data.qmd
+    - chapters/numeric-predictors.qmd
+    - chapters/categorical-predictors.qmd  
+    - chapters/embeddings.qmd  
+    - chapters/interactions-nonlinear.qmd
   - part: "Optmization"
-  - chapters/overfitting.qmd
-  - chapters/resampling.qmd
-  - chapters/grid.qmd
-  - chapters/iterative-search.qmd
-  - chapters/feature-selection.qmd
+    chapters:   
+    - chapters/overfitting.qmd
+    - chapters/resampling.qmd
+    - chapters/grid.qmd
+    - chapters/iterative-search.qmd
+    - chapters/feature-selection.qmd
   - part: "Classification"  
   - part: "Regression"  
   - part: "Characterization"  
