@@ -445,7 +445,7 @@ _Finally_, let’s tune the model via Bayesian optimization and use the Brier sc
 ```{r}
 #| label: vip-results
 
-ctrl <- control_bayes(no_improve = Inf)
+ctrl <- control_bayes(no_improve = Inf, parallel_over = "everything")
 
 vip_svm_res <- 
   vip_svm_wflow %>% 
@@ -453,7 +453,7 @@ vip_svm_res <-
     resamples = drug_rs,
     metrics = metric_set(brier_class, roc_auc),
     initial = 10L,
-    iter = 50L,
+    iter = 25L,
     control = ctrl,
     param_info = vip_svm_param
   )
