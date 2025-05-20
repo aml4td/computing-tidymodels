@@ -58,7 +58,6 @@ if ( any(!pkg_installed) ) {
 }
 ```
 
-
 ```{r}
 #| label: sshhh-startup
 #| include: false
@@ -253,6 +252,8 @@ autoplot(sa_res, metric = "brier_class", type = "performance")
 
 If we had used `control_sim_anneal(save_worflow = TRUE)`, we could use `fit_best()` to determine the candidate with the best metric value and then fit that model to the training set. 
 
+`r back("iterative-search.html#sec-sim-anneal")`
+
 ## Genetic Algorithms  {#sec-genetic-algo}
 
 tidymodels has no API or function for optimizing models using genetic algorithms. However, there is unsupported code (below) for doing this as long as the tuning parameters are all numeric. We’ll use the `r pkg(GA)` package for the computations, and this will require: 
@@ -264,7 +265,6 @@ tidymodels has no API or function for optimizing models using genetic algorithms
 
 To get started, let’s work with the parameter object named `bst_param`. We can use `purrr::map_dbl()` to get vectors of the minimum and maximum values. These should be in the transformed space (if needed):
 
-
 ```{r}
 #| label: ga-prep
 min_vals <- map_dbl(bst_param$object, ~ .x$range[[1]])
@@ -275,63 +275,64 @@ The remainder of the tasks should occur within the GA's processing. This functio
 
 ```{r}
 #| label: ga-fitness
-
 yardstick_fitness <- function(values, wflow, param_info, metrics, ...) {
+  # Quietly load required packages if run in parallel
+  shhh <- purrr::quietly(require)
+  loaded <- lapply(c("tidymodels", required_pkgs(wflow)), shhh)
 
-  # load required packages if run in parallel
-	require(tidymodels)
+  info <- as_tibble(metrics)
 
-	info <- as_tibble(metrics)
-	
-	# Check to see if there are any qualitative parameters and stop if so.
-	qual_check <- map_lgl(param_info$object, ~ inherits(.x, "qual_param"))
-	if (any(qual_check)) {
-	  cli::cli_abort("The function only works for quantitative tuning parameters.")
-	}
+  # Check to see if there are any qualitative parameters and stop if so.
+  qual_check <- map_lgl(param_info$object, ~ inherits(.x, "qual_param"))
+  if (any(qual_check)) {
+    cli::cli_abort(
+      "The function only works for quantitative tuning parameters."
+    )
+  }
 
-	# Back-transform parameters if they use a transformation (inputs are in 
-	# transformed scales)
-	values <- purrr::map2_dbl(
-		values,
-		param_info$object,
-		~ dials::value_inverse(.y, .x)
-	)
-	
-	# Convert integer parameters to integers
-	is_int <- map_lgl(param_info$object, ~ .x$type == "integer")
-	int_param <- param_info$id[is_int]
-	for (i in int_param) {
-	  ind <- which(param_info$id == i)
-	  values[[ind]] <- floor(values[[ind]])
-	}
-	
-	# Convert from vector to a tibble
-	values <- matrix(values, nrow = 1)
-	colnames(values) <- param_info$id
-	values <- as_tibble(values)
-	
-	# We'll run _populations_ within a generation in parallel. Let's make
-	# sure to turn off parallelization of resamples here: 
-	ctrl <- control_grid(allow_par = FALSE)
+  # Back-transform parameters if they use a transformation (inputs are in
+  # transformed scales)
+  values <- purrr::map2_dbl(
+    values,
+    param_info$object,
+    ~ dials::value_inverse(.y, .x)
+  )
 
-	# Resample / validate metrics
-	res <- tune_grid(
-		wflow,
-		metrics = metrics,
-		param_info = param_info,
-		grid = values,
-		control = ctrl,
-		...
-	)
+  # Convert integer parameters to integers
+  is_int <- map_lgl(param_info$object, ~ .x$type == "integer")
+  int_param <- param_info$id[is_int]
+  for (i in int_param) {
+    ind <- which(param_info$id == i)
+    values[[ind]] <- floor(values[[ind]])
+  }
 
-	# Fitness is to be maximized so change direction if needed
-	best_res <- show_best(res, metric = info$metric[1])
-	if (info$direction[1] == "minimize") {
-		obj_value <- -best_res$mean
-	} else {
-		obj_value <- best_res$mean
-	}
-	obj_value
+  # Convert from vector to a tibble
+  values <- matrix(values, nrow = 1)
+  colnames(values) <- param_info$id
+  values <- as_tibble(values)
+
+  # We'll run _populations_ within a generation in parallel. Let's make
+  # sure to turn off parallelization of resamples here:
+  ctrl <- control_grid(allow_par = FALSE)
+
+  # Resample / validate metrics
+  res <- tune_grid(
+    wflow,
+    metrics = metrics,
+    param_info = param_info,
+    grid = values,
+    control = ctrl,
+    ...
+  )
+
+  # Fitness is to be maximized so change direction if needed
+  best_res <- show_best(res, metric = info$metric[1])
+  if (info$direction[1] == "minimize") {
+    obj_value <- -best_res$mean
+  } else {
+    obj_value <- best_res$mean
+  }
+  obj_value
 }
 ```
 
@@ -389,12 +390,12 @@ Here is a plot of the best results per population and the mean result (both are 
 # Negate the fitness value since the Brier score should be minimized.
 -attr(ga_res,"summary") %>% 
   as_tibble() %>% 
-  mutate(iteration = row_number()) %>% 
-  select(best = max, mean = mean, iteration) %>% 
+  mutate(generation = row_number()) %>% 
+  select(best = max, mean = mean, generation) %>% 
   pivot_longer(c(best, mean), names_to = "summary", values_to = "fitness") %>% 
-  ggplot(aes(iteration, fitness, col = summary, pch = summary)) + 
+  ggplot(aes(generation, fitness, col = summary, pch = summary)) + 
   geom_point() + 
-  labs(x = "Iteration", y = "Brier Score (CV)")
+  labs(x = "Generation", y = "Brier Score (CV)")
 ```
 
 The best results are in a slot called `solution`. Let's remap that to the original parameter values: 
@@ -421,6 +422,8 @@ ga_best <-
 
 ga_best
 ```
+
+`r back("iterative-search.html#sec-genetic-algo")`
 
 ## Bayesian Optimization {#sec-bayes-opt}
 
@@ -505,3 +508,5 @@ Other packages use Bayesian optimization:
 - [`r pkg(mlrMBO)`](https://mlrmbo.mlr-org.com/)
 - [`r pkg(ParBayesianOptimization)`](https://github.com/AnotherSamWilson/ParBayesianOptimization)
 - [`r pkg(rBayesianOptimization)`](https://github.com/yanyachen/rBayesianOptimization)
+
+`r back("iterative-search.html#sec-bayes-opt")`

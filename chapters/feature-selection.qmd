@@ -217,13 +217,15 @@ drug_rec %>%
 
 or search for an optimal cutoff using `threshold = tune()` (as we will below). 
 
+`r back("feature-selection.html#sec-unsupervised-selection")`
+
 ## Automatic Selection {#sec-automatic-selection}
 
 The text mentioned that there are types of models that automatically select predictors. Tree-based models typically fall into this category. 
 
 To demonstrate, let’s fit a Classification and Regression Tree ([CART](https://www.nature.com/articles/nmeth.4370)) to the training set and see how many predictors are removed. 
 
-Before doing so, let’s _turn off_ a feature of this model. CART computes special alternate splits during training (“surrogate” and “competing” splits) to aid with things like missing value imputation. We’ll use the built-in feature importance measure to see how many predictors were used. Unfortunately, those measures will include splits not actually used by the model, so we prohibit these from being listed using `rpart.control()`. 
+Before doing so, let’s _turn off_ a feature of this model. CART computes special alternate splits during training ("surrogate" and "competing" splits) to aid with things like missing value imputation. We’ll use the built-in feature importance measure to see how many predictors were used. Unfortunately, those measures will include splits not actually used by the model, so we prohibit these from being listed using `rpart.control()`. 
 
 We can pass that to the model fit when we set the engine: 
 
@@ -237,9 +239,9 @@ cart_spec <-
   set_engine("rpart", control = !!cart_ctrl)
 ```
 
-**Note** the use of `!!` (“bang-bang”) when adding `cart_ctrl` as an engine option. If we had just used `control = cart_ctrl`, it tells R to look for a reference to object “`cart_ctrl`”, which resides in the global environment. Ordinarily, that works fine. However, if we use parallel processing, that reference is not available to the worker processes, and an error will occur. 
+**Note** the use of `!!` ("bang-bang") when adding `cart_ctrl` as an engine option. If we had just used `control = cart_ctrl`, it tells R to look for a reference to object "`cart_ctrl`", which resides in the global environment. Ordinarily, that works fine. However, if we use parallel processing, that reference is not available to the worker processes, and an error will occur. 
 
-Using the bang-bang operator, we replace the _reference_ to “`cart_ctrl`” with the actual value of that object. It splices the actual data into the model specification so parallel workers can find it. 
+Using the bang-bang operator, we replace the _reference_ to "`cart_ctrl`" with the actual value of that object. It splices the actual data into the model specification so parallel workers can find it. 
 Here’s the model fit: 
 
 ```{r}
@@ -348,7 +350,9 @@ One additional note about using tree-based models to automatically select predic
 
 However, this also means that many tree ensembles will have prediction functions that include predictors that have no effect. If we take the same strategy as above, we will vastly overestimate the number of predictors that affect the model. 
 
-For this reason, we might consider setting `mtry` to use the complete predictor set during splitting _if we are trying to select predictors_. While this might slightly decrease the model’s performance, the false positive rate of finding “important predictors” will be significantly reduced. 
+For this reason, we might consider setting `mtry` to use the complete predictor set during splitting _if we are trying to select predictors_. While this might slightly decrease the model’s performance, the false positive rate of finding "important predictors" will be significantly reduced. 
+
+`r back("feature-selection.html#sec-automatic-selection")`
 
 ## Wrapper Methods  {#sec-wrappers}
 
@@ -363,6 +367,8 @@ Several other packages do, most notably `r pkg(caret)`. For more information on 
  - [_Feature Selection using Simulated Annealing_](https://topepo.github.io/caret/feature-selection-using-simulated-annealing.html)
 
 R code from the Feature Engineering and Selection book can also be found at [`https://github.com/topepo/FES`](https://github.com/topepo/FES).
+
+`r back("feature-selection.html#sec-wrappers")`
 
 ## Filter Methods {#sec-filters}
 
@@ -548,3 +554,5 @@ test_pred <- augment(final_model, drug_test)
 test_pred %>% brier_class(class, .pred_inducer)
 test_pred %>% roc_auc(class, .pred_inducer)
 ```
+
+`r back("feature-selection.html#sec-filters")`

@@ -196,6 +196,7 @@ The relevant function here is `mc_cv()` with two main arguments:
 For example: 
 
 ```{r}
+#| label: mc-cv-args
 set.seed(380)
 mc_cv(concrete_tr, times = 3, prop = 9 / 10)
 
@@ -242,7 +243,7 @@ concrete_rs <- bootstraps(concrete, times = 5, apparent = TRUE)
 
 Note that the `id` column reflects this, and the split label shows that the analysis and assessment sets are the same size. 
 
-The tidymodels resampling functions are aware of the potential presence of the “apparent” sample and will _not_ include it at inappropriate times. For example, if we resample a model with and without using `apparent = TRUE`, we’ll get the same results as long as we use the same random number seed to make each set of resamples. 
+The tidymodels resampling functions are aware of the potential presence of the "apparent" sample and will _not_ include it at inappropriate times. For example, if we resample a model with and without using `apparent = TRUE`, we’ll get the same results as long as we use the same random number seed to make each set of resamples. 
 
 Secondly, there is a `strata` argument for this function. That enables different bootstrap samples to be taken within each stratum, which are combined into the final resampling set. _Technically_, this isn’t a bootstrap sample, but it is probably close enough to be useful. 
 
