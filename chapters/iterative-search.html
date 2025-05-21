@@ -1,0 +1,1890 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.31">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>12&nbsp; Iterative Search – Tidymodels Computing Supplement</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../chapters/feature-selection.html" rel="next">
+<link href="../chapters/grid.html" rel="prev">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-e1a5c8363afafaef2c763b6775fbf3ca.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-109f5ab760e167ab0a7984bfec541ac0.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/quarto-contrib/fontawesome6-1.2.0/all.min.css" rel="stylesheet">
+<link href="../site_libs/quarto-contrib/fontawesome6-1.2.0/latex-fontsize.css" rel="stylesheet"><script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+</head>
+<body class="nav-sidebar docked quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top"><nav class="quarto-secondary-nav"><div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <a class="flex-grow-1 no-decor" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+          <h1 class="quarto-secondary-nav-title"><span id="sec-iterative-search" class="quarto-section-identifier"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Iterative Search</span></span></h1>
+        </a>     
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav></header><!-- content --><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto"><div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../"></a> 
+        <div class="sidebar-tools-main tools-wide">
+    <a href="https://github.com/aml4td/computing-tidymodels/" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
+    <div class="dropdown">
+      <a href="" title="Share" id="quarto-navigation-tool-dropdown-0" class="quarto-navigation-tool dropdown-toggle px-1" data-bs-toggle="dropdown" aria-expanded="false" role="link" aria-label="Share"><i class="bi bi-share"></i></a>
+      <ul class="dropdown-menu" aria-labelledby="quarto-navigation-tool-dropdown-0">
+<li>
+            <a class="dropdown-item sidebar-tools-main-item" href="https://twitter.com/intent/tweet?url=%7Curl%7C">
+              <i class="bi bi-twitter pe-1"></i>
+            Twitter
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item sidebar-tools-main-item" href="https://www.facebook.com/sharer/sharer.php?u=%7Curl%7C">
+              <i class="bi bi-facebook pe-1"></i>
+            Facebook
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item sidebar-tools-main-item" href="https://www.linkedin.com/sharing/share-offsite/?url=%7Curl%7C">
+              <i class="bi bi-linkedin pe-1"></i>
+            LinkedIn
+            </a>
+          </li>
+      </ul>
+</div>
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Preface</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/news.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">News</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/contributing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Contributing</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="false">
+ <span class="menu-text">Introduction</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 ">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/introduction.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/whole-game.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">The Whole Game</span></span></a>
+  </div>
+</li>
+      </ul>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false">
+ <span class="menu-text">Preparation</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 ">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/initial-data-splitting.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Initial Data Splitting</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/missing-data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Missing Data</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/numeric-predictors.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Transforming Numeric Predictors</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/categorical-predictors.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Working with Categorical Predictors</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/embeddings.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Embeddings</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/interactions-nonlinear.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Interactions and Nonlinear Features</span></span></a>
+  </div>
+</li>
+      </ul>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Optmization</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/overfitting.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Overfitting</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/resampling.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Measuring Performance with Resampling</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/grid.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Grid Search</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/iterative-search.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Iterative Search</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/feature-selection.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Feature Selection</span></span></a>
+  </div>
+</li>
+      </ul>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <span class="sidebar-item-text sidebar-link text-start">
+ <span class="menu-text">Classification</span></span>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <span class="sidebar-item-text sidebar-link text-start">
+ <span class="menu-text">Regression</span></span>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <span class="sidebar-item-text sidebar-link text-start">
+ <span class="menu-text">Characterization</span></span>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <span class="sidebar-item-text sidebar-link text-start">
+ <span class="menu-text">Finalization</span></span>
+  </li>
+    </ul>
+</div>
+</nav><div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active"><h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+<li><a href="#requirements" id="toc-requirements" class="nav-link active" data-scroll-target="#requirements"><span class="header-section-number">12.1</span> Requirements</a></li>
+  <li><a href="#sec-sim-anneal" id="toc-sec-sim-anneal" class="nav-link" data-scroll-target="#sec-sim-anneal"><span class="header-section-number">12.2</span> Simulated Annealing</a></li>
+  <li><a href="#sec-genetic-algo" id="toc-sec-genetic-algo" class="nav-link" data-scroll-target="#sec-genetic-algo"><span class="header-section-number">12.3</span> Genetic Algorithms</a></li>
+  <li><a href="#sec-bayes-opt" id="toc-sec-bayes-opt" class="nav-link" data-scroll-target="#sec-bayes-opt"><span class="header-section-number">12.4</span> Bayesian Optimization</a></li>
+  </ul></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block default"><div class="quarto-title">
+<h1 class="title d-none d-lg-block"><span id="sec-iterative-search" class="quarto-section-identifier"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Iterative Search</span></span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header><p>This <a href="https://tidymodels.aml4td.org/chapters/iterative-search.html">book chapter</a> discusses several search procedures for finding optimal (or at least acceptable) tuning parameter values.</p>
+<section id="requirements" class="level2" data-number="12.1"><h2 data-number="12.1" class="anchored" data-anchor-id="requirements">
+<span class="header-section-number">12.1</span> Requirements</h2>
+<p>This chapter requires 6 packages (<span class="pkg"><a href="https://cran.r-project.org/package=finetune">finetune</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=future.mirai">future.mirai</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=GA">GA</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=probably">probably</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=tidymodels">tidymodels</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=xgboost">xgboost</a></span>). To install:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">req_pkg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"finetune"</span>, <span class="st">"GA"</span>, <span class="st">"probably"</span>, <span class="st">"tidymodels"</span>, <span class="st">"xgboost"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Check to see if they are installed: </span></span>
+<span><span class="va">pkg_installed</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">vapply</a></span><span class="op">(</span><span class="va">req_pkg</span>, <span class="fu">rlang</span><span class="fu">::</span><span class="va"><a href="https://rlang.r-lib.org/reference/is_installed.html">is_installed</a></span>, <span class="fu"><a href="https://rdrr.io/r/base/logical.html">logical</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Install missing packages: </span></span>
+<span><span class="kw">if</span> <span class="op">(</span> <span class="fu"><a href="https://rdrr.io/r/base/any.html">any</a></span><span class="op">(</span><span class="op">!</span><span class="va">pkg_installed</span><span class="op">)</span> <span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">install_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">pkg_installed</span><span class="op">)</span><span class="op">[</span><span class="op">!</span><span class="va">pkg_installed</span><span class="op">]</span></span>
+<span>  <span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html">pak</a></span><span class="op">(</span><span class="va">install_list</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Let’s load the packages and set some preferences:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://luca-scr.github.io/GA/">GA</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidymodels.tidymodels.org">tidymodels</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tidymodels/finetune">finetune</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tidymodels/probably">probably</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://future.mirai.futureverse.org">future.mirai</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://tidymodels.tidymodels.org/reference/tidymodels_prefer.html">tidymodels_prefer</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="fu">theme_set</span><span class="op">(</span><span class="fu">theme_bw</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://future.futureverse.org/reference/plan.html">plan</a></span><span class="op">(</span><span class="va">mirai_multisession</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>To reduce the complexity of the example, we’ll use a simulated classification data set containing numeric predictors. We’ll simulate 1,000 samples using a simulation system, the details of which can be found in the <a href="https://modeldata.tidymodels.org/reference/sim_classification.html#details"><span class="pkg"></span></a><a href="https://cran.r-project.org/package=modeldata">modeldata</a> documentation. The data set has linear, nonlinear, and interacting features, and the classes are fairly balanced. We’ll use a 3:1 split for training and testing as well as 10-fold cross-validation:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">2783</span><span class="op">)</span></span>
+<span><span class="va">sim_dat</span> <span class="op">&lt;-</span> <span class="fu">sim_classification</span><span class="op">(</span><span class="fl">1000</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">101</span><span class="op">)</span></span>
+<span><span class="va">sim_split</span> <span class="op">&lt;-</span> <span class="fu">initial_split</span><span class="op">(</span><span class="va">sim_dat</span><span class="op">)</span></span>
+<span><span class="va">sim_train</span> <span class="op">&lt;-</span> <span class="fu">training</span><span class="op">(</span><span class="va">sim_split</span><span class="op">)</span></span>
+<span><span class="va">sim_test</span> <span class="op">&lt;-</span> <span class="fu">testing</span><span class="op">(</span><span class="va">sim_split</span><span class="op">)</span></span>
+<span><span class="va">sim_rs</span> <span class="op">&lt;-</span> <span class="fu">vfold_cv</span><span class="op">(</span><span class="va">sim_train</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We’ll tune a boosted classification model using the <span class="pkg"><a href="https://cran.r-project.org/package=xgboost">xgboost</a></span> package, described in a later chapter. We tune multiple parameters and set an additional parameter, <code>validation</code>, to be zero. This is used when early stopping, which we will not use:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">bst_spec</span> <span class="op">&lt;-</span></span>
+<span>  <span class="fu">boost_tree</span><span class="op">(</span></span>
+<span>    mtry <span class="op">=</span> <span class="fu"><a href="https://hardhat.tidymodels.org/reference/tune.html">tune</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>    tree_depth <span class="op">=</span> <span class="fu"><a href="https://hardhat.tidymodels.org/reference/tune.html">tune</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>    trees <span class="op">=</span> <span class="fu"><a href="https://hardhat.tidymodels.org/reference/tune.html">tune</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>    learn_rate <span class="op">=</span> <span class="fu"><a href="https://hardhat.tidymodels.org/reference/tune.html">tune</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>    min_n <span class="op">=</span> <span class="fu"><a href="https://hardhat.tidymodels.org/reference/tune.html">tune</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>    loss_reduction <span class="op">=</span> <span class="fu"><a href="https://hardhat.tidymodels.org/reference/tune.html">tune</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>    sample_size <span class="op">=</span> <span class="fu"><a href="https://hardhat.tidymodels.org/reference/tune.html">tune</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">set_engine</span><span class="op">(</span><span class="st">'xgboost'</span>, validation <span class="op">=</span> <span class="fl">0</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">set_mode</span><span class="op">(</span><span class="st">'classification'</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Tree-based models require little to no preprocessing so we will use a simple R formula to define the roles of variables:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">bst_wflow</span> <span class="op">&lt;-</span> <span class="fu">workflow</span><span class="op">(</span><span class="va">class</span> <span class="op">~</span> <span class="va">.</span>, <span class="va">bst_spec</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>From the workflow, we create a <em>parameters</em> object and set the ranges for two parameters. <code>mtry</code> requires an upper bound to be set since it depends on the number of model terms in the data set. We’ll need parameter information since most iterative methods need to know the possible ranges as well as the type of parameter (e.g., integer, character, etc.) and/or any transformations of the values.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">bst_param</span> <span class="op">&lt;-</span></span>
+<span>  <span class="va">bst_wflow</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu"><a href="https://hardhat.tidymodels.org/reference/hardhat-extract.html">extract_parameter_set_dials</a></span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/stats/update.html">update</a></span><span class="op">(</span></span>
+<span>    mtry <span class="op">=</span> <span class="fu">mtry</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">15</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    trees <span class="op">=</span> <span class="fu">trees</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">500</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We can now fit and/or tune models. We’ll declare what metrics should be collected and then create a small space-filling design that is used as the starting point for simulated annealing and Bayesian optimization. We <em>could</em> let the system make these initial values for us, but we’ll create them now so that we can reuse the results and have a common starting place.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cls_mtr</span> <span class="op">&lt;-</span> <span class="fu">metric_set</span><span class="op">(</span><span class="va">brier_class</span>, <span class="va">roc_auc</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">init_grid</span> <span class="op">&lt;-</span> <span class="fu">grid_space_filling</span><span class="op">(</span><span class="va">bst_param</span>, size <span class="op">=</span> <span class="fl">6</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">21</span><span class="op">)</span></span>
+<span><span class="va">initial_res</span> <span class="op">&lt;-</span></span>
+<span>  <span class="va">bst_wflow</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu"><a href="https://tune.tidymodels.org/reference/tune_grid.html">tune_grid</a></span><span class="op">(</span></span>
+<span>    resamples <span class="op">=</span> <span class="va">sim_rs</span>,</span>
+<span>    grid <span class="op">=</span> <span class="va">init_grid</span>,</span>
+<span>    metrics <span class="op">=</span> <span class="va">cls_mtr</span>,</span>
+<span>    control <span class="op">=</span> <span class="fu"><a href="https://tune.tidymodels.org/reference/control_grid.html">control_grid</a></span><span class="op">(</span>save_pred <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>From these six candidates, the smallest Brier score was 0.117, a mediocre value:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://tune.tidymodels.org/reference/show_best.html">show_best</a></span><span class="op">(</span><span class="va">initial_res</span>, metric <span class="op">=</span> <span class="st">"brier_class"</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">.estimator</span>, <span class="op">-</span><span class="va">.config</span>, <span class="op">-</span><span class="va">.metric</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">relocate</span><span class="op">(</span><span class="va">mean</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 5 × 10</span></span>
+<span><span class="co">#&gt;     mean  mtry trees min_n tree_depth learn_rate loss_reduction sample_size     n  std_err</span></span>
+<span><span class="co">#&gt;    &lt;dbl&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt;      &lt;int&gt;      &lt;dbl&gt;          &lt;dbl&gt;       &lt;dbl&gt; &lt;int&gt;    &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1 0.1172    12   402    17          1   0.1           1    e-10        0.46    10 0.005269</span></span>
+<span><span class="co">#&gt; 2 0.1201    15   304    24          9   0.03162       3.162e+ 1        1       10 0.004319</span></span>
+<span><span class="co">#&gt; 3 0.1504     5   206    32         15   0.3162        1.995e- 8        0.64    10 0.006183</span></span>
+<span><span class="co">#&gt; 4 0.1786     3   108     2          3   0.01          7.943e- 4        0.82    10 0.002977</span></span>
+<span><span class="co">#&gt; 5 0.2441     7   500     9         12   0.003162      1.585e- 1        0.1     10 0.001748</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We will show how to use three iterative search methods.</p>
+</section><section id="sec-sim-anneal" class="level2" data-number="12.2"><h2 data-number="12.2" class="anchored" data-anchor-id="sec-sim-anneal">
+<span class="header-section-number">12.2</span> Simulated Annealing</h2>
+<p>The finetune package contains <code><a href="https://finetune.tidymodels.org/reference/tune_sim_anneal.html">finetune::tune_sim_anneal()</a></code> that can incrementally search the parameter space in a non-greedy way. Its syntax is very similar to <code><a href="https://tune.tidymodels.org/reference/tune_grid.html">tune_grid()</a></code> with two additional arguments of note:</p>
+<ul>
+<li>
+<code>initial</code>: Either:
+<ul>
+<li>An integer that declares how many points in a space-filling design should be created and evaluated before proceeding.</li>
+<li>An object from a previous run of <code><a href="https://tune.tidymodels.org/reference/tune_grid.html">tune_grid()</a></code> or one of the other <code>tune_*()</code> functions.</li>
+</ul>
+</li>
+<li>
+<code>iter</code>: An integer for the maximum search iterations.</li>
+</ul>
+<p>Also of note is <code><a href="https://finetune.tidymodels.org/reference/control_sim_anneal.html">control_sim_anneal()</a></code>, which helps save additional results and controls logging, and if restarts or early stopping should be used.</p>
+<p>One important note: the first metric in the metric set guides the optimization. All of the other metric values are recorded for each iteration but only one is used to improve the model fit.</p>
+<p>Here’s some example code:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">381</span><span class="op">)</span></span>
+<span><span class="va">sa_res</span> <span class="op">&lt;-</span></span>
+<span>  <span class="va">bst_wflow</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu"><a href="https://finetune.tidymodels.org/reference/tune_sim_anneal.html">tune_sim_anneal</a></span><span class="op">(</span></span>
+<span>    resamples <span class="op">=</span> <span class="va">sim_rs</span>,</span>
+<span>    param_info <span class="op">=</span> <span class="va">bst_param</span>,</span>
+<span>    metrics <span class="op">=</span> <span class="va">cls_mtr</span>,</span>
+<span>    <span class="co"># Additional options:</span></span>
+<span>    initial <span class="op">=</span> <span class="va">initial_res</span>,</span>
+<span>    iter <span class="op">=</span> <span class="fl">50</span>,</span>
+<span>    <span class="co"># Prevent early stopping, save out-of-sample predictions, </span></span>
+<span>    <span class="co"># and log the process to the console: </span></span>
+<span>    control <span class="op">=</span> <span class="fu"><a href="https://finetune.tidymodels.org/reference/control_sim_anneal.html">control_sim_anneal</a></span><span class="op">(</span></span>
+<span>      no_improve <span class="op">=</span> <span class="cn">Inf</span>,</span>
+<span>      verbose_iter <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>      save_pred <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>    <span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="co">#&gt; Optimizing brier_class</span></span>
+<span><span class="co">#&gt; Initial best: 0.11724</span></span>
+<span><span class="co">#&gt; 1 ◯ accept suboptimal  brier_class=0.12584 (+/-0.005567)</span></span>
+<span><span class="co">#&gt; 2 ♥ new best           brier_class=0.11088 (+/-0.006034)</span></span>
+<span><span class="co">#&gt; 3 ◯ accept suboptimal  brier_class=0.12186 (+/-0.006986)</span></span>
+<span><span class="co">#&gt; 4 + better suboptimal  brier_class=0.11355 (+/-0.0077)</span></span>
+<span><span class="co">#&gt; 5 + better suboptimal  brier_class=0.11204 (+/-0.005044)</span></span>
+<span><span class="co">#&gt; 6 ─ discard suboptimal brier_class=0.18772 (+/-0.006055)</span></span>
+<span><span class="co">#&gt; 7 ─ discard suboptimal brier_class=0.14709 (+/-0.004402)</span></span>
+<span><span class="co">#&gt; 8 ─ discard suboptimal brier_class=0.15341 (+/-0.006266)</span></span>
+<span><span class="co">#&gt; 9 ♥ new best           brier_class=0.10271 (+/-0.005368)</span></span>
+<span><span class="co">#&gt; 10 ♥ new best           brier_class=0.098399 (+/-0.005912)</span></span>
+<span><span class="co">#&gt; 11 ─ discard suboptimal brier_class=0.11041 (+/-0.006706)</span></span>
+<span><span class="co">#&gt; 12 ♥ new best           brier_class=0.089953 (+/-0.004929)</span></span>
+<span><span class="co">#&gt; 13 ─ discard suboptimal brier_class=0.094707 (+/-0.005409)</span></span>
+<span><span class="co">#&gt; 14 ─ discard suboptimal brier_class=0.10833 (+/-0.006363)</span></span>
+<span><span class="co">#&gt; 15 ♥ new best           brier_class=0.088551 (+/-0.005869)</span></span>
+<span><span class="co">#&gt; 16 ◯ accept suboptimal  brier_class=0.092395 (+/-0.006208)</span></span>
+<span><span class="co">#&gt; 17 + better suboptimal  brier_class=0.091379 (+/-0.006153)</span></span>
+<span><span class="co">#&gt; 18 ♥ new best           brier_class=0.080126 (+/-0.005732)</span></span>
+<span><span class="co">#&gt; 19 ♥ new best           brier_class=0.078878 (+/-0.005375)</span></span>
+<span><span class="co">#&gt; 20 ─ discard suboptimal brier_class=0.088738 (+/-0.00475)</span></span>
+<span><span class="co">#&gt; 21 ─ discard suboptimal brier_class=0.088662 (+/-0.004205)</span></span>
+<span><span class="co">#&gt; 22 ◯ accept suboptimal  brier_class=0.079888 (+/-0.005168)</span></span>
+<span><span class="co">#&gt; 23 ─ discard suboptimal brier_class=0.083144 (+/-0.004481)</span></span>
+<span><span class="co">#&gt; 24 ◯ accept suboptimal  brier_class=0.080998 (+/-0.005145)</span></span>
+<span><span class="co">#&gt; 25 ─ discard suboptimal brier_class=0.089208 (+/-0.00424)</span></span>
+<span><span class="co">#&gt; 26 ─ discard suboptimal brier_class=0.083758 (+/-0.004778)</span></span>
+<span><span class="co">#&gt; 27 ✖ restart from best  brier_class=0.080229 (+/-0.005623)</span></span>
+<span><span class="co">#&gt; 28 ─ discard suboptimal brier_class=0.07948 (+/-0.005617)</span></span>
+<span><span class="co">#&gt; 29 ─ discard suboptimal brier_class=0.088518 (+/-0.004385)</span></span>
+<span><span class="co">#&gt; 30 ◯ accept suboptimal  brier_class=0.080155 (+/-0.004802)</span></span>
+<span><span class="co">#&gt; 31 ─ discard suboptimal brier_class=0.085765 (+/-0.004087)</span></span>
+<span><span class="co">#&gt; 32 ─ discard suboptimal brier_class=0.09274 (+/-0.004826)</span></span>
+<span><span class="co">#&gt; 33 ◯ accept suboptimal  brier_class=0.082697 (+/-0.004478)</span></span>
+<span><span class="co">#&gt; 34 ─ discard suboptimal brier_class=0.1074 (+/-0.004515)</span></span>
+<span><span class="co">#&gt; 35 ✖ restart from best  brier_class=0.095289 (+/-0.004477)</span></span>
+<span><span class="co">#&gt; 36 ─ discard suboptimal brier_class=0.08412 (+/-0.005034)</span></span>
+<span><span class="co">#&gt; 37 ─ discard suboptimal brier_class=0.082724 (+/-0.004939)</span></span>
+<span><span class="co">#&gt; 38 ─ discard suboptimal brier_class=0.081199 (+/-0.006138)</span></span>
+<span><span class="co">#&gt; 39 ─ discard suboptimal brier_class=0.084084 (+/-0.005246)</span></span>
+<span><span class="co">#&gt; 40 ─ discard suboptimal brier_class=0.082772 (+/-0.005205)</span></span>
+<span><span class="co">#&gt; 41 ─ discard suboptimal brier_class=0.082996 (+/-0.004645)</span></span>
+<span><span class="co">#&gt; 42 ─ discard suboptimal brier_class=0.081317 (+/-0.004638)</span></span>
+<span><span class="co">#&gt; 43 ✖ restart from best  brier_class=0.084592 (+/-0.004923)</span></span>
+<span><span class="co">#&gt; 44 ─ discard suboptimal brier_class=0.085653 (+/-0.004442)</span></span>
+<span><span class="co">#&gt; 45 ─ discard suboptimal brier_class=0.085816 (+/-0.004273)</span></span>
+<span><span class="co">#&gt; 46 ─ discard suboptimal brier_class=0.085154 (+/-0.004607)</span></span>
+<span><span class="co">#&gt; 47 ◯ accept suboptimal  brier_class=0.084356 (+/-0.004371)</span></span>
+<span><span class="co">#&gt; 48 ─ discard suboptimal brier_class=0.10018 (+/-0.004477)</span></span>
+<span><span class="co">#&gt; 49 + better suboptimal  brier_class=0.080555 (+/-0.005406)</span></span>
+<span><span class="co">#&gt; 50 ─ discard suboptimal brier_class=0.084699 (+/-0.004644)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The Brier score has been reduced from the initial value of 0.117 to a new best of 0.079. We’ll estimate:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://tune.tidymodels.org/reference/show_best.html">show_best</a></span><span class="op">(</span><span class="va">sa_res</span>, metric <span class="op">=</span> <span class="st">"brier_class"</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">.estimator</span>, <span class="op">-</span><span class="va">.config</span>, <span class="op">-</span><span class="va">.metric</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">relocate</span><span class="op">(</span><span class="va">mean</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 5 × 11</span></span>
+<span><span class="co">#&gt;      mean  mtry trees min_n tree_depth learn_rate loss_reduction sample_size     n</span></span>
+<span><span class="co">#&gt;     &lt;dbl&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt;      &lt;int&gt;      &lt;dbl&gt;          &lt;dbl&gt;       &lt;dbl&gt; &lt;int&gt;</span></span>
+<span><span class="co">#&gt; 1 0.07888    12   243     2          6    0.02247   0.000001299       0.3711    10</span></span>
+<span><span class="co">#&gt; 2 0.07948    11   243     3          8    0.02518   0.0000002770      0.4750    10</span></span>
+<span><span class="co">#&gt; 3 0.07989    13   228     2          5    0.01815   0.000009236       0.3659    10</span></span>
+<span><span class="co">#&gt; 4 0.08013    11   291     2          6    0.04033   0.000001875       0.4259    10</span></span>
+<span><span class="co">#&gt; 5 0.08015    14   278     2          4    0.01628   0.000005399       0.3251    10</span></span>
+<span><span class="co">#&gt; # ℹ 2 more variables: std_err &lt;dbl&gt;, .iter &lt;int&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>There are several ways to use <code><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot()</a></code> to investigate the results. The default methods plots the metric(s) versus the parameters. Here is it for just the Brier score:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot</a></span><span class="op">(</span><span class="va">sa_res</span>, metric <span class="op">=</span> <span class="st">"brier_class"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure"><p><img src="../figures/sa-profile-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:65.0%"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Next, we can see how the parameter values change over the search by adding <code>type = "parameters"</code>:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot</a></span><span class="op">(</span><span class="va">sa_res</span>, metric <span class="op">=</span> <span class="st">"brier_class"</span>, type <span class="op">=</span> <span class="st">"parameters"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure"><p><img src="../figures/sa-history-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:65.0%"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Finally, a plot of performance metrics can be used via <code>type = "performance"</code>:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot</a></span><span class="op">(</span><span class="va">sa_res</span>, metric <span class="op">=</span> <span class="st">"brier_class"</span>, type <span class="op">=</span> <span class="st">"performance"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure"><p><img src="../figures/sa-performance-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:65.0%"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>If we had used <code>control_sim_anneal(save_worflow = TRUE)</code>, we could use <code><a href="https://tune.tidymodels.org/reference/fit_best.html">fit_best()</a></code> to determine the candidate with the best metric value and then fit that model to the training set.</p>
+<p><a href="https://aml4td.org/chapters/iterative-search.html#sec-sim-anneal" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+</section><section id="sec-genetic-algo" class="level2" data-number="12.3"><h2 data-number="12.3" class="anchored" data-anchor-id="sec-genetic-algo">
+<span class="header-section-number">12.3</span> Genetic Algorithms</h2>
+<p>tidymodels has no API or function for optimizing models using genetic algorithms. However, there is unsupported code (below) for doing this as long as the tuning parameters are all numeric. We’ll use the <span class="pkg"><a href="https://cran.r-project.org/package=GA">GA</a></span> package for the computations, and this will require:</p>
+<ul>
+<li>The upper and lower bounds of the parameters</li>
+<li>Code to transform the parameter values (if needed)</li>
+<li>A means to resample/evaluate a model on an out-of-sample data set.</li>
+<li>A method to compute a single performance metric such that larger values are more desirable.</li>
+</ul>
+<p>To get started, let’s work with the parameter object named <code>bst_param</code>. We can use <code><a href="https://purrr.tidyverse.org/reference/map.html">purrr::map_dbl()</a></code> to get vectors of the minimum and maximum values. These should be in the transformed space (if needed):</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">min_vals</span> <span class="op">&lt;-</span> <span class="fu">map_dbl</span><span class="op">(</span><span class="va">bst_param</span><span class="op">$</span><span class="va">object</span>, <span class="op">~</span> <span class="va">.x</span><span class="op">$</span><span class="va">range</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="va">max_vals</span> <span class="op">&lt;-</span> <span class="fu">map_dbl</span><span class="op">(</span><span class="va">bst_param</span><span class="op">$</span><span class="va">object</span>, <span class="op">~</span> <span class="va">.x</span><span class="op">$</span><span class="va">range</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The remainder of the tasks should occur within the GA’s processing. This function shows code with comments to help understand:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">yardstick_fitness</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">values</span>, <span class="va">wflow</span>, <span class="va">param_info</span>, <span class="va">metrics</span>, <span class="va">...</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="co"># Quietly load required packages if run in parallel</span></span>
+<span>  <span class="va">shhh</span> <span class="op">&lt;-</span> <span class="fu">purrr</span><span class="fu">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/quietly.html">quietly</a></span><span class="op">(</span><span class="va">require</span><span class="op">)</span></span>
+<span>  <span class="va">loaded</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"tidymodels"</span>, <span class="fu"><a href="https://generics.r-lib.org/reference/required_pkgs.html">required_pkgs</a></span><span class="op">(</span><span class="va">wflow</span><span class="op">)</span><span class="op">)</span>, <span class="va">shhh</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="va">info</span> <span class="op">&lt;-</span> <span class="fu">as_tibble</span><span class="op">(</span><span class="va">metrics</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="co"># Check to see if there are any qualitative parameters and stop if so.</span></span>
+<span>  <span class="va">qual_check</span> <span class="op">&lt;-</span> <span class="fu">map_lgl</span><span class="op">(</span><span class="va">param_info</span><span class="op">$</span><span class="va">object</span>, <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/class.html">inherits</a></span><span class="op">(</span><span class="va">.x</span>, <span class="st">"qual_param"</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/any.html">any</a></span><span class="op">(</span><span class="va">qual_check</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="fu">cli</span><span class="fu">::</span><span class="fu"><a href="https://cli.r-lib.org/reference/cli_abort.html">cli_abort</a></span><span class="op">(</span></span>
+<span>      <span class="st">"The function only works for quantitative tuning parameters."</span></span>
+<span>    <span class="op">)</span></span>
+<span>  <span class="op">}</span></span>
+<span></span>
+<span>  <span class="co"># Back-transform parameters if they use a transformation (inputs are in</span></span>
+<span>  <span class="co"># transformed scales)</span></span>
+<span>  <span class="va">values</span> <span class="op">&lt;-</span> <span class="fu">purrr</span><span class="fu">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/map2.html">map2_dbl</a></span><span class="op">(</span></span>
+<span>    <span class="va">values</span>,</span>
+<span>    <span class="va">param_info</span><span class="op">$</span><span class="va">object</span>,</span>
+<span>    <span class="op">~</span> <span class="fu">dials</span><span class="fu">::</span><span class="fu"><a href="https://dials.tidymodels.org/reference/value_validate.html">value_inverse</a></span><span class="op">(</span><span class="va">.y</span>, <span class="va">.x</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span></span>
+<span>  <span class="co"># Convert integer parameters to integers</span></span>
+<span>  <span class="va">is_int</span> <span class="op">&lt;-</span> <span class="fu">map_lgl</span><span class="op">(</span><span class="va">param_info</span><span class="op">$</span><span class="va">object</span>, <span class="op">~</span> <span class="va">.x</span><span class="op">$</span><span class="va">type</span> <span class="op">==</span> <span class="st">"integer"</span><span class="op">)</span></span>
+<span>  <span class="va">int_param</span> <span class="op">&lt;-</span> <span class="va">param_info</span><span class="op">$</span><span class="va">id</span><span class="op">[</span><span class="va">is_int</span><span class="op">]</span></span>
+<span>  <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="va">int_param</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">ind</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html">which</a></span><span class="op">(</span><span class="va">param_info</span><span class="op">$</span><span class="va">id</span> <span class="op">==</span> <span class="va">i</span><span class="op">)</span></span>
+<span>    <span class="va">values</span><span class="op">[[</span><span class="va">ind</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">floor</a></span><span class="op">(</span><span class="va">values</span><span class="op">[[</span><span class="va">ind</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
+<span>  <span class="op">}</span></span>
+<span></span>
+<span>  <span class="co"># Convert from vector to a tibble</span></span>
+<span>  <span class="va">values</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="va">values</span>, nrow <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">values</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">param_info</span><span class="op">$</span><span class="va">id</span></span>
+<span>  <span class="va">values</span> <span class="op">&lt;-</span> <span class="fu">as_tibble</span><span class="op">(</span><span class="va">values</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="co"># We could run _populations_ within a generation in parallel. If we do,</span></span>
+<span>  <span class="co"># let's make sure to turn off parallelization of resamples here:</span></span>
+<span>  <span class="co"># ctrl &lt;- control_grid(allow_par = FALSE)</span></span>
+<span>  </span>
+<span>  <span class="va">ctrl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tune.tidymodels.org/reference/control_grid.html">control_grid</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="co"># Resample / validate metrics</span></span>
+<span>  <span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tune.tidymodels.org/reference/tune_grid.html">tune_grid</a></span><span class="op">(</span></span>
+<span>    <span class="va">wflow</span>,</span>
+<span>    metrics <span class="op">=</span> <span class="va">metrics</span>,</span>
+<span>    param_info <span class="op">=</span> <span class="va">param_info</span>,</span>
+<span>    grid <span class="op">=</span> <span class="va">values</span>,</span>
+<span>    control <span class="op">=</span> <span class="va">ctrl</span>,</span>
+<span>    <span class="va">...</span></span>
+<span>  <span class="op">)</span></span>
+<span></span>
+<span>  <span class="co"># Fitness is to be maximized so change direction if needed</span></span>
+<span>  <span class="va">best_res</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tune.tidymodels.org/reference/show_best.html">show_best</a></span><span class="op">(</span><span class="va">res</span>, metric <span class="op">=</span> <span class="va">info</span><span class="op">$</span><span class="va">metric</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="va">info</span><span class="op">$</span><span class="va">direction</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span> <span class="op">==</span> <span class="st">"minimize"</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">obj_value</span> <span class="op">&lt;-</span> <span class="op">-</span><span class="va">best_res</span><span class="op">$</span><span class="va">mean</span></span>
+<span>  <span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
+<span>    <span class="va">obj_value</span> <span class="op">&lt;-</span> <span class="va">best_res</span><span class="op">$</span><span class="va">mean</span></span>
+<span>  <span class="op">}</span></span>
+<span>  <span class="va">obj_value</span></span>
+<span><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Now, let’s initialize the search using a space-filling design (with 10 candidates per population):</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">pop_size</span> <span class="op">&lt;-</span> <span class="fl">10</span></span>
+<span><span class="va">grid_ga</span> <span class="op">&lt;-</span> <span class="fu">grid_space_filling</span><span class="op">(</span><span class="va">bst_param</span>, size <span class="op">=</span> <span class="va">pop_size</span>, original <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># We apply the GA operators on the transformed scale of the parameters (if any).</span></span>
+<span><span class="co"># For this example, two use a log-transform: </span></span>
+<span><span class="va">grid_ga</span><span class="op">$</span><span class="va">learn_rate</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">log10</a></span><span class="op">(</span><span class="va">grid_ga</span><span class="op">$</span><span class="va">learn_rate</span><span class="op">)</span></span>
+<span><span class="va">grid_ga</span><span class="op">$</span><span class="va">loss_reduction</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">log10</a></span><span class="op">(</span><span class="va">grid_ga</span><span class="op">$</span><span class="va">loss_reduction</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Now we can run <code><a href="https://github.com/luca-scr/GA/reference/ga.html">GA::ga()</a></code> to begin the process:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">158</span><span class="op">)</span></span>
+<span><span class="va">ga_res</span> <span class="op">&lt;-</span></span>
+<span>  <span class="fu"><a href="https://github.com/luca-scr/GA/reference/ga.html">ga</a></span><span class="op">(</span></span>
+<span>    <span class="co"># ga() options:</span></span>
+<span>    type <span class="op">=</span> <span class="st">"real-valued"</span>,</span>
+<span>    fitness <span class="op">=</span> <span class="va">yardstick_fitness</span>,</span>
+<span>    lower <span class="op">=</span> <span class="va">min_vals</span>,</span>
+<span>    upper <span class="op">=</span> <span class="va">max_vals</span>,</span>
+<span>    popSize <span class="op">=</span> <span class="va">pop_size</span>,</span>
+<span>    suggestions <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span><span class="op">(</span><span class="va">grid_ga</span><span class="op">)</span>,</span>
+<span>    maxiter <span class="op">=</span> <span class="fl">25</span>,</span>
+<span>    <span class="co"># Save the best solutions at each iteration</span></span>
+<span>    keepBest <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>    seed <span class="op">=</span> <span class="fl">39</span>,</span>
+<span>    <span class="co"># Here we can signal to run _populations_ within a generation in parallel</span></span>
+<span>    parallel <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>    <span class="co"># Now options to pass to the `...` in yardstick_fitness()</span></span>
+<span>    wflow <span class="op">=</span> <span class="va">bst_wflow</span>,</span>
+<span>    param_info <span class="op">=</span> <span class="va">bst_param</span>,</span>
+<span>    metrics <span class="op">=</span> <span class="va">cls_mtr</span>,</span>
+<span>    resamples <span class="op">=</span> <span class="va">sim_rs</span></span>
+<span>  <span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Here is a plot of the best results per population and the mean result (both are Brier scores):</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># Negate the fitness value since the Brier score should be minimized.</span></span>
+<span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/attr.html">attr</a></span><span class="op">(</span><span class="va">ga_res</span>,<span class="st">"summary"</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">as_tibble</span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">mutate</span><span class="op">(</span>generation <span class="op">=</span> <span class="fu">row_number</span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">select</span><span class="op">(</span>best <span class="op">=</span> <span class="va">max</span>, mean <span class="op">=</span> <span class="va">mean</span>, <span class="va">generation</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">pivot_longer</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">best</span>, <span class="va">mean</span><span class="op">)</span>, names_to <span class="op">=</span> <span class="st">"summary"</span>, values_to <span class="op">=</span> <span class="st">"fitness"</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">ggplot</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span><span class="va">generation</span>, <span class="va">fitness</span>, col <span class="op">=</span> <span class="va">summary</span>, pch <span class="op">=</span> <span class="va">summary</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>  <span class="fu">geom_point</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>  <span class="fu">labs</span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Generation"</span>, y <span class="op">=</span> <span class="st">"Brier Score (CV)"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure"><p><img src="../figures/ga-profile-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:65.0%"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The best results are in a slot called <code>solution</code>. Let’s remap that to the original parameter values:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">ga_best</span> <span class="op">&lt;-</span> </span>
+<span>  <span class="co"># There could be multiple solutions for the same fitness; we take the first. </span></span>
+<span>  <span class="va">ga_res</span><span class="op">@</span><span class="va">solution</span><span class="op">[</span><span class="fl">1</span>,<span class="op">]</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="co"># Back-transform</span></span>
+<span>  <span class="fu">map2</span><span class="op">(</span><span class="va">bst_param</span><span class="op">$</span><span class="va">object</span>, <span class="op">~</span> <span class="fu">value_inverse</span><span class="op">(</span><span class="va">.y</span>, <span class="va">.x</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">as_tibble</span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">set_names</span><span class="op">(</span><span class="va">bst_param</span><span class="op">$</span><span class="va">id</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="co"># Attach fitness and coerce to integer if needed.</span></span>
+<span>  <span class="fu">mutate</span><span class="op">(</span></span>
+<span>    mtry <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">floor</a></span><span class="op">(</span><span class="va">mtry</span><span class="op">)</span>,</span>
+<span>    trees <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">floor</a></span><span class="op">(</span><span class="va">trees</span><span class="op">)</span>,</span>
+<span>    min_n <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">floor</a></span><span class="op">(</span><span class="va">min_n</span><span class="op">)</span>,</span>
+<span>    tree_depth <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">floor</a></span><span class="op">(</span><span class="va">tree_depth</span><span class="op">)</span>,</span>
+<span>    brier <span class="op">=</span> <span class="op">-</span><span class="va">ga_res</span><span class="op">@</span><span class="va">fitnessValue</span></span>
+<span>  <span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">relocate</span><span class="op">(</span><span class="va">brier</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">ga_best</span></span>
+<span><span class="co">#&gt; # A tibble: 1 × 8</span></span>
+<span><span class="co">#&gt;     brier  mtry trees min_n tree_depth learn_rate loss_reduction sample_size</span></span>
+<span><span class="co">#&gt;     &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;          &lt;dbl&gt;       &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1 0.07793     9   410     2          6    0.01235   0.0000001197      0.6159</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><a href="https://aml4td.org/chapters/iterative-search.html#sec-genetic-algo" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+</section><section id="sec-bayes-opt" class="level2" data-number="12.4"><h2 data-number="12.4" class="anchored" data-anchor-id="sec-bayes-opt">
+<span class="header-section-number">12.4</span> Bayesian Optimization</h2>
+<p>Numerous packages use Bayesian optimization:</p>
+<ul>
+<li><a href="https://cran.r-project.org/package=BayesGP"><span class="pkg"></span></a><a href="https://cran.r-project.org/package=BayesGP">BayesGP</a></li>
+<li><a href="https://cran.r-project.org/package=BayesGPfit"><span class="pkg"></span></a><a href="https://cran.r-project.org/package=BayesGPfit">BayesGPfit</a></li>
+<li><a href="https://cran.r-project.org/package=FastGP"><span class="pkg"></span></a><a href="https://cran.r-project.org/package=FastGP">FastGP</a></li>
+<li><a href="https://github.com/CollinErickson/GauPro"><span class="pkg"></span></a><a href="https://cran.r-project.org/package=GauPro">GauPro</a></li>
+<li><a href="https://github.com/pulongma/GPBayes"><span class="pkg"></span></a><a href="https://cran.r-project.org/package=GPBayes">GPBayes</a></li>
+<li><a href="https://cran.r-project.org/package=GPfit"><span class="pkg"></span></a><a href="https://cran.r-project.org/package=GPfit">GPfit</a></li>
+</ul>
+<p>and many others. The book <a href="https://bookdown.org/rbg/surrogates/"><em>Gaussian process modeling, design and optimization for the applied sciences</em></a> also contains descriptions of many other GO packages.</p>
+<p>Currently, tidymodels uses <span class="pkg"><a href="https://cran.r-project.org/package=GPfit">GPfit</a></span>.</p>
+<p>The <span class="pkg"><a href="https://cran.r-project.org/package=tune">tune</a></span> package contains <code><a href="https://tune.tidymodels.org/reference/tune_bayes.html">tune_bayes()</a></code> for Bayesian optimization. The syntax is identical to what we’ve already seen with <code><a href="https://finetune.tidymodels.org/reference/tune_sim_anneal.html">tune_sim_anneal()</a></code>.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">221</span><span class="op">)</span></span>
+<span><span class="va">bo_res</span> <span class="op">&lt;-</span> <span class="va">bst_wflow</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu"><a href="https://tune.tidymodels.org/reference/tune_bayes.html">tune_bayes</a></span><span class="op">(</span></span>
+<span>    resamples <span class="op">=</span> <span class="va">sim_rs</span>,</span>
+<span>    param_info <span class="op">=</span> <span class="va">bst_param</span>,</span>
+<span>    metrics <span class="op">=</span> <span class="va">cls_mtr</span>,</span>
+<span>    <span class="co"># These options work as before: </span></span>
+<span>    initial <span class="op">=</span> <span class="va">initial_res</span>,</span>
+<span>    iter <span class="op">=</span> <span class="fl">50</span>,</span>
+<span>    control <span class="op">=</span> <span class="fu"><a href="https://tune.tidymodels.org/reference/control_bayes.html">control_bayes</a></span><span class="op">(</span></span>
+<span>      no_improve <span class="op">=</span> <span class="cn">Inf</span>,</span>
+<span>      verbose_iter <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>      save_pred <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>    <span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="co">#&gt; ! There are 7 tuning parameters and 6 grid points were requested.</span></span>
+<span><span class="co">#&gt; • There are more tuning parameters than there are initial points. This is likely to</span></span>
+<span><span class="co">#&gt;   cause numerical issues in the first few search iterations.</span></span>
+<span><span class="co">#&gt; Optimizing brier_class using the expected improvement</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Iteration 1 ──────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.1172 (@iter 0)</span></span>
+<span><span class="co">#&gt; i Gaussian process model</span></span>
+<span><span class="co">#&gt; ! The Gaussian process model is being fit using 7 features but only has 6 data points</span></span>
+<span><span class="co">#&gt;   to do so. This may cause errors or a poor model fit.</span></span>
+<span><span class="co">#&gt; ✓ Gaussian process model</span></span>
+<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
+<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i mtry=5, trees=489, min_n=26, tree_depth=14, learn_rate=0.0582,</span></span>
+<span><span class="co">#&gt;   loss_reduction=9.86e-09, sample_size=0.114</span></span>
+<span><span class="co">#&gt; i Estimating performance</span></span>
+<span><span class="co">#&gt; ✓ Estimating performance</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.2499 (+/-0.000157)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Iteration 2 ──────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.1172 (@iter 0)</span></span>
+<span><span class="co">#&gt; i Gaussian process model</span></span>
+<span><span class="co">#&gt; ! The Gaussian process model is being fit using 7 features but only has 7 data points</span></span>
+<span><span class="co">#&gt;   to do so. This may cause errors or a poor model fit.</span></span>
+<span><span class="co">#&gt; ✓ Gaussian process model</span></span>
+<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
+<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i mtry=3, trees=96, min_n=39, tree_depth=14, learn_rate=0.0768,</span></span>
+<span><span class="co">#&gt;   loss_reduction=2.53e-07, sample_size=0.513</span></span>
+<span><span class="co">#&gt; i Estimating performance</span></span>
+<span><span class="co">#&gt; ✓ Estimating performance</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.2189 (+/-0.00405)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Iteration 3 ──────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.1172 (@iter 0)</span></span>
+<span><span class="co">#&gt; i Gaussian process model</span></span>
+<span><span class="co">#&gt; ! The Gaussian process model is being fit using 7 features but only has 8 data points</span></span>
+<span><span class="co">#&gt;   to do so. This may cause errors or a poor model fit.</span></span>
+<span><span class="co">#&gt; ✓ Gaussian process model</span></span>
+<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
+<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i mtry=5, trees=286, min_n=7, tree_depth=1, learn_rate=0.0278, loss_reduction=4.26e-05,</span></span>
+<span><span class="co">#&gt;   sample_size=0.432</span></span>
+<span><span class="co">#&gt; i Estimating performance</span></span>
+<span><span class="co">#&gt; ✓ Estimating performance</span></span>
+<span><span class="co">#&gt; ♥ Newest results:    brier_class=0.1153 (+/-0.00444)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Iteration 4 ──────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.1153 (@iter 3)</span></span>
+<span><span class="co">#&gt; i Gaussian process model</span></span>
+<span><span class="co">#&gt; ✓ Gaussian process model</span></span>
+<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
+<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i mtry=7, trees=338, min_n=24, tree_depth=1, learn_rate=0.00178, loss_reduction=0.108,</span></span>
+<span><span class="co">#&gt;   sample_size=0.702</span></span>
+<span><span class="co">#&gt; i Estimating performance</span></span>
+<span><span class="co">#&gt; ✓ Estimating performance</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.2166 (+/-0.00133)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Iteration 5 ──────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.1153 (@iter 3)</span></span>
+<span><span class="co">#&gt; i Gaussian process model</span></span>
+<span><span class="co">#&gt; ✓ Gaussian process model</span></span>
+<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
+<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i mtry=13, trees=384, min_n=28, tree_depth=11, learn_rate=0.254,</span></span>
+<span><span class="co">#&gt;   loss_reduction=0.000924, sample_size=0.936</span></span>
+<span><span class="co">#&gt; i Estimating performance</span></span>
+<span><span class="co">#&gt; ✓ Estimating performance</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.1163 (+/-0.00601)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Iteration 6 ──────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.1153 (@iter 3)</span></span>
+<span><span class="co">#&gt; i Gaussian process model</span></span>
+<span><span class="co">#&gt; ✓ Gaussian process model</span></span>
+<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
+<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i mtry=7, trees=208, min_n=30, tree_depth=15, learn_rate=0.0206, loss_reduction=3.24,</span></span>
+<span><span class="co">#&gt;   sample_size=0.81</span></span>
+<span><span class="co">#&gt; i Estimating performance</span></span>
+<span><span class="co">#&gt; ✓ Estimating performance</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.1245 (+/-0.00436)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Iteration 7 ──────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.1153 (@iter 3)</span></span>
+<span><span class="co">#&gt; i Gaussian process model</span></span>
+<span><span class="co">#&gt; ✓ Gaussian process model</span></span>
+<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
+<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i mtry=15, trees=229, min_n=6, tree_depth=15, learn_rate=0.266, loss_reduction=2.85,</span></span>
+<span><span class="co">#&gt;   sample_size=0.982</span></span>
+<span><span class="co">#&gt; i Estimating performance</span></span>
+<span><span class="co">#&gt; ✓ Estimating performance</span></span>
+<span><span class="co">#&gt; ♥ Newest results:    brier_class=0.08313 (+/-0.00674)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Iteration 8 ──────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.08313 (@iter 7)</span></span>
+<span><span class="co">#&gt; i Gaussian process model</span></span>
+<span><span class="co">#&gt; ✓ Gaussian process model</span></span>
+<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
+<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i mtry=9, trees=296, min_n=12, tree_depth=15, learn_rate=0.176,</span></span>
+<span><span class="co">#&gt;   loss_reduction=9.48e-08, sample_size=0.999</span></span>
+<span><span class="co">#&gt; i Estimating performance</span></span>
+<span><span class="co">#&gt; ✓ Estimating performance</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.09177 (+/-0.00532)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Iteration 9 ──────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.08313 (@iter 7)</span></span>
+<span><span class="co">#&gt; i Gaussian process model</span></span>
+<span><span class="co">#&gt; ✓ Gaussian process model</span></span>
+<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
+<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i mtry=10, trees=199, min_n=3, tree_depth=14, learn_rate=0.0622, loss_reduction=0.125,</span></span>
+<span><span class="co">#&gt;   sample_size=0.959</span></span>
+<span><span class="co">#&gt; i Estimating performance</span></span>
+<span><span class="co">#&gt; ✓ Estimating performance</span></span>
+<span><span class="co">#&gt; ♥ Newest results:    brier_class=0.0824 (+/-0.00654)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Iteration 10 ─────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.0824 (@iter 9)</span></span>
+<span><span class="co">#&gt; i Gaussian process model</span></span>
+<span><span class="co">#&gt; ✓ Gaussian process model</span></span>
+<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
+<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i mtry=3, trees=48, min_n=6, tree_depth=15, learn_rate=0.0012, loss_reduction=9.11e-10,</span></span>
+<span><span class="co">#&gt;   sample_size=0.934</span></span>
+<span><span class="co">#&gt; i Estimating performance</span></span>
+<span><span class="co">#&gt; ✓ Estimating performance</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.2413 (+/-0.000398)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Iteration 11 ─────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.0824 (@iter 9)</span></span>
+<span><span class="co">#&gt; i Gaussian process model</span></span>
+<span><span class="co">#&gt; ✓ Gaussian process model</span></span>
+<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
+<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i mtry=12, trees=255, min_n=4, tree_depth=8, learn_rate=0.164, loss_reduction=0.00354,</span></span>
+<span><span class="co">#&gt;   sample_size=0.352</span></span>
+<span><span class="co">#&gt; i Estimating performance</span></span>
+<span><span class="co">#&gt; ✓ Estimating performance</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.0903 (+/-0.00684)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Iteration 12 ─────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.0824 (@iter 9)</span></span>
+<span><span class="co">#&gt; i Gaussian process model</span></span>
+<span><span class="co">#&gt; ✓ Gaussian process model</span></span>
+<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
+<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i mtry=14, trees=205, min_n=3, tree_depth=14, learn_rate=0.0699,</span></span>
+<span><span class="co">#&gt;   loss_reduction=7.86e-05, sample_size=0.977</span></span>
+<span><span class="co">#&gt; i Estimating performance</span></span>
+<span><span class="co">#&gt; ✓ Estimating performance</span></span>
+<span><span class="co">#&gt; ♥ Newest results:    brier_class=0.08224 (+/-0.00684)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Iteration 13 ─────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.08224 (@iter 12)</span></span>
+<span><span class="co">#&gt; i Gaussian process model</span></span>
+<span><span class="co">#&gt; ✓ Gaussian process model</span></span>
+<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
+<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i mtry=8, trees=357, min_n=5, tree_depth=5, learn_rate=0.308, loss_reduction=4.44e-10,</span></span>
+<span><span class="co">#&gt;   sample_size=0.385</span></span>
+<span><span class="co">#&gt; i Estimating performance</span></span>
+<span><span class="co">#&gt; ✓ Estimating performance</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.1102 (+/-0.00737)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Iteration 14 ─────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.08224 (@iter 12)</span></span>
+<span><span class="co">#&gt; i Gaussian process model</span></span>
+<span><span class="co">#&gt; ✓ Gaussian process model</span></span>
+<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
+<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i mtry=15, trees=220, min_n=9, tree_depth=2, learn_rate=0.113, loss_reduction=5.26,</span></span>
+<span><span class="co">#&gt;   sample_size=0.405</span></span>
+<span><span class="co">#&gt; i Estimating performance</span></span>
+<span><span class="co">#&gt; ✓ Estimating performance</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.09564 (+/-0.00507)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Iteration 15 ─────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.08224 (@iter 12)</span></span>
+<span><span class="co">#&gt; i Gaussian process model</span></span>
+<span><span class="co">#&gt; ✓ Gaussian process model</span></span>
+<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
+<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i mtry=7, trees=249, min_n=4, tree_depth=8, learn_rate=0.134, loss_reduction=1.86,</span></span>
+<span><span class="co">#&gt;   sample_size=0.854</span></span>
+<span><span class="co">#&gt; i Estimating performance</span></span>
+<span><span class="co">#&gt; ✓ Estimating performance</span></span>
+<span><span class="co">#&gt; ♥ Newest results:    brier_class=0.07948 (+/-0.00598)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Iteration 16 ─────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07948 (@iter 15)</span></span>
+<span><span class="co">#&gt; i Gaussian process model</span></span>
+<span><span class="co">#&gt; ✓ Gaussian process model</span></span>
+<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
+<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i mtry=11, trees=249, min_n=3, tree_depth=6, learn_rate=0.0989,</span></span>
+<span><span class="co">#&gt;   loss_reduction=2.55e-10, sample_size=0.896</span></span>
+<span><span class="co">#&gt; i Estimating performance</span></span>
+<span><span class="co">#&gt; ✓ Estimating performance</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08295 (+/-0.00608)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Iteration 17 ─────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07948 (@iter 15)</span></span>
+<span><span class="co">#&gt; i Gaussian process model</span></span>
+<span><span class="co">#&gt; ✓ Gaussian process model</span></span>
+<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
+<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i mtry=11, trees=244, min_n=4, tree_depth=6, learn_rate=0.0662, loss_reduction=13.2,</span></span>
+<span><span class="co">#&gt;   sample_size=0.976</span></span>
+<span><span class="co">#&gt; i Estimating performance</span></span>
+<span><span class="co">#&gt; ✓ Estimating performance</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08762 (+/-0.00476)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Iteration 18 ─────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07948 (@iter 15)</span></span>
+<span><span class="co">#&gt; i Gaussian process model</span></span>
+<span><span class="co">#&gt; ✓ Gaussian process model</span></span>
+<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
+<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i mtry=12, trees=238, min_n=3, tree_depth=1, learn_rate=0.166, loss_reduction=9.55e-07,</span></span>
+<span><span class="co">#&gt;   sample_size=0.966</span></span>
+<span><span class="co">#&gt; i Estimating performance</span></span>
+<span><span class="co">#&gt; ✓ Estimating performance</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08199 (+/-0.00546)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Iteration 19 ─────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07948 (@iter 15)</span></span>
+<span><span class="co">#&gt; i Gaussian process model</span></span>
+<span><span class="co">#&gt; ✓ Gaussian process model</span></span>
+<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
+<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i mtry=6, trees=239, min_n=5, tree_depth=14, learn_rate=0.188, loss_reduction=3.6e-09,</span></span>
+<span><span class="co">#&gt;   sample_size=0.975</span></span>
+<span><span class="co">#&gt; i Estimating performance</span></span>
+<span><span class="co">#&gt; ✓ Estimating performance</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08804 (+/-0.00716)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Iteration 20 ─────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07948 (@iter 15)</span></span>
+<span><span class="co">#&gt; i Gaussian process model</span></span>
+<span><span class="co">#&gt; ✓ Gaussian process model</span></span>
+<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
+<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i mtry=10, trees=205, min_n=3, tree_depth=2, learn_rate=0.118, loss_reduction=0.37,</span></span>
+<span><span class="co">#&gt;   sample_size=0.845</span></span>
+<span><span class="co">#&gt; i Estimating performance</span></span>
+<span><span class="co">#&gt; ✓ Estimating performance</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08471 (+/-0.00557)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Iteration 21 ─────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07948 (@iter 15)</span></span>
+<span><span class="co">#&gt; i Gaussian process model</span></span>
+<span><span class="co">#&gt; ✓ Gaussian process model</span></span>
+<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
+<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i mtry=13, trees=326, min_n=2, tree_depth=14, learn_rate=0.107, loss_reduction=0.348,</span></span>
+<span><span class="co">#&gt;   sample_size=0.822</span></span>
+<span><span class="co">#&gt; i Estimating performance</span></span>
+<span><span class="co">#&gt; ✓ Estimating performance</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08266 (+/-0.00683)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Iteration 22 ─────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07948 (@iter 15)</span></span>
+<span><span class="co">#&gt; i Gaussian process model</span></span>
+<span><span class="co">#&gt; ✓ Gaussian process model</span></span>
+<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
+<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i mtry=11, trees=285, min_n=4, tree_depth=2, learn_rate=0.164, loss_reduction=7.6,</span></span>
+<span><span class="co">#&gt;   sample_size=0.966</span></span>
+<span><span class="co">#&gt; i Estimating performance</span></span>
+<span><span class="co">#&gt; ✓ Estimating performance</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08542 (+/-0.0049)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Iteration 23 ─────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07948 (@iter 15)</span></span>
+<span><span class="co">#&gt; i Gaussian process model</span></span>
+<span><span class="co">#&gt; ✓ Gaussian process model</span></span>
+<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
+<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i mtry=7, trees=251, min_n=3, tree_depth=2, learn_rate=0.0766, loss_reduction=7.89e-09,</span></span>
+<span><span class="co">#&gt;   sample_size=0.919</span></span>
+<span><span class="co">#&gt; i Estimating performance</span></span>
+<span><span class="co">#&gt; ✓ Estimating performance</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08063 (+/-0.00555)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Iteration 24 ─────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07948 (@iter 15)</span></span>
+<span><span class="co">#&gt; i Gaussian process model</span></span>
+<span><span class="co">#&gt; ✓ Gaussian process model</span></span>
+<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
+<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i mtry=8, trees=213, min_n=2, tree_depth=14, learn_rate=0.128, loss_reduction=2.15e-10,</span></span>
+<span><span class="co">#&gt;   sample_size=0.831</span></span>
+<span><span class="co">#&gt; i Estimating performance</span></span>
+<span><span class="co">#&gt; ✓ Estimating performance</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08654 (+/-0.00632)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Iteration 25 ─────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07948 (@iter 15)</span></span>
+<span><span class="co">#&gt; i Gaussian process model</span></span>
+<span><span class="co">#&gt; ✓ Gaussian process model</span></span>
+<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
+<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i mtry=15, trees=357, min_n=4, tree_depth=8, learn_rate=0.177, loss_reduction=0.00166,</span></span>
+<span><span class="co">#&gt;   sample_size=0.901</span></span>
+<span><span class="co">#&gt; i Estimating performance</span></span>
+<span><span class="co">#&gt; ✓ Estimating performance</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08988 (+/-0.00743)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Iteration 26 ─────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07948 (@iter 15)</span></span>
+<span><span class="co">#&gt; i Gaussian process model</span></span>
+<span><span class="co">#&gt; ✓ Gaussian process model</span></span>
+<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
+<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i mtry=15, trees=203, min_n=2, tree_depth=14, learn_rate=0.183,</span></span>
+<span><span class="co">#&gt;   loss_reduction=3.94e-08, sample_size=0.922</span></span>
+<span><span class="co">#&gt; i Estimating performance</span></span>
+<span><span class="co">#&gt; ✓ Estimating performance</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08778 (+/-0.00755)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Iteration 27 ─────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07948 (@iter 15)</span></span>
+<span><span class="co">#&gt; i Gaussian process model</span></span>
+<span><span class="co">#&gt; ✓ Gaussian process model</span></span>
+<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
+<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i mtry=3, trees=342, min_n=4, tree_depth=2, learn_rate=0.0774, loss_reduction=1.98,</span></span>
+<span><span class="co">#&gt;   sample_size=0.748</span></span>
+<span><span class="co">#&gt; i Estimating performance</span></span>
+<span><span class="co">#&gt; ✓ Estimating performance</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08631 (+/-0.00513)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Iteration 28 ─────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07948 (@iter 15)</span></span>
+<span><span class="co">#&gt; i Gaussian process model</span></span>
+<span><span class="co">#&gt; ✓ Gaussian process model</span></span>
+<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
+<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i mtry=11, trees=327, min_n=7, tree_depth=14, learn_rate=0.103,</span></span>
+<span><span class="co">#&gt;   loss_reduction=5.45e-10, sample_size=0.979</span></span>
+<span><span class="co">#&gt; i Estimating performance</span></span>
+<span><span class="co">#&gt; ✓ Estimating performance</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08946 (+/-0.00573)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Iteration 29 ─────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07948 (@iter 15)</span></span>
+<span><span class="co">#&gt; i Gaussian process model</span></span>
+<span><span class="co">#&gt; ✓ Gaussian process model</span></span>
+<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
+<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i mtry=14, trees=266, min_n=2, tree_depth=6, learn_rate=0.136, loss_reduction=0.000997,</span></span>
+<span><span class="co">#&gt;   sample_size=0.853</span></span>
+<span><span class="co">#&gt; i Estimating performance</span></span>
+<span><span class="co">#&gt; ✓ Estimating performance</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08579 (+/-0.00728)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Iteration 30 ─────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07948 (@iter 15)</span></span>
+<span><span class="co">#&gt; i Gaussian process model</span></span>
+<span><span class="co">#&gt; ✓ Gaussian process model</span></span>
+<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
+<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i mtry=6, trees=317, min_n=9, tree_depth=5, learn_rate=0.13, loss_reduction=1.5,</span></span>
+<span><span class="co">#&gt;   sample_size=0.914</span></span>
+<span><span class="co">#&gt; i Estimating performance</span></span>
+<span><span class="co">#&gt; ✓ Estimating performance</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08558 (+/-0.00593)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Iteration 31 ─────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07948 (@iter 15)</span></span>
+<span><span class="co">#&gt; i Gaussian process model</span></span>
+<span><span class="co">#&gt; ✓ Gaussian process model</span></span>
+<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
+<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i mtry=15, trees=356, min_n=21, tree_depth=7, learn_rate=0.145, loss_reduction=0.122,</span></span>
+<span><span class="co">#&gt;   sample_size=0.222</span></span>
+<span><span class="co">#&gt; i Estimating performance</span></span>
+<span><span class="co">#&gt; ✓ Estimating performance</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.2315 (+/-0.0046)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Iteration 32 ─────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07948 (@iter 15)</span></span>
+<span><span class="co">#&gt; i Gaussian process model</span></span>
+<span><span class="co">#&gt; ✓ Gaussian process model</span></span>
+<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
+<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i mtry=3, trees=29, min_n=5, tree_depth=13, learn_rate=0.13, loss_reduction=18.1,</span></span>
+<span><span class="co">#&gt;   sample_size=0.672</span></span>
+<span><span class="co">#&gt; i Estimating performance</span></span>
+<span><span class="co">#&gt; ✓ Estimating performance</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.1201 (+/-0.00443)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Iteration 33 ─────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07948 (@iter 15)</span></span>
+<span><span class="co">#&gt; i Gaussian process model</span></span>
+<span><span class="co">#&gt; ✓ Gaussian process model</span></span>
+<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
+<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i mtry=4, trees=394, min_n=15, tree_depth=8, learn_rate=0.0998,</span></span>
+<span><span class="co">#&gt;   loss_reduction=5.21e-10, sample_size=0.804</span></span>
+<span><span class="co">#&gt; i Estimating performance</span></span>
+<span><span class="co">#&gt; ✓ Estimating performance</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.0944 (+/-0.00564)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Iteration 34 ─────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07948 (@iter 15)</span></span>
+<span><span class="co">#&gt; i Gaussian process model</span></span>
+<span><span class="co">#&gt; ✓ Gaussian process model</span></span>
+<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
+<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i mtry=13, trees=460, min_n=3, tree_depth=13, learn_rate=0.0819, loss_reduction=0.113,</span></span>
+<span><span class="co">#&gt;   sample_size=0.464</span></span>
+<span><span class="co">#&gt; i Estimating performance</span></span>
+<span><span class="co">#&gt; ✓ Estimating performance</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08671 (+/-0.00593)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Iteration 35 ─────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07948 (@iter 15)</span></span>
+<span><span class="co">#&gt; i Gaussian process model</span></span>
+<span><span class="co">#&gt; ✓ Gaussian process model</span></span>
+<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
+<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i mtry=12, trees=290, min_n=4, tree_depth=15, learn_rate=0.137, loss_reduction=14,</span></span>
+<span><span class="co">#&gt;   sample_size=0.542</span></span>
+<span><span class="co">#&gt; i Estimating performance</span></span>
+<span><span class="co">#&gt; ✓ Estimating performance</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.09203 (+/-0.00477)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Iteration 36 ─────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07948 (@iter 15)</span></span>
+<span><span class="co">#&gt; i Gaussian process model</span></span>
+<span><span class="co">#&gt; ✓ Gaussian process model</span></span>
+<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
+<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i mtry=14, trees=99, min_n=15, tree_depth=12, learn_rate=0.11, loss_reduction=2.86e-09,</span></span>
+<span><span class="co">#&gt;   sample_size=0.967</span></span>
+<span><span class="co">#&gt; i Estimating performance</span></span>
+<span><span class="co">#&gt; ✓ Estimating performance</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08659 (+/-0.00509)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Iteration 37 ─────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07948 (@iter 15)</span></span>
+<span><span class="co">#&gt; i Gaussian process model</span></span>
+<span><span class="co">#&gt; ✓ Gaussian process model</span></span>
+<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
+<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i mtry=9, trees=268, min_n=3, tree_depth=6, learn_rate=0.109, loss_reduction=0.297,</span></span>
+<span><span class="co">#&gt;   sample_size=0.437</span></span>
+<span><span class="co">#&gt; i Estimating performance</span></span>
+<span><span class="co">#&gt; ✓ Estimating performance</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08782 (+/-0.00678)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Iteration 38 ─────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07948 (@iter 15)</span></span>
+<span><span class="co">#&gt; i Gaussian process model</span></span>
+<span><span class="co">#&gt; ✓ Gaussian process model</span></span>
+<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
+<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i mtry=13, trees=34, min_n=2, tree_depth=1, learn_rate=0.143, loss_reduction=0.0201,</span></span>
+<span><span class="co">#&gt;   sample_size=0.995</span></span>
+<span><span class="co">#&gt; i Estimating performance</span></span>
+<span><span class="co">#&gt; ✓ Estimating performance</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.1141 (+/-0.00432)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Iteration 39 ─────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07948 (@iter 15)</span></span>
+<span><span class="co">#&gt; i Gaussian process model</span></span>
+<span><span class="co">#&gt; ✓ Gaussian process model</span></span>
+<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
+<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i mtry=10, trees=225, min_n=13, tree_depth=11, learn_rate=0.0965,</span></span>
+<span><span class="co">#&gt;   loss_reduction=3.44e-06, sample_size=0.925</span></span>
+<span><span class="co">#&gt; i Estimating performance</span></span>
+<span><span class="co">#&gt; ✓ Estimating performance</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08963 (+/-0.00498)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Iteration 40 ─────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07948 (@iter 15)</span></span>
+<span><span class="co">#&gt; i Gaussian process model</span></span>
+<span><span class="co">#&gt; ✓ Gaussian process model</span></span>
+<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
+<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i mtry=9, trees=17, min_n=2, tree_depth=13, learn_rate=0.146, loss_reduction=0.026,</span></span>
+<span><span class="co">#&gt;   sample_size=0.359</span></span>
+<span><span class="co">#&gt; i Estimating performance</span></span>
+<span><span class="co">#&gt; ✓ Estimating performance</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.09176 (+/-0.00485)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Iteration 41 ─────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07948 (@iter 15)</span></span>
+<span><span class="co">#&gt; i Gaussian process model</span></span>
+<span><span class="co">#&gt; ✓ Gaussian process model</span></span>
+<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
+<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i mtry=13, trees=157, min_n=17, tree_depth=11, learn_rate=0.314,</span></span>
+<span><span class="co">#&gt;   loss_reduction=6.95e-08, sample_size=0.957</span></span>
+<span><span class="co">#&gt; i Estimating performance</span></span>
+<span><span class="co">#&gt; ✓ Estimating performance</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.09725 (+/-0.00662)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Iteration 42 ─────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07948 (@iter 15)</span></span>
+<span><span class="co">#&gt; i Gaussian process model</span></span>
+<span><span class="co">#&gt; ✓ Gaussian process model</span></span>
+<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
+<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i mtry=7, trees=313, min_n=2, tree_depth=6, learn_rate=0.127, loss_reduction=0.109,</span></span>
+<span><span class="co">#&gt;   sample_size=0.813</span></span>
+<span><span class="co">#&gt; i Estimating performance</span></span>
+<span><span class="co">#&gt; ✓ Estimating performance</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.09222 (+/-0.00767)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Iteration 43 ─────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07948 (@iter 15)</span></span>
+<span><span class="co">#&gt; i Gaussian process model</span></span>
+<span><span class="co">#&gt; ✓ Gaussian process model</span></span>
+<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
+<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i mtry=12, trees=493, min_n=12, tree_depth=13, learn_rate=0.0622,</span></span>
+<span><span class="co">#&gt;   loss_reduction=0.000261, sample_size=0.637</span></span>
+<span><span class="co">#&gt; i Estimating performance</span></span>
+<span><span class="co">#&gt; ✓ Estimating performance</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.094 (+/-0.00595)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Iteration 44 ─────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07948 (@iter 15)</span></span>
+<span><span class="co">#&gt; i Gaussian process model</span></span>
+<span><span class="co">#&gt; ✓ Gaussian process model</span></span>
+<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
+<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i mtry=7, trees=18, min_n=32, tree_depth=13, learn_rate=0.089, loss_reduction=8.1e-09,</span></span>
+<span><span class="co">#&gt;   sample_size=0.995</span></span>
+<span><span class="co">#&gt; i Estimating performance</span></span>
+<span><span class="co">#&gt; ✓ Estimating performance</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.1396 (+/-0.00449)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Iteration 45 ─────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07948 (@iter 15)</span></span>
+<span><span class="co">#&gt; i Gaussian process model</span></span>
+<span><span class="co">#&gt; ✓ Gaussian process model</span></span>
+<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
+<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i mtry=7, trees=187, min_n=9, tree_depth=15, learn_rate=0.114, loss_reduction=0.00238,</span></span>
+<span><span class="co">#&gt;   sample_size=0.868</span></span>
+<span><span class="co">#&gt; i Estimating performance</span></span>
+<span><span class="co">#&gt; ✓ Estimating performance</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08754 (+/-0.00559)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Iteration 46 ─────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07948 (@iter 15)</span></span>
+<span><span class="co">#&gt; i Gaussian process model</span></span>
+<span><span class="co">#&gt; ✓ Gaussian process model</span></span>
+<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
+<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i mtry=10, trees=11, min_n=3, tree_depth=4, learn_rate=0.197, loss_reduction=3.75e-10,</span></span>
+<span><span class="co">#&gt;   sample_size=0.137</span></span>
+<span><span class="co">#&gt; i Estimating performance</span></span>
+<span><span class="co">#&gt; ✓ Estimating performance</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.1147 (+/-0.00564)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Iteration 47 ─────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07948 (@iter 15)</span></span>
+<span><span class="co">#&gt; i Gaussian process model</span></span>
+<span><span class="co">#&gt; ✓ Gaussian process model</span></span>
+<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
+<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i mtry=9, trees=432, min_n=6, tree_depth=9, learn_rate=0.0675, loss_reduction=6.32e-09,</span></span>
+<span><span class="co">#&gt;   sample_size=0.521</span></span>
+<span><span class="co">#&gt; i Estimating performance</span></span>
+<span><span class="co">#&gt; ✓ Estimating performance</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08992 (+/-0.00517)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Iteration 48 ─────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07948 (@iter 15)</span></span>
+<span><span class="co">#&gt; i Gaussian process model</span></span>
+<span><span class="co">#&gt; ✓ Gaussian process model</span></span>
+<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
+<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i mtry=15, trees=443, min_n=4, tree_depth=15, learn_rate=0.0621, loss_reduction=0.682,</span></span>
+<span><span class="co">#&gt;   sample_size=0.838</span></span>
+<span><span class="co">#&gt; i Estimating performance</span></span>
+<span><span class="co">#&gt; ✓ Estimating performance</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08458 (+/-0.0066)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Iteration 49 ─────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07948 (@iter 15)</span></span>
+<span><span class="co">#&gt; i Gaussian process model</span></span>
+<span><span class="co">#&gt; ✓ Gaussian process model</span></span>
+<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
+<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i mtry=8, trees=482, min_n=9, tree_depth=2, learn_rate=0.0937, loss_reduction=0.00332,</span></span>
+<span><span class="co">#&gt;   sample_size=0.534</span></span>
+<span><span class="co">#&gt; i Estimating performance</span></span>
+<span><span class="co">#&gt; ✓ Estimating performance</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.09804 (+/-0.00584)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Iteration 50 ─────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07948 (@iter 15)</span></span>
+<span><span class="co">#&gt; i Gaussian process model</span></span>
+<span><span class="co">#&gt; ✓ Gaussian process model</span></span>
+<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
+<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i mtry=15, trees=71, min_n=21, tree_depth=3, learn_rate=0.064, loss_reduction=1.1e-10,</span></span>
+<span><span class="co">#&gt;   sample_size=0.858</span></span>
+<span><span class="co">#&gt; i Estimating performance</span></span>
+<span><span class="co">#&gt; ✓ Estimating performance</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.1003 (+/-0.00459)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The same helper functions are used to interrogate the results and to create diagnostic plots:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://tune.tidymodels.org/reference/show_best.html">show_best</a></span><span class="op">(</span><span class="va">bo_res</span>, metric <span class="op">=</span> <span class="st">"brier_class"</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">.estimator</span>, <span class="op">-</span><span class="va">.config</span>, <span class="op">-</span><span class="va">.metric</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="fu">relocate</span><span class="op">(</span><span class="va">mean</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 5 × 11</span></span>
+<span><span class="co">#&gt;      mean  mtry trees min_n tree_depth learn_rate loss_reduction sample_size     n</span></span>
+<span><span class="co">#&gt;     &lt;dbl&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt;      &lt;int&gt;      &lt;dbl&gt;          &lt;dbl&gt;       &lt;dbl&gt; &lt;int&gt;</span></span>
+<span><span class="co">#&gt; 1 0.07948     7   249     4          8    0.1343        1.859e+0      0.8543    10</span></span>
+<span><span class="co">#&gt; 2 0.08063     7   251     3          2    0.07663       7.895e-9      0.9194    10</span></span>
+<span><span class="co">#&gt; 3 0.08199    12   238     3          1    0.1658        9.551e-7      0.9661    10</span></span>
+<span><span class="co">#&gt; 4 0.08224    14   205     3         14    0.06994       7.861e-5      0.9767    10</span></span>
+<span><span class="co">#&gt; 5 0.08240    10   199     3         14    0.06220       1.247e-1      0.9593    10</span></span>
+<span><span class="co">#&gt; # ℹ 2 more variables: std_err &lt;dbl&gt;, .iter &lt;int&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>These results are about the same as those of the SA search. We can plot the data and see that some parameters (number of trees, learning rate, minimum node size, and the sampling proportion) appear to converge to specific values:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot</a></span><span class="op">(</span><span class="va">bo_res</span>, metric <span class="op">=</span> <span class="st">"brier_class"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure"><p><img src="../figures/bo-profile-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:65.0%"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Here we see that the learning rate and the minumum node size reach a steady-state:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot</a></span><span class="op">(</span><span class="va">bo_res</span>, metric <span class="op">=</span> <span class="st">"brier_class"</span>, type <span class="op">=</span> <span class="st">"parameters"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure"><p><img src="../figures/bo-history-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:65.0%"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>A plot of the overall progress:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot</a></span><span class="op">(</span><span class="va">bo_res</span>, metric <span class="op">=</span> <span class="st">"brier_class"</span>, type <span class="op">=</span> <span class="st">"performance"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure"><p><img src="../figures/bo-performance-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:65.0%"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Other packages use Bayesian optimization:</p>
+<ul>
+<li><a href="https://mlr3mbo.mlr-org.com/"><span class="pkg"></span></a><a href="https://cran.r-project.org/package=mlr3mbo">mlr3mbo</a></li>
+<li><a href="https://mlrmbo.mlr-org.com/"><span class="pkg"></span></a><a href="https://cran.r-project.org/package=mlrMBO">mlrMBO</a></li>
+<li><a href="https://github.com/AnotherSamWilson/ParBayesianOptimization"><span class="pkg"></span></a><a href="https://cran.r-project.org/package=ParBayesianOptimization">ParBayesianOptimization</a></li>
+<li><a href="https://github.com/yanyachen/rBayesianOptimization"><span class="pkg"></span></a><a href="https://cran.r-project.org/package=rBayesianOptimization">rBayesianOptimization</a></li>
+</ul>
+<p><a href="https://aml4td.org/chapters/iterative-search.html#sec-bayes-opt" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+
+
+</section></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/tidymodels\.aml4td\.org\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script><nav class="page-navigation"><div class="nav-page nav-page-previous">
+      <a href="../chapters/grid.html" class="pagination-link" aria-label="Grid Search">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Grid Search</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../chapters/feature-selection.html" class="pagination-link" aria-label="Feature Selection">
+        <span class="nav-page-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Feature Selection</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+</body></html>

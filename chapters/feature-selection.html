@@ -1,0 +1,1295 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.31">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>13&nbsp; Feature Selection – Tidymodels Computing Supplement</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../chapters/iterative-search.html" rel="prev">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-e1a5c8363afafaef2c763b6775fbf3ca.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-109f5ab760e167ab0a7984bfec541ac0.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/quarto-contrib/fontawesome6-1.2.0/all.min.css" rel="stylesheet">
+<link href="../site_libs/quarto-contrib/fontawesome6-1.2.0/latex-fontsize.css" rel="stylesheet"><script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+</head>
+<body class="nav-sidebar docked quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top"><nav class="quarto-secondary-nav"><div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <a class="flex-grow-1 no-decor" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+          <h1 class="quarto-secondary-nav-title"><span id="sec-feature-selection" class="quarto-section-identifier"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Feature Selection</span></span></h1>
+        </a>     
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav></header><!-- content --><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto"><div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../"></a> 
+        <div class="sidebar-tools-main tools-wide">
+    <a href="https://github.com/aml4td/computing-tidymodels/" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
+    <div class="dropdown">
+      <a href="" title="Share" id="quarto-navigation-tool-dropdown-0" class="quarto-navigation-tool dropdown-toggle px-1" data-bs-toggle="dropdown" aria-expanded="false" role="link" aria-label="Share"><i class="bi bi-share"></i></a>
+      <ul class="dropdown-menu" aria-labelledby="quarto-navigation-tool-dropdown-0">
+<li>
+            <a class="dropdown-item sidebar-tools-main-item" href="https://twitter.com/intent/tweet?url=%7Curl%7C">
+              <i class="bi bi-twitter pe-1"></i>
+            Twitter
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item sidebar-tools-main-item" href="https://www.facebook.com/sharer/sharer.php?u=%7Curl%7C">
+              <i class="bi bi-facebook pe-1"></i>
+            Facebook
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item sidebar-tools-main-item" href="https://www.linkedin.com/sharing/share-offsite/?url=%7Curl%7C">
+              <i class="bi bi-linkedin pe-1"></i>
+            LinkedIn
+            </a>
+          </li>
+      </ul>
+</div>
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Preface</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/news.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">News</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/contributing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Contributing</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="false">
+ <span class="menu-text">Introduction</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 ">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/introduction.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/whole-game.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">The Whole Game</span></span></a>
+  </div>
+</li>
+      </ul>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false">
+ <span class="menu-text">Preparation</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 ">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/initial-data-splitting.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Initial Data Splitting</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/missing-data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Missing Data</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/numeric-predictors.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Transforming Numeric Predictors</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/categorical-predictors.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Working with Categorical Predictors</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/embeddings.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Embeddings</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/interactions-nonlinear.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Interactions and Nonlinear Features</span></span></a>
+  </div>
+</li>
+      </ul>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Optmization</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/overfitting.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Overfitting</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/resampling.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Measuring Performance with Resampling</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/grid.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Grid Search</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/iterative-search.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Iterative Search</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/feature-selection.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Feature Selection</span></span></a>
+  </div>
+</li>
+      </ul>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <span class="sidebar-item-text sidebar-link text-start">
+ <span class="menu-text">Classification</span></span>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <span class="sidebar-item-text sidebar-link text-start">
+ <span class="menu-text">Regression</span></span>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <span class="sidebar-item-text sidebar-link text-start">
+ <span class="menu-text">Characterization</span></span>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <span class="sidebar-item-text sidebar-link text-start">
+ <span class="menu-text">Finalization</span></span>
+  </li>
+    </ul>
+</div>
+</nav><div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active"><h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+<li><a href="#requirements" id="toc-requirements" class="nav-link active" data-scroll-target="#requirements"><span class="header-section-number">13.1</span> Requirements</a></li>
+  <li><a href="#sec-unsupervised-selection" id="toc-sec-unsupervised-selection" class="nav-link" data-scroll-target="#sec-unsupervised-selection"><span class="header-section-number">13.2</span> Unsupervised Selection</a></li>
+  <li><a href="#sec-automatic-selection" id="toc-sec-automatic-selection" class="nav-link" data-scroll-target="#sec-automatic-selection"><span class="header-section-number">13.3</span> Automatic Selection</a></li>
+  <li><a href="#sec-wrappers" id="toc-sec-wrappers" class="nav-link" data-scroll-target="#sec-wrappers"><span class="header-section-number">13.4</span> Wrapper Methods</a></li>
+  <li><a href="#sec-filters" id="toc-sec-filters" class="nav-link" data-scroll-target="#sec-filters"><span class="header-section-number">13.5</span> Filter Methods</a></li>
+  </ul></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block default"><div class="quarto-title">
+<h1 class="title d-none d-lg-block"><span id="sec-feature-selection" class="quarto-section-identifier"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Feature Selection</span></span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header><p>The book’s <a href="https://aml4td.org/chapters/feature-selection.html"><em>Feature Selection</em></a> chapter focuses on different methods to reduce the number of predictors used by the model</p>
+<section id="requirements" class="level2" data-number="13.1"><h2 data-number="13.1" class="anchored" data-anchor-id="requirements">
+<span class="header-section-number">13.1</span> Requirements</h2>
+<p>We will use the following package in this chapter: You’ll need 9 packages (<span class="pkg"><a href="https://cran.r-project.org/package=bestNormalize">bestNormalize</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=future.mirai">future.mirai</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=janitor">janitor</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=kernlab">kernlab</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=partykit">partykit</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=QSARdata">QSARdata</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=ranger">ranger</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=rpart">rpart</a></span>, and <span class="pkg"><a href="https://cran.r-project.org/package=tidymodels">tidymodels</a></span>) for this chapter. You can install them via:. To install them:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">req_pkg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"bestNormalize"</span>, <span class="st">"future.mirai"</span>, <span class="st">"janitor"</span>, <span class="st">"kernlab"</span>, <span class="st">"partykit"</span>, </span>
+<span>             <span class="st">"QSARdata"</span>, <span class="st">"ranger"</span>, <span class="st">"rpart"</span>, <span class="st">"tidymodels"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Check to see if they are installed: </span></span>
+<span><span class="va">pkg_installed</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">vapply</a></span><span class="op">(</span><span class="va">req_pkg</span>, <span class="fu">rlang</span><span class="fu">::</span><span class="va"><a href="https://rlang.r-lib.org/reference/is_installed.html">is_installed</a></span>, <span class="fu"><a href="https://rdrr.io/r/base/logical.html">logical</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Install missing packages: </span></span>
+<span><span class="kw">if</span> <span class="op">(</span> <span class="fu"><a href="https://rdrr.io/r/base/any.html">any</a></span><span class="op">(</span><span class="op">!</span><span class="va">pkg_installed</span><span class="op">)</span> <span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">install_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">pkg_installed</span><span class="op">)</span><span class="op">[</span><span class="op">!</span><span class="va">pkg_installed</span><span class="op">]</span></span>
+<span>  <span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html">pak</a></span><span class="op">(</span><span class="va">install_list</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="co"># For coliono, install from GitHub</span></span>
+<span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html">pak</a></span><span class="op">(</span><span class="st">"stevenpawley/colino"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We’ll demonstrate these tools using the <a href="https://scholar.google.com/scholar?hl=en&amp;as_sdt=0%2C7&amp;q=%22Drug-induced+phospholipidosis%22&amp;btnG=">phospholipidosis</a> (PLD) data set from the <span class="pkg"><a href="https://cran.r-project.org/package=QSARdata">QSARdata</a></span> package. These data are an example of a data set used in drug discovery to help predict when compounds have unwanted side effects (e.g., toxicity).</p>
+<p>We’ll consider two predictor sets. One consists of a series of descriptors of molecules (such as size or weight) and a set of predictors that are binary indicators for important sub-structures in the equations that make up the molecules. The response has two classes (“clean” and toxic outcomes).</p>
+<p>Even before initial splitting, there are more predictors (1345) than data points (324), making feature selection an essential task for these data.</p>
+<p>Let’s load the meta package, manage some between-package function conflicts, and initialize parallel processing:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidymodels.tidymodels.org">tidymodels</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://stevenpawley.github.io/colino">colino</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://petersonr.github.io/bestNormalize/">bestNormalize</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://future.mirai.futureverse.org">future.mirai</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/sfirke/janitor">janitor</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://tidymodels.tidymodels.org/reference/tidymodels_prefer.html">tidymodels_prefer</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="fu">theme_set</span><span class="op">(</span><span class="fu">theme_bw</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://future.futureverse.org/reference/plan.html">plan</a></span><span class="op">(</span><span class="va">mirai_multisession</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>There are a few different data frames for these data. We’ll merge two and clean up and shorten the variable names, use a 4:1 split of the data, and then initialize multiple repeats of 10-fold cross-validation:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">PLD</span>, package <span class="op">=</span> <span class="st">"QSARdata"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">drug_data</span> <span class="op">&lt;-</span> </span>
+<span>  <span class="co"># Merge the outcome data with a subset of possible predictors.</span></span>
+<span>  <span class="va">PLD_Outcome</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu">full_join</span><span class="op">(</span><span class="va">PLD_VolSurfPlus</span>, by <span class="op">=</span> <span class="st">"Molecule"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu">full_join</span><span class="op">(</span><span class="va">PLD_PipelinePilot_FP</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> <span class="fu">select</span><span class="op">(</span><span class="fl">1</span>, <span class="fu">contains</span><span class="op">(</span><span class="st">"FCFP"</span><span class="op">)</span><span class="op">)</span>, </span>
+<span>            by <span class="op">=</span> <span class="st">"Molecule"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">Molecule</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://sfirke.github.io/janitor/reference/clean_names.html">clean_names</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu">as_tibble</span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="co"># Make shorter names:</span></span>
+<span>  <span class="fu">rename_with</span><span class="op">(</span><span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html">gsub</a></span><span class="op">(</span><span class="st">"vol_surf_plus_"</span>, <span class="st">""</span>, <span class="va">.x</span><span class="op">)</span>, <span class="fu">everything</span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu">rename_with</span><span class="op">(</span><span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html">gsub</a></span><span class="op">(</span><span class="st">"ppfp_fcfp_"</span>, <span class="st">"fp_"</span>, <span class="va">.x</span><span class="op">)</span>, <span class="fu">everything</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">106</span><span class="op">)</span></span>
+<span><span class="va">drug_split</span> <span class="op">&lt;-</span> <span class="fu">initial_split</span><span class="op">(</span><span class="va">drug_data</span>, prop <span class="op">=</span> <span class="fl">0.8</span>, strata <span class="op">=</span> <span class="va">class</span><span class="op">)</span></span>
+<span><span class="va">drug_train</span> <span class="op">&lt;-</span> <span class="fu">training</span><span class="op">(</span><span class="va">drug_split</span><span class="op">)</span></span>
+<span><span class="va">drug_test</span> <span class="op">&lt;-</span> <span class="fu">testing</span><span class="op">(</span><span class="va">drug_split</span><span class="op">)</span></span>
+<span><span class="va">drug_rs</span> <span class="op">&lt;-</span> <span class="fu">vfold_cv</span><span class="op">(</span><span class="va">drug_train</span>, repeats <span class="op">=</span> <span class="fl">10</span>, strata <span class="op">=</span> <span class="va">class</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>There is a class imbalance for these data:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/dim.html">dim</a></span><span class="op">(</span><span class="va">drug_train</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1]  259 1346</span></span>
+<span><span class="va">drug_train</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> <span class="fu">count</span><span class="op">(</span><span class="va">class</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 2 × 2</span></span>
+<span><span class="co">#&gt;   class          n</span></span>
+<span><span class="co">#&gt;   &lt;fct&gt;      &lt;int&gt;</span></span>
+<span><span class="co">#&gt; 1 inducer       99</span></span>
+<span><span class="co">#&gt; 2 noninducer   160</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The level “inducer” indicates that the molecule has been proven to cause phospholipidosis.</p>
+</section><section id="sec-unsupervised-selection" class="level2" data-number="13.2"><h2 data-number="13.2" class="anchored" data-anchor-id="sec-unsupervised-selection">
+<span class="header-section-number">13.2</span> Unsupervised Selection</h2>
+<p>In tidymodels, most preprocessing methods for feature selection are recipe steps.</p>
+<p>There are several unsupervised feature filters in <span class="pkg"><a href="https://cran.r-project.org/package=recipes">recipes</a></span>:</p>
+<ul>
+<li>
+<code><a href="https://recipes.tidymodels.org/reference/step_zv.html">step_zv()</a></code>: Removes predictors with a single value.</li>
+<li>
+<code>step_nzv(freq_cut = double(1), unique_cut = double(1))</code>: Removes predictors that have a few unique values that are out of the mainstream.</li>
+<li>
+<code>step_corr(threshold = double(1))</code>: Reduces the pairwise correlations between predictors.</li>
+<li>
+<code><a href="https://recipes.tidymodels.org/reference/step_lincomb.html">step_lincomb()</a></code>: Eliminates strict linear dependencies between predictors.</li>
+<li>
+<code>step_filter_missing(threshold = double(1))</code>: Remove predictors that have too many missing values.</li>
+</ul>
+<p>The <span class="pkg"><a href="https://cran.r-project.org/package=textrecipes">textrecipes</a></span> package also has a few unsupervised methods for screening tokens (i.e., words):</p>
+<ul>
+<li>
+<code>step_tokenfilter()</code>: filter tokens based on term frequency.</li>
+<li>
+<code>step_stopwords()</code>: Removes top words (e.g., “and”, “or”, etc.)</li>
+<li>
+<code>step_pos_filter()</code>: Part of speech filtering of tokens.</li>
+</ul>
+<p>It is suggested that these steps occur early in a recipe, perhaps after any imputation methods.</p>
+<p>We suggest adding these to a recipe early, after any imputation methods.</p>
+<p>For the drug toxicity data, we can visualize the amount of predictor correlations by first computing the correlation matrix:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cor_mat</span> <span class="op">&lt;-</span> </span>
+<span>  <span class="va">drug_train</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">class</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/stats/cor.html">cor</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning in cor(.): the standard deviation is zero</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Note the warning: some columns have a single unique value. Let’s look at this across the entire set of predictors via a function in the <span class="pkg"><a href="https://cran.r-project.org/package=vctrs">vctrs</a></span> package:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">num_unique</span> <span class="op">&lt;-</span> <span class="fu">map_int</span><span class="op">(</span><span class="va">drug_train</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">class</span><span class="op">)</span>, <span class="fu">vctrs</span><span class="fu">::</span><span class="va"><a href="https://vctrs.r-lib.org/reference/vec_unique.html">vec_unique_count</a></span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">num_unique</span><span class="op">)</span><span class="op">[</span><span class="va">num_unique</span> <span class="op">==</span> <span class="fl">1</span><span class="op">]</span></span>
+<span><span class="co">#&gt;  [1] "fp_0167" "fp_0172" "fp_0174" "fp_0178" "fp_0181" "fp_0182" "fp_0183" "fp_0191"</span></span>
+<span><span class="co">#&gt;  [9] "fp_0193" "fp_0195" "fp_0198" "fp_0200" "fp_0204" "fp_0205" "fp_0206" "fp_0212"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We’ll start a recipe with the step that will eliminate these:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">drug_rec</span> <span class="op">&lt;-</span> </span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span><span class="va">class</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">drug_train</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_zv.html">step_zv</a></span><span class="op">(</span><span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html">all_predictors</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Returning to correlations, let’s plot the distribution of pairwise correlation between predictors:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">pairwise_cor</span> <span class="op">&lt;-</span> <span class="va">cor_mat</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/lower.tri.html">upper.tri</a></span><span class="op">(</span><span class="va">cor_mat</span><span class="op">)</span><span class="op">]</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">abs</a></span><span class="op">(</span><span class="va">pairwise_cor</span><span class="op">)</span> <span class="op">&gt;=</span> <span class="fl">3</span> <span class="op">/</span> <span class="fl">4</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 3922</span></span>
+<span></span>
+<span><span class="fu">tibble</span><span class="op">(</span>correlation <span class="op">=</span> <span class="va">pairwise_cor</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span><span class="va">correlation</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu">ggplot</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">correlation</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>  <span class="fu">geom_histogram</span><span class="op">(</span>binwidth <span class="op">=</span> <span class="fl">0.1</span>, col <span class="op">=</span> <span class="st">"white"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure"><p><img src="../figures/cor-dist-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:60.0%"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>This isn’t too bad, but if we wanted to reduce the extreme pairwise correlations, we could use:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">drug_rec</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_corr.html">step_corr</a></span><span class="op">(</span><span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html">all_predictors</a></span><span class="op">(</span><span class="op">)</span>, threshold <span class="op">=</span> <span class="fl">0.75</span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Recipe ───────────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Inputs</span></span>
+<span><span class="co">#&gt; Number of variables by role</span></span>
+<span><span class="co">#&gt; outcome:      1</span></span>
+<span><span class="co">#&gt; predictor: 1345</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Operations</span></span>
+<span><span class="co">#&gt; • Zero variance filter on: all_predictors()</span></span>
+<span><span class="co">#&gt; • Correlation filter on: all_predictors()</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>or search for an optimal cutoff using <code>threshold = tune()</code> (as we will below).</p>
+<p><a href="https://aml4td.org/chapters/feature-selection.html#sec-unsupervised-selection" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+</section><section id="sec-automatic-selection" class="level2" data-number="13.3"><h2 data-number="13.3" class="anchored" data-anchor-id="sec-automatic-selection">
+<span class="header-section-number">13.3</span> Automatic Selection</h2>
+<p>The text mentioned that there are types of models that automatically select predictors. Tree-based models typically fall into this category.</p>
+<p>To demonstrate, let’s fit a Classification and Regression Tree (<a href="https://www.nature.com/articles/nmeth.4370">CART</a>) to the training set and see how many predictors are removed.</p>
+<p>Before doing so, let’s <em>turn off</em> a feature of this model. CART computes special alternate splits during training (“surrogate” and “competing” splits) to aid with things like missing value imputation. We’ll use the built-in feature importance measure to see how many predictors were used. Unfortunately, those measures will include splits not actually used by the model, so we prohibit these from being listed using <code>rpart.control()</code>.</p>
+<p>We can pass that to the model fit when we set the engine:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cart_ctrl</span> <span class="op">&lt;-</span> <span class="fu">rpart</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/rpart/man/rpart.control.html">rpart.control</a></span><span class="op">(</span>maxcompete <span class="op">=</span> <span class="fl">0</span>, maxsurrogate <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">cart_spec</span> <span class="op">&lt;-</span> </span>
+<span>  <span class="fu">decision_tree</span><span class="op">(</span>mode <span class="op">=</span> <span class="st">"classification"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu">set_engine</span><span class="op">(</span><span class="st">"rpart"</span>, control <span class="op">=</span> <span class="op">!</span><span class="op">!</span><span class="va">cart_ctrl</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><strong>Note</strong> the use of <code>!!</code> (“bang-bang”) when adding <code>cart_ctrl</code> as an engine option. If we had just used <code>control = cart_ctrl</code>, it tells R to look for a reference to object “<code>cart_ctrl</code>”, which resides in the global environment. Ordinarily, that works fine. However, if we use parallel processing, that reference is not available to the worker processes, and an error will occur.</p>
+<p>Using the bang-bang operator, we replace the <em>reference</em> to “<code>cart_ctrl</code>” with the actual value of that object. It splices the actual data into the model specification so parallel workers can find it. Here’s the model fit:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cart_drug_fit</span> <span class="op">&lt;-</span> <span class="va">cart_spec</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> <span class="fu">fit</span><span class="op">(</span><span class="va">class</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">drug_train</span><span class="op">)</span></span>
+<span><span class="va">cart_drug_fit</span></span>
+<span><span class="co">#&gt; parsnip model object</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; n= 259 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; node), split, n, loss, yval, (yprob)</span></span>
+<span><span class="co">#&gt;       * denotes terminal node</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  1) root 259 99 noninducer (0.38224 0.61776)  </span></span>
+<span><span class="co">#&gt;    2) l1lg_s&lt; -2.105 103 30 inducer (0.70874 0.29126)  </span></span>
+<span><span class="co">#&gt;      4) logp_c_hex&gt;=1.023 70 10 inducer (0.85714 0.14286)  </span></span>
+<span><span class="co">#&gt;        8) cw7&lt; 0.01674 41  1 inducer (0.97561 0.02439) *</span></span>
+<span><span class="co">#&gt;        9) cw7&gt;=0.01674 29  9 inducer (0.68966 0.31034)  </span></span>
+<span><span class="co">#&gt;         18) w6&gt;=33.5 13  0 inducer (1.00000 0.00000) *</span></span>
+<span><span class="co">#&gt;         19) w6&lt; 33.5 16  7 noninducer (0.43750 0.56250) *</span></span>
+<span><span class="co">#&gt;      5) logp_c_hex&lt; 1.023 33 13 noninducer (0.39394 0.60606)  </span></span>
+<span><span class="co">#&gt;       10) fp_0048&gt;=0.5 9  0 inducer (1.00000 0.00000) *</span></span>
+<span><span class="co">#&gt;       11) fp_0048&lt; 0.5 24  4 noninducer (0.16667 0.83333)  </span></span>
+<span><span class="co">#&gt;         22) d8&gt;=4.5 7  3 inducer (0.57143 0.42857) *</span></span>
+<span><span class="co">#&gt;         23) d8&lt; 4.5 17  0 noninducer (0.00000 1.00000) *</span></span>
+<span><span class="co">#&gt;    3) l1lg_s&gt;=-2.105 156 26 noninducer (0.16667 0.83333)  </span></span>
+<span><span class="co">#&gt;      6) cw7&lt; 0.002635 9  3 inducer (0.66667 0.33333) *</span></span>
+<span><span class="co">#&gt;      7) cw7&gt;=0.002635 147 20 noninducer (0.13605 0.86395)  </span></span>
+<span><span class="co">#&gt;       14) vd&gt;=0.4691 8  3 inducer (0.62500 0.37500) *</span></span>
+<span><span class="co">#&gt;       15) vd&lt; 0.4691 139 15 noninducer (0.10791 0.89209) *</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Of the 1345 predictors, only 7 were actually part of the prediction equations. The <span class="pkg"><a href="https://cran.r-project.org/package=partykit">partykit</a></span> package has a nice plot method to visualize the tree:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="http://partykit.r-forge.r-project.org/partykit/">partykit</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">cart_drug_party</span> <span class="op">&lt;-</span> </span>
+<span>  <span class="va">cart_drug_fit</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu">extract_fit_engine</span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/partykit/man/party-coercion.html">as.party</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">cart_drug_party</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure"><p><img src="../figures/cart-plot-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>As previously mentioned, trees produced by the <span class="pkg"><a href="https://cran.r-project.org/package=rpart">rpart</a></span> package have an internal importance score. To return this, let’s write a small function to pull the <code>rpart</code> object out, extract the importance scores, and then return a data frame with that data:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">get_active_features</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="kw"><a href="https://rdrr.io/r/base/library.html">require</a></span><span class="op">(</span><span class="va"><a href="https://tidymodels.tidymodels.org">tidymodels</a></span><span class="op">)</span></span>
+<span>  <span class="va">x</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>    <span class="fu">extract_fit_engine</span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>    <span class="fu">pluck</span><span class="op">(</span><span class="st">"variable.importance"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>    <span class="fu">enframe</span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/stats/setNames.html">setNames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"predictor"</span>, <span class="st">"importance"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="fu">get_active_features</span><span class="op">(</span><span class="va">cart_drug_fit</span><span class="op">)</span> </span>
+<span><span class="co">#&gt; # A tibble: 7 × 2</span></span>
+<span><span class="co">#&gt;   predictor  importance</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;           &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1 l1lg_s         36.46 </span></span>
+<span><span class="co">#&gt; 2 logp_c_hex      9.624</span></span>
+<span><span class="co">#&gt; 3 fp_0048         9.091</span></span>
+<span><span class="co">#&gt; 4 cw7             7.553</span></span>
+<span><span class="co">#&gt; 5 w6              4.539</span></span>
+<span><span class="co">#&gt; 6 vd              4.045</span></span>
+<span><span class="co">#&gt; # ℹ 1 more row</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>This shows us the 7 predictors used, along with their relative effect on the model.</p>
+<p>These results show what happens with the training set, but would a predictor like <code>l1lg_s</code> be consistently selected?</p>
+<p>To determine this, we can resample the model and save the importance scores for each of the 100 analysis sets. Let’s take the <code>get_active_features()</code> function and add it to a different <code>control</code> function that will be executed during resampling:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">ctrl</span> <span class="op">&lt;-</span> <span class="fu">control_resamples</span><span class="op">(</span>extract <span class="op">=</span> <span class="va">get_active_features</span><span class="op">)</span></span>
+<span><span class="va">cart_drug_res</span> <span class="op">&lt;-</span> </span>
+<span>  <span class="va">cart_spec</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu">fit_resamples</span><span class="op">(</span></span>
+<span>    <span class="va">class</span> <span class="op">~</span> <span class="va">.</span>, </span>
+<span>    resamples <span class="op">=</span> <span class="va">drug_rs</span>, </span>
+<span>    control <span class="op">=</span> <span class="va">ctrl</span></span>
+<span>  <span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Our results will have an extra column called <code>.extract</code> that contains the results for the resample. Since we didn’t tune this model, <code>.extract</code> contains a simple tibble with the results:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cart_drug_res</span><span class="op">$</span><span class="va">.extracts</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="co">#&gt; # A tibble: 1 × 2</span></span>
+<span><span class="co">#&gt;   .extracts        .config             </span></span>
+<span><span class="co">#&gt;   &lt;list&gt;           &lt;chr&gt;               </span></span>
+<span><span class="co">#&gt; 1 &lt;tibble [7 × 2]&gt; Preprocessor1_Model1</span></span>
+<span></span>
+<span><span class="va">cart_drug_res</span><span class="op">$</span><span class="va">.extracts</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">.extracts</span></span>
+<span><span class="co">#&gt; [[1]]</span></span>
+<span><span class="co">#&gt; # A tibble: 7 × 2</span></span>
+<span><span class="co">#&gt;   predictor  importance</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;           &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1 vd             35.40 </span></span>
+<span><span class="co">#&gt; 2 logp_c_hex      9.001</span></span>
+<span><span class="co">#&gt; 3 l1lg_s          7.934</span></span>
+<span><span class="co">#&gt; 4 aus74           3.75 </span></span>
+<span><span class="co">#&gt; 5 cw1             3.438</span></span>
+<span><span class="co">#&gt; 6 fp_0027         3.048</span></span>
+<span><span class="co">#&gt; # ℹ 1 more row</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We can extract the results from all the resamples, unnest, and count the number of times each predictor was selected:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">resampled_selection</span> <span class="op">&lt;-</span> </span>
+<span>  <span class="va">cart_drug_res</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu">collect_extracts</span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu">unnest</span><span class="op">(</span><span class="va">.extracts</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu">count</span><span class="op">(</span><span class="va">predictor</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="fu">arrange</span><span class="op">(</span><span class="fu">desc</span><span class="op">(</span><span class="va">n</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">resampled_selection</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> <span class="fu">slice_head</span><span class="op">(</span>n <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 5 × 2</span></span>
+<span><span class="co">#&gt;   predictor      n</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;      &lt;int&gt;</span></span>
+<span><span class="co">#&gt; 1 l1lg_s        86</span></span>
+<span><span class="co">#&gt; 2 vd            58</span></span>
+<span><span class="co">#&gt; 3 logp_c_hex    57</span></span>
+<span><span class="co">#&gt; 4 cw7           44</span></span>
+<span><span class="co">#&gt; 5 iw4           43</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>A visualization illustrates that a small number of predictors were reliably selected:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">resampled_selection</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu">ggplot</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span><span class="va">n</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">geom_histogram</span><span class="op">(</span>binwidth <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">"white"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">labs</span><span class="op">(</span>x <span class="op">=</span> <span class="st">"# Times Selected (of 100)"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure"><p><img src="../figures/cart-freq-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>We can also see the model’s performance characteristics:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">collect_metrics</span><span class="op">(</span><span class="va">cart_drug_res</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 3 × 6</span></span>
+<span><span class="co">#&gt;   .metric     .estimator   mean     n  std_err .config             </span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;       &lt;chr&gt;       &lt;dbl&gt; &lt;int&gt;    &lt;dbl&gt; &lt;chr&gt;               </span></span>
+<span><span class="co">#&gt; 1 accuracy    binary     0.7406   100 0.007049 Preprocessor1_Model1</span></span>
+<span><span class="co">#&gt; 2 brier_class binary     0.2001   100 0.005307 Preprocessor1_Model1</span></span>
+<span><span class="co">#&gt; 3 roc_auc     binary     0.7559   100 0.008105 Preprocessor1_Model1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>One additional note about using tree-based models to automatically select predictors. Many tree ensembles create a collection of individual tree models. For ensembles to work well, this collection should have a diverse set of trees (rather than those with the same splits). To encourage diversity, many tree models have an <code>mtry</code> parameter. This parameter is an integer for the number of predictors in the data set that should be randomly selected when making a split. For example, if <code>mtry = 3</code>, a different random selection of three predictors would be the only ones considered for each split in the tree. This facilitates diversity but also forces irrelevant predictors to be included in the model.</p>
+<p>However, this also means that many tree ensembles will have prediction functions that include predictors that have no effect. If we take the same strategy as above, we will vastly overestimate the number of predictors that affect the model.</p>
+<p>For this reason, we might consider setting <code>mtry</code> to use the complete predictor set during splitting <em>if we are trying to select predictors</em>. While this might slightly decrease the model’s performance, the false positive rate of finding “important predictors” will be significantly reduced.</p>
+<p><a href="https://aml4td.org/chapters/feature-selection.html#sec-automatic-selection" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+</section><section id="sec-wrappers" class="level2" data-number="13.4"><h2 data-number="13.4" class="anchored" data-anchor-id="sec-wrappers">
+<span class="header-section-number">13.4</span> Wrapper Methods</h2>
+<p>tidymodels does not contain any wrapper methods, primarily due to their computational costs.</p>
+<p>Several other packages do, most notably <span class="pkg"><a href="https://cran.r-project.org/package=caret">caret</a></span>. For more information on what that package can do, see the feature selection chapters of the documentation:</p>
+<ul>
+<li><a href="https://topepo.github.io/caret/feature-selection-overview.html"><em>Feature Selection Overview</em></a></li>
+<li><a href="https://topepo.github.io/caret/feature-selection-using-univariate-filters.html"><em>Feature Selection using Univariate Filters</em></a></li>
+<li><a href="https://topepo.github.io/caret/recursive-feature-elimination.html"><em>Recursive Feature Elimination</em></a></li>
+<li><a href="https://topepo.github.io/caret/feature-selection-using-genetic-algorithms.html"><em>Feature Selection using Genetic Algorithms</em></a></li>
+<li><a href="https://topepo.github.io/caret/feature-selection-using-simulated-annealing.html"><em>Feature Selection using Simulated Annealing</em></a></li>
+</ul>
+<p>R code from the Feature Engineering and Selection book can also be found at <a href="https://github.com/topepo/FES"><code>https://github.com/topepo/FES</code></a>.</p>
+<p><a href="https://aml4td.org/chapters/feature-selection.html#sec-wrappers" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+</section><section id="sec-filters" class="level2" data-number="13.5"><h2 data-number="13.5" class="anchored" data-anchor-id="sec-filters">
+<span class="header-section-number">13.5</span> Filter Methods</h2>
+<p>Currently, the majority of supervised filters live in the <span class="pkg"><a href="https://cran.r-project.org/package=colino">colino</a></span> package (although this will change in the Autumn of 2025). Those steps include:</p>
+<ul>
+<li>
+<code><a href="https://stevenpawley.github.io/colino/reference/step_select_aov.html">step_select_aov()</a></code>: filter categorical predictors using the ANOVA F-test.</li>
+<li>
+<code><a href="https://stevenpawley.github.io/colino/reference/step_select_boruta.html">step_select_boruta()</a></code>: feature selection step using the Boruta algorithm <a href="https://www.jmlr.org/papers/volume3/stoppiglia03a/stoppiglia03a.pdf">(pdf)</a>.</li>
+<li>
+<code><a href="https://stevenpawley.github.io/colino/reference/step_select_carscore.html">step_select_carscore()</a></code>: feature selection step using <a href="https://arxiv.org/abs/1007.5516">CAR scores</a>.</li>
+<li>
+<code><a href="https://stevenpawley.github.io/colino/reference/step_select_fcbf.html">step_select_fcbf()</a></code>: fast correlation-based filter.</li>
+<li>
+<code><a href="https://stevenpawley.github.io/colino/reference/step_select_forests.html">step_select_forests()</a></code>: feature selection step using random forest feature importance scores.</li>
+<li>
+<code><a href="https://stevenpawley.github.io/colino/reference/step_select_infgain.html">step_select_infgain()</a></code>: information gain feature selection step.</li>
+<li>
+<code><a href="https://stevenpawley.github.io/colino/reference/step_select_linear.html">step_select_linear()</a></code>: feature selection step using the magnitude of a linear models’ coefficients.</li>
+<li>
+<code><a href="https://stevenpawley.github.io/colino/reference/step_select_mrmr.html">step_select_mrmr()</a></code>: apply minimum redundancy maximum relevance feature selection (MRMR).</li>
+<li>
+<code><a href="https://stevenpawley.github.io/colino/reference/step_select_relief.html">step_select_relief()</a></code>: feature selection step using the Relief algorithm.</li>
+<li>
+<code><a href="https://stevenpawley.github.io/colino/reference/step_select_roc.html">step_select_roc()</a></code>: filter numeric predictors using ROC curve.</li>
+<li>
+<code><a href="https://stevenpawley.github.io/colino/reference/step_select_tree.html">step_select_tree()</a></code>: feature selection step using a decision tree importance scores.</li>
+<li>
+<code><a href="https://stevenpawley.github.io/colino/reference/step_select_vip.html">step_select_vip()</a></code>: feature selection step using a model’s feature importance scores or coefficients.</li>
+<li>
+<code><a href="https://stevenpawley.github.io/colino/reference/step_select_xtab.html">step_select_xtab()</a></code>: filter categorical predictors using contingency tables.</li>
+</ul>
+<p>These steps contain tuning parameters that control how many predictors to retain:</p>
+<ul>
+<li>
+<code>top_n</code> specifies the number to retain while</li>
+<li>
+<code>threshold</code> describes the cut-point for the metric being used to filter</li>
+</ul>
+<p>Let’s add a supervised filter based on the popular random forest importance scores to demonstrate. The step requires a model declaration via a <span class="pkg"><a href="https://cran.r-project.org/package=parsnip">parsnip</a></span> specification. We’ll choose random forest model and optimize the number of top predictors that should be retained and then given to the model.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">base_model</span> <span class="op">&lt;-</span> </span>
+<span>  <span class="fu">rand_forest</span><span class="op">(</span>trees <span class="op">=</span> <span class="fl">1000</span>, mode <span class="op">=</span> <span class="st">"classification"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="fu">set_engine</span><span class="op">(</span><span class="st">"ranger"</span>, importance <span class="op">=</span> <span class="st">"permutation"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">drug_rec</span> <span class="op">&lt;-</span> </span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span><span class="va">class</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">drug_train</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_zv.html">step_zv</a></span><span class="op">(</span><span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html">all_predictors</a></span><span class="op">(</span><span class="op">)</span>, id <span class="op">=</span> <span class="st">"zv"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_corr.html">step_corr</a></span><span class="op">(</span><span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html">all_numeric_predictors</a></span><span class="op">(</span><span class="op">)</span>, threshold <span class="op">=</span> <span class="fu">tune</span><span class="op">(</span><span class="op">)</span>, id <span class="op">=</span> <span class="st">"cor"</span><span class="op">)</span>  <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://stevenpawley.github.io/colino/reference/step_select_vip.html">step_select_vip</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html">all_numeric_predictors</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>    outcome <span class="op">=</span> <span class="st">"class"</span>,</span>
+<span>    model <span class="op">=</span> <span class="va">base_model</span>,</span>
+<span>    top_p <span class="op">=</span> <span class="fu">tune</span><span class="op">(</span><span class="op">)</span>,</span>
+<span>    id <span class="op">=</span> <span class="st">"vip"</span></span>
+<span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://petersonr.github.io/bestNormalize/reference/step_orderNorm.html">step_orderNorm</a></span><span class="op">(</span><span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html">all_numeric_predictors</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Note that we also add a correlation filter and optimize the exclusion threshold. This helps the random forest model since the inclusion of highly correlated predictors <a href="https://bookdown.org/max/FES/recursive-feature-elimination.html#fig:greedy-rf-imp">can dilute the importance</a> of the set of related predictors.</p>
+<p>We’ll fit a support vector machine model to these data, so the recipe concludes with a step that will normalize the features to have the same distribution (even the binary values).</p>
+<p>Now we can specify the supervised model, tag two parameters for optimization, and then add the model and recipe to a workflow:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">svm_spec</span> <span class="op">&lt;-</span> </span>
+<span>  <span class="fu">svm_rbf</span><span class="op">(</span>cost <span class="op">=</span> <span class="fu">tune</span><span class="op">(</span><span class="op">)</span>, rbf_sigma <span class="op">=</span> <span class="fu">tune</span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu">set_mode</span><span class="op">(</span><span class="st">"classification"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">vip_svm_wflow</span> <span class="op">&lt;-</span> <span class="fu">workflow</span><span class="op">(</span><span class="va">drug_rec</span>, <span class="va">svm_spec</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Let’s add specific ranges for the supervised filter parameter since its upper range depends on the data dimensions. We’re not sure how many predictors will pass the unsupervised filter steps, but we’ll guess that we should include, at most, 100 predictors. If we overestimate this number, <code><a href="https://stevenpawley.github.io/colino/reference/step_select_vip.html">step_select_vip()</a></code> will adjust the range to the upper limit.</p>
+<p>We’ll also adjust the range of the correlation filter to make it more aggressively remove highly correlated predictors:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">vip_svm_param</span> <span class="op">&lt;-</span> </span>
+<span>  <span class="va">vip_svm_wflow</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://hardhat.tidymodels.org/reference/hardhat-extract.html">extract_parameter_set_dials</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/stats/update.html">update</a></span><span class="op">(</span></span>
+<span>  top_p <span class="op">=</span> <span class="fu"><a href="https://stevenpawley.github.io/colino/reference/top_p.html">top_p</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fl">100L</span><span class="op">)</span><span class="op">)</span>, </span>
+<span>  threshold <span class="op">=</span> <span class="fu">threshold</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.50</span>, <span class="fl">0.99</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><em>Finally</em>, let’s tune the model via Bayesian optimization and use the Brier score to guide the process to the best values of the tuning parameters:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">ctrl</span> <span class="op">&lt;-</span> <span class="fu">control_bayes</span><span class="op">(</span>no_improve <span class="op">=</span> <span class="cn">Inf</span>, parallel_over <span class="op">=</span> <span class="st">"everything"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">vip_svm_res</span> <span class="op">&lt;-</span> </span>
+<span>  <span class="va">vip_svm_wflow</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu">tune_bayes</span><span class="op">(</span></span>
+<span>    resamples <span class="op">=</span> <span class="va">drug_rs</span>,</span>
+<span>    metrics <span class="op">=</span> <span class="fu">metric_set</span><span class="op">(</span><span class="va">brier_class</span>, <span class="va">roc_auc</span><span class="op">)</span>,</span>
+<span>    initial <span class="op">=</span> <span class="fl">10L</span>,</span>
+<span>    iter <span class="op">=</span> <span class="fl">25L</span>,</span>
+<span>    control <span class="op">=</span> <span class="va">ctrl</span>,</span>
+<span>    param_info <span class="op">=</span> <span class="va">vip_svm_param</span></span>
+<span>  <span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>A visualization of the process shows that the search does reduce the Brier score during the search:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">autoplot</span><span class="op">(</span><span class="va">vip_svm_res</span>, metric <span class="op">=</span> <span class="st">"brier_class"</span>, type <span class="op">=</span> <span class="st">"performance"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure"><p><img src="../figures/vip-performance-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:80.0%"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>When we plot the parameter choices over iterations, we see that each tuning parameter converges to specific ranges. The number of predictors retained fluctuates, and a few choices could be used (say, between 5 and 15 predictors).</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">autoplot</span><span class="op">(</span><span class="va">vip_svm_res</span>, type <span class="op">=</span> <span class="st">"parameters"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure"><p><img src="../figures/vip-param-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:80.0%"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>A plot of the parameter values versus the Brier score tells a similar story:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">autoplot</span><span class="op">(</span><span class="va">vip_svm_res</span>, metric <span class="op">=</span> <span class="st">"brier_class"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure"><p><img src="../figures/vip-profile-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:80.0%"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The numerically best results are:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">show_best</span><span class="op">(</span><span class="va">vip_svm_res</span>, metric <span class="op">=</span> <span class="st">"brier_class"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 5 × 11</span></span>
+<span><span class="co">#&gt;    cost rbf_sigma threshold top_p .metric   .estimator   mean     n  std_err .config</span></span>
+<span><span class="co">#&gt;   &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt; &lt;int&gt; &lt;chr&gt;     &lt;chr&gt;       &lt;dbl&gt; &lt;int&gt;    &lt;dbl&gt; &lt;chr&gt;  </span></span>
+<span><span class="co">#&gt; 1 30.67 0.0005070    0.9665    35 brier_cl… binary     0.1331   100 0.003508 Iter10 </span></span>
+<span><span class="co">#&gt; 2 29.89 0.001532     0.9811    75 brier_cl… binary     0.1349   100 0.003652 Iter11 </span></span>
+<span><span class="co">#&gt; 3 27.73 0.0002266    0.8979    50 brier_cl… binary     0.1357   100 0.003505 Iter24 </span></span>
+<span><span class="co">#&gt; 4 23.13 0.0003069    0.8237    38 brier_cl… binary     0.1359   100 0.003820 Iter15 </span></span>
+<span><span class="co">#&gt; 5 23.82 0.0008604    0.9667    80 brier_cl… binary     0.1382   100 0.003489 Iter12 </span></span>
+<span><span class="co">#&gt; # ℹ 1 more variable: .iter &lt;int&gt;</span></span>
+<span></span>
+<span><span class="va">best_param</span> <span class="op">&lt;-</span> <span class="fu">select_best</span><span class="op">(</span><span class="va">vip_svm_res</span>, metric <span class="op">=</span> <span class="st">"brier_class"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Let’s update our workflow with the best parameters, then fit the final model on the entire training set:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">124</span><span class="op">)</span></span>
+<span><span class="va">final_model</span> <span class="op">&lt;-</span> </span>
+<span>  <span class="va">vip_svm_wflow</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu">finalize_workflow</span><span class="op">(</span><span class="va">best_param</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu">fit</span><span class="op">(</span><span class="va">drug_train</span><span class="op">)</span></span>
+<span><span class="va">final_model</span></span>
+<span><span class="co">#&gt; ══ Workflow [trained] ═══════════════════════════════════════════════════════════════</span></span>
+<span><span class="co">#&gt; Preprocessor: Recipe</span></span>
+<span><span class="co">#&gt; Model: svm_rbf()</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Preprocessor ─────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; 4 Recipe Steps</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; • step_zv()</span></span>
+<span><span class="co">#&gt; • step_corr()</span></span>
+<span><span class="co">#&gt; • step_select_vip()</span></span>
+<span><span class="co">#&gt; • step_orderNorm()</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── Model ────────────────────────────────────────────────────────────────────────────</span></span>
+<span><span class="co">#&gt; Support Vector Machine object of class "ksvm" </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; SV type: C-svc  (classification) </span></span>
+<span><span class="co">#&gt;  parameter : cost C = 30.6666439770923 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Gaussian Radial Basis kernel function. </span></span>
+<span><span class="co">#&gt;  Hyperparameter : sigma =  0.000507017083942551 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Number of Support Vectors : 126 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Objective Function Value : -3333 </span></span>
+<span><span class="co">#&gt; Training error : 0.142857 </span></span>
+<span><span class="co">#&gt; Probability model included.</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>How many predictors were removed, and how many made it to the final model? We can write a function to use the <code><a href="https://generics.r-lib.org/reference/tidy.html">tidy()</a></code> method on the recipe steps to assess what was eliminated. The “mold” for the workflow can also tell us how many predictors were passed to the SVM model:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">get_filter_info</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">fit_rec</span> <span class="op">&lt;-</span> <span class="fu">extract_recipe</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
+<span>  <span class="co"># The tidy methods show the predictors that were eliminated:</span></span>
+<span>  <span class="va">corr_rm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html">tidy</a></span><span class="op">(</span><span class="va">fit_rec</span>, id <span class="op">=</span> <span class="st">"cor"</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">zv_rm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html">tidy</a></span><span class="op">(</span><span class="va">fit_rec</span>, id <span class="op">=</span> <span class="st">"zv"</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">vip_rm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html">tidy</a></span><span class="op">(</span><span class="va">fit_rec</span>, id <span class="op">=</span> <span class="st">"vip"</span><span class="op">)</span><span class="op">)</span></span>
+<span>  </span>
+<span>  <span class="co"># The mold has a 'predictors' element that describes the</span></span>
+<span>  <span class="co"># columns which are given to the model: </span></span>
+<span>  <span class="va">kept</span> <span class="op">&lt;-</span> </span>
+<span>    <span class="va">x</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>    <span class="fu">extract_mold</span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>    <span class="fu">pluck</span><span class="op">(</span><span class="st">"predictors"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">ncol</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>  <span class="co"># We'll save them as a tibble:</span></span>
+<span>  <span class="fu">tibble</span><span class="op">(</span><span class="va">corr_rm</span>, <span class="va">zv_rm</span>, <span class="va">vip_rm</span>, <span class="va">kept</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="fu">get_filter_info</span><span class="op">(</span><span class="va">final_model</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 1 × 4</span></span>
+<span><span class="co">#&gt;   corr_rm zv_rm vip_rm  kept</span></span>
+<span><span class="co">#&gt;     &lt;int&gt; &lt;int&gt;  &lt;int&gt; &lt;int&gt;</span></span>
+<span><span class="co">#&gt; 1     682    16    612    35</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The correlation filter removes a large number of predictors, which is not surprising for this type of data set.</p>
+<p>How does the model work on the test set of 65 molecules?</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">test_pred</span> <span class="op">&lt;-</span> <span class="fu">augment</span><span class="op">(</span><span class="va">final_model</span>, <span class="va">drug_test</span><span class="op">)</span></span>
+<span><span class="va">test_pred</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> <span class="fu">brier_class</span><span class="op">(</span><span class="va">class</span>, <span class="va">.pred_inducer</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 1 × 3</span></span>
+<span><span class="co">#&gt;   .metric     .estimator .estimate</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;       &lt;chr&gt;          &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1 brier_class binary        0.1178</span></span>
+<span><span class="va">test_pred</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> <span class="fu">roc_auc</span><span class="op">(</span><span class="va">class</span>, <span class="va">.pred_inducer</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 1 × 3</span></span>
+<span><span class="co">#&gt;   .metric .estimator .estimate</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;   &lt;chr&gt;          &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1 roc_auc binary         0.899</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><a href="https://aml4td.org/chapters/feature-selection.html#sec-filters" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+
+
+</section></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/tidymodels\.aml4td\.org\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script><nav class="page-navigation"><div class="nav-page nav-page-previous">
+      <a href="../chapters/iterative-search.html" class="pagination-link" aria-label="Iterative Search">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Iterative Search</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+</body></html>
