@@ -278,7 +278,7 @@ recipe() -> prep() -> bake()
 
 We’ll start simply by trying to "unskew" a predictor’s distribution. 
 
-## Resolving Skewness {#sec-recipe-skewness}
+## Resolving Asymmetry and Skewness {#sec-recipe-skewness}
 
 The main text mentions that the distribution of the `Lot_Area` variable is skewed. Let's see what that looks like. 
 

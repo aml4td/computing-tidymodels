@@ -33,8 +33,9 @@ options(crayon.enabled = FALSE)
 options(pillar.advice = FALSE, pillar.min_title_chars = Inf, pillar.sigfig = 4)
 
 source("../R/_common.R")
-req_pkg <- c("Cubist", "future", "parallelly", "probably", "rules", "spatialsample", 
+req_pkg <- c("Cubist", "future.mirai", "parallelly", "probably", "rules", "spatialsample", 
              "tidymodels", "tidysdm")
+
 ```
 
 ## Requirements
@@ -47,7 +48,7 @@ We will use the `ames`, `concrete`, and `Chicago` data sets from the `r pkg(mode
 #| label: interactions-nonlinear-installs
 #| eval: false
 #| echo: true
-req_pkg <- c("Cubist", "future", "parallelly", "probably", "rules", "spatialsample", 
+req_pkg <- c("Cubist", "future.mirai", "parallelly", "probably", "rules", "spatialsample", 
              "tidymodels", "tidysdm")
 
 # Check to see if they are installed: 
@@ -195,6 +196,7 @@ The relevant function here is `mc_cv()` with two main arguments:
 For example: 
 
 ```{r}
+#| label: mc-cv-args
 set.seed(380)
 mc_cv(concrete_tr, times = 3, prop = 9 / 10)
 
@@ -241,7 +243,7 @@ concrete_rs <- bootstraps(concrete, times = 5, apparent = TRUE)
 
 Note that the `id` column reflects this, and the split label shows that the analysis and assessment sets are the same size. 
 
-The tidymodels resampling functions are aware of the potential presence of the “apparent” sample and will _not_ include it at inappropriate times. For example, if we resample a model with and without using `apparent = TRUE`, we’ll get the same results as long as we use the same random number seed to make each set of resamples. 
+The tidymodels resampling functions are aware of the potential presence of the "apparent" sample and will _not_ include it at inappropriate times. For example, if we resample a model with and without using `apparent = TRUE`, we’ll get the same results as long as we use the same random number seed to make each set of resamples. 
 
 Secondly, there is a `strata` argument for this function. That enables different bootstrap samples to be taken within each stratum, which are combined into the final resampling set. _Technically_, this isn’t a bootstrap sample, but it is probably close enough to be useful. 
 
@@ -542,16 +544,24 @@ The `future` package can run the resamples in parallel. The `plan()` function se
  - The "cluster" option is most useful for having worker processes on different machines. 
  - The "sequential" plan is regular, non-parallel computing. 
  
-There are several other packages with plans: `r pkg(future.batchtools)`, `r pkg(future.callr)`, and `r pkg(future.mirai)`. The last is (as of this writing) experimental but shows great promise. 
+There are several other packages with plans: `r pkg(future.batchtools)`, `r pkg(future.callr)`, and `r pkg(future.mirai)`. 
 
 Once we know a plan, we run the following code (once) before running operations that can be done in parallel: 
 
 ```{r}
 #| label: cubist-in-parallel
-
+#| eval: false
 library(future)
 parallelly::availableCores()
-plan("multisession")
+plan(multisession)
+```
+
+Alternatively, the more recent mirai "engine" for parallel processing can also be used for additional efficiency. 
+
+```{r}
+#| label: cubist-in-parallel-mirai
+library(future.mirai)
+plan(mirai_multisession)
 ```
 
 This will generally increase the efficiency of the resampling process. 

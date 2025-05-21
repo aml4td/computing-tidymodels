@@ -38,6 +38,8 @@ req_pkg <- c("bestNormalize", "dimRed", "embed", "fastICA", "igraph",
 req_pkg_fmt <- purrr::map_chr(req_pkg, ~ pkg_chr(.x))
 ```
 
+The [corresponding chapter](http://aml4td/chapters/embeddings.html) on the main site focuses on finding ways to combine or distill a set of features into a smaller set that captures important information.  Like the previous chapters, this. one will also focus on the `r pkg(recipes)` package. 
+
 ## Requirements
 
 You’ll need `r length(req_pkg)` packages (`r req_pkg_fmt`) for this chapter. The `r pkg(mixOmics)` is a Bioconductor package and is not on CRAN. For the others, we can install them as usual but we'll get `r pkg(mixOmics)` from GitHub:
@@ -200,6 +202,10 @@ pca_score_plot + coord_obs_pred()
 
 This helps avoid over-interpreting proportionally small patterns in the later components. 
 
+::: {.callout-note}
+As mentioned in the main text, PCA (and PLS) components are unique up to their sign. This means that the embedded features have the same shape, but their values may be flipped in the North/South and/or East/West directions. 
+:::
+
 The functions `embed::step_pca_sparse()` and `embed::step_pca_sparse_bayes()` have sparse/regularized estimation methods for PCA. Each has an argument called `predictor_prop()` that attempts to control how much sparsity should be used. `predictor_prop = 0` should approximate regular PCA, and values near 1.0 would produce very few non-zero loadings. 
 
 `r back("embeddings.html#sec-pca")`
@@ -273,7 +279,7 @@ This might not cause a difference in performance when the features are used in a
 
 `r back("embeddings.html#sec-ica")`
 
-### Partial Least Squares {#numeric-pls} {#sec-pls}
+### Partial Least Squares {#sec-pls}
 
 The syntax for PLS is also very similar. However, it is a supervised method, so we need to specify the column containing the outcome (the outcome column is not needed after model training). The code below uses `dplyr::vars()` to declare the column name, but a simple character string can also be used. 
 

@@ -33,13 +33,13 @@ options(crayon.enabled = FALSE)
 options(pillar.advice = FALSE, pillar.min_title_chars = Inf, pillar.sigfig = 4)
 
 source("../R/_common.R")
-req_pkg <- c("Cubist", "finetune", "rules", "tidymodels")
+req_pkg <- c("Cubist", "finetune", "future.mirai", "rules", "tidymodels")
 ```
 ```{r}
 #| label: parallel
 #| include: false
-library(future)
-plan("multisession")
+library(future.mirai)
+plan(mirai_multisession)
 ```
 
 ## Requirements
@@ -52,7 +52,7 @@ As with the previous chapter, we will use the `concrete` data set from the `r pk
 #| label: interactions-nonlinear-installs
 #| eval: false
 #| echo: true
-req_pkg <- c("Cubist", "finetune", "rules", "tidymodels")
+req_pkg <- c("Cubist", "finetune", "future.mirai", "rules", "tidymodels")
 
 # Check to see if they are installed: 
 pkg_installed <- vapply(req_pkg, rlang::is_installed, logical(1))

@@ -7,6 +7,8 @@
 source("../R/_common.R")
 ```
 
+Please note that the aml4td project is released with a [Contributor Code of Conduct](https://contributor-covenant.org/version/2/1/CODE_OF_CONDUCT.html). By contributing to this project, you agree to abide by its terms.
+
 If you plan to do anything beyond fixing a typo, the best thing you can do is to [open an issue](https://github.com/aml4td/computing-tidymodels/issues) and discuss changes before you spend a lot of time doing them. 
 
 If you don't have a lot of experience with git or GitHub, take a look at the wonderful [_Happy Git and GitHub for the useR_](https://happygitwithr.com/). 

@@ -126,7 +126,8 @@ One numeric and one factor predictor:
 model.matrix(~ day + distance + day:distance, interaction_example) %>% 
   as_tibble() %>% 
   select(-`(Intercept)`) %>% 
-  gt()
+  gt() |> 
+  tab_style_body(style = cell_text(color = "gray70"), values = 0)
 ```
 
 If you want to make all possible interactions, you can use the dot and exponent operator:
@@ -171,7 +172,8 @@ recipe(~ day + hour, data = interaction_example) %>%
   step_interact(~ starts_with("day_"):hour) %>% 
   prep() %>% 
   bake(new_data = NULL) %>% 
-  gt()
+  gt() |> 
+  tab_style_body(style = cell_text(color = "gray70"), values = 0)
 ```
 
 `r back("interactions-nonlinear.html#sec-interactions")`
@@ -335,4 +337,4 @@ tidy(cart_binning, number = 1)
 
 As you can see, the breakpoints are built into the factor levels. 
 
-`r back("interactions-nonlinear.html#sec-discretization")`
+`r back("interactions-nonlinear.html#discretization")`

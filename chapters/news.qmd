@@ -1,22 +1,26 @@
 # News {.unlisted .unnumbered}
 
-## Errata {.unlisted .unnumbered}
-
-No reported edits (yet). 
-
 ## Changelog {.unlisted .unnumbered}
 
-### 2025-01-17  {.unlisted .unnumbered}
+## 2025-05-21
+
+New chapters on iterative optimization and feature selection. 
+
+Whenever a section has a corresponding computing supplement, an icon on the main site is shown that directly links to that section.  In this computing supplement, you can get back to the main site's section via this icon: {{< fa solid rotate-left >}}.
+
+We also move to [mirai](https://mirai.r-lib.org/index.html) for parallel processing. 
+
+## 2025-01-17  {.unlisted .unnumbered}
 
 Small update that standardized the url anchors. 
 
 Some sections were reorganized. 
 
-### 2024-09-23  {.unlisted .unnumbered}
+## 2024-09-23  {.unlisted .unnumbered}
 
 Computing chapters caught up to the website (chapter 11, grid search)
 
-### 2023-12-11  {.unlisted .unnumbered}
+## 2023-12-11  {.unlisted .unnumbered}
 
 Added a chapter on initial data splitting. 
 

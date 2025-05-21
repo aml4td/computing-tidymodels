@@ -337,7 +337,7 @@ These values can be tuned.
 
 `r back("categorical-predictors.html#sec-combining-categories")`
 
-## Working with Ordinal Predictors  {#sec-recipe-ordinal}
+## Encodings for Ordinal Predictors  {#sec-recipe-ordinal}
 
 As reported in [the section on ordinal data](https://aml4td.org/chapters/categorical-predictors.html#encodings-for-ordinal-predictors), the default for R is to encode ordinal values with $p$ values is to create a set of $p - 1$ orthogonal polynomial features.  That is what `step_dummy()` does by default. 
 
@@ -383,7 +383,7 @@ recipe(~ quality, data = quality) %>%
 
 `step_integer()` does the same for either type of factor but converts them to consecutive one-based integers.  
 
-`r back("categorical-predictors.html#sec-encodings-for-ordinal-predictors")`
+`r back("categorical-predictors.html#sec-ordinal-encodings")`
 
 ## Other Relevant Recipe Steps {#sec-other-recipe-steps}
 

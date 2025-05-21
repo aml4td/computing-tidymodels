@@ -35,7 +35,7 @@ options(crayon.enabled = FALSE)
 options(pillar.advice = FALSE, pillar.min_title_chars = Inf, pillar.sigfig = 4)
 
 source("../R/_common.R")
-req_pkg <- c("brulee", "Cubist", "patchwork", "scales", "splines2", "tidymodels")
+req_pkg <- c("brulee", "Cubist", "future.mirai", "patchwork", "scales", "splines2", "tidymodels")
 ```
 
 `r pkg_list(req_pkg)`
@@ -45,7 +45,7 @@ req_pkg <- c("brulee", "Cubist", "patchwork", "scales", "splines2", "tidymodels"
 #| eval: false
 #| echo: true
 
-req_pkg <- c("brulee", "Cubist", "patchwork", "scales", "splines2", "tidymodels")
+req_pkg <- c("brulee", "Cubist", "future.mirai", "patchwork", "scales", "splines2", "tidymodels")
 
 # Check to see if they are installed: 
 pkg_installed <- vapply(req_pkg, rlang::is_installed, logical(1))
@@ -59,7 +59,7 @@ if ( any(!pkg_installed) ) {
 
 Once you've installed `r pkg(brulee)`, you should load it using `library(brulee)` to install the underlying `torch` executables. You only have to do this once. 
 
-Two other packages are described but not directly used: `r pkg(parallel)` and `r pkg(doParallel)`. 
+Two other packages are described but not directly used: `r pkg(parallel)` and `r pkg(future)`. 
 
 Let's run some code to get started: 
 
@@ -251,6 +251,7 @@ delivery_time_day <-
 #| fig-width: 6
 #| fig-height: 6
 #| out-width: "80%"
+#| warning: false
 
 # Row 1
 ( delivery_dist + delivery_time ) / 
@@ -829,15 +830,15 @@ nnet_fit <-
 
 For model tuning, we are fitting many models. With grid search, these models are not dependent on one another. For this reason, it is possible to compute these model fits simultaneously (i.e., in parallel).  
 
-To do so, tidymodels requires you to specify a _parallel backend_. There are several types, and we will use PSOCK clusters since they work on all operating systems. For this technology, we can run the following commands before running `fit_resamples()` or any of the `tune_*()` functions: 
+To do so, tidymodels requires you to specify a _parallel backend_. There are several types, and we will use the mirai system since it works on all operating systems. For this technology, we can run the following commands before running `fit_resamples()` or any of the `tune_*()` functions: 
 
 ```{r}
 #| label: parallel-start
 #| eval: false
 
 cores <- parallel::detectCores(logical = FALSE)
-library(future)
-plan(multisession, workers = cores)
+library(future.mirai)
+plan(mirai_multisession, workers = cores)
 ```
 
 There can be significant speed-ups when running in parallel. See the [section in the tidymodels book](https://www.tmwr.org/grid-search#parallel-processing) for more details. 
