@@ -31,7 +31,7 @@ options(crayon.enabled = FALSE)
 options(pillar.advice = FALSE, pillar.min_title_chars = Inf, pillar.sigfig = 4)
 
 source("../R/_common.R")
-req_pkg <- c("bestNormalize", "colino", "janitor", "kernlab", "partykit", 
+req_pkg <- c("bestNormalize", "future.mirai", "janitor", "kernlab", "partykit", 
              "QSARdata", "ranger", "rpart", "tidymodels")
 ```
 
@@ -45,7 +45,7 @@ We will use the following package in this chapter: `r pkg_list(req_pkg)`. To ins
 #| label: feature-selection-installs
 #| eval: false
 #| echo: true
-req_pkg <- c("bestNormalize", "janitor", "kernlab", "partykit", 
+req_pkg <- c("bestNormalize", "future.mirai", "janitor", "kernlab", "partykit", 
              "QSARdata", "ranger", "rpart", "tidymodels")
 
 # Check to see if they are installed: 
@@ -70,7 +70,7 @@ library(partykit)
 library(tidymodels)
 library(colino)
 library(bestNormalize)
-library(future)
+library(future.mirai)
 library(janitor)
 
 tidymodels_prefer()
@@ -116,12 +116,12 @@ Let's load the meta package, manage some between-package function conflicts, and
 library(tidymodels)
 library(colino)
 library(bestNormalize)
-library(future)
+library(future.mirai)
 library(janitor)
 
 tidymodels_prefer()
 theme_set(theme_bw())
-plan("multisession")
+plan(mirai_multisession)
 ```
 
 There are a few different data frames for these data. We'll merge two and clean up and shorten the variable names, use a 4:1 split of the data, and then initialize multiple repeats of 10-fold cross-validation:

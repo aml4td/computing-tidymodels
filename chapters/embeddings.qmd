@@ -279,7 +279,7 @@ This might not cause a difference in performance when the features are used in a
 
 `r back("embeddings.html#sec-ica")`
 
-### Partial Least Squares {#numeric-pls} {#sec-pls}
+### Partial Least Squares {#sec-pls}
 
 The syntax for PLS is also very similar. However, it is a supervised method, so we need to specify the column containing the outcome (the outcome column is not needed after model training). The code below uses `dplyr::vars()` to declare the column name, but a simple character string can also be used. 
 

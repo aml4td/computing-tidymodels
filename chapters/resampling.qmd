@@ -33,7 +33,7 @@ options(crayon.enabled = FALSE)
 options(pillar.advice = FALSE, pillar.min_title_chars = Inf, pillar.sigfig = 4)
 
 source("../R/_common.R")
-req_pkg <- c("Cubist", "future", "parallelly", "probably", "rules", "spatialsample", 
+req_pkg <- c("Cubist", "future.mirai", "parallelly", "probably", "rules", "spatialsample", 
              "tidymodels", "tidysdm")
 
 ```
@@ -48,7 +48,7 @@ We will use the `ames`, `concrete`, and `Chicago` data sets from the `r pkg(mode
 #| label: interactions-nonlinear-installs
 #| eval: false
 #| echo: true
-req_pkg <- c("Cubist", "future", "parallelly", "probably", "rules", "spatialsample", 
+req_pkg <- c("Cubist", "future.mirai", "parallelly", "probably", "rules", "spatialsample", 
              "tidymodels", "tidysdm")
 
 # Check to see if they are installed: 
@@ -550,10 +550,18 @@ Once we know a plan, we run the following code (once) before running operations 
 
 ```{r}
 #| label: cubist-in-parallel
-
+#| eval: false
 library(future)
 parallelly::availableCores()
-plan("multisession")
+plan(multisession)
+```
+
+Alternatively, the more recent mirai "engine" for parallel processing can also be used for additional efficiency. 
+
+```{r}
+#| label: cubist-in-parallel-mirai
+library(future.mirai)
+plan(mirai_multisession)
 ```
 
 This will generally increase the efficiency of the resampling process. 

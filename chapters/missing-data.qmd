@@ -199,6 +199,8 @@ nrow(scat_te)
 sum(!complete.cases(scat_te))
 ```
 
+`r back("missing-data.html#sec-removing-missing-data")`
+
 ### Column Filtering {#sec-removing-missing-cols}
 
 The sample size of this data set is not large; removing rows might be more problematic than removing columns with a lot of missingness. We can use the `step_filter_missing()` step to do this. We decide on a threshold representing our "line of dignity" regarding how much missingness is acceptable. That can be specified as a proportion of missing data and is passed to the `threshold` argument. 
@@ -219,7 +221,7 @@ bake(filter_features_rec, new_data = NULL) %>% ncol()
 tidy(filter_features_rec, number = 1)
 ```
 
-`r back("missing-data.html#removal")`
+`r back("missing-data.html#sec-removing-missing-data")`
 
 ## Imputation
 
@@ -284,7 +286,7 @@ group_impute_rec %>%
   count(Taper, Location)
 ```
 
-`r back("missing-data.html#linear-methods")`
+`r back("missing-data.html#sec-imputation-linear")`
 
 ### Nearest-Neighbor Imputation {#sec-imputation-knn}
 
@@ -312,7 +314,7 @@ mean(complete.cases(imputed_train))
 
 Note that this step uses [Gower distance]() to define the neighbors. This method does _not_ require the predictors to be numeric or in the same units; they can be left as-is. Also, the function keeps the imputed data in the same format. A categorical predictor being imputed will remain a categorical predictor. 
 
-`r back("missing-data.html#nearest-neighbors")`
+`r back("missing-data.html#sec-imputation-knn")`
 
 ### Tuning the Preprocessors {#sec-imputation-within-tuning}
 

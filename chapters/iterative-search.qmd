@@ -31,7 +31,7 @@ options(crayon.enabled = FALSE)
 options(pillar.advice = FALSE, pillar.min_title_chars = Inf, pillar.sigfig = 4)
 
 source("../R/_common.R")
-req_pkg <- c("finetune", "GA", "probably", "tidymodels", "xgboost")
+req_pkg <- c("finetune", "future.mirai", "GA", "probably", "tidymodels", "xgboost")
 
 req_pkg_fmt <- purrr::map_chr(req_pkg, ~ pkg_chr(.x))
 ```
@@ -65,7 +65,7 @@ if ( any(!pkg_installed) ) {
 library(GA)
 library(tidymodels)
 library(finetune)
-library(future)
+library(future.mirai)
 library(probably)
 ```
 
@@ -78,11 +78,11 @@ library(GA)
 library(tidymodels)
 library(finetune)
 library(probably)
-library(future)
+library(future.mirai)
 
 tidymodels_prefer()
 theme_set(theme_bw())
-plan("multisession")
+plan(mirai_multisession)
 ```
 
 To reduce the complexity of the example, we’ll use a simulated classification data set containing numeric predictors. We’ll simulate 1,000 samples using a simulation system, the details of which can be found in the [`r pkg(modeldata)` documentation](https://modeldata.tidymodels.org/reference/sim_classification.html#details). The data set has linear, nonlinear, and interacting features, and the classes are fairly balanced. We’ll use a 3:1 split for training and testing as well as 10-fold cross-validation:
@@ -311,9 +311,11 @@ yardstick_fitness <- function(values, wflow, param_info, metrics, ...) {
   colnames(values) <- param_info$id
   values <- as_tibble(values)
 
-  # We'll run _populations_ within a generation in parallel. Let's make
-  # sure to turn off parallelization of resamples here:
-  ctrl <- control_grid(allow_par = FALSE)
+  # We could run _populations_ within a generation in parallel. If we do,
+  # let's make sure to turn off parallelization of resamples here:
+  # ctrl <- control_grid(allow_par = FALSE)
+  
+  ctrl <- control_grid()
 
   # Resample / validate metrics
   res <- tune_grid(
@@ -369,8 +371,8 @@ ga_res <-
     # Save the best solutions at each iteration
     keepBest = TRUE,
     seed = 39,
-    # Run _populations_ within a generation in parallel
-    parallel = "multicore",
+    # Here we can signal to run _populations_ within a generation in parallel
+    parallel = FALSE,
     # Now options to pass to the `...` in yardstick_fitness()
     wflow = bst_wflow,
     param_info = bst_param,
