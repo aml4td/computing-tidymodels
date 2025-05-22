@@ -409,7 +409,7 @@ window.Quarto = {
 <span><span class="va">hotel_rate_test</span>  <span class="op">&lt;-</span> <span class="fu">testing</span><span class="op">(</span><span class="va">hotel_rate_split</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p><code>initial_time_split()</code> will reserve that most recent 25% for the test set. It assumes that the data are arranged in time and takes that last part of the data for testing (assumed to be the most recent).</p>
-<p><a href="https://aml4td.org/chapters/categorical-predictors.html#sec-hotel-rates" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/categorical-predictors.html#sec-hotel-rates"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section><section id="sec-indicators" class="level2" data-number="6.3"><h2 data-number="6.3" class="anchored" data-anchor-id="sec-indicators">
 <span class="header-section-number">6.3</span> Simple Indicator Variables</h2>
 <p>We’ll look at two primary methods for creating indicator (a.k.a. “dummy”) variables.</p>
@@ -537,7 +537,7 @@ window.Quarto = {
 <p>There is no need to set the global option for <code>na.action</code>.</p>
 <p>Also, the naming of features is more rational, with names and levels separated by an underscore. There is also an argument to <code><a href="https://recipes.tidymodels.org/reference/step_dummy.html">step_dummy()</a></code> that controls the naming of new features.</p>
 <p>There is also an option to produce one-hot encodings called… <code>one_hot</code>.</p>
-<p><a href="https://aml4td.org/chapters/categorical-predictors.html#sec-indicators" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/categorical-predictors.html#sec-indicators"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section></section><section id="sec-recipe-novel" class="level2" data-number="6.4"><h2 data-number="6.4" class="anchored" data-anchor-id="sec-recipe-novel">
 <span class="header-section-number">6.4</span> Novel Categories</h2>
 <p>When we think the recipe or model will encounter new values of a factor predictor, we can use <code><a href="https://recipes.tidymodels.org/reference/step_novel.html">step_novel()</a></code> to add a new factor level:</p>
@@ -552,7 +552,7 @@ window.Quarto = {
 <span><span class="co">#&gt; [5] "new"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>For the training set, this new level will never have any data associated with it.</p>
-<p><a href="https://aml4td.org/chapters/categorical-predictors.html#sec-novel-categories" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/categorical-predictors.html#sec-novel-categories"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section><section id="sec-recipe-other" class="level2" data-number="6.5"><h2 data-number="6.5" class="anchored" data-anchor-id="sec-recipe-other">
 <span class="header-section-number">6.5</span> “Othering”</h2>
 <p>We can also determine infrequently occurring categories (in the training set) and re-level the factor by converting them to an “other” category. If we chose a frequency of 0.01% as a cutoff, we have far fewer levels:</p>
@@ -570,7 +570,7 @@ window.Quarto = {
 <span><span class="co">#&gt; [1] 101</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>If you are interested in which levels are combined, the <code><a href="https://generics.r-lib.org/reference/tidy.html">tidy()</a></code> method on the recipe can tell you.</p>
-<p><a href="https://aml4td.org/chapters/categorical-predictors.html#sec-other" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/categorical-predictors.html#sec-other"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section><section id="sec-recipe-hashing" class="level2" data-number="6.6"><h2 data-number="6.6" class="anchored" data-anchor-id="sec-recipe-hashing">
 <span class="header-section-number">6.6</span> Feature Hashing</h2>
 <p>Feature hashing converts qualitative predictors to a set of binary indicators based solely on the value of their category. It is most useful when many categories and/or novel levels might be encountered.</p>
@@ -593,7 +593,7 @@ window.Quarto = {
 <span><span class="co">#&gt; 6                 0                 0                 0                 1</span></span>
 <span><span class="co">#&gt; # ℹ 11,545 more rows</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p><a href="https://aml4td.org/chapters/categorical-predictors.html#sec-feature-hashing" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/categorical-predictors.html#sec-feature-hashing"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section><section id="sec-recipe-effect-encode" class="level2" data-number="6.7"><h2 data-number="6.7" class="anchored" data-anchor-id="sec-recipe-effect-encode">
 <span class="header-section-number">6.7</span> Effect Encodings</h2>
 <p>Effect embedding is a supervised method to convert qualitative predictors to a numeric column that contains the <em>effect</em> of the category on the outcome. The outcome is a numeric value (the ADR) for these data. Using effect endings here will produce a column with specialized estimates of each category’s mean ADR. Let’s look at the agent predictor again.</p>
@@ -667,7 +667,7 @@ window.Quarto = {
 <span><span class="co">#&gt; # ℹ 3,845 more rows</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>For categorical outcomes, the effect estimate is the log-odds of an event (the first factor level).</p>
-<p><a href="https://aml4td.org/chapters/categorical-predictors.html#sec-effect-encodings" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/categorical-predictors.html#sec-effect-encodings"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section><section id="sec-recipe-collapse" class="level2" data-number="6.8"><h2 data-number="6.8" class="anchored" data-anchor-id="sec-recipe-collapse">
 <span class="header-section-number">6.8</span> Supervised Combining of Categories</h2>
 <p>To <a href="https://aml4td.org/chapters/categorical-predictors.html#sec-combining-categories">collapse</a> a large number of factor levels to a smaller set using a supervised model, we can use <code><a href="https://embed.tidymodels.org/reference/step_collapse_cart.html">step_collapse_cart()</a></code> in the <span class="pkg"><a href="https://cran.r-project.org/package=embed">embed</a></span> package.</p>
@@ -728,7 +728,7 @@ window.Quarto = {
 <li>minimum n: the minimum number of rows in a group to enable it to keep splitting. Smaller values should result in more groupings.</li>
 </ul>
 <p>These values can be tuned.</p>
-<p><a href="https://aml4td.org/chapters/categorical-predictors.html#sec-combining-categories" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/categorical-predictors.html#sec-combining-categories"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section><section id="sec-recipe-ordinal" class="level2" data-number="6.9"><h2 data-number="6.9" class="anchored" data-anchor-id="sec-recipe-ordinal">
 <span class="header-section-number">6.9</span> Encodings for Ordinal Predictors</h2>
 <p>As reported in <a href="https://aml4td.org/chapters/categorical-predictors.html#encodings-for-ordinal-predictors">the section on ordinal data</a>, the default for R is to encode ordinal values with <span class="math inline">\(p\)</span> values is to create a set of <span class="math inline">\(p - 1\)</span> orthogonal polynomial features. That is what <code><a href="https://recipes.tidymodels.org/reference/step_dummy.html">step_dummy()</a></code> does by default.</p>
@@ -789,7 +789,7 @@ window.Quarto = {
 <span><span class="co">#&gt; 5      13</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p><code><a href="https://recipes.tidymodels.org/reference/step_integer.html">step_integer()</a></code> does the same for either type of factor but converts them to consecutive one-based integers.</p>
-<p><a href="https://aml4td.org/chapters/categorical-predictors.html#sec-ordinal-encodings" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/categorical-predictors.html#sec-ordinal-encodings"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section><section id="sec-other-recipe-steps" class="level2" data-number="6.10"><h2 data-number="6.10" class="anchored" data-anchor-id="sec-other-recipe-steps">
 <span class="header-section-number">6.10</span> Other Relevant Recipe Steps</h2>
 <p>There are a variety of other steps that can be used with qualitative predictors (<a href="https://recipes.tidymodels.org/reference/index.html#step-functions-dummy-variables-and-encodings">a list of relevant recipe steps in <span class="pkg"></span></a><a href="https://cran.r-project.org/package=recipes">recipes</a>)</p>

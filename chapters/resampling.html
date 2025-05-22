@@ -501,7 +501,7 @@ window.Quarto = {
 <span><span class="co">#&gt; 1 &lt;split [824/103]&gt; validation</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>At this point, we can use <code>concrete_rs</code> as if it were any other <code>rset</code> object.</p>
-<p><a href="https://aml4td.org/chapters/resampling.html#sec-validation" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/resampling.html#sec-validation"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section><section id="sec-cv-mc" class="level2" data-number="10.5"><h2 data-number="10.5" class="anchored" data-anchor-id="sec-cv-mc">
 <span class="header-section-number">10.5</span> Monte Carlo Cross-Validation</h2>
 <p>The relevant function here is <code>mc_cv()</code> with two main arguments:</p>
@@ -533,7 +533,7 @@ window.Quarto = {
 <span><span class="co">#&gt; 1 &lt;split [549/275]&gt; Resample1</span></span>
 <span><span class="co">#&gt; 2 &lt;split [549/275]&gt; Resample2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p><a href="https://aml4td.org/chapters/resampling.html#sec-cv-mc" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/resampling.html#sec-cv-mc"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section><section id="sec-cv" class="level2" data-number="10.6"><h2 data-number="10.6" class="anchored" data-anchor-id="sec-cv">
 <span class="header-section-number">10.6</span> V-Fold Cross-Validation</h2>
 <p>Basic V-fold cross-validation is performed using <code>vfold_cv()</code>. The <code>v</code> argument defines the number of folds and defaults to <code>v = 10</code>.</p>
@@ -571,7 +571,7 @@ window.Quarto = {
 <span><span class="co">#&gt; 6 &lt;split [742/82]&gt; Repeat1 Fold06</span></span>
 <span><span class="co">#&gt; # ℹ 14 more rows</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p><a href="https://aml4td.org/chapters/resampling.html#sec-cv" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/resampling.html#sec-cv"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section><section id="sec-bootstrap" class="level2" data-number="10.7"><h2 data-number="10.7" class="anchored" data-anchor-id="sec-bootstrap">
 <span class="header-section-number">10.7</span> The Bootstrap</h2>
 <p>First, there are special occasions when the regular set of bootstrap samples needs to be supplemented with an additional resample that can be used to measure the resubstitution rate (predicting the analysis set after fitting the data on the same analysis set). The function that produces this extra row is called <code>apparent()</code>, which is the same name as the function argument:</p>
@@ -582,7 +582,7 @@ window.Quarto = {
 <p>Note that the <code>id</code> column reflects this, and the split label shows that the analysis and assessment sets are the same size.</p>
 <p>The tidymodels resampling functions are aware of the potential presence of the “apparent” sample and will <em>not</em> include it at inappropriate times. For example, if we resample a model with and without using <code>apparent = TRUE</code>, we’ll get the same results as long as we use the same random number seed to make each set of resamples.</p>
 <p>Secondly, there is a <code>strata</code> argument for this function. That enables different bootstrap samples to be taken within each stratum, which are combined into the final resampling set. <em>Technically</em>, this isn’t a bootstrap sample, but it is probably close enough to be useful.</p>
-<p><a href="https://aml4td.org/chapters/resampling.html#sec-bootstrap" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/resampling.html#sec-bootstrap"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section><section id="sec-time-series-resampling" class="level2" data-number="10.8"><h2 data-number="10.8" class="anchored" data-anchor-id="sec-time-series-resampling">
 <span class="header-section-number">10.8</span> Time Series Data</h2>
 <p>Usually, the most recent data are used to evaluate performance for time series data. The function <code>initial_time_split()</code> can be used to make the initial split. We’ll use the <code>Chicago</code> data to demonstrate:</p>
@@ -699,7 +699,7 @@ window.Quarto = {
 </div>
 </div>
 </div>
-<p><a href="https://aml4td.org/chapters/resampling.html#sec-time-series-resampling" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/resampling.html#sec-time-series-resampling"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section><section id="sec-spatial-resampling" class="level2" data-number="10.9"><h2 data-number="10.9" class="anchored" data-anchor-id="sec-spatial-resampling">
 <span class="header-section-number">10.9</span> Spatial Data</h2>
 <p>We split the Ames data into a training and testing set back in <a href="initial-data-splitting.html#sec-spatial-splitting" class="quarto-xref"><span>Section 3.8</span></a> using this code:</p>
@@ -771,7 +771,7 @@ window.Quarto = {
 </div>
 </div>
 </div>
-<p><a href="https://aml4td.org/chapters/resampling.html#sec-spatial-resampling" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/resampling.html#sec-spatial-resampling"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section><section id="sec-multilevel-resampling" class="level2" data-number="10.10"><h2 data-number="10.10" class="anchored" data-anchor-id="sec-multilevel-resampling">
 <span class="header-section-number">10.10</span> Grouped or Multi-Level Data</h2>
 <p>Returning to the orthodontal data from <a href="initial-data-splitting.html#sec-multilevel-splitting" class="quarto-xref"><span>Section 3.7</span></a>, we use the initial split:</p>
@@ -810,7 +810,7 @@ window.Quarto = {
 <span><span class="co">#&gt; # ℹ 4 more rows</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>To leave a single subject out for each resample, we could have set <code>v</code> to be 18.</p>
-<p><a href="https://aml4td.org/chapters/resampling.html#sec-multilevel-resampling" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/resampling.html#sec-multilevel-resampling"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section><section id="sec-resampled-models" class="level2" data-number="10.11"><h2 data-number="10.11" class="anchored" data-anchor-id="sec-resampled-models">
 <span class="header-section-number">10.11</span> Estimating Performance</h2>
 <p>Now that we can create different types of resamples for our training set, how do we actually resample a model to get accurate performance statistics?</p>

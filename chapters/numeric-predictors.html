@@ -730,7 +730,7 @@ window.Quarto = {
 <div class="sourceCode" id="cb26"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">recipe</span><span class="op">(</span><span class="va">Sale_Price</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">ames_train</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
 <span>  <span class="fu">step_mutate</span><span class="op">(</span>Lot_Area <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">log10</a></span><span class="op">(</span><span class="va">Lot_Area</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Other single variable transformations can be found in the following R packages: <span class="pkg"><a href="https://cran.r-project.org/package=car">car</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=trafo">trafo</a></span>, and <span class="pkg"><a href="https://cran.r-project.org/package=Transform">Transform</a></span>.</p>
-<p><a href="https://aml4td.org/chapters/numeric-predictors.html#sec-skewness" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/numeric-predictors.html#sec-skewness"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section><section id="sec-recipe-selectors" class="level2" data-number="5.6"><h2 data-number="5.6" class="anchored" data-anchor-id="sec-recipe-selectors">
 <span class="header-section-number">5.6</span> More on Recipe Selectors</h2>
 <p>The previous section showed a recipe step that operated on a single column. You can select one or more predictors in a variety of different ways within a recipe:</p>
@@ -779,7 +779,7 @@ window.Quarto = {
 <p>We recycled the previous recipe, which has already been trained. Note that in the output above, only the first step is labeled as “<code>Trained</code>”. When we run <code>prep()</code> on this recipe, it only estimates the remaining two steps.</p>
 <p>Again, once we prep(are) the recipe, we can use <code>bake()</code> to get the normalized data.</p>
 <p>Another important point is that recipes are designed to utilize different data sets appropriately. The training set is used with <code>prep()</code> and ensures that all the estimations are based on it. There is, as is appropriate, no re-estimation of quantities when new data are processed.</p>
-<p><a href="https://aml4td.org/chapters/numeric-predictors.html#sec-common-scale" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/numeric-predictors.html#sec-common-scale"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section><section id="sec-recipe-spatialp-sign" class="level2" data-number="5.8"><h2 data-number="5.8" class="anchored" data-anchor-id="sec-recipe-spatialp-sign">
 <span class="header-section-number">5.8</span> Spatial Sign</h2>
 <p>Unsurprisingly, the step to compute the spatial sign is <code>step_spatialsign()</code>. It projects two or more numeric columns onto a multidimensional hypersphere. The resulting data has columns the same name as the input:</p>
@@ -822,7 +822,7 @@ window.Quarto = {
 </div>
 </div>
 </div>
-<p><a href="https://aml4td.org/chapters/numeric-predictors.html#sec-spatial-sign" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/numeric-predictors.html#sec-spatial-sign"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section><section id="sec-recipe-resources" class="level2" data-number="5.9"><h2 data-number="5.9" class="anchored" data-anchor-id="sec-recipe-resources">
 <span class="header-section-number">5.9</span> Other Resources for Learning About Recipes</h2>
 <ul>

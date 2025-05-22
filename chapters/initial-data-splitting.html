@@ -394,7 +394,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="co">#&gt; $ Baths        &lt;dbl&gt; 1.0, 1.0, 1.5, 2.5, 2.5, 2.5, 2.0, 2.0, 2.0, 2.5, 2.5, 2.0, 2…</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>tidymodels requires that, for outcome data, any basic transformations should occur before data splitting.</p>
-<p><a href="https://aml4td.org/chapters/initial-data-splitting.html#sec-ames-intro" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/initial-data-splitting.html#sec-ames-intro"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section><section id="sec-basic-splitting" class="level2" data-number="3.3"><h2 data-number="3.3" class="anchored" data-anchor-id="sec-basic-splitting">
 <span class="header-section-number">3.3</span> Simple Data Splitting</h2>
 <p>There are a few main functions for an initial split:</p>
@@ -426,7 +426,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Consistent with the printed output, there are 2,197 data points in the training set and 733 reserved for testing.</p>
 <p>We won’t touch on <code>initial_time_split()</code> here but only mention that it takes the fraction of the data specified for testing from the bottom/tail of the data frame. Unlike the previous function, the order of the rows matters since the rows at the end of the data frame as used as the test set.</p>
 <p><code>group_initial_split()</code> and <code>initial_validation_split()</code> are discussed in more detail below.</p>
-<p><a href="https://aml4td.org/chapters/initial-data-splitting.html#sec-basic-splitting" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/initial-data-splitting.html#sec-basic-splitting"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section><section id="sec-split-with-outcome" class="level2" data-number="3.4"><h2 data-number="3.4" class="anchored" data-anchor-id="sec-split-with-outcome">
 <span class="header-section-number">3.4</span> Using the Outcome</h2>
 <p>For the Ames data, we know that the distribution of sale prices has some outlying points. To deal with this, we can use a stratified split (on the outcome) using 5 quantiles of the data in <code>ames</code>:</p>
@@ -439,7 +439,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="co">#&gt; &lt;2196/734/2930&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Nothing else changes; the same functions can be used to access the training and testing data.</p>
-<p><a href="https://aml4td.org/chapters/initial-data-splitting.html#sec-split-with-outcome" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/initial-data-splitting.html#sec-split-with-outcome"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section><section id="sec-split-with-predictors" class="level2" data-number="3.5"><h2 data-number="3.5" class="anchored" data-anchor-id="sec-split-with-predictors">
 <span class="header-section-number">3.5</span> Using the Predictors</h2>
 <p>Instead of using the outcome to partition the data, other columns can be used when applicable. The text mentions using the <span class="pkg"><a href="https://cran.r-project.org/package=twinning">twinning</a></span> package (<a href="https://cran.r-project.org/package=twinning">CRAN page</a>). The same authors have a second approach that can be found in the <span class="pkg"><a href="https://cran.r-project.org/package=SPlit">SPlit</a></span> package (<a href="https://cran.r-project.org/package=SPlit">CRAN</a>). Both are straightforward to use.</p>
@@ -500,7 +500,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 </div>
-<p><a href="https://aml4td.org/chapters/initial-data-splitting.html#sec-split-with-predictors" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/initial-data-splitting.html#sec-split-with-predictors"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section><section id="sec-three-way-split" class="level2" data-number="3.6"><h2 data-number="3.6" class="anchored" data-anchor-id="sec-three-way-split">
 <span class="header-section-number">3.6</span> Validation Sets</h2>
 <p>To add a validation set at the outset, <code>initial_validation_split()</code> works the same as <code>initial_split()</code>. The <code>prop</code> argument requires <em>two values</em> now: the first is the training set proportion, and the second is for the validation set. In this example below, we add 80% to training, 10% to validation, and the remaining 10% to the testing set:</p>
@@ -520,7 +520,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p><code><a href="https://rsample.tidymodels.org/reference/initial_validation_split.html">rsample::initial_validation_time_split()</a></code> does the same thing but based on the ordering of the data (as opposed to random selection).</p>
 <p>Suppose a data frame had 100 rows. Using <code>prop = c(0.8, 0.1)</code> would place the first 80 rows into training, the next 10 into validation, and the last 10 into testing. Keeping the data appropriately ordered is important when using validation sets in tidymodels.</p>
-<p><a href="https://aml4td.org/chapters/initial-data-splitting.html#sec-three-way-split" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/initial-data-splitting.html#sec-three-way-split"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section><section id="sec-multilevel-splitting" class="level2" data-number="3.7"><h2 data-number="3.7" class="anchored" data-anchor-id="sec-multilevel-splitting">
 <span class="header-section-number">3.7</span> Multi-Level Data</h2>
 <p>This section will focus on data with a rational grouping of data. For example, medical data might follow patient over time so that there are multiple rows per patient. The patient is the independent experimental unit (IEU), meaning that the data between patients are thought to be independent, and those within a patient are (statistically) related. We want to partition the data so that all of the data for each IEU end up in <em>either</em> the training or test sets but not both. We want to sample the data by the group – where the group in this example is the patient.</p>
@@ -558,7 +558,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="co">#&gt; ordered()</span></span>
 <span><span class="co">#&gt; 27 Levels: M16 &lt; M05 &lt; M02 &lt; M11 &lt; M07 &lt; M08 &lt; M03 &lt; M12 &lt; M13 &lt; M14 &lt; ... &lt; F11</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p><a href="https://aml4td.org/chapters/initial-data-splitting.html#sec-multilevel-splitting" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/initial-data-splitting.html#sec-multilevel-splitting"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section><section id="sec-spatial-splitting" class="level2" data-number="3.8"><h2 data-number="3.8" class="anchored" data-anchor-id="sec-spatial-splitting">
 <span class="header-section-number">3.8</span> Splitting Spatial Data</h2>
 <p>For spatial data, we need to convert longitude and latitude to a special type of vector called a <a href="https://r-spatial.github.io/sf/reference/st_geometry.html">geometry</a> vector. The <span class="pkg"><a href="https://cran.r-project.org/package=sf">sf</a></span> package can do this so let’s load that and two others:</p>
@@ -657,7 +657,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <p>As with the previous methods, the <code>training()</code> and <code>testing()</code> functions are used to obtain those data sets.</p>
-<p><a href="https://aml4td.org/chapters/initial-data-splitting.html#sec-spatial-splitting" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/initial-data-splitting.html#sec-spatial-splitting"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 
 
 </section></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">

@@ -448,7 +448,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="co">#&gt; 6        100         9</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Finally, as a reminder, a workflow can contain preprocessing arguments that were tagged for optimization via <code><a href="https://hardhat.tidymodels.org/reference/tune.html">tune()</a></code>. These values are treated the same as model arguments when it comes to extracting the parameter set and creating grids.</p>
-<p><a href="https://aml4td.org/chapters/grid-search.html#sec-regular-grid" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a> (regular grids) <a href="https://aml4td.org/chapters/grid-search.html#sec-irregular-grid" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a> (irregular)</p>
+<p><a href="https://aml4td.org/chapters/grid-search.html#sec-regular-grid"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a> (regular grids) <a href="https://aml4td.org/chapters/grid-search.html#sec-irregular-grid"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a> (irregular)</p>
 </section><section id="sec-grid-tuning" class="level2" data-number="11.3"><h2 data-number="11.3" class="anchored" data-anchor-id="sec-grid-tuning">
 <span class="header-section-number">11.3</span> Tuning Models with Grids</h2>
 <p>For grids, the three main functions are <code><a href="https://tune.tidymodels.org/reference/tune_grid.html">tune::tune_grid()</a></code> and the two racing functions in the <span class="pkg"><a href="https://cran.r-project.org/package=finetune">finetune</a></span> package: <code><a href="https://finetune.tidymodels.org/reference/tune_race_anova.html">finetune::tune_race_anova()</a></code> and <code>finetune::tune_race_winloss()</code>. The syntax for these is nearly identical and also closely follows the previously described code for <code><a href="https://tune.tidymodels.org/reference/fit_resamples.html">fit_resamples()</a></code> from <a href="resampling.html#sec-resampled-models" class="quarto-xref"><span>Section 10.11</span></a>.</p>
@@ -678,7 +678,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <p>Each line corresponds to a candidate.</p>
-<p><a href="https://aml4td.org/chapters/grid-search.html#sec-racing" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/grid-search.html#sec-racing"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section><section id="sec-nested-resampling" class="level2" data-number="11.5"><h2 data-number="11.5" class="anchored" data-anchor-id="sec-nested-resampling">
 <span class="header-section-number">11.5</span> Nested Resampling</h2>
 <p>There are tidymodels experimental APIs for nested resampling (and analytical bias correction). We’ll fill this section in when these are finalized.</p>

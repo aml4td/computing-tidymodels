@@ -487,7 +487,7 @@ Note
 </div>
 </div>
 <p>In the code above, we use an option called <code>"alpha"</code>. This is jargon for transparency; a value of <code>1/4</code> means that the points in the rug are 25% opaque.</p>
-<p><a href="https://aml4td.org/chapters/whole-game.html#sec-delivery-times" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/whole-game.html#sec-delivery-times"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section><section id="sec-data-spending-whole-game" class="level2" data-number="2.3"><h2 data-number="2.3" class="anchored" data-anchor-id="sec-data-spending-whole-game">
 <span class="header-section-number">2.3</span> Data Spending</h2>
 <p>tidymodels has a variety of ways to split the data at the outset of your modeling project. We will create a three-way split of the data using a function called <code>initial_validation_split()</code>.</p>
@@ -530,7 +530,7 @@ What’s a random number seed?
 <span><span class="va">delivery_val</span>   <span class="op">&lt;-</span> <span class="fu">validation</span><span class="op">(</span><span class="va">delivery_split</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We will mostly work with the training set of 6,004 deliveries. We’ll use that to explore the data, fit models, and so on.</p>
-<p><a href="https://aml4td.org/chapters/whole-game.html#sec-data-spending-whole-game" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/whole-game.html#sec-data-spending-whole-game"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section><section id="sec-eda-whole-game" class="level2" data-number="2.4"><h2 data-number="2.4" class="anchored" data-anchor-id="sec-eda-whole-game">
 <span class="header-section-number">2.4</span> Exploratory Data Analysis</h2>
 <p>We mostly used <span class="pkg"><a href="https://cran.r-project.org/package=ggplot2">ggplot2</a></span> and <span class="pkg"><a href="https://cran.r-project.org/package=patchwork">patchwork</a></span> to create these graphics:</p>
@@ -729,7 +729,7 @@ What’s a random number seed?
 </div>
 </div>
 </div>
-<p><a href="https://aml4td.org/chapters/whole-game.html#sec-eda-whole-game" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/whole-game.html#sec-eda-whole-game"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section><section id="sec-model-development-whole-game" class="level2" data-number="2.5"><h2 data-number="2.5" class="anchored" data-anchor-id="sec-model-development-whole-game">
 <span class="header-section-number">2.5</span> Model Development</h2>
 <p>The analyses in this section define a model pipeline, fit it to the training set, and then measure performance using the validation set. We’ll review the three evaluated models and describe how those computations were done.</p>
@@ -996,7 +996,7 @@ Learn More About Recipes
 </div>
 </div>
 </div>
-<p><a href="https://aml4td.org/chapters/whole-game.html#linear-regression" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/whole-game.html#linear-regression"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section><section id="rule-based-ensemble" class="level3 unnumbered"><h3 class="unnumbered anchored" data-anchor-id="rule-based-ensemble">Rule-Based Ensemble</h3>
 <p>To fit the Cubist model, we need to load one of the tidymodels <em>extension packages</em> called <span class="pkg"><a href="https://cran.r-project.org/package=rules">rules</a></span>. It has the tools to fit this model and will automatically (and silently) use the <span class="pkg"><a href="https://cran.r-project.org/package=Cubist">Cubist</a></span> package when the model fit occurs.</p>
 <p>We’ll create a model specification that has an enselmble size of 100:</p>
@@ -1088,7 +1088,7 @@ Learn More About Recipes
 <span><span class="co">#&gt; 6 item_05         0.8 </span></span>
 <span><span class="co">#&gt; # ℹ 9 more rows</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p><a href="https://aml4td.org/chapters/whole-game.html#rule-based-ensemble" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/whole-game.html#rule-based-ensemble"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section><section id="neural-network" class="level3 unnumbered"><h3 class="unnumbered anchored" data-anchor-id="neural-network">Neural Network</h3>
 <p>The model function for this type of model is <code><a href="https://parsnip.tidymodels.org/reference/mlp.html">parsnip::mlp()</a></code> (MLP is short for “multi-layer perceptron”). There are quite a few packages for neural networks in R. tidymodels has interfaces to several engines:</p>
 <div class="cell" data-layout-align="center">
@@ -1204,7 +1204,7 @@ Learn More About Recipes
 <span>  <span class="fu">finalize_workflow</span><span class="op">(</span><span class="fu">tibble</span><span class="op">(</span>hidden_units <span class="op">=</span> <span class="fl">10</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://generics.r-lib.org/reference/fit.html">fit</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">delivery_train</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p><a href="https://aml4td.org/chapters/whole-game.html#neural-network" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/whole-game.html#neural-network"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section></section><section id="sec-parallel-processing" class="level2" data-number="2.6"><h2 data-number="2.6" class="anchored" data-anchor-id="sec-parallel-processing">
 <span class="header-section-number">2.6</span> Aside: Parallel Processing</h2>
 <p>For model tuning, we are fitting many models. With grid search, these models are not dependent on one another. For this reason, it is possible to compute these model fits simultaneously (i.e., in parallel).</p>
@@ -1234,7 +1234,7 @@ Learn More About Recipes
 <span><span class="co">#&gt; Estimate variable: `.pred`</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>As you’ll see in a minute, the function <code><a href="https://probably.tidymodels.org/reference/cal_apply.html">probably::cal_apply()</a></code> calibrates new predictions.</p>
-<p><a href="https://aml4td.org/chapters/whole-game.html#sec-calibration-whole-game" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/whole-game.html#sec-calibration-whole-game"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section><section id="sec-test-results-whole-game" class="level2" data-number="2.8"><h2 data-number="2.8" class="anchored" data-anchor-id="sec-test-results-whole-game">
 <span class="header-section-number">2.8</span> Test Set Results</h2>
 <p>As with <code>best_fit()</code>, there are two ways to predict the test set.</p>
@@ -1317,7 +1317,7 @@ Learn More About Recipes
 </div>
 </div>
 </div>
-<p><a href="https://aml4td.org/chapters/whole-game.html#sec-test-results-whole-game" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/whole-game.html#sec-test-results-whole-game"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section><section id="conclusion" class="level2" data-number="2.9"><h2 data-number="2.9" class="anchored" data-anchor-id="conclusion">
 <span class="header-section-number">2.9</span> Conclusion</h2>
 <p>This has been an abbreviated, high-level introduction to using tidymodels. Future chapters will go into much more detail on these subjects and illustrate additional features and functions as needed.</p>

@@ -424,7 +424,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="co">#&gt; • orderNorm transformation on: wvlgth_001, wvlgth_002, wvlgth_003, ... | Trained</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>If you use a recipe, most of the embedding methods can be computed with a common interface. The recipe step functions are mostly in the <span class="pkg"><a href="https://cran.r-project.org/package=recipes">recipes</a></span> package, although some live in “side packages,” such as the <span class="pkg"><a href="https://cran.r-project.org/package=embed">embed</a></span> package. We’ll be clear about which package is needed for each.</p>
-<p><a href="https://aml4td.org/chapters/embeddings.html#sec-barley" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/embeddings.html#sec-barley"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section><section id="sec-linear-embed" class="level2" data-number="7.3"><h2 data-number="7.3" class="anchored" data-anchor-id="sec-linear-embed">
 <span class="header-section-number">7.3</span> Linear Transformations</h2>
 <p>We’ll look at the three <em>linear</em> methods described in the text.</p>
@@ -552,7 +552,7 @@ Note
 </div>
 </div>
 <p>The functions <code><a href="https://embed.tidymodels.org/reference/step_pca_sparse.html">embed::step_pca_sparse()</a></code> and <code><a href="https://embed.tidymodels.org/reference/step_pca_sparse_bayes.html">embed::step_pca_sparse_bayes()</a></code> have sparse/regularized estimation methods for PCA. Each has an argument called <code>predictor_prop()</code> that attempts to control how much sparsity should be used. <code>predictor_prop = 0</code> should approximate regular PCA, and values near 1.0 would produce very few non-zero loadings.</p>
-<p><a href="https://aml4td.org/chapters/embeddings.html#sec-pca" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/embeddings.html#sec-pca"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section><section id="sec-ica" class="level3" data-number="7.3.2"><h3 data-number="7.3.2" class="anchored" data-anchor-id="sec-ica">
 <span class="header-section-number">7.3.2</span> Independent Component Analysis</h3>
 <p>An ICA recipe step can also be found in the <span class="pkg"><a href="https://cran.r-project.org/package=recipes">recipes</a></span> package. The syntax is virtually identical:</p>
@@ -627,7 +627,7 @@ Note
 </div>
 </div>
 <p>This might not cause a difference in performance when the features are used in a predictive model, but if the model uses slopes and intercepts, the parameter estimates will be different each time it is run.</p>
-<p><a href="https://aml4td.org/chapters/embeddings.html#sec-ica" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/embeddings.html#sec-ica"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section><section id="sec-pls" class="level3" data-number="7.3.3"><h3 data-number="7.3.3" class="anchored" data-anchor-id="sec-pls">
 <span class="header-section-number">7.3.3</span> Partial Least Squares</h3>
 <p>The syntax for PLS is also very similar. However, it is a supervised method, so we need to specify the column containing the outcome (the outcome column is not needed after model training). The code below uses <code><a href="https://dplyr.tidyverse.org/reference/vars.html">dplyr::vars()</a></code> to declare the column name, but a simple character string can also be used.</p>
@@ -651,7 +651,7 @@ Note
 <span><span class="co">#&gt; 6 wvlgth_003 -0.1570  PLS2      pls  </span></span>
 <span><span class="co">#&gt; # ℹ 1,094 more rows</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p><a href="https://aml4td.org/chapters/embeddings.html#sec-pls" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/embeddings.html#sec-pls"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section></section><section id="sec-mds" class="level2" data-number="7.4"><h2 data-number="7.4" class="anchored" data-anchor-id="sec-mds">
 <span class="header-section-number">7.4</span> Multidimensional Scaling</h2>
 <p>tidymodels contains recipe steps for Isomap and UMAP. The latter is accessible via the <span class="pkg"><a href="https://cran.r-project.org/package=embed">embed</a></span> package.</p>
@@ -680,7 +680,7 @@ Note
 </div>
 </div>
 </div>
-<p><a href="https://aml4td.org/chapters/embeddings.html#sec-isomap" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/embeddings.html#sec-isomap"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section><section id="sec-umap" class="level3" data-number="7.4.2"><h3 data-number="7.4.2" class="anchored" data-anchor-id="sec-umap">
 <span class="header-section-number">7.4.2</span> UMAP</h3>
 <p><code><a href="https://embed.tidymodels.org/reference/step_umap.html">step_umap()</a></code>, in the <span class="pkg"><a href="https://cran.r-project.org/package=embed">embed</a></span> package, has a number of tuning parameters: <code>neighbors</code>, <code>num_comp</code>, <code>min_dist</code>, <code>learn_rate</code>, <code>epochs</code>, <code>initial</code> (initialization method, e.g.&nbsp;“pca”), and the optional <code>target_weight</code>.</p>
@@ -708,7 +708,7 @@ Note
 </div>
 </div>
 <p>For a <em>supervised</em> embedding, the <code>target_weight</code> argument is used. A value of zero is unsupervised, and values near 1.0 are completely supervised. As with PLS, the argument for the outcome column is called <code>outcome</code> and can be a string of an unquoted name wrapped in <code>vars()</code>.</p>
-<p><a href="https://aml4td.org/chapters/embeddings.html#sec-umap" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/embeddings.html#sec-umap"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section></section><section id="sec-centroids" class="level2" data-number="7.5"><h2 data-number="7.5" class="anchored" data-anchor-id="sec-centroids">
 <span class="header-section-number">7.5</span> Centroid-Based Methods</h2>
 <p>There are two steps in recipes for this:</p>
@@ -760,7 +760,7 @@ Note
 <span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_classdist_shrunken.html">step_classdist_shrunken</a></span><span class="op">(</span><span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html">all_numeric_predictors</a></span><span class="op">(</span><span class="op">)</span>, threshold <span class="op">=</span> <span class="fl">1</span> <span class="op">/</span> <span class="fl">6</span>, class <span class="op">=</span> <span class="st">"Class"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/prep.html">prep</a></span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p><a href="https://aml4td.org/chapters/embeddings.html#sec-centroids" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/embeddings.html#sec-centroids"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 
 
 </section></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">

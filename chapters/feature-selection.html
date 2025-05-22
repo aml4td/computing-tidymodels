@@ -489,7 +489,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="co">#&gt; • Correlation filter on: all_predictors()</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>or search for an optimal cutoff using <code>threshold = tune()</code> (as we will below).</p>
-<p><a href="https://aml4td.org/chapters/feature-selection.html#sec-unsupervised-selection" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/feature-selection.html#sec-unsupervised-selection"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section><section id="sec-automatic-selection" class="level2" data-number="13.3"><h2 data-number="13.3" class="anchored" data-anchor-id="sec-automatic-selection">
 <span class="header-section-number">13.3</span> Automatic Selection</h2>
 <p>The text mentioned that there are types of models that automatically select predictors. Tree-based models typically fall into this category.</p>
@@ -651,7 +651,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>One additional note about using tree-based models to automatically select predictors. Many tree ensembles create a collection of individual tree models. For ensembles to work well, this collection should have a diverse set of trees (rather than those with the same splits). To encourage diversity, many tree models have an <code>mtry</code> parameter. This parameter is an integer for the number of predictors in the data set that should be randomly selected when making a split. For example, if <code>mtry = 3</code>, a different random selection of three predictors would be the only ones considered for each split in the tree. This facilitates diversity but also forces irrelevant predictors to be included in the model.</p>
 <p>However, this also means that many tree ensembles will have prediction functions that include predictors that have no effect. If we take the same strategy as above, we will vastly overestimate the number of predictors that affect the model.</p>
 <p>For this reason, we might consider setting <code>mtry</code> to use the complete predictor set during splitting <em>if we are trying to select predictors</em>. While this might slightly decrease the model’s performance, the false positive rate of finding “important predictors” will be significantly reduced.</p>
-<p><a href="https://aml4td.org/chapters/feature-selection.html#sec-automatic-selection" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/feature-selection.html#sec-automatic-selection"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section><section id="sec-wrappers" class="level2" data-number="13.4"><h2 data-number="13.4" class="anchored" data-anchor-id="sec-wrappers">
 <span class="header-section-number">13.4</span> Wrapper Methods</h2>
 <p>tidymodels does not contain any wrapper methods, primarily due to their computational costs.</p>
@@ -664,7 +664,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><a href="https://topepo.github.io/caret/feature-selection-using-simulated-annealing.html"><em>Feature Selection using Simulated Annealing</em></a></li>
 </ul>
 <p>R code from the Feature Engineering and Selection book can also be found at <a href="https://github.com/topepo/FES"><code>https://github.com/topepo/FES</code></a>.</p>
-<p><a href="https://aml4td.org/chapters/feature-selection.html#sec-wrappers" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/feature-selection.html#sec-wrappers"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section><section id="sec-filters" class="level2" data-number="13.5"><h2 data-number="13.5" class="anchored" data-anchor-id="sec-filters">
 <span class="header-section-number">13.5</span> Filter Methods</h2>
 <p>Currently, the majority of supervised filters live in the <span class="pkg"><a href="https://cran.r-project.org/package=colino">colino</a></span> package (although this will change in the Autumn of 2025). Those steps include:</p>
@@ -879,7 +879,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="co">#&gt;   &lt;chr&gt;   &lt;chr&gt;          &lt;dbl&gt;</span></span>
 <span><span class="co">#&gt; 1 roc_auc binary         0.899</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p><a href="https://aml4td.org/chapters/feature-selection.html#sec-filters" target="_blank"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/feature-selection.html#sec-filters"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 
 
 </section></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">
