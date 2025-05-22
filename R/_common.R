@@ -34,7 +34,7 @@ pkg_list <- function(x) {
 
 back <- function(stub) {
   glue::glue(
-    '<a href="https://aml4td.org/chapters/[stub]" target="_blank">{{< fa solid rotate-left size=small >}}</a>',
+    '<a href="https://aml4td.org/chapters/[stub]" >{{< fa solid rotate-left size=small >}}</a>',
     .open = "[", .close = "]"
   )
 }
