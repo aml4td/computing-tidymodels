@@ -70,6 +70,7 @@ book:
     - chapters/grid.qmd
     - chapters/iterative-search.qmd
     - chapters/feature-selection.qmd
+    - chapters/comparing-models.qmd
   - part: "Classification"  
   - part: "Regression"  
   - part: "Characterization"  

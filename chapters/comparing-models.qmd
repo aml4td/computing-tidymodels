@@ -1,0 +1,295 @@
+---
+knitr:
+  opts_chunk:
+    cache.path: "../_cache/comparing-models/"
+---
+
+# Comparing Models {#sec-comparing-models}
+
+
+```{r}
+#| label: comparing-models-knitr-setup
+#| include: false
+
+knitr::opts_chunk$set(
+  comment = "#>",
+  collapse = TRUE,
+  fig.align = 'center',
+  fig.path = "../figures/",
+  fig.width = 10,
+  fig.height = 6,
+  out.width = "95%",
+  dev = 'svg',
+  dev.args = list(bg = "transparent"),
+  tidy = FALSE,
+  echo = TRUE
+)
+
+library(tidymodels)
+library(future)
+library(future.mirai)
+
+options(digits = 4, width = 84)
+options(dplyr.print_min = 6, dplyr.print_max = 6)
+options(cli.width = 85)
+options(crayon.enabled = FALSE)
+options(pillar.advice = FALSE, pillar.min_title_chars = Inf, pillar.sigfig = 4)
+
+plan(mirai_multisession)
+
+source("../R/_common.R")
+req_pkg <- c("bestNormalize", "broom.mixed", "C50", "discrim", "embed", 
+             "emmeans", "future.mirai", "glmnet", "klaR", "nlme", "rules", 
+             "splines2", "tidymodels", "tidyposterior")
+```
+
+This book's chapter involved taking models that have been fit or resampled and use their results to formally compare them. 
+
+## Requirements
+
+`r pkg_list(req_pkg)`
+
+```{r}
+#| label: comparing-models-installs
+#| eval: false
+#| echo: true
+req_pkg <- c("bestNormalize", "broom.mixed", "C50", "discrim", "embed", 
+             "emmeans", "future.mirai", "glmnet", "klaR", "nlme", "rules", 
+             "splines2", "tidymodels", "tidyposterior")
+
+# Check to see if they are installed: 
+pkg_installed <- vapply(req_pkg, rlang::is_installed, logical(1))
+
+# Install missing packages: 
+if ( any(!pkg_installed) ) {
+  install_list <- names(pkg_installed)[!pkg_installed]
+  pak::pak(install_list)
+}
+```
+
+Let's load the meta package and manage some between-package function conflicts. 
+
+```{r}
+#| label: start-tidymodels
+#| results: hide
+#| message: false
+#| warning: false
+library(tidymodels)
+tidymodels_prefer()
+theme_set(theme_bw())
+```
+
+We'll use the forestation data just as in the book. These data have already been split, and some interactions have been assessed. Those are captured in two remote RData files: 
+
+```{r}
+#| label: load-forested-data-files
+# Loads the training and test set data
+load(url("https://github.com/aml4td/website/raw/refs/heads/main/RData/forested_data.RData"))
+
+# Load information needed for interactions:
+load(url("https://github.com/aml4td/website/raw/refs/heads/main/RData/forested_interactions.RData"))
+```
+
+The first file contains these relevant objects:
+
+```{r}
+#| label: show-forested-data
+forested_split
+
+forested_train
+
+forested_test
+
+forested_rs
+```
+
+The second file has this important formula object that contains what we think are important interactions: 
+
+```{r}
+#| label: show-forested-interaction
+forested_int_form
+```
+
+We'll need to resample a few models. We'll cut to the chase and resample the tuning parameters found to be optimal in the regular text. First, we load some additional packages and create some preliminaries:
+
+```{r}
+#| label: prelim
+#| results: hide
+# For feature engineering:
+library(embed)
+library(bestNormalize)
+
+# For models:
+library(discrim)
+library(rules)
+
+# For resampling the models
+ctrl_rs <-
+  control_resamples(
+    save_pred = TRUE,
+    parallel_over = "everything",
+    save_workflow = TRUE # Keep this for as_workflow_set()
+  )
+
+cls_mtr <- metric_set(accuracy)
+```
+
+
+```{r}
+#| label: forested-boosting
+#| cache: true
+boost_spec <- C5_rules(trees = 60, min_n = 20) # Defaults to C50
+
+boost_wflow <-  workflow(class ~ ., boost_spec) 
+
+set.seed(526)
+boost_res <-
+  fit_resamples(
+    boost_wflow,
+    resamples = forested_rs,
+    control = ctrl_rs,
+    metrics = cls_mtr
+  )
+
+boost_metrics <- 
+  collect_metrics(boost_res, summarize = FALSE) |> 
+  select(id, boosting = .estimate)
+```
+
+
+```{r}
+#| label: forested-logistic
+#| cache: true
+logistic_rec <-
+  recipe(class ~ ., data = forested_train) |>
+  # standardize numeric predictors
+  step_orderNorm(all_numeric_predictors()) |>
+  # Convert to an effect encoding
+  step_lencode_mixed(county, outcome = "class") |>
+  # Create pre-defined interactions
+  step_interact(!!forested_int_form) |>
+  # 10 spline terms for certain predictors
+  step_spline_natural(
+    all_numeric_predictors(),
+    -county,
+    -eastness,
+    -northness,
+    -year,
+    -contains("_x_"),
+    deg_free = 10
+  ) |>
+  # Remove any linear dependencies
+  step_lincomb(all_predictors())
+
+# ------------------------------------------------------------------------------
+
+logistic_pen <- 10^seq(-6, -1, length.out = 50)
+
+logistic_spec <- 
+  # Values here were determined via grid search:
+  logistic_reg(penalty = 2.12095088792019e-05, mixture = 0.0) |> 
+  set_engine("glmnet", path_values = !!logistic_pen)
+
+# ------------------------------------------------------------------------------
+
+logistic_wflow <- workflow(logistic_rec, logistic_spec)
+
+logistic_res <- 
+  logistic_wflow |> 
+  fit_resamples(
+    resamples = forested_rs,
+    control = ctrl_rs,
+    metrics = cls_mtr
+  )
+
+logistic_metrics <- 
+  collect_metrics(logistic_res, summarize = FALSE) |> 
+  select(id, logistic = .estimate)
+```
+
+
+
+```{r}
+#| label: forested-naive-bayes
+#| cache: true
+#| warning: false
+nb_rec <-
+  recipe(class ~ ., data = forested_train) |>
+  step_orderNorm(all_numeric_predictors())
+
+nb_wflow <- workflow(nb_rec, naive_Bayes())
+
+nb_res <- 
+  nb_wflow |> 
+  fit_resamples(
+    resamples = forested_rs,,
+    control = ctrl_rs,
+    metrics = cls_mtr
+  )
+
+nb_metrics <- 
+  collect_metrics(nb_res, summarize = FALSE) |> 
+  select(id, naive_bayes = .estimate)
+```
+
+This model will probably provide some warnings when fit that resemble: 
+
+> Numerical 0 probability for all classes with observation X
+
+
+```{r}
+#| label: as-workflow-set
+forested_wflow_set <- as_workflow_set(
+    boosting = boost_res,
+    logistic = logistic_res,
+    naive_bayes = nb_res
+)
+forested_wflow_set
+
+forested_wflow_set |> rank_results()
+```
+
+
+## Resampled Data Sets {#sec-compare-resamples}
+
+```{r}
+#| label: collect-resamples
+#| fig-width: 6
+#| fig-height: 3.5
+#| fig-align: "center"
+#| out-width: "70%"
+
+accuracy_df <- 
+  boost_metrics |> 
+  full_join(logistic_metrics, by = "id") |> 
+  full_join(nb_metrics, by = "id") 
+accuracy_df
+  
+accuracy_df <- 
+  accuracy_df |> 
+  pivot_longer(cols = c(-id), names_to = "pipeline", values_to = "accuracy")
+accuracy_df
+
+accuracy_df |> 
+  ggplot(aes(pipeline, accuracy)) + 
+  geom_point(aes(col = id), show.legend = FALSE) + 
+  geom_line(aes(group = id, col = id), show.legend = FALSE) +
+  scale_y_continuous(label = label_percent()) +
+  labs(x = NULL)
+```
+
+
+
+
+### Statistical Foundations {#sec-compare-stats}
+
+### Frequentist Hypothesis Testing Methods {#sec-nhtm}
+
+#### Post Hoc Pairwise Comparisons and Protecting Against False Positive Findings {#sec-post-hoc}
+
+#### Comparing Performance using Equivalence Tests {#sec-comparing-equivalence}
+
+### Comparisons Using Bayesian Models {#sec-compare-resample-bayes}
+
+## Single Holdout Data Sets {#sec-compare-holdout}
+
