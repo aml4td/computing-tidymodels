@@ -28,6 +28,9 @@ knitr::opts_chunk$set(
 library(tidymodels)
 library(future)
 library(future.mirai)
+library(lme4)
+library(broom.mixed)
+library(multcomp)
 
 options(digits = 4, width = 84)
 options(dplyr.print_min = 6, dplyr.print_max = 6)
@@ -54,7 +57,7 @@ This book's chapter involved taking models that have been fit or resampled and u
 #| eval: false
 #| echo: true
 req_pkg <- c("bestNormalize", "broom.mixed", "C50", "discrim", "embed", 
-             "emmeans", "future.mirai", "glmnet", "klaR", "nlme", "rules", 
+             "emmeans", "future.mirai", "glmnet", "klaR", "multcomp", "rules", 
              "splines2", "tidymodels", "tidyposterior")
 
 # Check to see if they are installed: 
@@ -78,6 +81,8 @@ library(tidymodels)
 tidymodels_prefer()
 theme_set(theme_bw())
 ```
+
+## Example Data
 
 We'll use the forestation data just as in the book. These data have already been split, and some interactions have been assessed. Those are captured in two remote RData files: 
 
@@ -109,6 +114,8 @@ The second file has this important formula object that contains what we think ar
 #| label: show-forested-interaction
 forested_int_form
 ```
+
+## Model Fitting
 
 We'll need to resample a few models. We'll cut to the chase and resample the tuning parameters found to be optimal in the regular text. First, we load some additional packages and create some preliminaries:
 
@@ -236,6 +243,7 @@ This model will probably provide some warnings when fit that resemble:
 
 > Numerical 0 probability for all classes with observation X
 
+## An Workflow Set
 
 ```{r}
 #| label: as-workflow-set
@@ -285,7 +293,65 @@ accuracy_df |>
 
 ### Frequentist Hypothesis Testing Methods {#sec-nhtm}
 
+```{r}
+#| label: freq-mixed
+
+library(lme4)
+library(broom.mixed)
+library(multcomp)
+
+freq_mixed_mod <- lmer(accuracy ~ pipeline + (1|id), data = accuracy_df)
+
+freq_mixed_mod |> tidy()
+```
+
+
 #### Post Hoc Pairwise Comparisons and Protecting Against False Positive Findings {#sec-post-hoc}
+
+```{r}
+#| label: freq-mixed-post-hoc
+library(multcomp)
+
+comparisons <- 
+  rbind("boosting - Logistic"    = c(0,  1,  0),     
+        "boosting - naive Bayes" = c(0,  0,  1),     
+        "naive Bayes - Logistic" = c(0, -1,  1))
+
+raw_res <- NULL
+for (i in 1:nrow(comparisons)) {
+  raw_res <- 
+    bind_rows(
+      raw_res, 
+      freq_mixed_mod |> 
+        glht(linfct = mcp(pipeline = comparisons[i,,drop = FALSE])) |> 
+        summary() |> 
+        tidy() |> 
+        rename(raw_pvalue = adj.p.value)
+    )
+}
+
+raw_res |> 
+  select(-term, -null.value, -estimate)
+
+raw_res |> 
+  mutate(
+    Bonnferoni = p.adjust(raw_pvalue, method = "bonferroni"),
+    FDR = p.adjust(raw_pvalue, method = "BH")
+  ) |> 
+  select(-term, -null.value, -estimate)
+
+freq_mixed_mod |> 
+  glht(linfct = mcp(pipeline = "Tukey")) |> 
+  summary() |> 
+  tidy() |> 
+  select(-term, -null.value, -estimate)
+
+freq_mixed_mod |> 
+  glht(linfct = mcp(pipeline = comparisons)) |> 
+  summary() |> 
+  tidy() |> 
+  select(-term, -null.value, -estimate)
+```
 
 #### Comparing Performance using Equivalence Tests {#sec-comparing-equivalence}
 
