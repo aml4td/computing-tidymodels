@@ -1,4 +1,5 @@
----
+
+ ---
 knitr:
   opts_chunk:
     cache.path: "../_cache/comparing-models/"
@@ -46,7 +47,7 @@ req_pkg <- c("bestNormalize", "broom.mixed", "C50", "discrim", "embed",
              "splines2", "tidymodels", "tidyposterior")
 ```
 
-This book's chapter involved taking models that have been fit or resampled and use their results to formally compare them. 
+This book's chapter involved taking models that have been fit or resampled and using their results to formally compare them. 
 
 ## Requirements
 
@@ -142,6 +143,7 @@ cls_mtr <- metric_set(accuracy)
 ```
 
 
+
 ```{r}
 #| label: forested-boosting
 #| cache: true
@@ -164,6 +166,10 @@ boost_metrics <-
   collect_metrics(boost_res, summarize = FALSE) |> 
   select(id, Boosting = .estimate)
 ```
+
+::: {.callout-warning}
+Although we strive for reproducibility, it can be difficult. The boosted tree results from the main text (where it was tuned) used slightly different random numbers than when we trained for a single model. Nine of the ten resamples had different accuracy results; the mean difference between the two was 0.07% and the largest difference was 0.84% This is obviously very small, but it does lead to different results here than in the main text. The conclusions will not change.
+:::
 
 
 ```{r}
@@ -322,9 +328,9 @@ freq_mixed_mod <- lmer(accuracy ~ pipeline + (1|id), data = accuracy_long_df)
 freq_mixed_mod |> tidy()
 ```
 
-Notice that p-values that are _not_ automatically computed. This is addressed by reading `help("pvalues")` or the package vignette called “Fitting Linear Mixed-Effects Models using lme4”. The CRAN pdf for the latter is [here](https://cran.r-project.org/web/packages/lme4/vignettes/lmer.pdf). We can create approximate p-values using the `r pkg(lmerTest)` or  `r pkg(multicomp)` packages. 
+Notice that p-values that are _not_ automatically computed. This is addressed by reading `help("pvalues")` or the package vignette called “Fitting Linear Mixed-Effects Models using lme4”. The CRAN PDF for the latter is [here](https://cran.r-project.org/web/packages/lme4/vignettes/lmer.pdf). We can create approximate p-values using the `r pkg(lmerTest)` or  `r pkg(multicomp)` packages. 
 
-We’ll show the latter now by first defining constrats of the parameter estimates that provide all three pairwise comparisons.
+We’ll show the latter now by first defining contrasts of the parameter estimates that provide all three pairwise comparisons.
 
 ```{r}
 #| label: freq-mixed-raw-contrasts
@@ -334,7 +340,7 @@ comparisons <-
         "Naive Bayes - Logistic" = c(0, -1,  1))
 ```
 
-We’ll use the `multcomp::glht()` function^[“GLHT” stands for “General Linear Hypothesis Tests.”] to generate them. The `glht()` function relies on another function from that package called `mcp()`^[“MCP” presumably stands for “Multiple Comparison Procedure.”] and that can be used to sort out the details. For the raw (but approximate) p-values, we simple give it a single contrast at a time:
+We’ll use the `multcomp::glht()` function^[“GLHT” stands for “General Linear Hypothesis Tests.”] to generate them. The `glht()` function relies on another function from that package called `mcp()`^[“MCP” presumably stands for “Multiple Comparison Procedure.”], and that can be used to sort out the details. For the raw (but approximate) p-values, we simply give it a single contrast at a time:
 
 ```{r}
 #| label: freq-mixed-raw
@@ -359,7 +365,7 @@ Again, due to differences in random numbers, the accuracy numbers are slightly d
 
 #### Post Hoc Pairwise Comparisons and Protecting Against False Positive Findings {#sec-post-hoc}
 
-To compute the Bonferroni or FDR adjustments we can use the `stats::p.adjust()` package. However, for the FDR, there are _many_ alternatives. In CRAN alone: 
+To compute the Bonferroni or FDR adjustments, we can use the `stats::p.adjust()` package. However, for the FDR, there are _many_ alternatives. In CRAN alone: 
 
 ```{r}
 #| label: cran-fdr-search
@@ -408,7 +414,7 @@ We'll conduct the Two One-Sided Test (TOST) procedure by computing the confidenc
 
 ```{r}
 #| label: freq-mixed-diff-tukey
-# The defaults that mcp() uses has the opposite order than the books' main
+# The defaults that mcp() uses has the opposite order from the books' main
 # test uses (e.g. Logistic - Boosting instead of Boosting - Logistic)
 difference_int <- 
   freq_mixed_mod |> 
@@ -510,14 +516,14 @@ basic_bayes_diff_post <-
 basic_bayes_diff_post
 ``` 
 
-There is an `autoplot()` method but the `summary()` method is more interesting since that is where the ROPE analysis can be conducted. Using default arguments gives the 90% credible intervals on the differences: 
+There is an `autoplot()` method, but the `summary()` method is more interesting since that is where the ROPE analysis can be conducted. Using default arguments gives the 90% credible intervals on the differences: 
 
 ```{r}
 #| label: tp-compare-summary
 summary(basic_bayes_diff_post)
 ``` 
 
-Using the `size` argument, enables a ROPE analysis: 
+Using the `size` argument enables a ROPE analysis: 
 
 
 ```{r}
@@ -573,31 +579,55 @@ forested_wflow_set |>
 
 ## Single Holdout Data Sets {#sec-compare-holdout}
 
-For bootstrap confidence intervals, there is a helper function `rsample::int_pctl()` that has methods that can work for resampled objects (e.g., `tune::fit_resamples()`) as well as the outputs from the various `tune_*()` functions. 
+For bootstrap confidence intervals, there is a helper function `rsample::int_pctl()` that has methods that can work for resampled objects (e.g., `tune::fit_resamples()`) and the outputs from the various `tune_*()` functions. 
 
-As an example, to get the bootstrap interval for the boosting model: 
-
+As an example, _if_ we were using a validation set, we could produce the 90% bootstrap interval for the model via: 
 
 ```{r}
 #| label: boot-bt-ci
-#| cache: true
+#| eval: false
 #| mesage: false
-set.seed(885)
 int_pctl(boost_res, times = 2000, alpha = 0.1)
 ```
 
-By default, this will compte intervals for every tuning parameter candidate and metric in the data (but there are arguments that can be used to restrict the computations to a smaller set).
+By default, this will compute intervals for every tuning parameter candidate and metric in the data (but there are arguments that can be used to restrict the computations to a smaller set).
+
+For a test set, we encourage users to use `last_fit()`. Let's suppose that we still can't decide if the boosted tree or logistic regression is the final model. We can fit them and evaluate their test set via: 
+
+```{r}
+#| label: last-fits
+
+boost_final_res <- 
+  last_fit(boost_wflow, split = forested_split, metrics = cls_mtr)
+
+logistic_final_res <- 
+  last_fit(logistic_wflow, split = forested_split, metrics = cls_mtr)
+```
+
+then use: 
+
+```{r}
+#| label: boot-bt-test-ci
+#| cache: true
+#| message: false
+#| warning: false
+set.seed(885)
+int_pctl(boost_final_res, times = 2000, alpha = 0.1)
+
+set.seed(885)
+int_pctl(logistic_final_res, times = 2000, alpha = 0.1)
+```
 
 To compute intervals on differences, there is no current interface. However, you can use the core functions to get the results. For example, we can join the predictions for different models by their row number: 
 
 ```{r}
 #| label: pair-predictions
 paired_class_pred <- 
-  logistic_res |> 
+  logistic_final_res |> 
   collect_predictions() |> 
   select(.row, class, logistic = .pred_class) |> 
   full_join(
-    boost_res |> 
+    boost_final_res |> 
       collect_predictions() |> 
       select(.row, boosting = .pred_class),
     by = ".row"
@@ -635,10 +665,10 @@ metric_diff <- function(split) {
     ) |> 
     dplyr::group_by(model) |> 
     yardstick::accuracy(class, estimate)
-  tibble::tibble(term = "Boosting vs Logistic", estimate = diff(est$.estimate))
+  tibble::tibble(term = "Boosting - Logistic", estimate = -diff(est$.estimate))
 }
 
-# Run on one sample: 
+# Run on one sample to demonstrate: 
 paired_class_bt$splits[[1]] |> metric_diff()
 
 # Run on all:
