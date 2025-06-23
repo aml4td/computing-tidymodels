@@ -1,5 +1,4 @@
-
- ---
+---
 knitr:
   opts_chunk:
     cache.path: "../_cache/comparing-models/"
@@ -29,9 +28,6 @@ knitr::opts_chunk$set(
 library(tidymodels)
 library(future)
 library(future.mirai)
-library(lme4)
-library(broom.mixed)
-library(multcomp)
 
 options(digits = 4, width = 84)
 options(dplyr.print_min = 6, dplyr.print_max = 6)
@@ -43,8 +39,8 @@ plan(mirai_multisession)
 
 source("../R/_common.R")
 req_pkg <- c("bestNormalize", "broom.mixed", "C50", "discrim", "embed", 
-             "emmeans", "future.mirai", "glmnet", "klaR", "nlme", "rules", 
-             "splines2", "tidymodels", "tidyposterior")
+             "glmnet", "klaR", "lme4", "multcomp", "rstanarm", "rules", "splines2", 
+             "tidymodels", "tidyposterior")
 ```
 
 This book's chapter involved taking models that have been fit or resampled and using their results to formally compare them. 
@@ -58,8 +54,8 @@ This book's chapter involved taking models that have been fit or resampled and u
 #| eval: false
 #| echo: true
 req_pkg <- c("bestNormalize", "broom.mixed", "C50", "discrim", "embed", 
-             "emmeans", "future.mirai", "glmnet", "klaR", "multcomp", "rules", 
-             "splines2", "tidymodels", "tidyposterior")
+             "glmnet", "klaR", "lme4", "multcomp", "rstanarm", "rules", "splines2", 
+             "tidymodels", "tidyposterior")
 
 # Check to see if they are installed: 
 pkg_installed <- vapply(req_pkg, rlang::is_installed, logical(1))
@@ -71,7 +67,7 @@ if ( any(!pkg_installed) ) {
 }
 ```
 
-Let's load the meta package and manage some between-package function conflicts. 
+Let's load the meta package and manage some between-package function conflicts. We'll also load some packages that are used for the data analysis. 
 
 ```{r}
 #| label: start-tidymodels
@@ -81,6 +77,24 @@ Let's load the meta package and manage some between-package function conflicts.
 library(tidymodels)
 tidymodels_prefer()
 theme_set(theme_bw())
+
+# Other packages that we will load below
+
+# For feature engineering:
+library(embed)
+library(bestNormalize)
+
+# For models:
+library(discrim)
+library(rules)
+
+# For Frequentist analysis:
+library(lme4)
+library(broom.mixed)
+library(multcomp)
+
+# For Bayesian analysis: 
+library(tidyposterior)
 ```
 
 ## Example Data
@@ -118,19 +132,13 @@ forested_int_form
 
 ## Model Fitting
 
-We'll need to resample a few models. We'll cut to the chase and resample the tuning parameters found to be optimal in the regular text. First, we load some additional packages and create some preliminaries:
+We'll need to resample a few models. We'll cut to the chase and resample the tuning parameters found to be optimal in the regular text. 
+
+First, we load some additional packages and create some preliminaries:
 
 ```{r}
 #| label: prelim
 #| results: hide
-# For feature engineering:
-library(embed)
-library(bestNormalize)
-
-# For models:
-library(discrim)
-library(rules)
-
 # For resampling the models
 ctrl_rs <-
   control_resamples(
@@ -142,7 +150,7 @@ ctrl_rs <-
 cls_mtr <- metric_set(accuracy)
 ```
 
-
+We start by resampling the boosted tree with the tuning parameter values that were found during the grid search: 
 
 ```{r}
 #| label: forested-boosting
@@ -162,15 +170,21 @@ boost_res <-
     metrics = cls_mtr
   )
 
+# Save the individual resamples and change the name of the accuracy column. 
 boost_metrics <- 
   collect_metrics(boost_res, summarize = FALSE) |> 
   select(id, Boosting = .estimate)
 ```
 
 ::: {.callout-warning}
-Although we strive for reproducibility, it can be difficult. The boosted tree results from the main text (where it was tuned) used slightly different random numbers than when we trained for a single model. Nine of the ten resamples had different accuracy results; the mean difference between the two was 0.07% and the largest difference was 0.84% This is obviously very small, but it does lead to different results here than in the main text. The conclusions will not change.
+Although we strive for reproducibility, it can be difficult. The boosted tree results from the main text (where it was tuned) used slightly different random numbers than when we trained for a single model. Nine of the ten resamples had different accuracy results; the mean difference between the two was 0.07%, and the largest difference was 0.84%. This is obviously very small, but it does lead to different results here than in the main text. The conclusions will not change.
 :::
 
+Now let's create the logistic regression. There is a fair amount of preprocessing and feature engineering. The rationale for these will be discussed in a future chapter in Part 4. 
+
+You'll see below that, although the model uses a single penalty value, we [pass a sequence of penalties](https://parsnip.tidymodels.org/reference/glmnet-details.html) to the `lambda` parameter of `glmnet::glmnet()`. See [parsnip issue #431](https://github.com/tidymodels/parsnip/issues/431#issuecomment-782883848) for some background. 
+
+The model is a full ridge regression model since `mixture = 0`. 
 
 ```{r}
 #| label: forested-logistic
@@ -222,7 +236,7 @@ logistic_metrics <-
   select(id, Logistic = .estimate)
 ```
 
-
+Now, the naive Bayes model. There is no need for feature engineering and not much in the way of tuning parameters. 
 
 ```{r}
 #| label: forested-naive-bayes
@@ -247,11 +261,15 @@ nb_metrics <-
   select(id, `Naive Bayes` = .estimate)
 ```
 
-This model will probably provide some warnings when fit that resemble: 
+During resampling, this model will probably provide some warnings when fit that resemble: 
 
 > Numerical 0 probability for all classes with observation X
 
+This occurs because the model multiplies about a dozen probabilities together. The consequence is that some of these products become very close to zero, and R complains a bit about this. 
+
 ## A Workflow Set
+
+Another method for resampling or tuning a series of preprocessors and/or models is to create a _workflow set_. We'll see these more in later chapters. Let's take our previous set of three model results and coerce them into a workflow set. 
 
 ```{r}
 #| label: as-workflow-set
@@ -265,8 +283,13 @@ forested_wflow_set
 forested_wflow_set |> rank_results()
 ```
 
+We'll see the advantage of this in a later section. 
 
 ## Resampled Data Sets {#sec-compare-resamples}
+
+Let's collect the accuracy values for each resample and model into a data frame. We'll make a "wide" version with three columns for each of the three models and a "long" version where there is a column for each model and another for the accuracies. We call the column with the model `pipeline`. 
+
+We'll also plot the data to show that it is similar to the one in the main text. 
 
 ```{r}
 #| label: collect-resamples
@@ -294,10 +317,11 @@ accuracy_long_df |>
   labs(x = NULL)
 ```
 
-
-
+Now we can start analyzing the data in different ways.  
 
 ### Statistical Foundations {#sec-compare-stats}
+
+We'll start with the Frequentist perspective. 
 
 ### Frequentist Hypothesis Testing Methods {#sec-nhtm}
 
@@ -308,32 +332,35 @@ accuracy_long_df |>
 lvls <- cli::format_inline("{.code {levels(factor(accuracy_long_df$pipeline))}}")
 ```
 
-  Since the data in the `pipeline` column is currently character, the model function will convert this column to a factor and assign the factor level order alphabetically. This means that the levels are: `r lvls`. Recall that the default parameterization for indicator variables is a "reference cell" parameterization, so the intercept corresponds to the first factor level. This means that, in terms of the fixed effects, we interpret parameter estimates as: 
+We take the wide version of the accuracy data and fit a linear regression to it in a way that accounts for the resample-to-resample effect. Let's take a minute and think about how our model will set up the parameter estimates. 
+
+Since the data in the `pipeline` column is currently character, the model function will convert this column to a factor and assign the factor level order alphabetically. This means that the levels are: `r lvls`. Recall that the default parameterization for indicator variables is a "reference cell" parameterization, so the intercept corresponds to the first factor level. This means that, in terms of the fixed effects, we interpret parameter estimates as: 
 
 $$
 \hat{y}_{ij} = \underbrace{\quad \hat{\beta}_0\quad }_{\tt{Boosting}} + \underbrace{\quad \hat{\beta}_1 \quad }_{\tt{Boosting - Logistic}} +\underbrace{\quad \hat{\beta}_2\quad }_{\tt{Boosting - Naive\: Bayes}}
 $$ 
 
-Using `lme4::lmer()` to fit the model, we specify `pipeline` as the fixed effect and designate a random effect due to resampling as `(1|id)`, where `1` symbolizes the intercept. The results are: 
+Using `lme4::lmer()` to fit the model, we specify `pipeline` as the fixed effect and designate a random effect due to resampling as `(1|id)`, where `1` symbolizes the intercept. 
+
+The results are: 
 
 ```{r}
 #| label: freq-mixed
-
-library(lme4)
-library(broom.mixed)
-library(multcomp)
 
 freq_mixed_mod <- lmer(accuracy ~ pipeline + (1|id), data = accuracy_long_df)
 
 freq_mixed_mod |> tidy()
 ```
 
+The model term corresponding to `term = "sd__(Intercept)"` is the standard deviation of the random effects, and the one with a `term` value of `sd__Observation` is the residual standard deviation. Note that the former is almost twice the size of the latter; the resample-to-resample effect is _very_ large for these data.  
+
 Notice that p-values that are _not_ automatically computed. This is addressed by reading `help("pvalues")` or the package vignette called “Fitting Linear Mixed-Effects Models using lme4”. The CRAN PDF for the latter is [here](https://cran.r-project.org/web/packages/lme4/vignettes/lmer.pdf). We can create approximate p-values using the `r pkg(lmerTest)` or  `r pkg(multicomp)` packages. 
 
-We’ll show the latter now by first defining contrasts of the parameter estimates that provide all three pairwise comparisons.
+We’ll show the  `r pkg(multicomp)` package but first we will define contrasts of the parameter estimates that provide all three pairwise comparisons.
 
 ```{r}
 #| label: freq-mixed-raw-contrasts
+# Coefficients for the estimates to create differences in accuracies.
 comparisons <- 
   rbind("Boosting - Logistic"    = c(0,  1,  0),     
         "Boosting - Naive Bayes" = c(0,  0,  1),     
@@ -431,6 +458,8 @@ From these data, we can create the same plot as the main text:
 #| fig-height: 3.5
 #| fig-align: "center"
 #| out-width: "70%"
+#| message: false
+#| warning: false
 
 difference_int |> 
   ggplot(aes(x = contrast, y = -estimate)) +
@@ -451,8 +480,6 @@ When the resampled performance estimates are in a data frame, it should be in th
 
 ```{r}
 #| label: perf-mod-df-basic
-library(tidyposterior)
-
 set.seed(101)
 basic_bayes_mod <- perf_mod(accuracy_df, refresh = 0)
 basic_bayes_mod
@@ -678,3 +705,5 @@ paired_class_bt <-
 
 int_pctl(paired_class_bt, stats, alpha = .1)
 ```
+
+## Footnotes {.unnumbered}
