@@ -6,7 +6,6 @@ knitr:
 
 # Comparing Models {#sec-comparing-models}
 
-
 ```{r}
 #| label: comparing-models-knitr-setup
 #| include: false
@@ -97,7 +96,7 @@ library(multcomp)
 library(tidyposterior)
 ```
 
-## Example Data
+## Example Data {#sec-forested-compare-setup}
 
 We'll use the forestation data just as in the book. These data have already been split, and some interactions have been assessed. Those are captured in two remote RData files: 
 
@@ -130,7 +129,7 @@ The second file has this important formula object that contains what we think ar
 forested_int_form
 ```
 
-## Model Fitting
+## Model Fitting {#sec-forested-model-fits}
 
 We'll need to resample a few models. We'll cut to the chase and resample the tuning parameters found to be optimal in the regular text. 
 
@@ -267,7 +266,7 @@ During resampling, this model will probably provide some warnings when fit that 
 
 This occurs because the model multiplies about a dozen probabilities together. The consequence is that some of these products become very close to zero, and R complains a bit about this. 
 
-## A Workflow Set
+## A Workflow Set {#sec-forested-workflow-set}
 
 Another method for resampling or tuning a series of preprocessors and/or models is to create a _workflow set_. We'll see these more in later chapters. Let's take our previous set of three model results and coerce them into a workflow set. 
 
@@ -354,7 +353,7 @@ freq_mixed_mod |> tidy()
 
 The model term corresponding to `term = "sd__(Intercept)"` is the standard deviation of the random effects, and the one with a `term` value of `sd__Observation` is the residual standard deviation. Note that the former is almost twice the size of the latter; the resample-to-resample effect is _very_ large for these data.  
 
-Notice that p-values that are _not_ automatically computed. This is addressed by reading `help("pvalues")` or the package vignette called “Fitting Linear Mixed-Effects Models using lme4”. The CRAN PDF for the latter is [here](https://cran.r-project.org/web/packages/lme4/vignettes/lmer.pdf). We can create approximate p-values using the `r pkg(lmerTest)` or  `r pkg(multicomp)` packages. 
+Notice that p-values that are _not_ automatically computed. This is addressed by reading `help("pvalues")` or the package vignette called "Fitting Linear Mixed-Effects Models using lme4". The CRAN PDF for the latter is [here](https://cran.r-project.org/web/packages/lme4/vignettes/lmer.pdf). We can create approximate p-values using the `r pkg(lmerTest)` or  `r pkg(multicomp)` packages. 
 
 We’ll show the  `r pkg(multicomp)` package but first we will define contrasts of the parameter estimates that provide all three pairwise comparisons.
 
@@ -367,7 +366,7 @@ comparisons <-
         "Naive Bayes - Logistic" = c(0, -1,  1))
 ```
 
-We’ll use the `multcomp::glht()` function^[“GLHT” stands for “General Linear Hypothesis Tests.”] to generate them. The `glht()` function relies on another function from that package called `mcp()`^[“MCP” presumably stands for “Multiple Comparison Procedure.”], and that can be used to sort out the details. For the raw (but approximate) p-values, we simply give it a single contrast at a time:
+We’ll use the `multcomp::glht()` function^["GLHT" stands for "General Linear Hypothesis Tests."] to generate them. The `glht()` function relies on another function from that package called `mcp()`^["MCP" presumably stands for "Multiple Comparison Procedure."], and that can be used to sort out the details. For the raw (but approximate) p-values, we simply give it a single contrast at a time:
 
 ```{r}
 #| label: freq-mixed-raw
@@ -389,6 +388,8 @@ raw_res |>
 ```
 
 Again, due to differences in random numbers, the accuracy numbers are slightly different. Consequently, the p-values are also different in value but not in interpretation. 
+
+`r back("comparing-models.html#sec-nhtm")`
 
 #### Post Hoc Pairwise Comparisons and Protecting Against False Positive Findings {#sec-post-hoc}
 
@@ -435,6 +436,8 @@ freq_mixed_mod |>
   select(-term, -null.value, -estimate)
 ```
 
+`r back("comparing-models.html#sec-post-hoc")`
+
 #### Comparing Performance using Equivalence Tests {#sec-comparing-equivalence}
 
 We'll conduct the Two One-Sided Test (TOST) procedure by computing the confidence intervals on the differences, which we can compute via `glht()` with the Tukey correction: 
@@ -471,12 +474,13 @@ difference_int |>
   scale_y_continuous(label = label_percent()) 
 ```
 
+`r back("comparing-models.html#sec-comparing-equivalence")`
 
 ### Comparisons Using Bayesian Models {#sec-compare-resample-bayes}
 
 For Bayesian evaluation, tidymodels replies heavily on the `r pkg(rstanarm)` package, which is based on [Stan](https://mc-stan.org/). The `r pkg(tidyposterior)` package is the main interface for tidymodels objects. The main function, `tidyposterior::perf_mod()`, has methods for several types of objects. First, we’ll show how to use it with a basic data frame of results, then with specific types of tidymodels objects. 
 
-When the resampled performance estimates are in a data frame, it should be in the “wide” format, such as `accuracy_df`. The simplest use of the function is: 
+When the resampled performance estimates are in a data frame, it should be in the "wide" format, such as `accuracy_df`. The simplest use of the function is: 
 
 ```{r}
 #| label: perf-mod-df-basic
@@ -491,7 +495,6 @@ basic_bayes_mod |>
 ```
    
 The `r pkg(broom.mixed)` package's `tidy()` method can also be used:   
-   
 
 ```{r}
 #| label: perf-mod-df-basic-tidy
@@ -552,7 +555,6 @@ summary(basic_bayes_diff_post)
 
 Using the `size` argument enables a ROPE analysis: 
 
-
 ```{r}
 #| label: tp-compare-rope
 summary(basic_bayes_diff_post, size = 0.03) |> 
@@ -582,7 +584,6 @@ If you have a workflow set, you can perform within- and/or between-model compari
 
 We previously created `forested_wflow_set` to house our resampling results. Here is how we could use that object for the analysis: 
 
-
 ```{r}
 #| label: wfs-compare-rope
 #| cache: true
@@ -603,6 +604,7 @@ forested_wflow_set |>
   select(contrast, starts_with("pract"))
 ```
 
+`r back("comparing-models.html#sec-compare-resample-bayes")`
 
 ## Single Holdout Data Sets {#sec-compare-holdout}
 
@@ -623,6 +625,7 @@ For a test set, we encourage users to use `last_fit()`. Let's suppose that we st
 
 ```{r}
 #| label: last-fits
+#| cache: true
 
 boost_final_res <- 
   last_fit(boost_wflow, split = forested_split, metrics = cls_mtr)
@@ -706,4 +709,4 @@ paired_class_bt <-
 int_pctl(paired_class_bt, stats, alpha = .1)
 ```
 
-## Footnotes {.unnumbered}
+`r back("comparing-models.html#sec-compare-holdout")`
