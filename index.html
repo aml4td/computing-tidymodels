@@ -5,7 +5,7 @@
 <meta name="generator" content="quarto-1.7.31">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <meta name="author" content="Max Kuhn">
-<meta name="dcterms.date" content="2025-05-21">
+<meta name="dcterms.date" content="2025-06-24">
 <title>Tidymodels Computing Supplement</title>
 <style>
 code{white-space: pre-wrap;}
@@ -252,6 +252,12 @@ ul.task-list li input[type="checkbox"] {
  <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Feature Selection</span></span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./chapters/comparing-models.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Comparing Models</span></span></a>
+  </div>
+</li>
       </ul>
 </li>
         <li class="sidebar-item sidebar-item-section">
@@ -309,7 +315,7 @@ ul.task-list li input[type="checkbox"] {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">2025-05-21</p>
+      <p class="date">2025-06-24</p>
     </div>
   </div>
   
@@ -327,7 +333,7 @@ ul.task-list li input[type="checkbox"] {
   title = {{Tidymodels Computing Supplement to Applied Machine Learning for Tabular Data}},
   year = {2023},
   url = { https://tidymodels.aml4td.org},
-  urldate = {2025-05-21}
+  urldate = {2025-06-24}
 }</code></pre>
 <section id="license" class="level2 unnumbered"><h2 class="unnumbered anchored" data-anchor-id="license">License</h2>
 <p xmlns:cc="http://creativecommons.org/ns#">
@@ -383,7 +389,7 @@ This work is licensed under <a href="http://creativecommons.org/licenses/by-sa/4
 <p><a href="https://en.wikipedia.org/wiki/R_(programming_language)">R version 4.5.0 (2025-04-11)</a> was used for the majority of the computations. <a href="https://en.wikipedia.org/wiki/Torch_(machine_learning)">torch</a> 2.5.1 was also used. The versions of the primary R modeling and visualization packages used here are:</p>
 <table class="table">
 <colgroup>
-<col style="width: 32%">
+<col style="width: 33%">
 <col style="width: 33%">
 <col style="width: 33%">
 </colgroup>
@@ -394,9 +400,17 @@ This work is licensed under <a href="http://creativecommons.org/licenses/by-sa/4
 <td style="text-align: left;">
 <code>bestNormalize</code> (1.9.1)</td>
 <td style="text-align: left;">
-<code>brulee</code> (0.5.0)</td>
+<code>broom</code> (1.0.8)</td>
 </tr>
 <tr class="even">
+<td style="text-align: left;">
+<code>broom.mixed</code> (0.2.9.6)</td>
+<td style="text-align: left;">
+<code>brulee</code> (0.5.0)</td>
+<td style="text-align: left;">
+<code>C50</code> (0.2.0)</td>
+</tr>
+<tr class="odd">
 <td style="text-align: left;">
 <code>caret</code> (7.0-1)</td>
 <td style="text-align: left;">
@@ -404,41 +418,49 @@ This work is licensed under <a href="http://creativecommons.org/licenses/by-sa/4
 <td style="text-align: left;">
 <code>Cubist</code> (0.5.0)</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;">
 <code>dials</code> (1.4.0)</td>
 <td style="text-align: left;">
 <code>dimRed</code> (0.2.7)</td>
 <td style="text-align: left;">
-<code>doParallel</code> (1.0.17)</td>
+<code>discrim</code> (1.0.1)</td>
 </tr>
-<tr class="even">
+<tr class="odd">
+<td style="text-align: left;">
+<code>doParallel</code> (1.0.17)</td>
 <td style="text-align: left;">
 <code>downlit</code> (0.4.4.9000)</td>
 <td style="text-align: left;">
 <code>dplyr</code> (1.1.4)</td>
+</tr>
+<tr class="even">
 <td style="text-align: left;">
 <code>e1071</code> (1.7-16)</td>
-</tr>
-<tr class="odd">
 <td style="text-align: left;">
 <code>embed</code> (1.1.5)</td>
+<td style="text-align: left;">
+<code>emmeans</code> (1.11.1)</td>
+</tr>
+<tr class="odd">
 <td style="text-align: left;">
 <code>fastICA</code> (1.2-7)</td>
 <td style="text-align: left;">
 <code>finetune</code> (1.2.1)</td>
+<td style="text-align: left;">
+<code>forested</code> (0.1.0)</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">
-<code>forested</code> (0.1.0)</td>
-<td style="text-align: left;">
-<code>future.mirai</code> (0.2.2)</td>
+<code>future.mirai</code> (0.10.0)</td>
 <td style="text-align: left;">
 <code>GA</code> (3.2.4)</td>
+<td style="text-align: left;">
+<code>ggplot2</code> (3.5.2)</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">
-<code>ggplot2</code> (3.5.2)</td>
+<code>glmnet</code> (4.1-9)</td>
 <td style="text-align: left;">
 <code>gt</code> (1.0.0)</td>
 <td style="text-align: left;">
@@ -454,111 +476,113 @@ This work is licensed under <a href="http://creativecommons.org/licenses/by-sa/4
 </tr>
 <tr class="odd">
 <td style="text-align: left;">
+<code>klaR</code> (1.7-3)</td>
+<td style="text-align: left;">
 <code>lme4</code> (1.1-37)</td>
 <td style="text-align: left;">
 <code>Matrix</code> (1.7-3)</td>
-<td style="text-align: left;">
-<code>mixOmics</code> (6.32.0)</td>
 </tr>
 <tr class="even">
+<td style="text-align: left;">
+<code>mixOmics</code> (6.32.0)</td>
 <td style="text-align: left;">
 <code>modeldata</code> (1.4.0)</td>
 <td style="text-align: left;">
 <code>modeldatatoo</code> (0.3.0)</td>
-<td style="text-align: left;">
-<code>naniar</code> (1.1.0)</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">
-<code>parsnip</code> (1.3.1)</td>
+<code>naniar</code> (1.1.0)</td>
+<td style="text-align: left;">
+<code>parsnip</code> (1.3.2)</td>
 <td style="text-align: left;">
 <code>partykit</code> (1.2-24)</td>
-<td style="text-align: left;">
-<code>patchwork</code> (1.3.0)</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">
-<code>probably</code> (1.0.3)</td>
+<code>patchwork</code> (1.3.1)</td>
+<td style="text-align: left;">
+<code>probably</code> (1.1.0)</td>
 <td style="text-align: left;">
 <code>purrr</code> (1.0.4)</td>
-<td style="text-align: left;">
-<code>QSARdata</code> (1.3)</td>
 </tr>
 <tr class="odd">
+<td style="text-align: left;">
+<code>QSARdata</code> (1.3)</td>
 <td style="text-align: left;">
 <code>ragg</code> (1.4.0)</td>
 <td style="text-align: left;">
 <code>ranger</code> (0.17.0)</td>
-<td style="text-align: left;">
-<code>RANN</code> (2.6.2)</td>
 </tr>
 <tr class="even">
+<td style="text-align: left;">
+<code>RANN</code> (2.6.2)</td>
 <td style="text-align: left;">
 <code>recipes</code> (1.2.1)</td>
 <td style="text-align: left;">
 <code>rmarkdown</code> (2.29)</td>
-<td style="text-align: left;">
-<code>rsample</code> (1.3.0)</td>
 </tr>
 <tr class="odd">
+<td style="text-align: left;">
+<code>rsample</code> (1.3.0)</td>
 <td style="text-align: left;">
 <code>RSpectra</code> (0.16-2)</td>
 <td style="text-align: left;">
 <code>rstudioapi</code> (0.17.1)</td>
-<td style="text-align: left;">
-<code>rules</code> (1.0.2)</td>
 </tr>
 <tr class="even">
+<td style="text-align: left;">
+<code>rules</code> (1.0.2)</td>
 <td style="text-align: left;">
 <code>sf</code> (1.0-21)</td>
 <td style="text-align: left;">
 <code>sfd</code> (0.1.0)</td>
-<td style="text-align: left;">
-<code>spatialsample</code> (0.6.0)</td>
 </tr>
 <tr class="odd">
+<td style="text-align: left;">
+<code>spatialsample</code> (0.6.0)</td>
 <td style="text-align: left;">
 <code>splines2</code> (0.5.4)</td>
 <td style="text-align: left;">
 <code>stopwords</code> (2.3)</td>
-<td style="text-align: left;">
-<code>textrecipes</code> (1.1.0)</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">
+<code>textrecipes</code> (1.1.0)</td>
+<td style="text-align: left;">
 <code>tidymodels</code> (1.3.0)</td>
+<td style="text-align: left;">
+<code>tidyposterior</code> (1.0.1)</td>
+</tr>
+<tr class="odd">
 <td style="text-align: left;">
 <code>tidyr</code> (1.3.1)</td>
 <td style="text-align: left;">
 <code>tidysdm</code> (1.0.0)</td>
-</tr>
-<tr class="odd">
 <td style="text-align: left;">
-<code>torch</code> (0.14.2)</td>
+<code>torch</code> (0.15.0)</td>
+</tr>
+<tr class="even">
 <td style="text-align: left;">
 <code>tune</code> (1.3.0)</td>
 <td style="text-align: left;">
 <code>usethis</code> (3.1.0)</td>
-</tr>
-<tr class="even">
 <td style="text-align: left;">
 <code>viridis</code> (0.6.5)</td>
-<td style="text-align: left;">
-<code>workflows</code> (1.2.0)</td>
-<td style="text-align: left;">
-<code>workflowsets</code> (1.1.0)</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">
+<code>workflows</code> (1.2.0)</td>
+<td style="text-align: left;">
+<code>workflowsets</code> (1.1.1)</td>
+<td style="text-align: left;">
 <code>xgboost</code> (1.7.11.1)</td>
+</tr>
+<tr class="even">
 <td style="text-align: left;">
 <code>xml2</code> (1.3.8)</td>
 <td style="text-align: left;">
 <code>yardstick</code> (1.3.2)</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;"></td>
-<td style="text-align: left;"></td>
 <td style="text-align: left;"></td>
 </tr>
 </tbody>

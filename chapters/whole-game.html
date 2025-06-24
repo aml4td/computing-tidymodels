@@ -288,6 +288,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Feature Selection</span></span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/comparing-models.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Comparing Models</span></span></a>
+  </div>
+</li>
       </ul>
 </li>
         <li class="sidebar-item sidebar-item-section">
@@ -372,11 +378,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="co">#&gt; ── Attaching packages ─────────────────────────────────────────── tidymodels 1.3.0 ──</span></span>
 <span><span class="co">#&gt; ✔ broom        1.0.8     ✔ recipes      1.2.1</span></span>
 <span><span class="co">#&gt; ✔ dials        1.4.0     ✔ rsample      1.3.0</span></span>
-<span><span class="co">#&gt; ✔ dplyr        1.1.4     ✔ tibble       3.2.1</span></span>
+<span><span class="co">#&gt; ✔ dplyr        1.1.4     ✔ tibble       3.3.0</span></span>
 <span><span class="co">#&gt; ✔ ggplot2      3.5.2     ✔ tidyr        1.3.1</span></span>
 <span><span class="co">#&gt; ✔ infer        1.0.8     ✔ tune         1.3.0</span></span>
 <span><span class="co">#&gt; ✔ modeldata    1.4.0     ✔ workflows    1.2.0</span></span>
-<span><span class="co">#&gt; ✔ parsnip      1.3.1     ✔ workflowsets 1.1.0</span></span>
+<span><span class="co">#&gt; ✔ parsnip      1.3.2     ✔ workflowsets 1.1.1</span></span>
 <span><span class="co">#&gt; ✔ purrr        1.0.4     ✔ yardstick    1.3.2</span></span>
 <span><span class="co">#&gt; ── Conflicts ────────────────────────────────────────────── tidymodels_conflicts() ──</span></span>
 <span><span class="co">#&gt; ✖ purrr::discard() masks scales::discard()</span></span>
@@ -481,7 +487,7 @@ Note
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">delivery_hist</span> <span class="op">+</span> <span class="va">delivery_log_hist</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
-<figure class="figure"><p><img src="../figures/whole-game-hists-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:95.0%"></p>
+<figure class="figure"><p><img src="whole-game_files/figure-html/whole-game-hists-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:95.0%"></p>
 </figure>
 </div>
 </div>
@@ -582,7 +588,7 @@ What’s a random number seed?
 <span>  <span class="fu">theme</span><span class="op">(</span>legend.title <span class="op">=</span> <span class="fu">element_blank</span><span class="op">(</span><span class="op">)</span>, legend.position <span class="op">=</span> <span class="st">"bottom"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
-<figure class="figure"><p><img src="../figures/delivery-predictors-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:80.0%"></p>
+<figure class="figure"><p><img src="whole-game_files/figure-html/delivery-predictors-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:80.0%"></p>
 </figure>
 </div>
 </div>
@@ -724,7 +730,7 @@ What’s a random number seed?
 <span>  <span class="fu">theme</span><span class="op">(</span>axis.text.y <span class="op">=</span> <span class="fu">element_text</span><span class="op">(</span>hjust <span class="op">=</span> <span class="fl">0</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
-<figure class="figure"><p><img src="../figures/time-ratio-plot-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:50.0%"></p>
+<figure class="figure"><p><img src="whole-game_files/figure-html/time-ratio-plot-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:50.0%"></p>
 </figure>
 </div>
 </div>
@@ -991,7 +997,7 @@ Learn More About Recipes
 <div class="sourceCode" id="cb33"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://probably.tidymodels.org/reference/cal_plot_regression.html">cal_plot_regression</a></span><span class="op">(</span><span class="va">lin_reg_res</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
-<figure class="figure"><p><img src="../figures/lm-cal-plot-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:50.0%"></p>
+<figure class="figure"><p><img src="whole-game_files/figure-html/lm-cal-plot-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:50.0%"></p>
 </figure>
 </div>
 </div>
@@ -1034,7 +1040,7 @@ Learn More About Recipes
 <div class="sourceCode" id="cb37"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://probably.tidymodels.org/reference/cal_plot_regression.html">cal_plot_regression</a></span><span class="op">(</span><span class="va">cb_res</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
-<figure class="figure"><p><img src="../figures/cb-cal-plot-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:50.0%"></p>
+<figure class="figure"><p><img src="whole-game_files/figure-html/cb-cal-plot-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:50.0%"></p>
 </figure>
 </div>
 </div>
@@ -1180,7 +1186,7 @@ Learn More About Recipes
 <div class="sourceCode" id="cb46"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot</a></span><span class="op">(</span><span class="va">nnet_res</span>, metric <span class="op">=</span> <span class="st">"mae"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
-<figure class="figure"><p><img src="../figures/nnet-autoplot-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%"></p>
+<figure class="figure"><p><img src="whole-game_files/figure-html/nnet-autoplot-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%"></p>
 </figure>
 </div>
 </div>
@@ -1191,7 +1197,7 @@ Learn More About Recipes
 <div class="sourceCode" id="cb47"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://probably.tidymodels.org/reference/cal_plot_regression.html">cal_plot_regression</a></span><span class="op">(</span><span class="va">nnet_res</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
-<figure class="figure"><p><img src="../figures/nnet-cal-plot-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:50.0%"></p>
+<figure class="figure"><p><img src="whole-game_files/figure-html/nnet-cal-plot-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:50.0%"></p>
 </figure>
 </div>
 </div>
@@ -1227,7 +1233,7 @@ Learn More About Recipes
 <span><span class="va">lin_reg_cal</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Regression Calibration</span></span>
-<span><span class="co">#&gt; Method: Generalized additive model</span></span>
+<span><span class="co">#&gt; Method: Generalized additive model calibration</span></span>
 <span><span class="co">#&gt; Source class: Tune Results</span></span>
 <span><span class="co">#&gt; Data points: 2,004</span></span>
 <span><span class="co">#&gt; Truth variable: `time_to_delivery`</span></span>
@@ -1255,7 +1261,7 @@ Learn More About Recipes
 <span>  <span class="fu"><a href="https://probably.tidymodels.org/reference/cal_plot_regression.html">cal_plot_regression</a></span><span class="op">(</span>truth <span class="op">=</span> <span class="va">time_to_delivery</span>, estimate <span class="op">=</span> <span class="va">.pred</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
-<figure class="figure"><p><img src="../figures/lm-test-final-uncal-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:50.0%"></p>
+<figure class="figure"><p><img src="whole-game_files/figure-html/lm-test-final-uncal-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:50.0%"></p>
 </figure>
 </div>
 </div>
@@ -1312,7 +1318,7 @@ Learn More About Recipes
 <span>  <span class="fu"><a href="https://probably.tidymodels.org/reference/cal_plot_regression.html">cal_plot_regression</a></span><span class="op">(</span>truth <span class="op">=</span> <span class="va">time_to_delivery</span>, estimate <span class="op">=</span> <span class="va">.pred</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
-<figure class="figure"><p><img src="../figures/lm-test-final-cal-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:50.0%"></p>
+<figure class="figure"><p><img src="whole-game_files/figure-html/lm-test-final-cal-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:50.0%"></p>
 </figure>
 </div>
 </div>
