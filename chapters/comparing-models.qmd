@@ -1,0 +1,711 @@
+---
+knitr:
+  opts_chunk:
+    cache.path: "../_cache/comparing-models/"
+---
+
+# Comparing Models {#sec-comparing-models}
+
+```{r}
+#| label: comparing-models-knitr-setup
+#| include: false
+
+knitr::opts_chunk$set(
+  comment = "#>",
+  collapse = TRUE,
+  fig.align = 'center',
+  fig.width = 10,
+  fig.height = 6,
+  out.width = "95%",
+  dev = 'svg',
+  dev.args = list(bg = "transparent"),
+  tidy = FALSE,
+  echo = TRUE
+)
+
+library(tidymodels)
+library(future)
+library(future.mirai)
+
+options(digits = 4, width = 84)
+options(dplyr.print_min = 6, dplyr.print_max = 6)
+options(cli.width = 85)
+options(crayon.enabled = FALSE)
+options(pillar.advice = FALSE, pillar.min_title_chars = Inf, pillar.sigfig = 4)
+
+plan(mirai_multisession)
+
+source("../R/_common.R")
+req_pkg <- c("bestNormalize", "broom.mixed", "C50", "discrim", "embed", 
+             "glmnet", "klaR", "lme4", "multcomp", "rstanarm", "rules", "splines2", 
+             "tidymodels", "tidyposterior")
+```
+
+This book's chapter involved taking models that have been fit or resampled and using their results to formally compare them. 
+
+## Requirements
+
+`r pkg_list(req_pkg)`
+
+```{r}
+#| label: comparing-models-installs
+#| eval: false
+#| echo: true
+req_pkg <- c("bestNormalize", "broom.mixed", "C50", "discrim", "embed", 
+             "glmnet", "klaR", "lme4", "multcomp", "rstanarm", "rules", "splines2", 
+             "tidymodels", "tidyposterior")
+
+# Check to see if they are installed: 
+pkg_installed <- vapply(req_pkg, rlang::is_installed, logical(1))
+
+# Install missing packages: 
+if ( any(!pkg_installed) ) {
+  install_list <- names(pkg_installed)[!pkg_installed]
+  pak::pak(install_list)
+}
+```
+
+Let's load the meta package and manage some between-package function conflicts. We'll also load some packages that are used for the data analysis. 
+
+```{r}
+#| label: start-tidymodels
+#| results: hide
+#| message: false
+#| warning: false
+library(tidymodels)
+tidymodels_prefer()
+theme_set(theme_bw())
+
+# Other packages that we will load below
+
+# For feature engineering:
+library(embed)
+library(bestNormalize)
+
+# For models:
+library(discrim)
+library(rules)
+
+# For Frequentist analysis:
+library(lme4)
+library(broom.mixed)
+library(multcomp)
+
+# For Bayesian analysis: 
+library(tidyposterior)
+```
+
+## Example Data {#sec-forested-compare-setup}
+
+We'll use the forestation data just as in the book. These data have already been split, and some interactions have been assessed. Those are captured in two remote RData files: 
+
+```{r}
+#| label: load-forested-data-files
+# Loads the training and test set data
+load(url("https://github.com/aml4td/website/raw/refs/heads/main/RData/forested_data.RData"))
+
+# Load information needed for interactions:
+load(url("https://github.com/aml4td/website/raw/refs/heads/main/RData/forested_interactions.RData"))
+```
+
+The first file contains these relevant objects:
+
+```{r}
+#| label: show-forested-data
+forested_split
+
+forested_train
+
+forested_test
+
+forested_rs
+```
+
+The second file has this important formula object that contains what we think are important interactions: 
+
+```{r}
+#| label: show-forested-interaction
+forested_int_form
+```
+
+## Model Fitting {#sec-forested-model-fits}
+
+We'll need to resample a few models. We'll cut to the chase and resample the tuning parameters found to be optimal in the regular text. 
+
+First, we load some additional packages and create some preliminaries:
+
+```{r}
+#| label: prelim
+#| results: hide
+# For resampling the models
+ctrl_rs <-
+  control_resamples(
+    save_pred = TRUE,
+    parallel_over = "everything",
+    save_workflow = TRUE # Keep this for as_workflow_set()
+  )
+
+cls_mtr <- metric_set(accuracy)
+```
+
+We start by resampling the boosted tree with the tuning parameter values that were found during the grid search: 
+
+```{r}
+#| label: forested-boosting
+#| cache: true
+boost_spec <- 
+  C5_rules(trees = 60, min_n = 20) |> 
+  set_engine("C5.0", control = C50::C5.0Control(seed = 864))
+
+boost_wflow <-  workflow(class ~ ., boost_spec) 
+
+set.seed(526)
+boost_res <-
+  fit_resamples(
+    boost_wflow,
+    resamples = forested_rs,
+    control = ctrl_rs,
+    metrics = cls_mtr
+  )
+
+# Save the individual resamples and change the name of the accuracy column. 
+boost_metrics <- 
+  collect_metrics(boost_res, summarize = FALSE) |> 
+  select(id, Boosting = .estimate)
+```
+
+::: {.callout-warning}
+Although we strive for reproducibility, it can be difficult. The boosted tree results from the main text (where it was tuned) used slightly different random numbers than when we trained for a single model. Nine of the ten resamples had different accuracy results; the mean difference between the two was 0.07%, and the largest difference was 0.84%. This is obviously very small, but it does lead to different results here than in the main text. The conclusions will not change.
+:::
+
+Now let's create the logistic regression. There is a fair amount of preprocessing and feature engineering. The rationale for these will be discussed in a future chapter in Part 4. 
+
+You'll see below that, although the model uses a single penalty value, we [pass a sequence of penalties](https://parsnip.tidymodels.org/reference/glmnet-details.html) to the `lambda` parameter of `glmnet::glmnet()`. See [parsnip issue #431](https://github.com/tidymodels/parsnip/issues/431#issuecomment-782883848) for some background. 
+
+The model is a full ridge regression model since `mixture = 0`. 
+
+```{r}
+#| label: forested-logistic
+#| cache: true
+logistic_rec <-
+  recipe(class ~ ., data = forested_train) |>
+  # standardize numeric predictors
+  step_orderNorm(all_numeric_predictors()) |>
+  # Convert to an effect encoding
+  step_lencode_mixed(county, outcome = "class") |>
+  # Create pre-defined interactions
+  step_interact(!!forested_int_form) |>
+  # 10 spline terms for certain predictors
+  step_spline_natural(
+    all_numeric_predictors(),
+    -county,
+    -eastness,
+    -northness,
+    -year,
+    -contains("_x_"),
+    deg_free = 10
+  ) |>
+  # Remove any linear dependencies
+  step_lincomb(all_predictors())
+
+# ------------------------------------------------------------------------------
+
+logistic_pen <- 10^seq(-6, -1, length.out = 50)
+
+logistic_spec <- 
+  # Values here were determined via grid search:
+  logistic_reg(penalty = 2.12095088792019e-05, mixture = 0.0) |> 
+  set_engine("glmnet", path_values = !!logistic_pen)
+
+# ------------------------------------------------------------------------------
+
+logistic_wflow <- workflow(logistic_rec, logistic_spec)
+
+logistic_res <- 
+  logistic_wflow |> 
+  fit_resamples(
+    resamples = forested_rs,
+    control = ctrl_rs,
+    metrics = cls_mtr
+  )
+
+logistic_metrics <- 
+  collect_metrics(logistic_res, summarize = FALSE) |> 
+  select(id, Logistic = .estimate)
+```
+
+Now, the naive Bayes model. There is no need for feature engineering and not much in the way of tuning parameters. 
+
+```{r}
+#| label: forested-naive-bayes
+#| cache: true
+#| warning: false
+nb_rec <-
+  recipe(class ~ ., data = forested_train) |>
+  step_orderNorm(all_numeric_predictors())
+
+nb_wflow <- workflow(nb_rec, naive_Bayes())
+
+nb_res <- 
+  nb_wflow |> 
+  fit_resamples(
+    resamples = forested_rs,,
+    control = ctrl_rs,
+    metrics = cls_mtr
+  )
+
+nb_metrics <- 
+  collect_metrics(nb_res, summarize = FALSE) |> 
+  select(id, `Naive Bayes` = .estimate)
+```
+
+During resampling, this model will probably provide some warnings when fit that resemble: 
+
+> Numerical 0 probability for all classes with observation X
+
+This occurs because the model multiplies about a dozen probabilities together. The consequence is that some of these products become very close to zero, and R complains a bit about this. 
+
+## A Workflow Set {#sec-forested-workflow-set}
+
+Another method for resampling or tuning a series of preprocessors and/or models is to create a _workflow set_. We'll see these more in later chapters. Let's take our previous set of three model results and coerce them into a workflow set. 
+
+```{r}
+#| label: as-workflow-set
+forested_wflow_set <- as_workflow_set(
+    Boosting = boost_res,
+    Logistic = logistic_res,
+    `Naive Bayes` = nb_res
+)
+forested_wflow_set
+
+forested_wflow_set |> rank_results()
+```
+
+We'll see the advantage of this in a later section. 
+
+## Resampled Data Sets {#sec-compare-resamples}
+
+Let's collect the accuracy values for each resample and model into a data frame. We'll make a "wide" version with three columns for each of the three models and a "long" version where there is a column for each model and another for the accuracies. We call the column with the model `pipeline`. 
+
+We'll also plot the data to show that it is similar to the one in the main text. 
+
+```{r}
+#| label: collect-resamples
+#| fig-width: 6
+#| fig-height: 3.5
+#| fig-align: "center"
+#| out-width: "70%"
+
+accuracy_df <- 
+  boost_metrics |> 
+  full_join(logistic_metrics, by = "id") |> 
+  full_join(nb_metrics, by = "id") 
+accuracy_df
+  
+accuracy_long_df <- 
+  accuracy_df |> 
+  pivot_longer(cols = c(-id), names_to = "pipeline", values_to = "accuracy")
+accuracy_long_df
+
+accuracy_long_df |> 
+  ggplot(aes(pipeline, accuracy)) + 
+  geom_point(aes(col = id), show.legend = FALSE) + 
+  geom_line(aes(group = id, col = id), show.legend = FALSE) +
+  scale_y_continuous(label = label_percent()) +
+  labs(x = NULL)
+```
+
+Now we can start analyzing the data in different ways.  
+
+### Statistical Foundations {#sec-compare-stats}
+
+We'll start with the Frequentist perspective. 
+
+### Frequentist Hypothesis Testing Methods {#sec-nhtm}
+
+```{r}
+#| label: levels
+#| echo: false
+
+lvls <- cli::format_inline("{.code {levels(factor(accuracy_long_df$pipeline))}}")
+```
+
+We take the wide version of the accuracy data and fit a linear regression to it in a way that accounts for the resample-to-resample effect. Let's take a minute and think about how our model will set up the parameter estimates. 
+
+Since the data in the `pipeline` column is currently character, the model function will convert this column to a factor and assign the factor level order alphabetically. This means that the levels are: `r lvls`. Recall that the default parameterization for indicator variables is a "reference cell" parameterization, so the intercept corresponds to the first factor level. This means that, in terms of the fixed effects, we interpret parameter estimates as: 
+
+$$
+\hat{y}_{ij} = \underbrace{\quad \hat{\beta}_0\quad }_{\tt{Boosting}} + \underbrace{\quad \hat{\beta}_1 \quad }_{\tt{Boosting - Logistic}} +\underbrace{\quad \hat{\beta}_2\quad }_{\tt{Boosting - Naive\: Bayes}}
+$$ 
+
+Using `lme4::lmer()` to fit the model, we specify `pipeline` as the fixed effect and designate a random effect due to resampling as `(1|id)`, where `1` symbolizes the intercept. 
+
+The results are: 
+
+```{r}
+#| label: freq-mixed
+
+freq_mixed_mod <- lmer(accuracy ~ pipeline + (1|id), data = accuracy_long_df)
+
+freq_mixed_mod |> tidy()
+```
+
+The model term corresponding to `term = "sd__(Intercept)"` is the standard deviation of the random effects, and the one with a `term` value of `sd__Observation` is the residual standard deviation. Note that the former is almost twice the size of the latter; the resample-to-resample effect is _very_ large for these data.  
+
+Notice that p-values that are _not_ automatically computed. This is addressed by reading `help("pvalues")` or the package vignette called "Fitting Linear Mixed-Effects Models using lme4". The CRAN PDF for the latter is [here](https://cran.r-project.org/web/packages/lme4/vignettes/lmer.pdf). We can create approximate p-values using the `r pkg(lmerTest)` or  `r pkg(multicomp)` packages. 
+
+We’ll show the  `r pkg(multicomp)` package but first we will define contrasts of the parameter estimates that provide all three pairwise comparisons.
+
+```{r}
+#| label: freq-mixed-raw-contrasts
+# Coefficients for the estimates to create differences in accuracies.
+comparisons <- 
+  rbind("Boosting - Logistic"    = c(0,  1,  0),     
+        "Boosting - Naive Bayes" = c(0,  0,  1),     
+        "Naive Bayes - Logistic" = c(0, -1,  1))
+```
+
+We’ll use the `multcomp::glht()` function^["GLHT" stands for "General Linear Hypothesis Tests."] to generate them. The `glht()` function relies on another function from that package called `mcp()`^["MCP" presumably stands for "Multiple Comparison Procedure."], and that can be used to sort out the details. For the raw (but approximate) p-values, we simply give it a single contrast at a time:
+
+```{r}
+#| label: freq-mixed-raw
+raw_res <- NULL
+for (i in 1:nrow(comparisons)) {
+  raw_res <- 
+    bind_rows(
+      raw_res, 
+      freq_mixed_mod |> 
+        glht(linfct = mcp(pipeline = comparisons[i,,drop = FALSE])) |> 
+        summary() |> 
+        tidy() |> 
+        rename(raw_pvalue = adj.p.value)
+    )
+}
+
+raw_res |> 
+  select(-term, -null.value)
+```
+
+Again, due to differences in random numbers, the accuracy numbers are slightly different. Consequently, the p-values are also different in value but not in interpretation. 
+
+`r back("comparing-models.html#sec-nhtm")`
+
+#### Post Hoc Pairwise Comparisons and Protecting Against False Positive Findings {#sec-post-hoc}
+
+To compute the Bonferroni or FDR adjustments, we can use the `stats::p.adjust()` package. However, for the FDR, there are _many_ alternatives. In CRAN alone: 
+
+```{r}
+#| label: cran-fdr-search
+
+tools::CRAN_package_db() |> 
+  as_tibble() |> 
+  filter(grepl("(fdr)|(false discovery rate)", tolower(Description))) |> 
+  mutate(Title = gsub("\n", "", Title)) |> 
+  select(Package, Title)
+```
+
+and even more on [Bioconductor](https://bioconductor.org/): 
+
+```{r}
+#| label: bioc-fdr-search
+#| warning: false
+BiocManager::available("(fdr)|(false discovery rate)")
+```
+
+`stats::p.adjust()` is very simple to use: 
+
+```{r}
+#| label: freq-mixed-post-hoc
+raw_res |> 
+  mutate(
+    Bonnferoni = p.adjust(raw_pvalue, method = "bonferroni"),
+    FDR = p.adjust(raw_pvalue, method = "BH")
+  ) |> 
+  select(-term, -null.value, -estimate)
+```
+
+For Tukey's HSD, we can use `glht()` again: 
+
+```{r}
+#| label: freq-mixed-tukey
+freq_mixed_mod |> 
+  glht(linfct = mcp(pipeline = "Tukey")) |> 
+  summary() |> 
+  tidy() |> 
+  select(-term, -null.value, -estimate)
+```
+
+`r back("comparing-models.html#sec-post-hoc")`
+
+#### Comparing Performance using Equivalence Tests {#sec-comparing-equivalence}
+
+We'll conduct the Two One-Sided Test (TOST) procedure by computing the confidence intervals on the differences, which we can compute via `glht()` with the Tukey correction: 
+
+```{r}
+#| label: freq-mixed-diff-tukey
+# The defaults that mcp() uses has the opposite order from the books' main
+# test uses (e.g. Logistic - Boosting instead of Boosting - Logistic)
+difference_int <- 
+  freq_mixed_mod |> 
+  glht(linfct = mcp(pipeline = "Tukey")) |> 
+  confint(level = 0.90) |> 
+  tidy()
+```
+
+From these data, we can create the same plot as the main text: 
+
+```{r}
+#| label: TOST
+#| fig-width: 6
+#| fig-height: 3.5
+#| fig-align: "center"
+#| out-width: "70%"
+#| message: false
+#| warning: false
+
+difference_int |> 
+  ggplot(aes(x = contrast, y = -estimate)) +
+  geom_point(size = 2) +
+  geom_errorbar(aes(ymin = -conf.low, ymax = -conf.high), width = 1 / 7) +
+  geom_hline(yintercept = c(-0.03, 0.03), linetype = 2) +
+  ylim(-0.07, 0.07) +
+  labs(x = "Comparison", y = "Accuracy Difference") +
+  scale_y_continuous(label = label_percent()) 
+```
+
+`r back("comparing-models.html#sec-comparing-equivalence")`
+
+### Comparisons Using Bayesian Models {#sec-compare-resample-bayes}
+
+For Bayesian evaluation, tidymodels replies heavily on the `r pkg(rstanarm)` package, which is based on [Stan](https://mc-stan.org/). The `r pkg(tidyposterior)` package is the main interface for tidymodels objects. The main function, `tidyposterior::perf_mod()`, has methods for several types of objects. First, we’ll show how to use it with a basic data frame of results, then with specific types of tidymodels objects. 
+
+When the resampled performance estimates are in a data frame, it should be in the "wide" format, such as `accuracy_df`. The simplest use of the function is: 
+
+```{r}
+#| label: perf-mod-df-basic
+set.seed(101)
+basic_bayes_mod <- perf_mod(accuracy_df, refresh = 0)
+basic_bayes_mod
+
+# The underlying Stan model: 
+basic_bayes_mod |> 
+  pluck("stan") |> 
+  print(digits = 3)
+```
+   
+The `r pkg(broom.mixed)` package's `tidy()` method can also be used:   
+
+```{r}
+#| label: perf-mod-df-basic-tidy
+basic_bayes_mod |> 
+  pluck("stan") |> 
+  tidy()
+```   
+
+`r pkg(tidyposterior)` also has a `tidy()` method for obtaining a sample from the posterior that has been configured not to be in the format of the parameters but in terms of the model means. 
+
+```{r}
+#| label: tp-tidy
+set.seed(185)
+basic_bayes_post <- 
+  basic_bayes_mod |> 
+  tidy()
+
+basic_bayes_post
+``` 
+
+This object also has a summary object to get credible intervals: 
+
+```{r}
+#| label: tp-tidy-ci
+summary(basic_bayes_post,  prob = 0.9)
+``` 
+
+and an `autoplot()` method: 
+
+```{r}
+#| label: tp-autoplot
+#| fig-width: 6
+#| fig-height: 3.5
+#| fig-align: "center"
+#| out-width: "70%"
+
+autoplot(basic_bayes_post)
+```
+
+To take a look at pairwise differences, there is `tidyposterior::contrast_models()`. This takes the objects produced by `perf_mod()` and two vector arguments of groups to compare. If these two group arguments are left to their defaults, all comparisons are used: 
+
+```{r}
+#| label: tp-compare
+set.seed(185)
+basic_bayes_diff_post <- 
+  basic_bayes_mod |> 
+  contrast_models()
+
+basic_bayes_diff_post
+``` 
+
+There is an `autoplot()` method, but the `summary()` method is more interesting since that is where the ROPE analysis can be conducted. Using default arguments gives the 90% credible intervals on the differences: 
+
+```{r}
+#| label: tp-compare-summary
+summary(basic_bayes_diff_post)
+``` 
+
+Using the `size` argument enables a ROPE analysis: 
+
+```{r}
+#| label: tp-compare-rope
+summary(basic_bayes_diff_post, size = 0.03) |> 
+  select(contrast, starts_with("pract"))
+``` 
+
+There are an abundance of options that can be used with `perf_mod()`, including: 
+
+- The `transform` argument can convert the metric to a different scale before the analysis and back transforms when creating posteriors. For example, if you believe that $log(RMSE)$ should be used in the analysis, use this argument. 
+
+- When we think that the probability distributions of the metrics have different variances, the `hetero_var` is logical and can enable that. Be aware that this option makes the model fit more complex, which may result in convergence issues.
+- Set Stan’s random number seed using the `seed` argument.  
+
+There are also options that can be passed to the Stan fit, including: 
+
+- Sampling-related options such as `chains` (number of MCMC chains) and `cores` (how many things to do in parallel). 
+- Prior distributions for parameters. Of interest might be: 
+  - `prior_aux`: the prior for the distribution’s scale parameter (e.g. $\sigma$ for the Gaussian).
+  - `prior_intercept`: the distribution for the random intercepts. 
+  - `prior`: distributions for the regression parameters. 
+
+For priors, the [Stan page on priors](https://mc-stan.org/rstanarm/reference/priors.html) is important to read since it details how the default priors are automatically scaled. The [page on sampling](https://mc-stan.org/rstan/reference/stanmodel-method-sampling.html) is also very helpful. 
+
+Finally, you can use `perf_mod()` with other types of tidymodels objects. For example, if you want to conduct a _within-model_ analysis where you compare candidates (say from a grid search), you can pass that as the first argument to `perf_mod()`. 
+
+If you have a workflow set, you can perform within- and/or between-model comparisons. This can potentially compare a large number of model/candidate combinations. 
+
+We previously created `forested_wflow_set` to house our resampling results. Here is how we could use that object for the analysis: 
+
+```{r}
+#| label: wfs-compare-rope
+#| cache: true
+set.seed(24)
+forested_wflow_set |> 
+  perf_mod(
+    seed = 310,
+    iter = 10000,
+    chains = 10,
+    # Don't print a log:
+    refresh = 0,
+    prior_aux = rstanarm::exponential(floor(1/sd(accuracy_long_df$accuracy))), 
+    prior_intercept = rstanarm::cauchy(0, 1),
+    prior = rstanarm::normal(0, 5)
+  ) |> 
+  contrast_models() |> 
+  summary(size = 0.03) |> 
+  select(contrast, starts_with("pract"))
+```
+
+`r back("comparing-models.html#sec-compare-resample-bayes")`
+
+## Single Holdout Data Sets {#sec-compare-holdout}
+
+For bootstrap confidence intervals, there is a helper function `rsample::int_pctl()` that has methods that can work for resampled objects (e.g., `tune::fit_resamples()`) and the outputs from the various `tune_*()` functions. 
+
+As an example, _if_ we were using a validation set, we could produce the 90% bootstrap interval for the model via: 
+
+```{r}
+#| label: boot-bt-ci
+#| eval: false
+#| mesage: false
+int_pctl(boost_res, times = 2000, alpha = 0.1)
+```
+
+By default, this will compute intervals for every tuning parameter candidate and metric in the data (but there are arguments that can be used to restrict the computations to a smaller set).
+
+For a test set, we encourage users to use `last_fit()`. Let's suppose that we still can't decide if the boosted tree or logistic regression is the final model. We can fit them and evaluate their test set via: 
+
+```{r}
+#| label: last-fits
+#| cache: true
+
+boost_final_res <- 
+  last_fit(boost_wflow, split = forested_split, metrics = cls_mtr)
+
+logistic_final_res <- 
+  last_fit(logistic_wflow, split = forested_split, metrics = cls_mtr)
+```
+
+then use: 
+
+```{r}
+#| label: boot-bt-test-ci
+#| cache: true
+#| message: false
+#| warning: false
+set.seed(885)
+int_pctl(boost_final_res, times = 2000, alpha = 0.1)
+
+set.seed(885)
+int_pctl(logistic_final_res, times = 2000, alpha = 0.1)
+```
+
+To compute intervals on differences, there is no current interface. However, you can use the core functions to get the results. For example, we can join the predictions for different models by their row number: 
+
+```{r}
+#| label: pair-predictions
+paired_class_pred <- 
+  logistic_final_res |> 
+  collect_predictions() |> 
+  select(.row, class, logistic = .pred_class) |> 
+  full_join(
+    boost_final_res |> 
+      collect_predictions() |> 
+      select(.row, boosting = .pred_class),
+    by = ".row"
+  )
+paired_class_pred
+```
+
+then create bootstrap samples: 
+
+```{r}
+#| label: pair-predictions-boot
+
+set.seed(649)
+paired_class_bt <- 
+  paired_class_pred |> 
+  bootstraps(times = 2000)
+```
+
+We can write a function to get the difference: 
+
+```{r}
+#| label: bt-function
+#| cache: true
+
+metric_diff <- function(split) {
+  # Get the bootstrap sample:
+  est <- 
+    split |> 
+    rsample::analysis() |> 
+    # Stack the rows
+    tidyr::pivot_longer(
+      cols = c(-.row, -class),
+      names_to = "model",
+      values_to = "estimate"
+    ) |> 
+    dplyr::group_by(model) |> 
+    yardstick::accuracy(class, estimate)
+  tibble::tibble(term = "Boosting - Logistic", estimate = -diff(est$.estimate))
+}
+
+# Run on one sample to demonstrate: 
+paired_class_bt$splits[[1]] |> metric_diff()
+
+# Run on all:
+paired_class_bt <- 
+  paired_class_bt |> 
+  mutate(stats = map(splits, metric_diff))
+
+int_pctl(paired_class_bt, stats, alpha = .1)
+```
+
+`r back("comparing-models.html#sec-compare-holdout")`
