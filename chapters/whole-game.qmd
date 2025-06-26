@@ -34,7 +34,7 @@ options(crayon.enabled = FALSE)
 options(pillar.advice = FALSE, pillar.min_title_chars = Inf, pillar.sigfig = 4)
 
 source("../R/_common.R")
-req_pkg <- c("brulee", "Cubist", "future.mirai", "patchwork", "scales", "splines2", "tidymodels")
+req_pkg <- c("brulee", "Cubist", "future.mirai", "patchwork", "scales", "splines2", "probably", "tidymodels")
 ```
 
 `r pkg_list(req_pkg)`
@@ -44,7 +44,7 @@ req_pkg <- c("brulee", "Cubist", "future.mirai", "patchwork", "scales", "splines
 #| eval: false
 #| echo: true
 
-req_pkg <- c("brulee", "Cubist", "future.mirai", "patchwork", "scales", "splines2", "tidymodels")
+req_pkg <- c("brulee", "Cubist", "future.mirai", "patchwork", "scales", "splines2", "probably", "tidymodels")
 
 # Check to see if they are installed: 
 pkg_installed <- vapply(req_pkg, rlang::is_installed, logical(1))
