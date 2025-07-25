@@ -72,6 +72,8 @@ book:
     - chapters/feature-selection.qmd
     - chapters/comparing-models.qmd
   - part: "Classification"  
+    chapters:   
+    - chapters/cls-metrics.qmd  
   - part: "Regression"  
   - part: "Characterization"  
   - part: "Finalization"  
