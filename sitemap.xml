@@ -6,11 +6,11 @@
   </url>
   <url>
     <loc>https://tidymodels.aml4td.org/chapters/news.html</loc>
-    <lastmod>2025-06-24T16:25:46.761Z</lastmod>
+    <lastmod>2025-07-25T10:55:30.708Z</lastmod>
   </url>
   <url>
     <loc>https://tidymodels.aml4td.org/chapters/contributing.html</loc>
-    <lastmod>2025-05-21T18:04:35.841Z</lastmod>
+    <lastmod>2025-07-25T15:42:38.261Z</lastmod>
   </url>
   <url>
     <loc>https://tidymodels.aml4td.org/chapters/introduction.html</loc>
@@ -18,7 +18,7 @@
   </url>
   <url>
     <loc>https://tidymodels.aml4td.org/chapters/whole-game.html</loc>
-    <lastmod>2025-06-24T12:38:15.042Z</lastmod>
+    <lastmod>2025-07-25T10:54:10.057Z</lastmod>
   </url>
   <url>
     <loc>https://tidymodels.aml4td.org/chapters/initial-data-splitting.html</loc>
@@ -67,5 +67,9 @@
   <url>
     <loc>https://tidymodels.aml4td.org/chapters/comparing-models.html</loc>
     <lastmod>2025-06-24T12:38:14.997Z</lastmod>
+  </url>
+  <url>
+    <loc>https://tidymodels.aml4td.org/chapters/cls-metrics.html</loc>
+    <lastmod>2025-07-25T10:54:10.056Z</lastmod>
   </url>
 </urlset>

@@ -297,9 +297,22 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       </ul>
 </li>
         <li class="sidebar-item sidebar-item-section">
-      <span class="sidebar-item-text sidebar-link text-start">
- <span class="menu-text">Classification</span></span>
-  </li>
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false">
+ <span class="menu-text">Classification</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 ">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/cls-metrics.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Characterizing Classification Models</span></span></a>
+  </div>
+</li>
+      </ul>
+</li>
         <li class="sidebar-item sidebar-item-section">
       <span class="sidebar-item-text sidebar-link text-start">
  <span class="menu-text">Regression</span></span>
@@ -357,9 +370,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header><p>This <a href="https://aml4td.org/chapters/whole-game.html">chapter on the main website</a> is a high-level tour of the modeling process. We’ll follow the same pattern here by analyzing the same data. We won’t reproduce every figure or table but these notes will give you a broad understanding of how the tidymodels framework operates.</p>
 <section id="requirements" class="level2" data-number="2.1"><h2 data-number="2.1" class="anchored" data-anchor-id="requirements">
 <span class="header-section-number">2.1</span> Requirements</h2>
-<p>You’ll need 7 packages (<span class="pkg"><a href="https://cran.r-project.org/package=brulee">brulee</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=Cubist">Cubist</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=future.mirai">future.mirai</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=patchwork">patchwork</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=scales">scales</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=splines2">splines2</a></span>, and <span class="pkg"><a href="https://cran.r-project.org/package=tidymodels">tidymodels</a></span>) for this chapter. You can install them via:</p>
+<p>You’ll need 9 packages (<span class="pkg"><a href="https://cran.r-project.org/package=brulee">brulee</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=Cubist">Cubist</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=future.mirai">future.mirai</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=patchwork">patchwork</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=probably">probably</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=rules">rules</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=scales">scales</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=splines2">splines2</a></span>, and <span class="pkg"><a href="https://cran.r-project.org/package=tidymodels">tidymodels</a></span>) for this chapter. You can install them via:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">req_pkg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"brulee"</span>, <span class="st">"Cubist"</span>, <span class="st">"future.mirai"</span>, <span class="st">"patchwork"</span>, <span class="st">"scales"</span>, <span class="st">"splines2"</span>, <span class="st">"tidymodels"</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">req_pkg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"brulee"</span>, <span class="st">"Cubist"</span>, <span class="st">"future.mirai"</span>, <span class="st">"patchwork"</span>, <span class="st">"scales"</span>, <span class="st">"splines2"</span>, <span class="st">"probably"</span>, <span class="st">"rules"</span>, <span class="st">"tidymodels"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Check to see if they are installed: </span></span>
 <span><span class="va">pkg_installed</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">vapply</a></span><span class="op">(</span><span class="va">req_pkg</span>, <span class="fu">rlang</span><span class="fu">::</span><span class="va"><a href="https://rlang.r-lib.org/reference/is_installed.html">is_installed</a></span>, <span class="fu"><a href="https://rdrr.io/r/base/logical.html">logical</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>

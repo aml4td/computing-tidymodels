@@ -61,6 +61,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../">
+<link href="../chapters/cls-metrics.html" rel="next">
 <link href="../chapters/feature-selection.html" rel="prev">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
@@ -321,9 +322,22 @@ window.Quarto = {
       </ul>
 </li>
         <li class="sidebar-item sidebar-item-section">
-      <span class="sidebar-item-text sidebar-link text-start">
- <span class="menu-text">Classification</span></span>
-  </li>
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false">
+ <span class="menu-text">Classification</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 ">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/cls-metrics.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Characterizing Classification Models</span></span></a>
+  </div>
+</li>
+      </ul>
+</li>
         <li class="sidebar-item sidebar-item-section">
       <span class="sidebar-item-text sidebar-link text-start">
  <span class="menu-text">Regression</span></span>
@@ -752,7 +766,7 @@ Warning
 <span>  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html">grepl</a></span><span class="op">(</span><span class="st">"(fdr)|(false discovery rate)"</span>, <span class="fu"><a href="https://rdrr.io/r/base/chartr.html">tolower</a></span><span class="op">(</span><span class="va">Description</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu">mutate</span><span class="op">(</span>Title <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html">gsub</a></span><span class="op">(</span><span class="st">"\n"</span>, <span class="st">""</span>, <span class="va">Title</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu">select</span><span class="op">(</span><span class="va">Package</span>, <span class="va">Title</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # A tibble: 84 × 2</span></span>
+<span><span class="co">#&gt; # A tibble: 85 × 2</span></span>
 <span><span class="co">#&gt;   Package             Title                                                         </span></span>
 <span><span class="co">#&gt;   &lt;chr&gt;               &lt;chr&gt;                                                         </span></span>
 <span><span class="co">#&gt; 1 adaptMT             Adaptive P-Value Thresholding for Multiple Hypothesis Testing…</span></span>
@@ -761,7 +775,7 @@ Warning
 <span><span class="co">#&gt; 4 ashr                Methods for Adaptive Shrinkage, using Empirical Bayes         </span></span>
 <span><span class="co">#&gt; 5 bayefdr             Bayesian Estimation and Optimisation of Expected False Discov…</span></span>
 <span><span class="co">#&gt; 6 BonEV               An Improved Multiple Testing Procedure for Controlling FalseD…</span></span>
-<span><span class="co">#&gt; # ℹ 78 more rows</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; # ℹ 79 more rows</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>and even more on <a href="https://bioconductor.org/">Bioconductor</a>:</p>
 <div class="cell" data-layout-align="center">
@@ -1530,6 +1544,9 @@ Warning
       </a>          
   </div>
   <div class="nav-page nav-page-next">
+      <a href="../chapters/cls-metrics.html" class="pagination-link" aria-label="Characterizing Classification Models">
+        <span class="nav-page-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Characterizing Classification Models</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
   </div>
 </nav>
 </div> <!-- /content -->

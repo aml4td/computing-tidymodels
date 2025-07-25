@@ -295,9 +295,22 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       </ul>
 </li>
         <li class="sidebar-item sidebar-item-section">
-      <span class="sidebar-item-text sidebar-link text-start">
- <span class="menu-text">Classification</span></span>
-  </li>
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false">
+ <span class="menu-text">Classification</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 ">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/cls-metrics.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Characterizing Classification Models</span></span></a>
+  </div>
+</li>
+      </ul>
+</li>
         <li class="sidebar-item sidebar-item-section">
       <span class="sidebar-item-text sidebar-link text-start">
  <span class="menu-text">Regression</span></span>
@@ -349,7 +362,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>We’ll reference these and other resources as needed.</p>
 <section id="installation" class="level2" data-number="1.1"><h2 data-number="1.1" class="anchored" data-anchor-id="installation">
 <span class="header-section-number">1.1</span> Installation</h2>
-<p>tidymodels is built in R so you’ll need to install that. We used R version 4.5.0 (2025-04-11) for these notes. To install R, you can go to <a href="https://cran.r-project.org/">CRAN</a><a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> to download it for your operating system. If you are comfortable at the command line, the <a href="https://github.com/r-lib/rig">rig</a> application is an excellent way to install and manage R versions.</p>
+<p>tidymodels is built in R so you’ll need to install that. We used R version 4.5.1 (2025-06-13) for these notes. To install R, you can go to <a href="https://cran.r-project.org/">CRAN</a><a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> to download it for your operating system. If you are comfortable at the command line, the <a href="https://github.com/r-lib/rig">rig</a> application is an excellent way to install and manage R versions.</p>
 <p>You probably want to use an integrated development environment (IDE); it will make your life much better. We use the RStudio IDE, which can be downloaded <a href="https://posit.co/downloads/">here</a>. Other applications are <a href="https://code.visualstudio.com/docs/languages/r">Visual Studio</a> and <a href="https://ess.r-project.org">emacs</a>.</p>
 <p>To use tidymodels, you need to install multiple packages. The core packages are bundled into a “verse” package called <span class="pkg"><a href="https://cran.r-project.org/package=tidymodels">tidymodels</a></span>. When you install that, you get the primary packages as well as some tidyverse packages such as <span class="pkg"><a href="https://cran.r-project.org/package=dplyr">dplyr</a></span> and <span class="pkg"><a href="https://cran.r-project.org/package=ggplot2">ggplot2</a></span>.</p>
 <p>To install it, you can use</p>
@@ -444,7 +457,7 @@ To handle this, we have a function called <code><a href="https://tidymodels.tidy
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">sessioninfo</span><span class="fu">::</span><span class="fu"><a href="https://sessioninfo.r-lib.org/reference/session_info.html">session_info</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; ─ Session info ────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt;  setting  value</span></span>
-<span><span class="co">#&gt;  version  R version 4.5.0 (2025-04-11)</span></span>
+<span><span class="co">#&gt;  version  R version 4.5.1 (2025-06-13)</span></span>
 <span><span class="co">#&gt;  os       macOS Sequoia 15.5</span></span>
 <span><span class="co">#&gt;  system   aarch64, darwin20</span></span>
 <span><span class="co">#&gt;  ui       X11</span></span>
@@ -452,7 +465,7 @@ To handle this, we have a function called <code><a href="https://tidymodels.tidy
 <span><span class="co">#&gt;  collate  en_US.UTF-8</span></span>
 <span><span class="co">#&gt;  ctype    en_US.UTF-8</span></span>
 <span><span class="co">#&gt;  tz       America/New_York</span></span>
-<span><span class="co">#&gt;  date     2025-06-27</span></span>
+<span><span class="co">#&gt;  date     2025-07-25</span></span>
 <span><span class="co">#&gt;  pandoc   3.6.3 @ /Applications/quarto/bin/tools/ (via rmarkdown)</span></span>
 <span><span class="co">#&gt;  quarto   1.7.31 @ /usr/local/bin/quarto</span></span>
 <span><span class="co">#&gt; </span></span>
