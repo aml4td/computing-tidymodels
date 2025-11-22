@@ -207,8 +207,8 @@ use_tidy_contrib <- function (repo_spec = "https://github.com/aml4td/computing-t
 
 contribs <- try(use_tidy_contrib(), silent = TRUE)
 if (inherits(contribs, "try-error")) {
-  contribs <- "tbd"
+  contribs <- "[&#x0040;jrosell](https://github.com/jrosell)"
 }
 ```
 
-The would like to thank users who have made a contribution to the project: `r contribs`
+We would like to thank users who have made a contribution to the project: `r contribs`
