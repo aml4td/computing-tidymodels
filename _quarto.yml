@@ -74,6 +74,8 @@ book:
   - part: "Classification"  
     chapters:   
     - chapters/cls-metrics.qmd  
+    - chapters/cls-linear.qmd  
+    - chapters/cls-nonlinear.qmd  
   - part: "Regression"  
   - part: "Characterization"  
   - part: "Finalization"  

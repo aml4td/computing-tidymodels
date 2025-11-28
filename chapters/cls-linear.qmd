@@ -1,0 +1,720 @@
+---
+knitr:
+  opts_chunk:
+    cache.path: "../_cache/cls-linear/"
+---
+
+# Generalized Linear and Additive Classifiers {#sec-cls-linear}
+
+```{r}
+#| label: cls-linear-knitr-setup
+#| include: false
+
+knitr::opts_chunk$set(
+    comment = "#>",
+    collapse = TRUE,
+    fig.align = 'center',
+    fig.width = 10,
+    fig.height = 6,
+    out.width = "95%",
+    dev = 'svg',
+    dev.args = list(bg = "transparent"),
+    tidy = FALSE,
+    echo = TRUE
+  )
+
+options(digits = 4, width = 84)
+options(dplyr.print_min = 6, dplyr.print_max = 6)
+options(cli.width = 85)
+options(crayon.enabled = FALSE)
+options(pillar.advice = FALSE, pillar.min_title_chars = Inf, pillar.sigfig = 4)
+
+source("../R/_common.R")
+req_pkg <- c("tidymodels")
+
+req_pkg_fmt <- purrr::map_chr(req_pkg, ~ pkg_chr(.x))
+
+library(butcher)
+```
+
+This chapter describes how to compute performance metrics using tidymodels and will focus on the `r pkg(yardstick)` package. 
+
+## Requirements
+
+You’ll need `r length(req_pkg)` packages (`r req_pkg_fmt`) for this chapter:
+
+```{r}
+#| label: cls-linear-installs
+#| eval: false
+#| echo: true
+# skip: fmt
+req_pkg <- 
+  c("bestNormalize", "car", "DALEXtra", "discrim", "earth", "embed", 
+    "glmnet", "klaR", "mda", "mirai", "probably", "rstanarm", "spatialsample", 
+    "tidymodels")
+
+# Check to see if they are installed: 
+pkg_installed <- vapply(req_pkg, rlang::is_installed, logical(1))
+
+# Install missing packages: 
+if ( any(!pkg_installed) ) {
+  install_list <- names(pkg_installed)[!pkg_installed]
+  pak::pak(install_list)
+}
+```
+
+Let's load the meta package and manage some between-package function conflicts. 
+
+```{r}
+#| label: start-tidymodels
+#| results: hide
+#| message: false
+#| warning: false
+library(tidymodels)
+library(spatialsample)
+library(embed)
+library(bestNormalize)
+library(probably)
+library(patchwork)
+library(car)
+library(DALEXtra)
+
+tidymodels_prefer()
+theme_set(theme_bw())
+# We'll use parallel processing too:
+mirai::daemons(parallel::detectCores())
+```
+
+## Exploring Forestation Data  {#sec-forestation-eda}
+
+The forestation data have already been split and resampled. The results are contained in an RData file called `forested_data.RData`. Let’s load that from GitHub:
+
+```{r}
+#| label: data-load
+"https://raw.githubusercontent.com/aml4td/website/main/RData/forested_data.RData" |> 
+  url() |> 
+  load()
+```  
+  
+We have already precomputed some H-statistics for these data using a boosted tree as the substrate model. The [code to do that is on GitHub](https://github.com/aml4td/website/blob/main/R/forested_interactions.R), and we’ll load another `RData` file with the results: 
+  
+```{r}
+#| label: int-load  
+"https://raw.githubusercontent.com/aml4td/website/main/RData/forested_interactions.RData" |> 
+  url() |>  
+  load()
+```
+
+The exploratory data analysis plot code is shown here. We’ll need to take our training set and stack the numeric predictors on one another: 
+
+```{r}
+#| label: vert-forest
+#| include: false
+#| cache: true
+
+vert_forest <-
+  forested_train |>
+  pivot_longer(
+    cols = c(-class, -county),
+    names_to = "Predictor",
+    values_to = "value"
+  ) |>
+  full_join(name_key |> rename(Predictor = variable), by = "Predictor") |>
+  mutate(
+    text = ifelse(is.na(text), Predictor, text),
+    Predictor = tools::toTitleCase(text)
+  ) |>
+  select(-text)
+```
+
+The first data plot shows the predictors by their _percentiles_, so we should compute these for each predictor. Some columns do not have a lot of unique values, so we compute the maximum granularity of the data and use that if there are less than 21 unique values: 
+
+```{r}
+#| label: num-unique
+#| include: false
+#| cache: true
+num_unique <-
+  vert_forest |>
+  select(-class, -county) |>
+  summarize(
+    num_vals = min(21, vctrs::vec_unique_count(value)),
+    .by = c(Predictor)
+  )
+```
+
+Then we compute the percentiles for each using `dplyr::ntile()`
+
+```{r}
+percentiles <-
+  vert_forest |>
+  full_join(num_unique, by = "Predictor") |>
+  # Create a list column with the data for each predictor: 
+  group_nest(Predictor, num_vals) |>
+  mutate(
+    # Map over the predictor data sets and their respective
+    # number of bins (21 or fewer) to add a `group` column
+    # with the group number: 
+    pctl = map2(
+      data,
+      num_vals,
+      ~ tibble(group = ntile(.x$value, n = .y), class = .x$class)
+    )
+  ) |>
+  # Remove the original data
+  select(-data) |>
+  # Expand the list column of data frames into one table:
+  unnest(c(pctl)) |>
+  # Compute the percentile number from the group number
+  mutate(pctl = (group - 1) / num_vals * 100) |>
+  # Compute the number of forested locations in the percentile
+  # for each predictor: 
+  summarize(
+    events = sum(class == "Yes"),
+    total = length(class),
+    .by = c(Predictor, pctl)
+  ) |>
+  # Get the estimated proportion and confidence intervals: 
+  mutate(
+    prop_obj = map2(events, total, ~ tidy(binom.test(.x, .y, conf.level = 0.9)))
+  ) |>
+  select(-events) |>
+  unnest(c(prop_obj))
+```
+
+Finally, we create the plot: 
+
+```{r}
+#| label: forest-percentiles
+#| out-width: 80%
+#| fig-width: 8
+#| fig-height: 6
+
+percentiles |>
+  ggplot(aes(pctl, estimate)) +
+  geom_line() +
+  geom_ribbon(
+    aes(ymin = conf.low, ymax = conf.high),
+    alpha = 1 / 5,
+    fill = "#D85434FF"
+  ) +
+  facet_wrap(~Predictor, ncol = 3) +
+  labs(x = "Percentile", y = "Rate of Forestation")
+```
+
+For the county data, we compute `binom.test()` for each county, pull out the results, and do some formatting: 
+
+```{r}
+#| label: conf-int
+obs_rates <-
+  forested_train |>
+  summarize(
+    rate = mean(class == "Yes"),
+    events = sum(class == "Yes"),
+    total = length(class),
+    .by = c(county)
+  ) |>
+  mutate(
+    object = map2(events, total, binom.test, conf.level = 0.9),
+    pct = rate * 100,
+    .lower = map_dbl(object, ~ .x$conf.int[1]),
+    .upper = map_dbl(object, ~ .x$conf.int[2]),
+    county = tools::toTitleCase(gsub("_", " ", county)),
+    county = factor(county),
+    county = reorder(county, rate),
+    `# Locations` = total
+  )
+```
+
+Here is the plot code: 
+
+```{r}
+#| label: counties
+#| out-width: 40%
+#| fig-width: 4
+#| fig-height: 6
+
+obs_rates |>
+  ggplot(aes(y = county, col = `# Locations`)) +
+  geom_point(aes(x = rate)) +
+  geom_errorbar(aes(xmin = .lower, xmax = .upper)) +
+  labs(x = "Rate of Forestation", y = NULL) +
+  theme(legend.position = "top") +
+  scale_color_viridis_c(option = "mako", begin = .2, end = .8)
+```
+
+From our interaction analysis, which utilized H-statistics, there were `r nrow(forested_hstats_text)` pairwise interactions that were assessed. We can look at their H values along with 90% confidence intervals for the top 25 interactions: 
+
+```{r}
+#| label: forested-interactions
+#| out-width: 90%
+#| fig-width: 8
+#| fig-height: 4.5
+
+forested_hstats_text |>
+  slice_max(mean_score, n = 25) |>
+  ggplot(aes(y = term)) +
+  geom_point(aes(x = mean_score)) +
+  geom_errorbar(
+    aes(xmin = .lower, xmax = .upper),
+    alpha = 1 / 2,
+    width = 1 / 2
+  ) +
+  labs(x = "Mean H-Statistic", y = NULL)
+```
+
+We’ll use the top five interactions in our model. A precomputed formula for those is: 
+
+```{r}
+#| label: precompute-interactions
+forested_int_form
+```
+
+
+## Logistic Regression {#sec-logistic-reg}
+
+To start, the focus is on basic logistic regression via maximum likelihood using the `glm()` function. 
+
+#### Generalized Linear Models {.unnumbered}
+
+In R, the function to produce logistic regression models is one of the most well-known: `glm`(). To train this model for the forestry data, the simplest invocation is: 
+
+```{r}
+#| label: glm-forest-basic
+lr_fit <- glm(class ~ ., data = forested_train, family = binomial)
+lr_fit
+```
+
+The `family` argument is required to indicate that we are optimizing the binomial/Bernoulli log-likelihood function. 
+
+The default formula method in R converts our `county` predictor to a set of `r length(levels(forested_train$county)) -1` binary indicator columns. No other preprocessing is done by `glm()`.
+
+There is a summary method for `glm()` that gives more information regarding the parameter estimates (but is fairly long).:
+
+```{r}
+#| label: glm-forest-summary
+summary(lr_fit)
+```
+
+If you would like the model estimates in a more computationally-friendly format, the `tidy()` method works well: 
+
+```{r}
+#| label: glm-forest-tidy
+lr_coefs <- tidy(lr_fit)
+lr_coefs
+```
+
+The `predict()` method is very limited. Using `type = "response"`, get the estimated probability of the _second_factor level, with, in our case, the probability of being unforested. The is also a `type = “link”`, which estimates the linear predictor values. There is also `augment()` which attaches the predictions and, if possible, the residuals. These are bound to the data being predicted: 
+
+```{r}
+#| label: glm-forest-augment
+#| warning: false
+augment(lr_fit,  newdata = forested_train[1:2,], type.predict = "response") |> 
+  relocate(.fitted)
+```
+
+
+The object contains a fair amount of excess data. We can use the `r pkg(butcher)` package to see the size of the components in the object: 
+
+```{r}
+#| label: glm-forest-weigh
+library(butcher)
+weigh(lr_fit) |> print(n = 10)
+```
+
+The `qr.qr` element contains some crucial matrix algebra data, but there are many other elements that are not required if we would like to predict with this object  (e.g., `residuals`, `fitted.values`, etc.). We can trim the object using `butcher()`: 
+
+
+```{r}
+#| label: glm-forest-trim
+# In MB:
+weigh(lr_fit) |> select(size) |> colSums() 
+lr_fit <- butcher(lr_fit)
+weigh(lr_fit) |> select(size) |> colSums() 
+```
+
+When using `r pkg(parsnip)` there is slightly more work: 
+
+```{r}
+#| label: parsnip-forest-lr
+lr_fit <- logistic_reg() |> fit(class ~ ., data = forested_train)
+lr_fit
+```
+
+We don’t set the mode because logistic regression is only for classification, and the default engine is `glm`, so we don’t have to set that either.  Note that the `family` value is set, but if an alternate value is required, this and other arguments can be passed as engine parameters (via `set_engine()`). 
+
+`predict()` and `augment()` have the same overall goal with two exceptions: 
+
+ - The prediction types are `"class"` and `"prob"` since those are the tidymodels standards. 
+ - `augment()` for `r pkg(parsnip)` objects generates all prediction types at once. 
+
+The `butcher()` and `tidy()` methods also work the same. 
+
+If odds ratios are of interest, the `tidy()` method has an option for exponentiating the coefficients. There is also an option to produce confidence intervals:
+
+```{r}
+#| label: tidy-or
+#| warning: false
+tidy(lr_fit, conf.int = TRUE, conf.level = 0.90, exponentiate = TRUE) |> 
+  filter(grepl("county", term))
+```
+
+There are a few inconsequential warnings that are produced when running these calculations. 
+
+In the output above, the `estimate` column is the odds-ratios relative to the county in the reference cell (`r cli::format_inline("{.code {levels(forested_train$county)[1]}}")`). 
+
+#### Forestation Model Development {.unnumbered}
+
+In the text, we fit the same model under different preprocessing conditions. We’ll create a set of recipes, then use a _workflow set_ to create and resample the combinations of preprocessors and our basic logistic model. 
+
+To get started, we create a basic recipe that contains dummy indicators for `county` and removes any zero-variance predictors: 
+
+```{r}
+#| label: forested-recipe-basic
+bare_rec <-
+  recipe(class ~ ., data = forested_train) |>
+  step_dummy(county) |>
+  step_zv(all_predictors())
+```
+
+We could let `glm()` do this for us. However, one nice thing about the recipe is that the indicator columns are formatted better than when generated by base R (e.g., `county_asotin` versus `countyasotin`), and we have the ability to remove near-zero predictors before sending data to the model. If `glm()` encounters such a predictor, it gives an `NA` value to the corresponding coefficient and issues a warning. The recipe provides a smoother experience, and we can further build on this preprocessor. 
+
+Now we add a step that uses the orderNorm transformation to make numeric predictors have symmetric distributions with the same mean and variance. Neither of these benefits are really needed for a basic logistic model but the symmetry can often generate a small improvement in the results.
+
+```{r}
+#| label: forested-recipe-symm
+transformed_rec <-
+  recipe(class ~ ., data = forested_train) |>
+  step_orderNorm(all_numeric_predictors()) |>
+  step_dummy(county) |>
+  step_zv(all_predictors())
+```
+
+Next we will swap the step that generates dummy variables with an effect encoding method:
+
+```{r}
+#| label: forested-recipe-encoding
+forest_rec <-
+  recipe(class ~ ., data = forested_train) |>
+  step_orderNorm(all_numeric_predictors()) |>
+  step_lencode_mixed(county, outcome = "class")
+```
+
+As previously mentioned, we precomputed a set of potential interaction effects via the H-statistic. Now let's add those interaction terms:
+
+```{r}
+#| label: forested-recipe-interactions
+forest_int_rec <-
+  forest_rec |>
+  step_interact(!!forested_int_form)
+```
+
+What is the `!!` about? This is a tool from the `r pkg(rlang)` package that can _splice_ an object into an argument. We could type out the long(ish) formula in `forested_int_form ` shown above. However, since it was programmatically generated and we have it in the form of an R expression, we can insert it into the step function to get the same result.
+
+_Finally_ we add some spline terms to a few predictors based on the figure above, where we plotted the binned forestation rates versus percentiles of the data. From there, a few predictors may benefit from including some nonlinear terms. We’ll generate 10 spine terms for numeric predictors that are _not_ interactions (from the `contains("_x_")` specification), nothing/east-ness, the year, or the encoded `county` predictor. 
+
+Additionally, as we will describe shortly, `step_lincomb()` is used to eliminate any linear combinations of the predictors that may occur. These won’t throw an error in `glm(),` but they will generate noisy and cryptic warning messages. 
+
+```{r}
+#| label: forest-logistic-elements
+forest_spline_rec <-
+  forest_int_rec |>
+  step_spline_natural(
+    # fmt: skip
+    all_numeric_predictors(), -county, -eastness, -northness, -year, -contains("_x_"),
+    deg_free = 10
+  ) |>
+  step_lincomb(all_predictors())
+```
+
+Let's also create a metric set for a few performance measures: 
+
+```{r}
+#| label: forested-metric
+cls_mtr <- metric_set(brier_class, roc_auc, pr_auc, mn_log_loss)
+```
+
+Now that everything is prepared, let's create the grid of workflows and then resample them. The `preproc` and `model` arguments take named lists of recipes and models, respectively. The names are used to create unique workflow IDs.
+
+```{r}
+#| label: forested-wflow-set
+forest_set <-
+  workflow_set(
+    preproc = list(
+      simple = bare_rec,
+      "encoded + transformations" = transformed_rec,
+      encoded = forest_rec,
+      "encoded + interactions" = forest_int_rec,
+      "encoded + transformations + splines" = forest_spline_rec
+    ),
+    model = list(logistic_mle = logistic_reg())
+  )
+```
+
+To resample them, we apply `workflow_map()` and add several options that are passed to `fit_resamples()`: 
+
+```{r}
+#| label: forest-logistic-run
+forest_res <-
+  forest_set |>
+  workflow_map(
+    fn = "fit_resamples",
+    resamples = forested_rs,
+    control = control_resamples(save_pred = TRUE),
+    metrics = cls_mtr
+  )
+```
+
+Printing out the results isn't very informative. 
+
+```{r}
+#| label: forest-logistic-print
+forest_res 
+```
+
+However, there are a variety of helper functions for this object class: 
+
+- `rank_results()` will order the models (or model configurations) by a metric of the user’s choice. 
+-`extract_workflow_set_result()` pulls out the object produced by `fit_resamples()` so that you can plot or examine the results. 
+- `collect_metrics()` and `collect_predictions()` can be used to get an overall list by model and configuration. The latter function only works if the control option `save_pred = TRUE` was used for each of the workflows (which we did in this case). 
+
+Let's rank by the Brier score: 
+
+```{r}
+#| label: forest-logistic-rank
+ranked <- 
+  rank_results(forest_res, rank_metric = "brier_class") |> 
+  filter(.metric == "brier_class") |> 
+  select(rank, wflow_id, mean, std_err, n)
+ranked
+```
+
+Let's get the final model for the highest ranked workflow:
+
+```{r}
+#| label: forest-logistic-rank-fit
+lr_best <- 
+  forest_res |> 
+  extract_workflow(forest_res, id = ranked$wflow_id[1]) |> 
+  fit(forested_train)
+```
+
+The main text computed a few more statistics related to model performance. First, we can compute bootstrap confidence intervals for our metrics btw pulling out the results of `fit_resamples()` then running `int_pctl()`: 
+
+```{r}
+#| label: forest-logistic-best
+#| cache: true
+set.seed(799)
+lr_best_int <-
+  forest_res |>
+  extract_workflow_set_result(id = ranked$wflow_id[1]) |>
+  int_pctl(times = 2000, metrics = cls_mtr, alpha = 0.1)
+lr_best_int
+```
+
+Also, we can estimate the no-information rate for the Brier score: how bad could the statistic be if there were no relationship between the observed and predicted data? To do this, we pull the out-of-sample predictions, create 50 data sets with permuted class labels, then recompute the Brier score. We can average these 50 values to get a good sense of what a truly bad Brier score would be. 
+
+```{r}
+#| label: forest-logistic-nir
+assessment_pred <- 
+  forest_res |>
+  extract_workflow_set_result(id = ranked$wflow_id[1]) |> 
+  collect_predictions()
+
+set.seed(365)
+brier_perm <-
+  assessment_pred |>
+  # This randomizes the rows of the column named in `permute`:
+  permutations(permute = "class", times = 50) |>
+  mutate(
+    data = map(splits, analysis),
+    brier = map_dbl(data, ~ brier_class(.x, class, .pred_Yes)$.estimate)
+  ) |>
+  summarize(
+    permutation = mean(brier),
+    n = length(brier),
+    std_err = sd(brier) / sqrt(n)
+  ) |>
+  mutate(
+    lower = permutation - qnorm(.95) * std_err,
+    upper = permutation + qnorm(.95) * std_err
+  )
+brier_perm
+```
+
+We can also check visual diagnostics of performance, such as the calibration curve and the ROC curve. These pool the data across all of the assessment sets, so consider these curves to be approximations of the real curves. 
+
+For calibration, we can use the `cal_plot_windowed()` function from the `r pkg(probably)` package. There are two interfaces that we can use. The first just passes the results to `fit_resamples()`, which knows which columns are the observed and predicted outcomes: 
+
+```{r}
+#| label: forest-cal-easy
+#| eval: false
+forest_res |> 
+  extract_workflow_set_result(id = ranked$wflow_id[1]) |> 
+  cal_plot_windowed(step_size = 0.02)
+```
+
+The second interface uses the data frame of observed and predicted values as input; however, we must specify the appropriate column names as arguments. This approach is best when you have other plots in mind or if you are not using tidymodels to create the models. 
+
+This code chunk creates two visualizations that are based on `r pkg(ggplot2)`. We’ve also loaded the `r pkg(patchwork)` package.  This enables the last line, where we combine two `ggplot2` objects, to render them side by side. 
+
+```{r}
+#| label: forest-logistic-diag
+#| echo: false
+#| out-width: 80%
+#| fig-width: 8
+#| fig-height: 4
+
+logitic_cal <- 
+  assessment_pred |> 
+  cal_plot_windowed(
+  class,
+  estimate = .pred_Yes,
+  step_size = 0.02
+)
+
+logitic_roc <-
+  assessment_pred |>
+  roc_curve(class, .pred_Yes) |>
+  ggplot(aes(1 - specificity, sensitivity)) +
+  geom_abline(col = "red", lty = 2) +
+  geom_step(direction = "vh") +
+  coord_obs_pred()
+
+logitic_cal + logitic_roc
+```
+
+### Examining the Model {#sec-logistic-diagnostic}
+
+The main text uses deviance residuals to make more fine-grained appraisals of how well the model fits the data. Those residuals were originally defined for generalized linear models and contrast a perfect “saturated” model to our current model. For a `glm` object, the function `stats::resid()` can compute them. Also, in most cases, `broom::augment()` will also add a column for them. 
+
+Here is a `r pkg(dplyr)` pipeline to compute them for any model that has predicted binary outcomes: 
+
+
+```{r}
+#| label: deviance-residuals
+logistic_resdiduals <-
+  assessment_pred |>
+  mutate(
+    indicator = ifelse(class == "Yes", 1, 0),
+    error = indicator - .pred_Yes,
+    dev_1 = indicator * log(.pred_Yes),
+    dev_2 = (1 - indicator) * log(1 - .pred_Yes),
+    deviance = sign(error) * sqrt((-2 * (dev_1 + dev_2)))
+  ) |>
+  inner_join(forested_train |> add_rowindex() |> select(-class), by = ".row") |> 
+  relocate(deviance, .after = class)
+  
+logistic_resdiduals[, 1:5]
+```
+
+These results _will not match_ what `resid()` or `augment()` would produce since those functions compute the residuals based on the training data, whereas we are computing them on the assessment set predictions.
+
+We can plot these for our model: 
+
+```{r}
+#| label: deviance-residuals-plot
+#| echo: false
+#| out-width: 80%
+#| fig-width: 6
+#| fig-height: 4.25
+logistic_resdiduals |>
+  ggplot(aes(longitude, deviance, col = class)) +
+  geom_point(alpha = 1 / 2) +
+  scale_color_manual(values = c("#218239", "#d4ad42")) +
+  labs(x = "Longitude", y = "Deviance Residiual") +
+  theme(legend.position = "top")
+```
+  
+### Interpreting the Logistic Model {#sec-logistic-interpretability} 
+
+In this section, we’ll focus on generating global explainers using the `r pkg(DALEXtra)` package. More extensive methods will be discussed in a later chapter. 
+
+To begin, we have to create an _explainer_ object that contains the model fit and the data to use as substrate. Any data set with a sufficient number of rows can be used; there are no overfitting issues with using the training set. The `explain_tidymodels()` function will create the appropriate object. One note: for classification models, the option `type = "prob"` is required. 
+
+```{r}
+#| label: logistic-pdp-cal
+#| warning: false
+explainer_logistic <-
+  explain_tidymodels(
+    lr_best,
+    data = forested_train |> select(-class),
+    y = forested_train$class,
+    label = "",
+    type = "prob",
+    verbose = FALSE
+  )
+```
+
+Now that we have this object, we can produce partial dependence plots (PDPs) for any predictor using `model_profile()`. Here is one for `longitude`: 
+
+```{r}
+#| label: logistic-pdp-profiles
+set.seed(1805)
+pdp_longitude <- model_profile(
+  explainer_logistic,
+  N = 1000,
+  variables = "longitude"
+)
+```
+
+There is a `plot()` method for this object, but we’ve created a `r pkg(ggplot2)` function to create a simple plot: 
+
+```{r}
+#| label: longitude-pdp
+#| out-width: "70%"
+#| fig-width: 6
+#| fig-height: 4
+#| fig-align: center
+#| warning: false
+
+ggplot_pdp <- function(obj, x) {
+  p <-
+    # Convert the "aggregated profiles" to a tibble
+    as_tibble(obj$agr_profiles) %>%
+    # Alter the `_label_` column a bit
+    mutate(`_label_` = stringr::str_remove(`_label_`, "^[^_]*_")) %>%
+    # Here `_x_` is the variable being profiled and `_yhat_` is the predicted
+    # value. For a binary `glm` object, this is the probability of the _second_
+    # factor level. To get the probability that a location is forested, we 
+    # use 1 = _yhat_. 
+    ggplot(aes(`_x_`, 1 - `_yhat_`)) +
+    geom_line(
+      # We create the light grey lines for the profiles produced for each of 
+      # the sampled data points (where the sample number is in `_ids_)
+      data = as_tibble(obj$cp_profiles),
+      aes(x = {{ x }}, group = `_ids_`),
+      linewidth = 0.5,
+      alpha = 0.05,
+      color = "gray50"
+    )
+
+  num_colors <- n_distinct(obj$agr_profiles$`_label_`)
+
+  # Now add the line(s) for the mean prediction:
+  if (num_colors > 1) {
+    p <- p + geom_line(aes(color = `_label_`), linewidth = 1.2, alpha = 0.8)
+  } else {
+    p <- p + geom_line(color = "darkred", linewidth = 1.2, alpha = 0.8)
+  }
+
+  p
+}
+
+ggplot_pdp(pdp_longitude, longitude) +
+  labs(y = "Probability of Forestation", x = "Longitude") +
+  # Let's add a "rug" to show where the training set data values are located:
+  geom_rug(data = forested_train, aes(x = longitude, y = NULL), alpha = 1 / 10)
+```
+
+### A Potential Problem: Multicollinearity {#sec-logistic-multicollinearity}
+
+### Regularization Through Penalization {#sec-logistic-penalized}
+
+#### Refitting the Forestation Model  {.unnumbered}
+
+### Bayesian Estimation {#sec-logistic-bayes} 
+
+
+
+
+
