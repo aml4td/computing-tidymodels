@@ -410,10 +410,18 @@ We can write some custom code to approximate what we would get from `autoplot()`
 
 ## K-Nearest Neighbors  {#sec-cls-knn}
 
+The KNN model is fit using the `r pkg(parsnip)` function `nearest_neighbor()`. It has a single engine (“`kknn"`) with main parameters: 
+
+- `neighbors()`: an integer for the number of nearest neighbors. 
+- `weight_func()`: a character value for the kernel functions to apply to distances (e.g., `”rectangular"`). Possible values are contained in the vector `dials::values_weight_func`. 
+- `dist_power()`: a numeric value for the exponent in the Minkowski distance. 
+
+For preprocessing, the predictions should all be numeric and have the same scale/units. Removing irrelevant predictors is also a good idea, as evidenced by FIGURE. 
+
+We’ll recycle the recipes from @sec-naive-bayes that used a random forest importance filter to screen the predictor set and add an orderNorm transformation to put the predictors on the same symmetric scale. From there, we’ll write a model specification and tag all three parameters for tuning: 
+
 ```{r}
-#| label: forested-knn
-#| include: false
-#| cache: true
+#| label: forested-knn-wflow
 
 knn_spec <- 
   nearest_neighbor(neighbors = tune(), dist_power = tune(), weight_func = tune()) |> 
@@ -426,7 +434,12 @@ encode_rec <-
   step_orderNorm(all_numeric_predictors())
 
 knn_wflow <- workflow(encode_rec, knn_spec)
+```
 
+For a grid, we'll set the range of neighbors to 50 locations, and use five different kernel weighting functions: 
+
+```{r}
+#| label: forested-knn-param
 kern_vals <- c("rectangular", "triangular", "cos", "gaussian", "inv")
 
 knn_param <- 
@@ -436,7 +449,13 @@ knn_param <-
     neighbors = neighbors(c(2, 50)),
     weight_func = weight_func(kern_vals)
   )
+```
 
+Now we tune the model with the familiar syntax: 
+
+```{r}
+#| label: forested-knn-param
+#| cache: true
 set.seed(872)
 forest_knn_res <-
   knn_wflow |>
@@ -449,6 +468,7 @@ forest_knn_res <-
   )
 ```
 
+Once again, `autoplot()` is used to discover how each parameter affects model performance: 
 
 ```{r}
 #| label: knn-tune
