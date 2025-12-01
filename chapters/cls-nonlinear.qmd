@@ -162,6 +162,8 @@ There was some merit in tuning the kernel smoothness parameter; smaller values p
 
 Overall, these results are not as favorable as those from the logistic regression in the previous chapter. We’ll move on from here to the next discriminant model. 
 
+`r back("cls-linear.html#sec-naive-bayes")`
+
 ### Flexible Discriminants {#sec-fda}
 
 FDA models are a generalization of linear discriminant analysis that enables us to fit our models using techniques more complex than simple linear regression. Almost any regression function can be used with FDA. Our focus will be on using the multivariate adaptive regression spline (MARS) model with FDA; however, other models can also be considered. See the documentation for `mda::fda()` for more information. 
@@ -303,7 +305,9 @@ The flat profiles indicate that the predictor was never used in the model.
 
 Keep in mind that the y-axis for these profiles is _relative_ probability. Their actual values are linear combinations that can’t be displayed in the same visualization.  
 
-## Neural Networks via Multilayer Perceptrons {#sec-nnet}
+`r back("cls-linear.html#sec-fda")`
+
+## Neural Networks via Multilayer Perceptrons {#sec-cls-nnet}
 
 There are several engines in tidymodels for fitting basic, feed-forward neural networks: `nnet`, `keras`, `brulee`, and `brulee_two_layer`. The first three assume a single hidden layer. The focus here will be on using the `brulee` engine, as it offers the most options.
 
@@ -405,8 +409,12 @@ For previous models, we use the `autoplot()` methods to quickly assess how well 
 
 We can write some custom code to approximate what we would get from `autoplot()`: 
 
+`r back("cls-linear.html#sec-cls-nnet")`
 
-## Special Tabular Network Models  {#sec-tab-net}
+## Special Tabular Network Models  {#sec-cls-tab-net}
+
+
+`r back("cls-linear.html#sec-cls-tab-nnet")`
 
 ## K-Nearest Neighbors  {#sec-cls-knn}
 
@@ -454,7 +462,7 @@ knn_param <-
 Now we tune the model with the familiar syntax: 
 
 ```{r}
-#| label: forested-knn-param
+#| label: forested-knn-tune
 #| cache: true
 set.seed(872)
 forest_knn_res <-
@@ -478,5 +486,8 @@ Once again, `autoplot()` is used to discover how each parameter affects model pe
 autoplot(forest_knn_res, metric = "brier_class")
 ```
 
+`r back("cls-linear.html#sec-cls-knn")`
+
 ## Support Vector Machines {#sec-cls-svm}
 
+`r back("cls-linear.html#sec-cls-svm")`

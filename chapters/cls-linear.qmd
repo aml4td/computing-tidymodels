@@ -269,6 +269,8 @@ We’ll use the top five interactions in our model. A precomputed formula for th
 forested_int_form
 ```
 
+`r back("cls-linear.html#sec-forestation-eda")`
+
 
 ## Logistic Regression {#sec-logistic-reg}
 
@@ -361,6 +363,8 @@ tidy(lr_fit, conf.int = TRUE, conf.level = 0.90, exponentiate = TRUE) |>
 There are a few inconsequential warnings that are produced when running these calculations. 
 
 In the output above, the `estimate` column is the odds-ratios relative to the county in the reference cell (`r cli::format_inline("{.code {levels(forested_train$county)[1]}}")`). 
+
+`r back("cls-linear.html#generalized-linear-models")`
 
 #### Forestation Model Development {.unnumbered}
 
@@ -583,6 +587,8 @@ logitic_roc <-
 logitic_cal + logitic_roc
 ```
 
+`r back("cls-linear.html#forestation-model-development")`
+
 ### Examining the Model {#sec-logistic-diagnostic}
 
 The main text uses deviance residuals to make more fine-grained appraisals of how well the model fits the data. Those residuals were originally defined for generalized linear models and contrast a perfect “saturated” model to our current model. For a `glm` object, the function `stats::resid()` can compute them. Also, in most cases, `broom::augment()` will also add a column for them. 
@@ -625,6 +631,8 @@ logistic_resdiduals |>
   theme(legend.position = "top")
 ```
   
+`r back("cls-linear.html#sec-logistic-diagnostic")`
+
 ### Interpreting the Logistic Model {#sec-logistic-interpretability} 
 
 In this section, we’ll focus on generating global explainers using the `r pkg(DALEXtra)` package. More extensive methods will be discussed in a later chapter. 
@@ -706,14 +714,26 @@ ggplot_pdp(pdp_longitude, longitude) +
   geom_rug(data = forested_train, aes(x = longitude, y = NULL), alpha = 1 / 10)
 ```
 
+`r back("cls-linear.html#sec-logistic-interpretability")`
+
 ### A Potential Problem: Multicollinearity {#sec-logistic-multicollinearity}
+
+
+`r back("cls-linear.html#sec-logistic-interpretability")`
 
 ### Regularization Through Penalization {#sec-logistic-penalized}
 
+
+`r back("cls-linear.html#sec-logistic-penalizedy")`
+
 #### Refitting the Forestation Model  {.unnumbered}
+
+
+`r back("cls-linear.html#refitting-the-forestation-model")`
 
 ### Bayesian Estimation {#sec-logistic-bayes} 
 
+`r back("cls-linear.html#sec-logistic-baye")`
 
 
 
