@@ -861,8 +861,8 @@ Bayesian estimation can be computationally expensive. To demonstrate, let's recr
 
 ```{r}
 #| label: mcmc-example
+# We'll simulate a single point prior:
 true_means <- c(1.0, -1.5)
-post_std_dev <- c(10.0, 10.0)
 num_samples <- 100
 
 set.seed(1)
