@@ -30,14 +30,16 @@ options(crayon.enabled = FALSE)
 options(pillar.advice = FALSE, pillar.min_title_chars = Inf, pillar.sigfig = 4)
 
 source("../R/_common.R")
-req_pkg <- c("tidymodels")
+req_pkg <- 
+  c("bestNormalize", "car", "DALEXtra", "embed", "glmnet", "mirai", 
+    "probably", "rstanarm", "spatialsample", "tidymodels")
 
 req_pkg_fmt <- purrr::map_chr(req_pkg, ~ pkg_chr(.x))
 
 library(butcher)
 ```
 
-This chapter describes how to compute performance metrics using tidymodels and will focus on the `r pkg(yardstick)` package. 
+This chapter describes how to develop classifiers that have linear or additive structures. 
 
 ## Requirements
 
@@ -49,9 +51,8 @@ You’ll need `r length(req_pkg)` packages (`r req_pkg_fmt`) for this chapter:
 #| echo: true
 # skip: fmt
 req_pkg <- 
-  c("bestNormalize", "car", "DALEXtra", "discrim", "earth", "embed", 
-    "glmnet", "klaR", "mda", "mirai", "probably", "rstanarm", "spatialsample", 
-    "tidymodels")
+  c("bestNormalize", "car", "DALEXtra", "embed", "glmnet", "mirai", 
+    "probably", "rstanarm", "spatialsample", "tidymodels")
 
 # Check to see if they are installed: 
 pkg_installed <- vapply(req_pkg, rlang::is_installed, logical(1))
@@ -105,7 +106,7 @@ We have already precomputed some H-statistics for these data using a boosted tre
   load()
 ```
 
-The exploratory data analysis plot code is shown here. We’ll need to take our training set and stack the numeric predictors on one another: 
+The code for the exploratory data analysis plot is shown here. We’ll need to take our training set and stack the numeric predictors on one another: 
 
 ```{r}
 #| label: vert-forest
@@ -127,7 +128,7 @@ vert_forest <-
   select(-text)
 ```
 
-The first data plot shows the predictors by their _percentiles_, so we should compute these for each predictor. Some columns do not have a lot of unique values, so we compute the maximum granularity of the data and use that if there are less than 21 unique values: 
+The first data plot shows the predictors by their _percentiles_, so we should compute these for each predictor. Some columns do not have a lot of unique values, so we compute the maximum granularity of the data and use that if there are fewer than 21 unique values: 
 
 ```{r}
 #| label: num-unique
@@ -142,7 +143,7 @@ num_unique <-
   )
 ```
 
-Then we compute the percentiles for each using `dplyr::ntile()`
+Then we compute the percentiles for each using `dplyr::ntile()`:
 
 ```{r}
 percentiles <-
@@ -242,7 +243,7 @@ obs_rates |>
   scale_color_viridis_c(option = "mako", begin = .2, end = .8)
 ```
 
-From our interaction analysis, which utilized H-statistics, there were `r nrow(forested_hstats_text)` pairwise interactions that were assessed. We can look at their H values along with 90% confidence intervals for the top 25 interactions: 
+From our interaction analysis, which used H-statistics, `r nrow(forested_hstats_text)` pairwise interactions were assessed. We can look at their H values along with 90% confidence intervals for the top 25 interactions: 
 
 ```{r}
 #| label: forested-interactions
@@ -314,7 +315,6 @@ augment(lr_fit,  newdata = forested_train[1:2,], type.predict = "response") |>
   relocate(.fitted)
 ```
 
-
 The object contains a fair amount of excess data. We can use the `r pkg(butcher)` package to see the size of the components in the object: 
 
 ```{r}
@@ -324,7 +324,6 @@ weigh(lr_fit) |> print(n = 10)
 ```
 
 The `qr.qr` element contains some crucial matrix algebra data, but there are many other elements that are not required if we would like to predict with this object  (e.g., `residuals`, `fitted.values`, etc.). We can trim the object using `butcher()`: 
-
 
 ```{r}
 #| label: glm-forest-trim
@@ -351,7 +350,7 @@ We don’t set the mode because logistic regression is only for classification, 
 
 The `butcher()` and `tidy()` methods also work the same. 
 
-If odds ratios are of interest, the `tidy()` method has an option for exponentiating the coefficients. There is also an option to produce confidence intervals:
+If odds ratios are of interest, the `tidy()` method includes an option to exponentiate the coefficients. There is also an option to produce confidence intervals:
 
 ```{r}
 #| label: tidy-or
@@ -360,9 +359,9 @@ tidy(lr_fit, conf.int = TRUE, conf.level = 0.90, exponentiate = TRUE) |>
   filter(grepl("county", term))
 ```
 
-There are a few inconsequential warnings that are produced when running these calculations. 
+A few inconsequential warnings are produced when running these calculations. 
 
-In the output above, the `estimate` column is the odds-ratios relative to the county in the reference cell (`r cli::format_inline("{.code {levels(forested_train$county)[1]}}")`). 
+In the output above, the `estimate` column is the odds ratios relative to the county in the reference cell (`r cli::format_inline("{.code {levels(forested_train$county)[1]}}")`). 
 
 `r back("cls-linear.html#generalized-linear-models")`
 
@@ -380,9 +379,9 @@ bare_rec <-
   step_zv(all_predictors())
 ```
 
-We could let `glm()` do this for us. However, one nice thing about the recipe is that the indicator columns are formatted better than when generated by base R (e.g., `county_asotin` versus `countyasotin`), and we have the ability to remove near-zero predictors before sending data to the model. If `glm()` encounters such a predictor, it gives an `NA` value to the corresponding coefficient and issues a warning. The recipe provides a smoother experience, and we can further build on this preprocessor. 
+We could let `glm()` do this for us. However, one nice thing about the recipe is that the indicator columns are formatted better than when generated by base R (e.g., `county_asotin` versus `countyasotin`), and we can remove near-zero predictors before sending data to the model. If `glm()` encounters such a predictor, it gives an `NA` value to the corresponding coefficient and issues a warning. The recipe provides a smoother experience, and we can further build on this preprocessor. 
 
-Now we add a step that uses the orderNorm transformation to make numeric predictors have symmetric distributions with the same mean and variance. Neither of these benefits are really needed for a basic logistic model but the symmetry can often generate a small improvement in the results.
+Now we add a step that uses the orderNorm transformation to ensure numeric predictors have symmetric distributions with equal mean and variance. Neither of these benefits is really needed for a basic logistic model, but the symmetry can often generate a small improvement in the results.
 
 ```{r}
 #| label: forested-recipe-symm
@@ -393,7 +392,7 @@ transformed_rec <-
   step_zv(all_predictors())
 ```
 
-Next we will swap the step that generates dummy variables with an effect encoding method:
+Next, we will swap the step that generates dummy variables with an effect encoding method:
 
 ```{r}
 #| label: forested-recipe-encoding
@@ -412,11 +411,11 @@ forest_int_rec <-
   step_interact(!!forested_int_form)
 ```
 
-What is the `!!` about? This is a tool from the `r pkg(rlang)` package that can _splice_ an object into an argument. We could type out the long(ish) formula in `forested_int_form ` shown above. However, since it was programmatically generated and we have it in the form of an R expression, we can insert it into the step function to get the same result.
+What is the `!!` about? This is a tool from the `r pkg(rlang)` package that can _splice_ an object into an argument. We could type out the long(ish) formula in `forested_int_form ` shown above. However, since it was programmatically generated and we have it as an R expression, we can insert it into the step function to get the same result.
 
-_Finally_ we add some spline terms to a few predictors based on the figure above, where we plotted the binned forestation rates versus percentiles of the data. From there, a few predictors may benefit from including some nonlinear terms. We’ll generate 10 spine terms for numeric predictors that are _not_ interactions (from the `contains("_x_")` specification), nothing/east-ness, the year, or the encoded `county` predictor. 
+_Finally_, we add spline terms to a few predictors based on the figure above, which plots binned forestation rates versus data percentiles. From there, a few predictors may benefit from including some nonlinear terms. We’ll generate 10 spine terms for numeric predictors that are _not_ interactions (from the `contains("_x_")` specification), nothing/east-ness, the year, or the encoded `county` predictor. 
 
-Additionally, as we will describe shortly, `step_lincomb()` is used to eliminate any linear combinations of the predictors that may occur. These won’t throw an error in `glm(),` but they will generate noisy and cryptic warning messages. 
+Additionally, as we will describe shortly, `step_lincomb()` is used to eliminate any linear combinations of the predictors that may occur. These won’t throw an error in `glm()`, but they will generate noisy, cryptic warning messages. 
 
 ```{r}
 #| label: forest-logistic-elements
@@ -502,7 +501,7 @@ lr_best <-
   fit(forested_train)
 ```
 
-The main text computed a few more statistics related to model performance. First, we can compute bootstrap confidence intervals for our metrics btw pulling out the results of `fit_resamples()` then running `int_pctl()`: 
+The main text computed a few more statistics related to model performance. First, we can compute bootstrap confidence intervals for our metrics btw pulling out the results of `fit_resamples()`, then running `int_pctl()`: 
 
 ```{r}
 #| label: forest-logistic-best
@@ -545,7 +544,7 @@ brier_perm <-
 brier_perm
 ```
 
-We can also check visual diagnostics of performance, such as the calibration curve and the ROC curve. These pool the data across all of the assessment sets, so consider these curves to be approximations of the real curves. 
+We can also check visual diagnostics of performance, such as the calibration and ROC curves. These pool data across all assessment sets, so consider these curves approximations of the real curves. 
 
 For calibration, we can use the `cal_plot_windowed()` function from the `r pkg(probably)` package. There are two interfaces that we can use. The first just passes the results to `fit_resamples()`, which knows which columns are the observed and predicted outcomes: 
 
@@ -559,7 +558,7 @@ forest_res |>
 
 The second interface uses the data frame of observed and predicted values as input; however, we must specify the appropriate column names as arguments. This approach is best when you have other plots in mind or if you are not using tidymodels to create the models. 
 
-This code chunk creates two visualizations that are based on `r pkg(ggplot2)`. We’ve also loaded the `r pkg(patchwork)` package.  This enables the last line, where we combine two `ggplot2` objects, to render them side by side. 
+This code chunk creates two visualizations that are based on `r pkg(ggplot2)`. We’ve also loaded the `r pkg(patchwork)` package.  This enables the last line, which combines two `ggplot2` objects, to render them side by side. 
 
 ```{r}
 #| label: forest-logistic-diag
@@ -591,7 +590,7 @@ logitic_cal + logitic_roc
 
 ### Examining the Model {#sec-logistic-diagnostic}
 
-The main text uses deviance residuals to make more fine-grained appraisals of how well the model fits the data. Those residuals were originally defined for generalized linear models and contrast a perfect “saturated” model to our current model. For a `glm` object, the function `stats::resid()` can compute them. Also, in most cases, `broom::augment()` will also add a column for them. 
+The main text uses deviance residuals to make more fine-grained appraisals of how well the model fits the data. Those residuals were originally defined for generalized linear models and contrast a perfect “saturated” model to our current model. For a `glm` object, the function `stats::resid()` can compute them. Also, in most cases, `broom::augment()` adds a column for them. 
 
 Here is a `r pkg(dplyr)` pipeline to compute them for any model that has predicted binary outcomes: 
 
@@ -613,14 +612,14 @@ logistic_resdiduals <-
 logistic_resdiduals[, 1:5]
 ```
 
-These results _will not match_ what `resid()` or `augment()` would produce since those functions compute the residuals based on the training data, whereas we are computing them on the assessment set predictions.
+These results _will not match_ what `resid()` or `augment()` would produce, since those functions compute residuals based on the training data, whereas we are computing them from the assessment set predictions.
 
 We can plot these for our model: 
 
 ```{r}
 #| label: deviance-residuals-plot
 #| echo: false
-#| out-width: 80%
+#| out-width: 60%
 #| fig-width: 6
 #| fig-height: 4.25
 logistic_resdiduals |>
@@ -637,7 +636,7 @@ logistic_resdiduals |>
 
 In this section, we’ll focus on generating global explainers using the `r pkg(DALEXtra)` package. More extensive methods will be discussed in a later chapter. 
 
-To begin, we have to create an _explainer_ object that contains the model fit and the data to use as substrate. Any data set with a sufficient number of rows can be used; there are no overfitting issues with using the training set. The `explain_tidymodels()` function will create the appropriate object. One note: for classification models, the option `type = "prob"` is required. 
+To begin, we have to create an _explainer_ object that contains the model fit and the data to use as substrate. Any data set with a sufficient number of rows can be used; there is no overfitting when using the training set. The `explain_tidymodels()` function will create the appropriate object. One note: for classification models, the option `type = "prob"` is required. 
 
 ```{r}
 #| label: logistic-pdp-cal
@@ -718,23 +717,215 @@ ggplot_pdp(pdp_longitude, longitude) +
 
 ### A Potential Problem: Multicollinearity {#sec-logistic-multicollinearity}
 
+To diagnose multicollinearity in a generalized linear model, the `r pkg(car)` package has a `vif()` function. This produces a named numeric vector with variance inflation factor values. While there is no `tidy()` method as of now, we can pull out the `glm` object from our previous parsnip fit and tidy it:
+
+```{r}
+#| label: glm-vif
+  lr_best |>
+  extract_fit_engine() |>
+  car::vif() |>
+  tibble::enframe() |>
+  set_names(c("term", "estimate"))
+```
 
 `r back("cls-linear.html#sec-logistic-interpretability")`
 
-### Regularization Through Penalization {#sec-logistic-penalized}
+As shown before### Regularization Through Penalization {#sec-logistic-penalized}
 
+The primary package for regularized generalized linear models is `r pkg(glmnet)`.  A few notes about `glmnet::glmnet()`: 
+
+- It only takes x/y inputs, where `x` must be a matrix. This means that any feature engineering and preprocessing must be performed before running the function. 
+- `x` _could_ be a sparse matrix, which can reduce memory requirements and execution time. If your data contains many sparse columns (perhaps from binary indicators), create these columns in a recipe, and it will automatically create a tibble of sparse vectors and then hand that data to glmnet() in a sparse format. 
+- `x` should have at least two columns. 
+- `glmnet()`, be default, automatically selects a set of _path values_; these are the penalty values that it will evaluate. If you want to predict other penalties, it will use linear interpolation. Note that, within resampling, the paths will change as the data changes. With tidymodels, you can pass an engine argument called `path_values` with a sequence of penalties. This will standardize the path across resamples. See this [parsnip documentation package](https://parsnip.tidymodels.org/reference/glmnet-details.html) for more information. 
+- If you plan on predicting a glmnet model that does not penalize, you may not get the correct value. Setting the engine option `lambda.min.ratio = 0` _or_ include 0.0 in the path. See this [GitHub issue](https://github.com/tidymodels/parsnip/issues/431) for an example and discussions. 
+
+Let's show how to fit a single glmnet model with parsnip. The main changes reflect the differences between `glm()` and `glmnet()`. To demonstrate setting the path, we'll start by making a sequence of penalties, then pass that in an engine argument: 
+
+```{r}
+#| label: glnmet-spec
+glmn_pen <- 10^seq(-6, -1, length.out = 50)
+
+glmn_spec <- 
+  logistic_reg(penalty = 0.01, mixture = 0.5) |> 
+  # No need to set the mode
+  set_engine("glmnet", path_values = !!glmn_pen)
+```
+
+As described above, we use `!!` to splice the _value_ of `glmn_pen` into the object (instead of R making a reference to it). 
+
+From here, we can create a workflow with a recipe and then `fit()`: 
+
+```{r}
+#| label: glnmet-tune
+glmn_wflow <- workflow(forest_spline_rec, glmn_spec)
+glmn_fit <- glmn_wflow |> fit(forested_train)
+```
+
+There are two extra niceties for this model. First, there is the `tidy()` method, which returns the model's coefficients. When used on the parsnip object (e.g., `glmn_fit`), the default returns the coefficients for the penalty specified for the model. However, you can get estimates for a (single) other penalty all by passing an argument `penalty`:
+
+```{r}
+#| label: glmnet-tidy-parsnip
+# One penalty only: 
+tidy(glmn_fit)
+
+# All penalties on the path: 
+tidy(glmn_fit, penalty = 0.1)
+
+# Get everything on the path: 
+purrr::map_dfr(glmn_pen, ~ tidy(glmn_fit, penalty = .x))
+```
+
+There is also a `tidy()` method for the `glmnet` fit object. It has similar results but uses the engine names for the columns. 
+
+The second nicety is the `autoplot()` function: 
+
+```{r}
+#| label: glmnet-autoplot-parsnip
+#| out-width: 60%
+#| fig-width: 6
+#| fig-height: 3.5
+# Pull the parsnip fit out of the workflow
+glmn_fit |> 
+  extract_fit_parsnip() |> 
+  autoplot()
+```
+
+This shows how the parameters change over the penalty values. The [documentation page](https://parsnip.tidymodels.org/reference/autoplot.model_fit.html) shows the different options for highlighting specific model terms at different penalties. 
+
+When tuning this model, it can be helpful to use a regular grid for the two glmnet parameters. Since all penalties are "trained" at once, a single fit is required for each mixture value. Using a space-filling design accidentally circumvents this feature. 
+
+Also, if tidymodels creates an automatic grid for you, it sets the minimum mixture to 0.05 instead of 0.0 to avoid a pure ridge fit. See this [GitHub issue](https://github.com/tidymodels/parsnip/issues/1308) for an example and explanation. 
+
+Currently, `glmnet` is the only engine in tidymodels for (non-Bayesian) regularized regression. SCAD and MCP penalties can be fit using the `r pkg(ncvreg)` directly. 
 
 `r back("cls-linear.html#sec-logistic-penalizedy")`
 
 #### Refitting the Forestation Model  {.unnumbered}
 
+The code used to tune the glmnet model using the more complex recipe was: 
+
+```{r}
+#| label: glmnet-tune
+#| eval: false
+
+# Path and regular grid: 
+glmn_pen <- 10^seq(-6, -1, length.out = 50)
+glmn_grid <- crossing(penalty = glmn_pen, mixture = c(0:4) / 4)
+
+glmn_spec <-
+  logistic_reg(penalty = tune(), mixture = tune()) |>
+  set_engine("glmnet", path_values = !!glmn_pen)
+
+glmn_wflow <-
+  best_mle_wflow |>
+  update_model(glmn_spec)
+
+glmn_res <-
+  glmn_wflow |>
+  tune_grid(
+    resamples = forested_rs,
+    grid = glmn_grid,
+    control = control_grid(save_pred = TRUE, save_workflow = TRUE),
+    metrics = cls_mtr
+  )
+```
 
 `r back("cls-linear.html#refitting-the-forestation-model")`
 
 ### Bayesian Estimation {#sec-logistic-bayes} 
 
-`r back("cls-linear.html#sec-logistic-baye")`
+For fitting logistic regression models using Bayesian estimation, there are a few options. For a simple model, use the `"stan"` engine. This fits a non-hierarchical model. If you have rows in the training set that cause correlated errors (e.g., measurements of people over time, etc.), the `"stan_glmer"` engine is more appropriate. We'll focus on the former. 
 
+tidymodels uses the `r pkg(rstanarm)` package for estimation, which relies on the sophisticated [`stan` framework](https://mc-stan.org/) for estimation. The underlying function that is called is `rstanarm::stan_glm()`. It has syntax very similar to `glm()`, but has extra arguments. In tidymodels, these can be passed as engine arguments. 
 
+Main prior options ([documentation page](https://mc-stan.org/rstanarm/reference/priors.html)):
 
+- `prior`: The prior distribution(s) for the (non-hierarchical) regression coefficients. For example, `rstanarm::normal()` for Gaussian, `rstanarm::laplace()` for Laplacian, etc. 
+- `prior_int`: The prior for the random intercept (if any). This is the prior after the regression terms have been scaled. 
 
+Sampling options ([documentation page](https://mc-stan.org/rstan/reference/stanmodel-method-sampling.html), [package vignette](https://mc-stan.org/rstanarm/articles/priors.html)):
+
+ - `chains`: The number of parallel Markov chain Monte Carlo (MCMC) optimizations to run. 
+ - `iter`: How many total iterations to run in each chain. By default, it will use half of these as the warmup. 
+ - `warmup`: How many of `iter` are used for warmup. 
+ - `thin`:  The period for saving samples. The default saves all samples (post-warmup) to approximate the posterior. 
+ - `cores`: How many worker processes are used to run the MCMC chains. 
+ - `seed`: An integer seed value to control randomness. If not set, tidymodels pulls an integer from the current random number stream. 
+
+Other relevant options are: 
+
+- `refresh`: How often, in iterations, to print an update. This is set to 0 when used via tidymodels. 
+
+Bayesian estimation can be computationally expensive. To demonstrate, let's recreate the simulated data from the main text: 
+
+```{r}
+#| label: mcmc-example
+true_means <- c(1.0, -1.5)
+post_std_dev <- c(10.0, 10.0)
+num_samples <- 100
+
+set.seed(1)
+x <- runif(num_samples, min = -1)
+
+set.seed(2)
+example_tr_data <- tibble::tibble(
+  x = x,
+  lp = true_means[1] + true_means[2] * x,
+  truth = plogis(lp),
+  random = runif(num_samples),
+  class = factor(ifelse(random <= truth, "A", "B"))
+)
+```
+
+To get started, let's fit the model using default (wide Gaussian) priors, using a single chain: 
+
+```{r}
+#| label: mcmc-simple
+set.seed(282)
+example_fit <- 
+  logistic_reg() |> 
+  set_engine("stan", chains = 1, iter = 10000) |> 
+  fit(class ~ x, data = example_tr_data)
+
+example_fit |> print(digits = 3)
+
+augment(example_fit, new_data = tibble(x = (0:5)/5))
+```
+
+The predictions are based on the posterior mean. The simplest way to get the posterior samples is to use `as.matrix()` on the underlying `rstanarm` object: 
+
+```{r}
+#| label: logistic-posterior
+#| out-width: 50%
+#| fig-width: 5
+#| fig-height: 5
+rstanrm_fit <- 
+  example_fit |> 
+  extract_fit_engine()
+
+post_df <-  
+  rstanrm_fit |> 
+  as.matrix() |> 
+  as_tibble()
+
+post_df |> 
+  ggplot(aes(`(Intercept)`, x)) + 
+  geom_point(alpha = 1 / 5) + 
+  geom_density2d(col = "blue", bins = 5, linewidth = 1, adjust = 2)
+```
+
+There are _many_ more operations on the engine fit object, including posterior diagnostics and visualizations. Two resources are: 
+
+- The `r pkg(tidybayes)` package [website](https://mjskay.github.io/tidybayes/). 
+- [_How to Use the rstanarm Package_](https://mc-stan.org/rstanarm/articles/rstanarm.html)
+
+`r back("cls-linear.html#sec-logistic-bayes")`
+
+## Multinomial Regression {#sec-multinomial-reg}
+
+`r back("cls_linear.html#sec-multinomial-reg")`
+
+## Generalized Additive Models {#sec-cls-gam}
+
+`r back("cls_linear.html#sec-cls-gam")`
