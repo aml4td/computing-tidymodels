@@ -265,7 +265,7 @@ The `tidy()` methods can extract the model object. We'll use `tidyr::enframe()` 
 lm_res <- tidy(lin_impute_rec, number = 1) 
 lm_res
 
-enframe(coef(lm_res$model[[1]]))
+tibble::enframe(coef(lm_res$model[[1]]))
 ```
 
 We might also want to impute the predictor based on its mean value but would like it to be different based on some other grouping column. We can accomplish this by using a single categorical predictor in the formula (such as `Location`): 

@@ -274,7 +274,7 @@ get_active_features <- function(x) {
   x %>% 
     extract_fit_engine() %>% 
     pluck("variable.importance") %>% 
-    enframe() %>% 
+    tibble::enframe() %>% 
     setNames(c("predictor", "importance"))
 }
 
