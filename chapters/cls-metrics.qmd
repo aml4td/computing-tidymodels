@@ -234,7 +234,6 @@ nb_res <-
   )
 ```
 
-
 We'll also generate the trained model using `fit_best()`: 
 
 ```{r}
@@ -412,7 +411,6 @@ val_pred |>
   classification_cost(class, .pred_poisonous, costs = custom_costs)
 ```
 
-
 There are several functions to produce curves: 
 
  - `yardstick::gain_curve()` 
@@ -476,7 +474,6 @@ val_pred |>
 ```
 
 There are functions for the windowed/binned estimates of calibration. For example, the sliding average method is computed using: 
-
 
 ```{r}
 #| label: cal-plot-windowed

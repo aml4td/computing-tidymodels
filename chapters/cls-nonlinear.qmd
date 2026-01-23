@@ -31,9 +31,9 @@ options(pillar.advice = FALSE, pillar.min_title_chars = Inf, pillar.sigfig = 4)
 
 source("../R/_common.R")
 req_pkg <- 
-  c("bestNormalize", "brulee", "nnet", "discrim", "earth", "embed", 
-    "kknn", "klaR", "mda", "mirai", "probably", "spatialsample", 
-    "tidymodels", "important")
+  c("bestNormalize", "brulee", "discrim", "earth", "embed", "important", 
+    "kknn", "klaR", "mda", "mirai", "nnet", "probably", "spatialsample", 
+    "tidymodels")
 
 req_pkg_fmt <- purrr::map_chr(req_pkg, ~ pkg_chr(.x))
 
@@ -51,8 +51,10 @@ You’ll need `r length(req_pkg)` packages (`r req_pkg_fmt`) for this chapter:
 #| eval: false
 #| echo: true
 # skip: fmt
-req_pkg <- c("betacal", "discrim", "desirability2", "klaR", "mgcv", "patchwork", 
-             "probably", "rpart", "tidymodels")
+req_pkg <- 
+  c("bestNormalize", "brulee", "discrim", "earth", "embed", "important", 
+"kknn", "klaR", "mda", "mirai", "nnet", "probably", "spatialsample", 
+"tidymodels")
 
 # Check to see if they are installed: 
 pkg_installed <- vapply(req_pkg, rlang::is_installed, logical(1))
@@ -63,7 +65,6 @@ if ( any(!pkg_installed) ) {
   pak::pak(install_list)
 }
 ```
-
 
 Let's load the meta package and manage some between-package function conflicts. 
 
@@ -105,30 +106,33 @@ As before, we'll load the objects that were already computed for the forestation
 
 ## Nonlinear Discriminants  {#sec-nonlinear-da}
 
-The tidymodels functions required to use discriminant analysis models are contained in the `r pkg(discrim)` package. We’ll look at two models that can be used from that package. 
+The tidymodels functions required to use discriminant analysis models are contained in the `r pkg(discrim)` package. We’ll look at two models from that package. 
 
 ### Naive Bayes {#sec-naive-bayes}
 
 There are `r nrow(show_engines('naive_Bayes'))` engines for the `naive_Bayes()` function in `r pkg(discrim)`: `r cli::format_inline("{.code {show_engines('naive_Bayes')$engine}}")`. We'll focus on the first (which is the default engine). 
 
-It was mentioned in the main text that there is a benefit to removing potentially irrelevant predictors before using the naive Bayes models. To do this, we’ll use a random forest importance filter to do so. This is accomplished using a recipe with a step from the `r pkg(important)` package: 
+The main text mentioned that removing potentially irrelevant predictors can benefit naive Bayes models. To do this, we’ll use a random forest importance filter to do so. This is accomplished using a recipe with a step from the `r pkg(important)` package: 
 
 ```{r}
 #| label: forested-filter
 
-nb_rec <-
+filter_rec <-
   recipe(class ~ ., data = forested_train) |>
   step_predictor_best(all_predictors(), score = "imp_rf", prop_terms = tune())
 ```
 
-We tune over the proportion of predictors that will be retained with candidate values of 20%, 40%, ..., 100%. We’ll also tune the kernel width adjustment parameter, where a value of 1.0 is the default estimated width. Smaller values result in more distribution peaks, while larger values widen the width, allowing more data to be used to compute the density at each point. We’ll make a regular grid from these two: 
+We tune over the proportion of predictors retained using candidate values of 20%, 40%, ..., 100%. We’ll also tune the kernel width adjustment parameter, with a value of 1.0 corresponding to the default estimated width. Smaller values result in more distribution peaks, while larger values widen the width, allowing more data to be used to compute the density at each point. We’ll make a regular grid from these two: 
 
 ```{r}
 #| label: forested-nb-tune
 
-nb_wflow <- workflow(nb_rec, naive_Bayes(smoothness = tune(), Laplace = 1))
+nb_wflow <- workflow(filter_rec, naive_Bayes(smoothness = tune(), Laplace = 1))
 
-nb_grid <- crossing(smoothness = seq(0.5, 1.5, by = 0.1), prop_terms = (1:5 / 5))
+nb_grid <- crossing(
+  smoothness = seq(0.5, 1.5, by = 0.1),
+  prop_terms = (1:5 / 5)
+)
 ```
 
 After this, we'll resample our models and compute performance for each candidate: 
@@ -158,7 +162,7 @@ We can use the `autoplot()` method to get a quick assessment of the patterns of 
 autoplot(forest_nb_res, metric = "brier_class")
 ```
 
-There was some merit in tuning the kernel smoothness parameter; smaller values produce slightly better performance. That is a fairly unusual pattern since a narrow kernel might lead to overfitting the distributions. For the feature selection step, a larger predictor set appears to be favored. However, the is a small price to pay for using the entire training set, depending on the smoothness value. We'll revisit this again in @sec-cls-knn where the same recipes is used with a different model. 
+There was some merit in tuning the kernel smoothness parameter; smaller values produce slightly better performance. That is a fairly unusual pattern since a narrow kernel might lead to overfitting the distributions. For the feature selection step, a larger predictor set appears to be favored. However, the price is small for using the entire training set, depending on the smoothness value. We'll revisit this again in @sec-cls-knn where the same recipes are used with a different model. 
 
 Overall, these results are not as favorable as those from the logistic regression in the previous chapter. We’ll move on from here to the next discriminant model. 
 
@@ -174,9 +178,9 @@ The main function parameters are:
 
  - `num_terms`: the number of MARS terms (including the intercept) to keep during training. 
  - `prod_degree`: values of 1 or 2 to indicate if interaction pairs should be considered (`prod_degree = 2`) or if an additive model (`prod_degree = 1`) will be used. 
- - `prune_method`: How should terms be removed? Possible values are: "`\"backward\"`, `\"none\"`, `\"exhaustive\"`, `\"forward\"`, `\"seqrep\"`, or `\"cv\"`". 
+ - `prune_method`: How should terms be removed? Possible values are: `"backward"`, `"none"`, `"exhaustive"`, `"forward"`, `"seqrep"`, or `"cv"`. 
 
-One helpful engine-specific parameter is `nk`. This is the number of initial MARS terms to create prior to pruning. By default, this is limited to $min(200, max(2p))+1$ where $p$ is the number of predictors. For our data, this default is 34 terms. However, when the training set has "many" rows, we might want to increase this value to encourage the model to _potentially_ produce more complex models. We could tune this parameter to experiment a little more. However, for demonstration, a static value of `nk = 201` was set. Here is code for that specification:
+One helpful engine-specific parameter is `nk`. This is the number of initial MARS terms to generate before pruning. By default, this is limited to $min(200, max(2p))+1$ where $p$ is the number of predictors. For our data, this default is 34 terms. However, when the training set has "many" rows, we might want to increase this value to encourage the model to _potentially_ produce more complex models. We could tune this parameter to experiment a little more. However, for demonstration, a static value of `nk = 201` was set. Here is the code for that specification:
 
 ```{r}
 #| label: forested-fda-wflow
@@ -191,7 +195,7 @@ fda_spec <-
 fda_wflow <- workflow(class ~ ., fda_spec)
 ```
 
-For the grid, another regular grid was used that crossed all three parameters. We limit the number of retained terms to 50, and consider forward and backward pruning. The tuning code is otherwise unremarkable: 
+For the grid, another regular grid was used that crossed all three parameters. We limit the number of retained terms to 50 and consider forward and backward pruning. The tuning code is otherwise unremarkable: 
 
 ```{r}
 #| label: forested-fda-computations
@@ -214,14 +218,13 @@ Another quick visualization tells us what happened:
 
 ```{r}
 #| label: fda-tune
-#| out-width: 90%
+#| out-width: 70%
 #| fig-width: 6.5
 #| fig-height: 3
 autoplot(forest_fda_res, metric = "brier_class")
 ```
 
-There was a slight benefit to using interaction models. The difference is difficult to see between panels. For interaction models, about 30 terms should be retained (and around 40 for additive models). We can see that the pruning methods yielded very similar Brier scores, but forward selection might be less noisy. 
-
+There was a slight benefit to using interaction models. The difference between panels is difficult to see. For interaction models, about 30 terms should be retained (and around 40 for additive models). We can see that the pruning methods yielded very similar Brier scores, but forward selection might be less noisy. 
 
 To demonstrate how to visualize predictive profiles for additive models, let’s fit that model to the training set: 
 
@@ -240,21 +243,21 @@ fda_fit <-
   fit(forested_train)
 ```
 
-For each predictor, we want to vary its value while holding the values of the other predictors constant. Since the models are additive, the constant could be anything, so we use the median for numeric predictors and the first `county` value.
+For each predictor, we want to vary its value while holding the others constant. Since the models are additive, the constant could be anything, so we use the median for numeric predictors and the first `county` value.
 
 We’ll create a vector of names for the numeric predictors and get their constant values (plus the country value): 
 
 ```{r}
 #| label: fda-static
 numeric_pred_nms <- setdiff(names(forested_train), c("class", "county"))
-numeric_pred <- 
-  forested_train |> 
+numeric_pred <-
+  forested_train |>
   select(all_of(numeric_pred_nms))
 
-median_vals <- 
-  numeric_pred |> 
-  map_dbl(median) |> 
-  tibble::as_tibble_row() |> 
+median_vals <-
+  numeric_pred |>
+  map_dbl(median) |>
+  tibble::as_tibble_row() |>
   mutate(county = levels(forested_train$county)[1])
 ```
 
@@ -276,11 +279,11 @@ for (i in seq_along(numeric_pred_nms)) {
   static <- median_vals |> select(-all_of(pred_nm))
   var_seq <- col_seqs[[i]]
   var_grid <- crossing(!!pred_nm := var_seq, static)
-  
-  grid <- 
-    augment(fda_fit, new_data = var_grid) |> 
-    select(.pred_Yes, all_of(pred_nm)) |> 
-    set_names("Probability", "Value") |> 
+
+  grid <-
+    augment(fda_fit, new_data = var_grid) |>
+    select(.pred_Yes, all_of(pred_nm)) |>
+    set_names("Probability", "Value") |>
     mutate(Predictor = pred_nm)
 
   profiles <- bind_rows(profiles, grid)
@@ -291,14 +294,16 @@ Now we can create a plot of profiles:
 
 ```{r}
 #| label: fda-profile-plot
-#| out-width: 90%
+#| out-width: 70%
 #| fig-width: 7
 #| fig-height: 7
 
 profiles |> 
   ggplot(aes(Value, Probability)) +
   geom_line() + 
-  facet_wrap(~ Predictor, scale = "free")
+  facet_wrap(~ Predictor, scale = "free") +
+  # Since the y-axis values are meaningless for this visualization, we remove it:
+  theme(axis.text.y = element_blank()) 
 ```
 
 The flat profiles indicate that the predictor was never used in the model. 
@@ -307,13 +312,12 @@ Keep in mind that the y-axis for these profiles is _relative_ probability. Their
 
 `r back("cls-linear.html#sec-fda")`
 
-
 ## K-Nearest Neighbors  {#sec-cls-knn}
 
-The KNN model is fit using the `r pkg(parsnip)` function `nearest_neighbor()`. It has a single engine (“`kknn"`) with main parameters: 
+The KNN model is fit using the `r pkg(parsnip)` function `nearest_neighbor()`. It has a single engine (`kknn"`) with main parameters: 
 
 - `neighbors()`: an integer for the number of nearest neighbors. 
-- `weight_func()`: a character value for the kernel functions to apply to distances (e.g., `”rectangular"`). Possible values are contained in the vector `dials::values_weight_func`. 
+- `weight_func()`: a character value for the kernel functions to apply to distances (e.g., `"rectangular"`). Possible values are contained in the vector `dials::values_weight_func`. 
 - `dist_power()`: a numeric value for the exponent in the Minkowski distance. 
 
 For preprocessing, the predictions should all be numeric and have the same scale/units. Removing irrelevant predictors is also a good idea, as evidenced by FIGURE. 
@@ -323,17 +327,20 @@ We’ll recycle the recipes from @sec-naive-bayes that used a random forest impo
 ```{r}
 #| label: forested-knn-wflow
 
-knn_spec <- 
-  nearest_neighbor(neighbors = tune(), dist_power = tune(), weight_func = tune()) |> 
+knn_spec <-
+  nearest_neighbor(
+    neighbors = tune(),
+    dist_power = tune(),
+    weight_func = tune()
+  ) |>
   set_mode("classification")
 
-encode_rec <-
-  recipe(class ~ ., data = forested_train) |>
-  step_predictor_best(all_numeric_predictors(), score = "imp_rf", prop_terms = tune()) |> 
+encode_and_filter_rec <-
+  filter_rec |>
   step_lencode_mixed(county, outcome = "class") |>
   step_orderNorm(all_numeric_predictors())
 
-knn_wflow <- workflow(encode_rec, knn_spec)
+knn_wflow <- workflow(encode_and_filter_rec, knn_spec)
 ```
 
 For a grid, we'll set the range of neighbors to 50 locations, and use five different kernel weighting functions: 
@@ -372,7 +379,7 @@ Once again, `autoplot()` is used to discover how each parameter affects model pe
 
 ```{r}
 #| label: knn-tune
-#| out-width: 90%
+#| out-width: 70%
 #| fig-width: 6.5
 #| fig-height: 3
 autoplot(forest_knn_res, metric = "brier_class")
@@ -382,7 +389,7 @@ autoplot(forest_knn_res, metric = "brier_class")
 
 ## Neural Networks via Multilayer Perceptrons {#sec-cls-nnet}
 
-There are several engines in tidymodels for fitting basic, feed-forward neural networks: `nnet`, `keras`, `brulee`, and `brulee_two_layer`. The first three assume a single hidden layer. The focus here will be on using the `brulee` engine, as it offers the most options.
+There are several engines in tidymodels for fitting basic, feed-forward neural networks for classification: `nnet`, `keras`, `brulee`, and `brulee_two_layer`. The first three assume a single hidden layer. The focus here will be on using the `brulee` engine, as it offers the most options.
 
 The `r pkg(parsnip)` package function for this model is `mlp()` and has main arguments: 
 
@@ -463,6 +470,8 @@ A note about `brulee`: it uses the `torch` ecosystem for computations natively i
 
 Note that it can be very difficult to write producible code with deep learning infrastructures like `torch` or `tensorflow`. When a GPU is used, it may be impossible to get exactly the same numbers from run to run. 
 
+A space-filling design is used to tune: 
+
 ```{r}
 #| label: mlp-tune
 #| cache: true
@@ -482,10 +491,37 @@ For previous models, we use the `autoplot()` methods to quickly assess how well 
 
 We can write some custom code to approximate what we would get from `autoplot()`: 
 
+```{r}
+#| label: mlp-autoplot-ish
+#| out-width: 100%
+#| fig-width: 9
+#| fig-height: 3.5
+
+forest_mlp_res |>
+  collect_metrics() |>
+  filter(.metric == "brier_class") |>
+  select(-n, -std_err) |>
+  mutate(
+    log_penalty = log10(penalty),
+    log_learn_rate = log10(learn_rate),
+    log_batch_size = log2(batch_size),
+    .keep = "unused"
+  ) |>
+  pivot_longer(
+    cols = c(hidden_units, starts_with("log_"), momentum),
+    names_to = "Parameter",
+    values_to = "Value"
+  ) |>
+  ggplot(aes(x = Value, y = mean, col = activation, pch = rate_schedule)) +
+  geom_point() +
+  facet_wrap(~ Parameter, scales = "free_x", nrow = 1) +
+  theme(legend.position = "top", legend.box = "vertical") +
+  labs(y = "Brier Score")
+```
+
 `r back("cls-linear.html#sec-cls-nnet")`
 
 ## Special Tabular Network Models  {#sec-cls-tab-net}
-
 
 `r back("cls-linear.html#sec-cls-tab-nnet")`
 

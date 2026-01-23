@@ -272,7 +272,6 @@ forested_int_form
 
 `r back("cls-linear.html#sec-forestation-eda")`
 
-
 ## Logistic Regression {#sec-logistic-reg}
 
 To start, the focus is on basic logistic regression via maximum likelihood using the `glm()` function. 
@@ -306,7 +305,7 @@ lr_coefs <- tidy(lr_fit)
 lr_coefs
 ```
 
-The `predict()` method is very limited. Using `type = "response"`, get the estimated probability of the _second_factor level, with, in our case, the probability of being unforested. The is also a `type = “link”`, which estimates the linear predictor values. There is also `augment()` which attaches the predictions and, if possible, the residuals. These are bound to the data being predicted: 
+The `predict()` method is very limited. Using `type = "response"`, get the estimated probability of the _second_factor level, with, in our case, the probability of being unforested. The is also a `type = "link"`, which estimates the linear predictor values. There is also `augment()` which attaches the predictions and, if possible, the residuals. These are bound to the data being predicted: 
 
 ```{r}
 #| label: glm-forest-augment
@@ -590,10 +589,9 @@ logitic_cal + logitic_roc
 
 ### Examining the Model {#sec-logistic-diagnostic}
 
-The main text uses deviance residuals to make more fine-grained appraisals of how well the model fits the data. Those residuals were originally defined for generalized linear models and contrast a perfect “saturated” model to our current model. For a `glm` object, the function `stats::resid()` can compute them. Also, in most cases, `broom::augment()` adds a column for them. 
+The main text uses deviance residuals to make more fine-grained appraisals of how well the model fits the data. Those residuals were originally defined for generalized linear models and contrast a perfect "saturated" model to our current model. For a `glm` object, the function `stats::resid()` can compute them. Also, in most cases, `broom::augment()` adds a column for them. 
 
 Here is a `r pkg(dplyr)` pipeline to compute them for any model that has predicted binary outcomes: 
-
 
 ```{r}
 #| label: deviance-residuals
