@@ -100,21 +100,21 @@ Let's make a small example to demonstrate:
 library(gt)
 
 interaction_example <- 
-  delivery_test %>% 
-  slice(1, .by = day) %>% 
-  select(day, hour, distance) %>% 
+  delivery_test |> 
+  slice(1, .by = day) |> 
+  select(day, hour, distance) |> 
   arrange(day)
 
-interaction_example %>% gt()
+interaction_example |> gt()
 ```
 
 For two numeric predictors: 
 
 ```{r}
 #| label: quant-quant-int
-model.matrix(~ hour + distance + hour:distance, interaction_example) %>% 
-  as_tibble() %>% 
-  select(-`(Intercept)`) %>% 
+model.matrix(~ hour + distance + hour:distance, interaction_example) |> 
+  as_tibble() |> 
+  select(-`(Intercept)`) |> 
   gt()
 ```
 
@@ -122,9 +122,9 @@ One numeric and one factor predictor:
 
 ```{r}
 #| label: quant-qual-int
-model.matrix(~ day + distance + day:distance, interaction_example) %>% 
-  as_tibble() %>% 
-  select(-`(Intercept)`) %>% 
+model.matrix(~ day + distance + day:distance, interaction_example) |> 
+  as_tibble() |> 
+  select(-`(Intercept)`) |> 
   gt() |> 
   tab_style_body(style = cell_text(color = "gray70"), values = 0)
 ```
@@ -155,10 +155,10 @@ For continuous/continuous interactions:
 
 ```{r}
 #| label: quant-quant-int-rec
-recipe(~ hour + distance, data = interaction_example) %>% 
-  step_interact(~ hour:distance) %>% 
-  prep() %>% 
-  bake(new_data = NULL) %>% 
+recipe(~ hour + distance, data = interaction_example) |> 
+  step_interact(~ hour:distance) |> 
+  prep() |> 
+  bake(new_data = NULL) |> 
   gt()
 ```
 
@@ -166,11 +166,11 @@ For categorical/continuous combinations, we use `step_dummy()` first and then a 
 
 ```{r}
 #| label: qual-quant-int-rec
-recipe(~ day + hour, data = interaction_example) %>% 
-  step_dummy(all_factor_predictors()) %>% 
-  step_interact(~ starts_with("day_"):hour) %>% 
-  prep() %>% 
-  bake(new_data = NULL) %>% 
+recipe(~ day + hour, data = interaction_example) |> 
+  step_dummy(all_factor_predictors()) |> 
+  step_interact(~ starts_with("day_"):hour) |> 
+  prep() |> 
+  bake(new_data = NULL) |> 
   gt() |> 
   tab_style_body(style = cell_text(color = "gray70"), values = 0)
 ```
@@ -211,7 +211,7 @@ library(hstats)
 set.seed(218)
 orf_hstats <-
   hstats(orf_fit,
-         X = delivery_val %>% dplyr::select(-time_to_delivery),
+         X = delivery_val |> dplyr::select(-time_to_delivery),
          # Prioritize the top 10 individual predictors for computing potential
          # pairwise interactions.
          pairwise_m = 10,
@@ -241,16 +241,16 @@ We can pass the columns of interest to each step:
 
 ```{r}
 #| label: poly-step
-recipe(time_to_delivery ~ ., data = delivery_train) %>% 
-  step_poly(hour, degree = 4) %>% 
-  prep() %>% 
+recipe(time_to_delivery ~ ., data = delivery_train) |> 
+  step_poly(hour, degree = 4) |> 
+  prep() |> 
   bake(new_data = NULL, starts_with("hour"))
 
 # or
 
-recipe(time_to_delivery ~ ., data = delivery_train) %>% 
-  step_poly_bernstein(hour, degree = 4) %>% 
-  prep() %>% 
+recipe(time_to_delivery ~ ., data = delivery_train) |> 
+  step_poly_bernstein(hour, degree = 4) |> 
+  prep() |> 
   bake(new_data = NULL, starts_with("hour"))
 ```
 
@@ -271,9 +271,9 @@ The syntax is almost identical to the polynomial steps. For example, for natural
 
 ```{r}
 #| label: natural-spline-step
-recipe(time_to_delivery ~ ., data = delivery_train) %>% 
-  step_spline_natural(hour, deg_free = 4) %>% 
-  prep() %>% 
+recipe(time_to_delivery ~ ., data = delivery_train) |> 
+  step_spline_natural(hour, deg_free = 4) |> 
+  prep() |> 
   bake(new_data = NULL, starts_with("hour"))
 ```
 
@@ -291,8 +291,8 @@ For unsupervised binning:
 #| label: unsuper-bin
 
 basic_binning <- 
-  recipe(time_to_delivery ~ ., data = delivery_train) %>% 
-  step_discretize(hour, num_breaks = 4) %>% 
+  recipe(time_to_delivery ~ ., data = delivery_train) |> 
+  step_discretize(hour, num_breaks = 4) |> 
   prep()
 
 bake(basic_binning, new_data = NULL, hour)
@@ -323,10 +323,10 @@ The format of the results is very similar though:
 
 library(embed)
 cart_binning <-
-  recipe(time_to_delivery ~ ., data = delivery_train) %>%
+  recipe(time_to_delivery ~ ., data = delivery_train) |>
   step_discretize_cart(hour,
                        outcome = vars(time_to_delivery),
-                       cost_complexity = 0.001) %>%
+                       cost_complexity = 0.001) |>
   prep()
 
 bake(cart_binning, new_data = NULL, hour)

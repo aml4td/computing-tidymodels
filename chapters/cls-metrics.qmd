@@ -224,7 +224,7 @@ cls_mtr <-
   metric_set(brier_class, mn_log_loss, pr_auc, roc_auc, accuracy)
 
 nb_res <-
-  naive_Bayes() %>%
+  naive_Bayes() |>
   fit_resamples(
     class ~ .,
     resamples = shroom_rs,
@@ -584,7 +584,7 @@ cart_spec <-
   set_mode("classification")
 
 cart_res <-
-  cart_spec %>%
+  cart_spec |>
   tune_grid(
     class ~ .,
     resamples = shroom_rs,

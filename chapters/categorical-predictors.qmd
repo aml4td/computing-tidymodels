@@ -78,7 +78,7 @@ The hotel rate data are used for most examples in the chapter. The original vers
 data(hotel_rates, package = "modeldata")
 
 # Make the initial split
-hotel_rates <- hotel_rates %>% arrange(arrival_date)
+hotel_rates <- hotel_rates |> arrange(arrival_date)
 hotel_rate_split <- initial_time_split(hotel_rates, prop = c(0.75))
 hotel_rate_train <- training(hotel_rate_split)
 hotel_rate_test  <- testing(hotel_rate_split)
@@ -100,13 +100,13 @@ Base R’s formula method, discussed previously in @sec-r-formulas, automaticall
 #| label: base-r-indicators
 
 customer_types <- 
-  hotel_rate_train %>% 
-  distinct(customer_type) %>% 
+  hotel_rate_train |> 
+  distinct(customer_type) |> 
   arrange(customer_type)
 
-customer_types %>% 
-  model.matrix( ~ customer_type, data = .) %>% 
-  as_tibble() %>% 
+customer_types |> 
+  model.matrix( ~ customer_type, data = .) |> 
+  as_tibble() |> 
   select(-`(Intercept)`)
 ```
 
@@ -121,13 +121,13 @@ When the factor has missing values, the default behavior is _to remove the offen
 lvls <- levels(hotel_rate_train$customer_type)
 
 with_missing <- 
-  customer_types %>% 
+  customer_types |> 
   bind_rows(tibble(customer_type = factor(NA, levels = lvls)))
 
 with_missing
 
-model.matrix( ~ customer_type, data = with_missing) %>% 
-  as_tibble() %>% 
+model.matrix( ~ customer_type, data = with_missing) |> 
+  as_tibble() |> 
   select(-`(Intercept)`)
 ```
 
@@ -146,8 +146,8 @@ To keep the number of rows intact, you can set the global option to be `na.pass`
 orig_options <- options()
 options(na.action = 'na.pass')
 
-model.matrix( ~ customer_type, data = with_missing) %>% 
-  as_tibble() %>% 
+model.matrix( ~ customer_type, data = with_missing) |> 
+  as_tibble() |> 
   select(-`(Intercept)`)
 
 # Now reset to original settings:
@@ -175,8 +175,8 @@ We can also use a recipe to do this (with more functionality):
 ```{r}
 #| label: ind-rec
 ind_rec <- 
-  recipe( ~ customer_type, data = customer_types) %>% 
-  step_dummy(all_factor_predictors()) %>% 
+  recipe( ~ customer_type, data = customer_types) |> 
+  step_dummy(all_factor_predictors()) |> 
   prep()
 
 bake(ind_rec, customer_types, starts_with("customer_type"))
@@ -198,11 +198,11 @@ When we think the recipe or model will encounter new values of a factor predicto
 ```{r}
 #| label: novel-rec
 
-recipe(avg_price_per_room ~ customer_type, data = hotel_rate_train) %>% 
-  step_novel(customer_type) %>% 
-  prep() %>% 
-  bake(new_data = NULL) %>% 
-  pluck("customer_type") %>% 
+recipe(avg_price_per_room ~ customer_type, data = hotel_rate_train) |> 
+  step_novel(customer_type) |> 
+  prep() |> 
+  bake(new_data = NULL) |> 
+  pluck("customer_type") |> 
   levels()
 ```
 
@@ -219,12 +219,12 @@ We can also determine infrequently occurring categories (in the training set) an
 
 length(levels(hotel_rate_train$agent))
 
-recipe(avg_price_per_room ~ agent, data = hotel_rate_train) %>% 
-  step_other(agent, threshold = 0.0001) %>% 
-  prep() %>% 
-  bake(new_data = NULL) %>% 
-  pluck("agent") %>% 
-  levels() %>% 
+recipe(avg_price_per_room ~ agent, data = hotel_rate_train) |> 
+  step_other(agent, threshold = 0.0001) |> 
+  prep() |> 
+  bake(new_data = NULL) |> 
+  pluck("agent") |> 
+  levels() |> 
   length()
 ```
 
@@ -242,9 +242,9 @@ The recipe step is in the `r pkg(textrecipes)` package, so we must load it first
 #| label: hashing-rec
 library(textrecipes)
 
-recipe(avg_price_per_room ~ agent, data = hotel_rate_train) %>% 
-  step_dummy_hash(agent, num_terms = 4) %>% 
-  prep() %>% 
+recipe(avg_price_per_room ~ agent, data = hotel_rate_train) |> 
+  step_dummy_hash(agent, num_terms = 4) |> 
+  prep() |> 
   bake(new_data = NULL, contains("agent")) 
 ```
 
@@ -268,8 +268,8 @@ We'll use the "mixed" function^[For this function, we all need the `r pkg(lme4)`
 library(embed)
 
 encoded_agent_rec <- 
-  recipe(avg_price_per_room ~ agent, data = hotel_rate_train) %>% 
-  step_lencode_mixed(agent, outcome = vars(avg_price_per_room), id = "effect") %>% 
+  recipe(avg_price_per_room ~ agent, data = hotel_rate_train) |> 
+  step_lencode_mixed(agent, outcome = vars(avg_price_per_room), id = "effect") |> 
   prep() 
 encoded_agent_rec
 ```
@@ -281,7 +281,7 @@ To see the actual effect estimates, use the `tidy()` method:
 tidy(encoded_agent_rec, id = "effect")
 
 # The estimate for new agents:
-tidy(encoded_agent_rec, id = "effect") %>% 
+tidy(encoded_agent_rec, id = "effect") |> 
   slice_tail(n = 1)
 ```
 
@@ -289,8 +289,8 @@ When the recipe is applied to new data, the `agent` column is converted to a num
 
 ```{r}
 #| label: new-mixed-encoding
-bake(encoded_agent_rec, hotel_rate_test) %>% 
-  bind_cols(hotel_rate_test %>% select(original_col = agent))
+bake(encoded_agent_rec, hotel_rate_test) |> 
+  bind_cols(hotel_rate_test |> select(original_col = agent))
 ```
 
 For categorical outcomes, the effect estimate is the log-odds of an event (the first factor level).
@@ -310,8 +310,8 @@ For example:
 library(embed)
 
 collapse_agent_rec <- 
-  recipe(avg_price_per_room ~ agent, data = hotel_rate_train) %>% 
-  step_collapse_cart(agent, outcome = vars(avg_price_per_room), id = "collapse") %>% 
+  recipe(avg_price_per_room ~ agent, data = hotel_rate_train) |> 
+  step_collapse_cart(agent, outcome = vars(avg_price_per_room), id = "collapse") |> 
   prep() 
 collapse_agent_rec
 ```
@@ -323,7 +323,7 @@ The step converts `r length(unique(collapse_agent_rec$steps[[1]]$results$agent$a
 
 tidy(collapse_agent_rec, id = "collapse")
 
-tidy(collapse_agent_rec, id = "collapse") %>% 
+tidy(collapse_agent_rec, id = "collapse") |> 
   count(new)
 ```
 
@@ -347,9 +347,9 @@ quality_vals <- c('excellent', 'fair', 'good', 'typical', 'poor')
 quality <- tibble(quality = ordered(quality_vals, levels = quality_vals))
 str(quality)
 
-recipe(~ quality, data = quality) %>% 
-  step_dummy(quality) %>% 
-  prep() %>% 
+recipe(~ quality, data = quality) |> 
+  step_dummy(quality) |> 
+  prep() |> 
   bake(new_data = NULL)
 ```
 
@@ -358,10 +358,10 @@ We can convert the ordered factor to an unordered factor:
 ```{r}
 #| label: ordinal-unorder
 
-recipe(~ quality, data = quality) %>% 
-  step_unorder(quality) %>% 
-  step_dummy(quality) %>% 
-  prep() %>% 
+recipe(~ quality, data = quality) |> 
+  step_unorder(quality) |> 
+  step_dummy(quality) |> 
+  prep() |> 
   bake(new_data = NULL)
 ```
 
@@ -374,9 +374,9 @@ convert_to_prime <-  function(x) {
   primes[as.numeric(x)]
 }
 
-recipe(~ quality, data = quality) %>% 
-  step_ordinalscore(quality, convert = convert_to_prime) %>% 
-  prep() %>% 
+recipe(~ quality, data = quality) |> 
+  step_ordinalscore(quality, convert = convert_to_prime) |> 
+  prep() |> 
   bake(new_data = NULL)
 ```
 

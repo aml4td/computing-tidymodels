@@ -99,7 +99,7 @@ library(rules)
 cubist_spec <- cubist_rules(committees = tune(), neighbors = tune())
 
 cubist_param <- 
-  cubist_spec %>% 
+  cubist_spec |> 
   extract_parameter_set_dials()
 
 cubist_param
@@ -115,7 +115,7 @@ Let's make a uniform space-filling design with 25 candidate models:
 
 cubist_grid <- grid_space_filling(cubist_param, size = 25) 
 
-cubist_grid %>% 
+cubist_grid |> 
   ggplot(aes(committees, neighbors)) + 
   geom_point() + 
   coord_fixed(ratio = 10)
@@ -132,9 +132,9 @@ Note that:
 ```{r}
 #| label: max-size
 # Default range is 0L to 9L:
-cubist_rules(neighbors = tune("K")) %>% 
-  extract_parameter_set_dials() %>%
-  grid_space_filling(size = 50) %>% 
+cubist_rules(neighbors = tune("K")) |> 
+  extract_parameter_set_dials() |>
+  grid_space_filling(size = 50) |> 
   arrange(K)
 ```
 
@@ -180,7 +180,7 @@ Let's do basic grid search:
 #| cache: true
 
 cubist_res <- 
-  cubist_spec %>% 
+  cubist_spec |> 
   tune_grid(
     compressive_strength ~ .,
     resamples = concrete_rs,
@@ -235,18 +235,18 @@ There are a few things that we can do with this candidate value. We can use it t
 
 ```{r}
 #| label: cubist-best-augment
-cubist_res %>% 
-  collect_predictions() %>% 
+cubist_res |> 
+  collect_predictions() |> 
   nrow()
 
 # Just for the best:
-cubist_res %>% 
-  collect_predictions(parameters = cubist_best) %>% 
+cubist_res |> 
+  collect_predictions(parameters = cubist_best) |> 
   nrow()
 
 # augment() returns the numerically best by default: 
-cubist_res %>% 
-  augment() %>% 
+cubist_res |> 
+  augment() |> 
   nrow()
 ```
 
@@ -297,7 +297,7 @@ library(finetune)
 # Since resamples are randomized, set the seed:
 set.seed(11)
 cubist_race_res <- 
-  cubist_spec %>% 
+  cubist_spec |> 
   tune_race_anova(
     compressive_strength ~ .,
     resamples = concrete_rs,

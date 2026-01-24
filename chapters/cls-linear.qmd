@@ -675,9 +675,9 @@ There is a `plot()` method for this object, but we’ve created a `r pkg(ggplot2
 ggplot_pdp <- function(obj, x) {
   p <-
     # Convert the "aggregated profiles" to a tibble
-    as_tibble(obj$agr_profiles) %>%
+    as_tibble(obj$agr_profiles) |>
     # Alter the `_label_` column a bit
-    mutate(`_label_` = stringr::str_remove(`_label_`, "^[^_]*_")) %>%
+    mutate(`_label_` = stringr::str_remove(`_label_`, "^[^_]*_")) |>
     # Here `_x_` is the variable being profiled and `_yhat_` is the predicted
     # value. For a binary `glm` object, this is the probability of the _second_
     # factor level. To get the probability that a location is forested, we 

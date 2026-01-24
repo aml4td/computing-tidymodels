@@ -134,8 +134,8 @@ To get the analysis and assessment sets, there are two eponymous functions. For 
 ex_split <- concrete_rs$splits[[1]]
 ex_split
 
-analysis(ex_split)   %>% dim()
-assessment(ex_split) %>% dim()
+analysis(ex_split)   |> dim()
+assessment(ex_split) |> dim()
 ```
 
 If we want to get the specific row indices of the training set: 
@@ -288,7 +288,7 @@ chi_rs <-
     assess_start = 1, # Start the assessment set 1 day after analysis set
     assess_stop = 30, # Stop the assessment set 20 days after analysis set
     step = 30         # Jump ahead 30 days between resamples; no assessment overlap in assessments
-  ) %>% 
+  ) |> 
   mutate(
     fit_start =  map_vec(splits, ~ min(analysis(.x)$date)),
     fit_stop =   map_vec(splits, ~ max(analysis(.x)$date)),
@@ -309,7 +309,7 @@ Here is a visualization of the date periods defined by the resampling scheme tha
 #| fig-width: 6
 #| fig-height: 3.25
 #| out-width: 80%
-chi_rs %>% 
+chi_rs |> 
   ggplot(aes(y = id)) + 
   geom_segment(aes(x = fit_start,  xend = fit_stop,  yend = id), col = "grey", linewidth = 1) +
   geom_segment(aes(x = perf_start, xend = perf_stop, yend = id), col = "red", linewidth = 3) +
@@ -331,7 +331,7 @@ chi_rs <-
     assess_stop = 30,
     step = 30,
     skip = 5000       # Drop first 5000 results so assessment starts at same time 
-  ) %>% 
+  ) |> 
   mutate(
     fit_start =  map_vec(splits, ~ min(analysis(.x)$date)),
     fit_stop =   map_vec(splits, ~ max(analysis(.x)$date)),
@@ -348,7 +348,7 @@ Note that the values in the `fit_stop` column are the same. Visually:
 #| fig-width: 6
 #| fig-height: 3.25
 #| out-width: 80%
-chi_rs %>% 
+chi_rs |> 
   ggplot(aes(y = id)) + 
   geom_segment(aes(x = fit_start,  xend = fit_stop,  yend = id), col = "grey", linewidth = 1) +
   geom_segment(aes(x = perf_start, xend = perf_stop, yend = id), col = "red", linewidth = 3) +
@@ -369,7 +369,7 @@ library(spatialsample)
 library(tidysdm)
 
 ames_sf <-
-  ames %>%
+  ames |>
   st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
 
 set.seed(318)
@@ -455,7 +455,7 @@ vec_unique_count(orth_tr$Subject)
 
 set.seed(714)
 orth_rs <- 
-  group_vfold_cv(orth_tr, group = Subject, v = 10) %>% 
+  group_vfold_cv(orth_tr, group = Subject, v = 10) |> 
   mutate(num_subjects = map_int(splits, ~ vec_unique_count(assessment(.x)$Subject)))
 
 orth_rs
@@ -642,8 +642,8 @@ For example, a `tidy()` method for Cubist models will save information on the ru
 #| label: cubist-extract-function
 
 extract_rules <- function(x) {
-  x %>% 
-    extract_fit_engine() %>%
+  x |> 
+    extract_fit_engine() |>
     tidy()
 }
 ```
@@ -690,7 +690,7 @@ To "flatten out" these results, we’ll `unnest()` the column of extracted resul
 #| label: cubist-re-extracts
 
 rule_extract <- 
-  collect_extracts(concrete_ext_res) %>% 
+  collect_extracts(concrete_ext_res) |> 
   unnest(col = .extracts)
 rule_extract
 ```
@@ -718,8 +718,8 @@ We can use a `mutate()` and a `map_int()` to pull out the frequency of terms inc
 ```{r}
 #| label: cubist-stats
 conditions <- 
-  rule_extract %>% 
-  mutate(conditions = map_int(statistic, ~ .x$num_conditions)) %>% 
+  rule_extract |> 
+  mutate(conditions = map_int(statistic, ~ .x$num_conditions)) |> 
   select(id, rule_num, conditions)
 ```
 
@@ -727,6 +727,6 @@ Here is the distribution of the number of logical conditions that make up the ru
 
 ```{r}
 #| label: cubist-num_rules
-conditions %>% 
+conditions |> 
   count(conditions)
 ```

@@ -83,15 +83,15 @@ scat_te <- testing(scat_split)
 
 scat_rs <- vfold_cv(scat_tr, repeats = 5, strata = Species)
 
-scat_tr_preds <- scat_tr %>% select(-Species)
+scat_tr_preds <- scat_tr |> select(-Species)
 ```
 
 Here is the breakdown of the species per data partition: 
 
 ```{r}
 #| label: species
-scat_tr %>% count(Species)
-scat_te %>% count(Species)
+scat_tr |> count(Species)
+scat_te |> count(Species)
 ```
 
 We'll spend some time on visualization and summary techniques that are helpful when performing exploratory data analysis. 
@@ -104,7 +104,7 @@ The `r pkg(naniar)` package is an excellent tool for missing data. Let's load it
 #| label: summary
 library(naniar)
 
-miss_var_summary(scat_tr_preds) %>% print(n = Inf)
+miss_var_summary(scat_tr_preds) |> print(n = Inf)
 ```
 
 The `miss_var_summary()` function summarizes the missing data in the predictors. The `n_miss` column is the number of missing values, and the `p_miss` column is the proportion of missing values. 
@@ -156,7 +156,7 @@ Let's add `step_naomit()` to the recipe and declare the `r pkg(dplyr)` selector 
 #| label: remove-rows
 
 na_omit_rec <- 
-  scat_rec %>% 
+  scat_rec |> 
   step_naomit(everything())
 ```
 
@@ -166,8 +166,8 @@ To estimate the recipe (manually), we can use `recipes::prep()` to process the t
 #| label: remove-row-prep
 
 na_omit_rec <- 
-  scat_rec %>% 
-  step_naomit(everything()) %>% 
+  scat_rec |> 
+  step_naomit(everything()) |> 
   prep()
 ```
 
@@ -190,7 +190,7 @@ If we were to apply the recipe to the test set, it would _not_ exclude the missi
 
 ```{r}
 #| label: remove-row-bake-2
-bake(na_omit_rec, new_data = scat_te) %>% nrow()
+bake(na_omit_rec, new_data = scat_te) |> nrow()
 
 nrow(scat_te)
 
@@ -209,12 +209,12 @@ Here's an example where we determine that more than 10% missingness is too much.
 ```{r}
 #| label: filter-predictors
 filter_features_rec <- 
-  scat_rec %>% 
-  step_filter_missing(everything(), threshold = 0.10) %>% 
+  scat_rec |> 
+  step_filter_missing(everything(), threshold = 0.10) |> 
   prep()
 
 ncol(scat_tr)
-bake(filter_features_rec, new_data = NULL) %>% ncol()
+bake(filter_features_rec, new_data = NULL) |> ncol()
 
 # use the tody method to determine which were removed: 
 tidy(filter_features_rec, number = 1)
@@ -248,13 +248,13 @@ If we were to predictor `Taper` as a function of `Age`, `Length`, `Number`, and 
 #| label: impute-lm
 
 lin_impute_rec <- 
-  scat_rec %>% 
-  step_impute_linear(Taper, impute_with = imp_vars(Age, Length, Number, Location)) %>% 
+  scat_rec |> 
+  step_impute_linear(Taper, impute_with = imp_vars(Age, Length, Number, Location)) |> 
   prep() # <- This estimates the regression
 
 # Imputing the test set: 
-lin_impute_rec %>% 
-  bake(new_data = scat_te, Taper) %>% 
+lin_impute_rec |> 
+  bake(new_data = scat_te, Taper) |> 
   filter(is.na(Taper))
 ```
 
@@ -274,14 +274,14 @@ We might also want to impute the predictor based on its mean value but would lik
 #| label: impute-by-group
 
 group_impute_rec <- 
-  scat_rec %>% 
-  step_mutate(Taper_missing = is.na(Taper)) %>% 
-  step_impute_linear(Taper, impute_with = imp_vars(Location)) %>% 
+  scat_rec |> 
+  step_mutate(Taper_missing = is.na(Taper)) |> 
+  step_impute_linear(Taper, impute_with = imp_vars(Location)) |> 
   prep()
 
-group_impute_rec %>% 
-  bake(new_data = scat_tr, Taper, Taper_missing, Location) %>% 
-  filter(Taper_missing) %>% 
+group_impute_rec |> 
+  bake(new_data = scat_tr, Taper, Taper_missing, Location) |> 
+  filter(Taper_missing) |> 
   count(Taper, Location)
 ```
 
@@ -297,15 +297,15 @@ The number of neighbors defaults to five. We can change that using the `neighbor
 #| label: impute-knn
 
 knn_impute_rec <- 
-  scat_rec %>% 
+  scat_rec |> 
   step_impute_knn(
     all_of(miss_cols), 
     impute_with = imp_vars(Age, Length, Number, Location),
-    neighbors = 5) %>% 
+    neighbors = 5) |> 
   prep()
 
 imputed_train <- 
-  knn_impute_rec %>% 
+  knn_impute_rec |> 
   bake(new_data = scat_tr)
 
 mean(complete.cases(imputed_train))
@@ -330,20 +330,20 @@ To do this, we give the `neighbors` argument of `step_impute_knn()` a value of `
 #| cache: true
 
 knn_impute_rec <- 
-  scat_rec %>% 
+  scat_rec |> 
   step_impute_knn(
     all_of(miss_cols), 
     impute_with = imp_vars(Age, Length, Number, Location),
     neighbors = tune()) 
 
 rf_spec <- 
-  rand_forest(min_n = tune(), trees = 1000) %>% 
+  rand_forest(min_n = tune(), trees = 1000) |> 
   set_mode("classification")
 
 knn_rf_wflow <- workflow(knn_impute_rec, rf_spec)
 
 knn_rf_res <- 
-  knn_rf_wflow %>% 
+  knn_rf_wflow |> 
   tune_grid(
     scat_rs,
     grid = 15
