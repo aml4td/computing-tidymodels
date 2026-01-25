@@ -305,7 +305,7 @@ lr_coefs <- tidy(lr_fit)
 lr_coefs
 ```
 
-The `predict()` method is very limited. Using `type = "response"`, get the estimated probability of the _second_factor level, with, in our case, the probability of being unforested. The is also a `type = "link"`, which estimates the linear predictor values. There is also `augment()` which attaches the predictions and, if possible, the residuals. These are bound to the data being predicted: 
+The `predict()` method is very limited. Using `type = "response"`, get the estimated probability of the _second_ factor level, with, in our case, the probability of being unforested. The is also a `type = "link"`, which estimates the linear predictor values. There is also `augment()` which attaches the predictions and, if possible, the residuals. These are bound to the data being predicted: 
 
 ```{r}
 #| label: glm-forest-augment
@@ -476,7 +476,7 @@ forest_res
 However, there are a variety of helper functions for this object class: 
 
 - `rank_results()` will order the models (or model configurations) by a metric of the user’s choice. 
--`extract_workflow_set_result()` pulls out the object produced by `fit_resamples()` so that you can plot or examine the results. 
+- `extract_workflow_set_result()` pulls out the object produced by `fit_resamples()` so that you can plot or examine the results. 
 - `collect_metrics()` and `collect_predictions()` can be used to get an overall list by model and configuration. The latter function only works if the control option `save_pred = TRUE` was used for each of the workflows (which we did in this case). 
 
 Let's rank by the Brier score: 
