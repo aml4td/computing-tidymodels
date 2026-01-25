@@ -104,10 +104,9 @@ customer_types <-
   distinct(customer_type) |> 
   arrange(customer_type)
 
-customer_types |> 
-  model.matrix( ~ customer_type, data = .) |> 
+model.matrix( ~ customer_type, data = customer_types) |> 
   as_tibble() |> 
-  select(-`(Intercept)`)
+  dplyr::select(-`(Intercept)`)
 ```
 
 Note that the column name and the factor levels are directly concatenated. 
