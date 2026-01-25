@@ -403,7 +403,7 @@ svm_spec <-
 vip_svm_wflow <- workflow(drug_rec, svm_spec)
 ```
 
-Let’s adjust the range of the correlation filter to make it more aggressively remove highly correlated predictors: 
+Let’s adjust the range of the correlation filter to make it slightly more aggressively remove highly correlated predictors: 
 
 ```{r}
 #| label: vip-wflow-param
@@ -411,31 +411,30 @@ vip_svm_param <-
   vip_svm_wflow |> 
   extract_parameter_set_dials() |> 
   update(
-  threshold = threshold(c(0.75, 0.99))
+  threshold = threshold(c(0.25, 0.99))
   )
 ```
 
-_Finally_, let’s tune the model via Bayesian optimization and use the Brier score to guide the process to the best values of the tuning parameters: 
+_Finally_, let’s tune the model via Bayesian optimization and use the Brier score to guide the process to the best values of the tuning parameters. This is a long computation; lowering the value of `iter` will make it finish more quickly. 
 
 ```{r}
 #| label: vip-results
-ctrl <- control_bayes(
-  no_improve = Inf,
-  parallel_over = "everything"
-)
+ctrl <- control_bayes(parallel_over = "everything")
 
-set.seed(22)
+set.seed(1487)
 vip_svm_res <-
   vip_svm_wflow |>
   tune_bayes(
     resamples = drug_rs,
     metrics = metric_set(brier_class, roc_auc),
-    initial = 5,
-    iter = 25,
+    initial = 4,
+    iter = 10,
     control = ctrl,
     param_info = vip_svm_param
   )
 ```
+
+Keep in mind that the `r pkg(kernlab)` implementation of SVMs for classification uses its own random number generator and not the one in base R. This will probably yield different results when run again.  
 
 A visualization of the process shows that the search does reduce the Brier score during the search: 
 
@@ -473,7 +472,7 @@ vip_svm_res |>
   rename(Brier = mean) |>
   ggplot(aes(threshold, prop_terms, size = Brier, col = Brier)) +
   geom_point(alpha = 2 / 4) +
-  coord_fixed(ratio = 1 / 2) +
+  coord_fixed(ratio = (0.99 - 0.25) / (0.99-0.05)) +
   labs(
     x = "Correlation Filter Threshold", 
     y = "Proportion of Predictors Kept"

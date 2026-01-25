@@ -37,8 +37,8 @@ plan(mirai_multisession)
 
 source("../R/_common.R")
 req_pkg <- c("bestNormalize", "broom.mixed", "C50", "discrim", "embed", 
-             "glmnet", "klaR", "lme4", "multcomp", "rstanarm", "rules", "splines2", 
-             "tidymodels", "tidyposterior")
+             "glmnet", "klaR", "lme4", "multcomp", "rstanarm", "rules", 
+             "spatialsample", "splines2", "tidymodels", "tidyposterior")
 ```
 
 This book's chapter involved taking models that have been fit or resampled and using their results to formally compare them. 
@@ -52,8 +52,8 @@ This book's chapter involved taking models that have been fit or resampled and u
 #| eval: false
 #| echo: true
 req_pkg <- c("bestNormalize", "broom.mixed", "C50", "discrim", "embed", 
-             "glmnet", "klaR", "lme4", "multcomp", "rstanarm", "rules", "splines2", 
-             "tidymodels", "tidyposterior")
+             "glmnet", "klaR", "lme4", "multcomp", "rstanarm", "rules", 
+             "spatialsample", "splines2", "tidymodels", "tidyposterior")
 
 # Check to see if they are installed: 
 pkg_installed <- vapply(req_pkg, rlang::is_installed, logical(1))
@@ -77,6 +77,9 @@ tidymodels_prefer()
 theme_set(theme_bw())
 
 # Other packages that we will load below
+
+# For spatial resampling methods: 
+library(spatialsample)
 
 # For feature engineering:
 library(embed)
