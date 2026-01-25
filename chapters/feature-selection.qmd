@@ -428,7 +428,7 @@ vip_svm_res <-
     resamples = drug_rs,
     metrics = metric_set(brier_class, roc_auc),
     initial = 4,
-    iter = 10,
+    iter = 15,
     control = ctrl,
     param_info = vip_svm_param
   )

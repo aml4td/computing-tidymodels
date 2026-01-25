@@ -36,11 +36,9 @@ req_pkg <-
     "tidymodels")
 
 req_pkg_fmt <- purrr::map_chr(req_pkg, ~ pkg_chr(.x))
-
-library(butcher)
 ```
 
-This chapter describes how to compute performance metrics using tidymodels and will focus on the `r pkg(yardstick)` package. 
+This chapter describes how to use inherently nonlinear models (excluding trees), such as neural networks, K-nearest neighbors, naive Bayes, and others. 
 
 ## Requirements
 
@@ -53,8 +51,8 @@ You’ll need `r length(req_pkg)` packages (`r req_pkg_fmt`) for this chapter:
 # skip: fmt
 req_pkg <- 
   c("bestNormalize", "brulee", "discrim", "earth", "embed", "important", 
-"kknn", "klaR", "mda", "mirai", "nnet", "probably", "spatialsample", 
-"tidymodels")
+    "kknn", "klaR", "mda", "mirai", "nnet", "probably", "spatialsample", 
+    "tidymodels")
 
 # Check to see if they are installed: 
 pkg_installed <- vapply(req_pkg, rlang::is_installed, logical(1))
@@ -126,7 +124,6 @@ We tune over the proportion of predictors retained using candidate values of 20%
 
 ```{r}
 #| label: forested-nb-tune
-
 nb_wflow <- workflow(filter_rec, naive_Bayes(smoothness = tune(), Laplace = 1))
 
 nb_grid <- crossing(
