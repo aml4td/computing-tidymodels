@@ -630,6 +630,7 @@ logistic_resdiduals |>
   
 `r back("cls-linear.html#sec-logistic-diagnostic")`
 
+
 ### Interpreting the Logistic Model {#sec-logistic-interpretability} 
 
 In this section, we’ll focus on generating global explainers using the `r pkg(DALEXtra)` package. More extensive methods will be discussed in a later chapter. 
@@ -726,9 +727,9 @@ To diagnose multicollinearity in a generalized linear model, the `r pkg(car)` pa
   set_names(c("term", "estimate"))
 ```
 
-`r back("cls-linear.html#sec-logistic-interpretability")`
+`r back("cls-linear.html#sec-logistic-multicollinearity")`
 
-As shown before### Regularization Through Penalization {#sec-logistic-penalized}
+### Regularization Through Penalization {#sec-logistic-penalized}
 
 The primary package for regularized generalized linear models is `r pkg(glmnet)`.  A few notes about `glmnet::glmnet()`: 
 
@@ -797,7 +798,7 @@ Also, if tidymodels creates an automatic grid for you, it sets the minimum mixtu
 
 Currently, `glmnet` is the only engine in tidymodels for (non-Bayesian) regularized regression. SCAD and MCP penalties can be fit using the `r pkg(ncvreg)` directly. 
 
-`r back("cls-linear.html#sec-logistic-penalizedy")`
+`r back("cls-linear.html#sec-logistic-penalized")`
 
 #### Refitting the Forestation Model  {.unnumbered}
 

@@ -163,7 +163,7 @@ There was some merit in tuning the kernel smoothness parameter; smaller values p
 
 Overall, these results are not as favorable as those from the logistic regression in the previous chapter. We’ll move on from here to the next discriminant model. 
 
-`r back("cls-linear.html#sec-naive-bayes")`
+`r back("cls-nonlinear.html#sec-naive-bayes")`
 
 ### Flexible Discriminants {#sec-fda}
 
@@ -307,7 +307,7 @@ The flat profiles indicate that the predictor was never used in the model.
 
 Keep in mind that the y-axis for these profiles is _relative_ probability. Their actual values are linear combinations that can’t be displayed in the same visualization.  
 
-`r back("cls-linear.html#sec-fda")`
+`r back("cls-nonlinear.html#sec-fda")`
 
 ## K-Nearest Neighbors  {#sec-cls-knn}
 
@@ -382,7 +382,7 @@ Once again, `autoplot()` is used to discover how each parameter affects model pe
 autoplot(forest_knn_res, metric = "brier_class")
 ```
 
-`r back("cls-linear.html#sec-cls-knn")`
+`r back("cls-nonlinear.html#sec-cls-knn")`
 
 ## Neural Networks via Multilayer Perceptrons {#sec-cls-nnet}
 
@@ -516,12 +516,12 @@ forest_mlp_res |>
   labs(y = "Brier Score")
 ```
 
-`r back("cls-linear.html#sec-cls-nnet")`
+`r back("cls-nonlinear.html#sec-cls-nnet")`
 
 ## Special Tabular Network Models  {#sec-cls-tab-net}
 
-`r back("cls-linear.html#sec-cls-tab-nnet")`
+`r back("cls-nonlinear.html#sec-cls-tab-nnet")`
 
 ## Support Vector Machines {#sec-cls-svm}
 
-`r back("cls-linear.html#sec-cls-svm")`
+`r back("cls-nonlinear.html#sec-cls-svm")`
