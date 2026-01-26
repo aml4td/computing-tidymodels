@@ -106,8 +106,8 @@ The primary recipe used for almost all of the embedding methods is:
 library(bestNormalize) # for ORD transformation
 
 barley_rec <-
-  recipe(barley ~ ., data = barley_train) %>%
-  step_orderNorm(all_numeric_predictors()) %>%
+  recipe(barley ~ ., data = barley_train) |>
+  step_orderNorm(all_numeric_predictors()) |>
   # Pre-compute to save time later
   prep()
 
@@ -129,8 +129,8 @@ Unsurprisingly, the recipe step needed here is called `step_pca()`. We’ll add 
 ```{r}
 #| label: pca-prep
 barley_pca_rec <-
-  barley_rec %>%
-  step_pca(all_numeric_predictors(), num_comp = 2, id = "pca") %>% 
+  barley_rec |>
+  step_pca(all_numeric_predictors(), num_comp = 2, id = "pca") |> 
   prep()
 
 barley_pca_rec
@@ -143,7 +143,7 @@ To further investigate the results, the `tidy()` method can extract elements of 
 pca_scree <- tidy(barley_pca_rec, id = "pca", type = "variance")
 pca_scree
 
-pca_scree %>% count(terms)
+pca_scree |> count(terms)
 ```
 
 Note that there are 550 entries for each since there are 550 predictor columns. 
@@ -162,7 +162,7 @@ To get the component values for new data, such as the validation set, the `bake(
 
 ```{r}
 #| label: pca-scores
-barley_pca_rec %>% 
+barley_pca_rec |> 
   bake(new_data = NULL, starts_with("PC"))
 ```
 
@@ -178,8 +178,8 @@ We can also pass new data in, such as the validation set:
 #| out-width: "60%"
 
 pca_score_plot <- 
-  barley_pca_rec %>% 
-  bake(new_data = barley_val) %>% 
+  barley_pca_rec |> 
+  bake(new_data = barley_val) |> 
   ggplot(aes(PC1, PC2, col = barley)) + 
   geom_point(alpha = 1 / 4) + 
   scale_color_viridis(option = "viridis")
@@ -217,8 +217,8 @@ An ICA recipe step can also be found in the `r pkg(recipes)` package. The syntax
 #| label: ica-prep-barley
 set.seed(538)
 barley_ica_rec <-
-  recipe(barley ~ ., data = barley_train) %>% 
-  step_ica(all_numeric_predictors(), num_comp = 2, id = "ica") %>% 
+  recipe(barley ~ ., data = barley_train) |> 
+  step_ica(all_numeric_predictors(), num_comp = 2, id = "ica") |> 
   prep()
 ```
 
@@ -237,11 +237,11 @@ For example, when two ICA components are used, the results are not the same but 
 #| label: ica-redo
 set.seed(955)
 ica_redo <- 
-  recipe(barley ~ ., data = barley_train) %>% 
-  step_ica(all_numeric_predictors(), num_comp = 2, id = "ica") %>% 
+  recipe(barley ~ ., data = barley_train) |> 
+  step_ica(all_numeric_predictors(), num_comp = 2, id = "ica") |> 
   prep()
 
-ica_redo %>% tidy(id = "ica")
+ica_redo |> tidy(id = "ica")
 ```
 
 The individual loading values are different between runs, and components one and two are swapped between invocations with different seeds: 
@@ -254,8 +254,8 @@ The individual loading values are different between runs, and components one and
 #| out-width: "100%"
 
 ica_1 <- 
-  barley_ica_rec %>% 
-  bake(new_data = barley_val) %>% 
+  barley_ica_rec |> 
+  bake(new_data = barley_val) |> 
   ggplot(aes(IC1, IC2, col = barley)) + 
   geom_point(alpha = 1 / 4, show.legend = FALSE) + 
   scale_color_viridis(option = "viridis") +
@@ -263,8 +263,8 @@ ica_1 <-
   labs(title = "seed = 538")
 
 ica_2 <- 
-  ica_redo %>% 
-  bake(new_data = barley_val) %>% 
+  ica_redo |> 
+  bake(new_data = barley_val) |> 
   ggplot(aes(IC1, IC2, col = barley)) + 
   geom_point(alpha = 1 / 4) + 
   scale_color_viridis(option = "viridis") +
@@ -285,9 +285,9 @@ The syntax for PLS is also very similar. However, it is a supervised method, so 
 ```{r}
 #| label: pls-prep
 barley_pls_rec <-
-  barley_rec %>%
+  barley_rec |>
   step_pls(all_numeric_predictors(), outcome = vars(barley), num_comp = 2,
-           id = "pls") %>% 
+           id = "pls") |> 
   prep()
 
 # Loadings: 
@@ -312,8 +312,8 @@ Again, the syntax is very similar to the previous unsupervised methods. The main
 
 set.seed(221)
 barley_isomap_rec <-
-  barley_rec %>%
-  step_isomap(all_numeric_predictors(), neighbors = 10, num_terms = 2) %>% 
+  barley_rec |>
+  step_isomap(all_numeric_predictors(), neighbors = 10, num_terms = 2) |> 
   prep()
 ```
 
@@ -326,8 +326,8 @@ We can project this preprocessing model onto new data:
 #| fig-align: "center"
 #| out-width: "60%"
 
-barley_isomap_rec %>% 
-  bake(new_data = barley_val) %>% 
+barley_isomap_rec |> 
+  bake(new_data = barley_val) |> 
   ggplot(aes(Isomap1, Isomap2, col = barley)) + 
   geom_point(alpha = 1 / 4) + 
   scale_color_viridis(option = "viridis") +
@@ -346,8 +346,8 @@ For an unsupervised embedding:
 #| label: umap-prep
 set.seed(724)
 barley_umap_rec <-
-  barley_rec %>%
-  step_umap(all_numeric_predictors(), neighbors = 10, num_comp = 2) %>% 
+  barley_rec |>
+  step_umap(all_numeric_predictors(), neighbors = 10, num_comp = 2) |> 
   prep()
 ```
 
@@ -360,8 +360,8 @@ Projection on new data has the same syntax:
 #| fig-align: "center"
 #| out-width: "60%"
 
-barley_umap_rec %>% 
-  bake(new_data = barley_val) %>% 
+barley_umap_rec |> 
+  bake(new_data = barley_val) |> 
   ggplot(aes(UMAP1, UMAP2, col = barley)) + 
   geom_point(alpha = 1 / 4) + 
   scale_color_viridis(option = "viridis") +
@@ -387,7 +387,7 @@ These steps are for classification data, so we'll use some example data from the
 #| fig-height: 4
 #| fig-align: "center"
 #| out-width: "60%"
-two_class_dat %>% 
+two_class_dat |> 
   ggplot(aes(A, B, col = Class)) + 
   geom_point(alpha = 1 / 2) +
   coord_obs_pred()
@@ -398,8 +398,8 @@ Here's an example of creating a recipe with the basic class distance computation
 ```{r}
 #| label: basic-cent
 centroid_rec <-
-  recipe(Class ~ ., data = two_class_dat) %>%
-  step_classdist(all_numeric_predictors(), class = "Class") %>% 
+  recipe(Class ~ ., data = two_class_dat) |>
+  step_classdist(all_numeric_predictors(), class = "Class") |> 
   prep()
 ```
 
@@ -417,8 +417,8 @@ The shrunken version of this step has an additional argument that is the fractio
 ```{r}
 #| label: shrunk-cent
 centroid_shrunk_rec <-
-  recipe(Class ~ ., data = two_class_dat) %>%
-  step_classdist_shrunken(all_numeric_predictors(), threshold = 1 / 6, class = "Class") %>% 
+  recipe(Class ~ ., data = two_class_dat) |>
+  step_classdist_shrunken(all_numeric_predictors(), threshold = 1 / 6, class = "Class") |> 
   prep()
 ```
 

@@ -113,8 +113,8 @@ bst_spec <-
     min_n = tune(),
     loss_reduction = tune(),
     sample_size = tune()
-  ) %>%
-  set_engine('xgboost', validation = 0) %>%
+  ) |>
+  set_engine('xgboost', validation = 0) |>
   set_mode('classification')
 ```
 
@@ -130,8 +130,8 @@ From the workflow, we create a _parameters_ object and set the ranges for two pa
 ```{r}
 #| label: sim-param
 bst_param <-
-  bst_wflow %>%
-  extract_parameter_set_dials() %>%
+  bst_wflow |>
+  extract_parameter_set_dials() |>
   update(
     mtry = mtry(c(3, 15)),
     trees = trees(c(10, 500))
@@ -150,7 +150,7 @@ init_grid <- grid_space_filling(bst_param, size = 6)
 
 set.seed(21)
 initial_res <-
-  bst_wflow %>%
+  bst_wflow |>
   tune_grid(
     resamples = sim_rs,
     grid = init_grid,
@@ -163,8 +163,8 @@ From these six candidates, the smallest Brier score was `r round(show_best(initi
 
 ```{r}
 #| label: initial-res
-show_best(initial_res, metric = "brier_class") %>% 
-  select(-.estimator, -.config, -.metric) %>% 
+show_best(initial_res, metric = "brier_class") |> 
+  select(-.estimator, -.config, -.metric) |> 
   relocate(mean)
 ```
 
@@ -191,7 +191,7 @@ Here's some example code:
 
 set.seed(381)
 sa_res <-
-  bst_wflow %>%
+  bst_wflow |>
   tune_sim_anneal(
     resamples = sim_rs,
     param_info = bst_param,
@@ -214,8 +214,8 @@ The Brier score has been reduced from the initial value of `r round(show_best(in
 ```{r}
 #| label: sa-intervals
 #| cache: true
-show_best(sa_res, metric = "brier_class") %>% 
-  select(-.estimator, -.config, -.metric) %>% 
+show_best(sa_res, metric = "brier_class") |> 
+  select(-.estimator, -.config, -.metric) |> 
   relocate(mean)
 ```
 
@@ -389,11 +389,11 @@ Here is a plot of the best results per population and the mean result (both are 
 #| out-width: 65%
 
 # Negate the fitness value since the Brier score should be minimized.
--attr(ga_res,"summary") %>% 
-  as_tibble() %>% 
-  mutate(generation = row_number()) %>% 
-  select(best = max, mean = mean, generation) %>% 
-  pivot_longer(c(best, mean), names_to = "summary", values_to = "fitness") %>% 
+-attr(ga_res,"summary") |> 
+  as_tibble() |> 
+  mutate(generation = row_number()) |> 
+  select(best = max, mean = mean, generation) |> 
+  pivot_longer(c(best, mean), names_to = "summary", values_to = "fitness") |> 
   ggplot(aes(generation, fitness, col = summary, pch = summary)) + 
   geom_point() + 
   labs(x = "Generation", y = "Brier Score (CV)")
@@ -406,11 +406,11 @@ The best results are in a slot called `solution`. Let's remap that to the origin
 
 ga_best <- 
   # There could be multiple solutions for the same fitness; we take the first. 
-  ga_res@solution[1,] %>% 
+  ga_res@solution[1,] |> 
   # Back-transform
-  map2(bst_param$object, ~ value_inverse(.y, .x)) %>% 
-  as_tibble() %>% 
-  set_names(bst_param$id) %>% 
+  map2(bst_param$object, ~ value_inverse(.y, .x)) |> 
+  as_tibble() |> 
+  set_names(bst_param$id) |> 
   # Attach fitness and coerce to integer if needed.
   mutate(
     mtry = floor(mtry),
@@ -418,7 +418,7 @@ ga_best <-
     min_n = floor(min_n),
     tree_depth = floor(tree_depth),
     brier = -ga_res@fitnessValue
-  ) %>% 
+  ) |> 
   relocate(brier)
 
 ga_best
@@ -447,7 +447,7 @@ The `r pkg(tune)` package contains `tune_bayes()` for Bayesian optimization. The
 #| label: sa-bayes
 #| cache: true
 set.seed(221)
-bo_res <- bst_wflow %>%
+bo_res <- bst_wflow |>
   tune_bayes(
     resamples = sim_rs,
     param_info = bst_param,
@@ -468,8 +468,8 @@ The same helper functions are used to interrogate the results and to create diag
 ```{r}
 #| label: bo-intervals
 #| cache: true
-show_best(bo_res, metric = "brier_class") %>% 
-  select(-.estimator, -.config, -.metric) %>% 
+show_best(bo_res, metric = "brier_class") |> 
+  select(-.estimator, -.config, -.metric) |> 
   relocate(mean)
 ```
 

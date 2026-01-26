@@ -95,12 +95,12 @@ Let’s look at an example. In the [embeddings chapter](https://aml4td.org/chapt
 #| label: pls-nnet
 #| echo: true
 pls_rec <-
-  recipe(barley ~ ., data = barley_train) %>%
-  step_zv(all_predictors()) %>%
-  step_orderNorm(all_numeric_predictors()) %>%
+  recipe(barley ~ ., data = barley_train) |>
+  step_zv(all_predictors()) |>
+  step_orderNorm(all_numeric_predictors()) |>
   step_pls(all_numeric_predictors(),
            outcome = "barley",
-           num_comp = 20) %>%
+           num_comp = 20) |>
   step_normalize(all_predictors())
 
 nnet_spec <-
@@ -110,8 +110,8 @@ nnet_spec <-
     penalty = 0.01,
     epochs = 1000,
     learn_rate = 0.1
-  ) %>%
-  set_mode("regression") %>%
+  ) |>
+  set_mode("regression") |>
   set_engine("brulee")
 
 pls_nnet_wflow <- workflow(pls_rec, nnet_spec)
@@ -127,13 +127,13 @@ To tune these parameters, we can give them a value of the function `tune()`. Thi
 #| label: pls-nnet-tune
 #| echo: true
 pls_rec <-
-  recipe(barley ~ ., data = barley_train) %>%
-  step_zv(all_predictors()) %>%
-  step_orderNorm(all_numeric_predictors()) %>%
+  recipe(barley ~ ., data = barley_train) |>
+  step_zv(all_predictors()) |>
+  step_orderNorm(all_numeric_predictors()) |>
   step_pls(all_numeric_predictors(),
            outcome = "barley",
            # For demonstration, we'll use a label
-           num_comp = tune("pca comps")) %>%
+           num_comp = tune("pca comps")) |>
   step_normalize(all_predictors())
 
 nnet_spec <-
@@ -143,8 +143,8 @@ nnet_spec <-
     penalty = tune(),
     epochs = tune(),
     learn_rate = tune()
-  ) %>%
-  set_mode("regression") %>%
+  ) |>
+  set_mode("regression") |>
   set_engine("brulee")
 
 pls_nnet_wflow <- workflow(pls_rec, nnet_spec)
@@ -172,8 +172,8 @@ nnet_spec <-
     penalty = tune(),
     epochs = tune(),
     learn_rate = tune()
-  ) %>%
-  set_mode("regression") %>%
+  ) |>
+  set_mode("regression") |>
   set_engine("brulee", stop_iter = 5, rate_schedule = tune()) 
 
 pls_nnet_wflow <- workflow(pls_rec, nnet_spec)
@@ -269,8 +269,8 @@ Let’s look at the information for the learning rate parameter by viewing the p
 ```{r}
 #| label: learn-rate
 #| echo: true
-pls_nnet_param %>% 
-  filter(id == "learn_rate") %>% 
+pls_nnet_param |> 
+  filter(id == "learn_rate") |> 
   pluck("object")
 
 # The defaults: 
@@ -285,11 +285,11 @@ Suppose we want to change the range to be even more narrow. We can use the `upda
 #| label: learn-rate-alt
 #| echo: true
 new_rate <- 
-  pls_nnet_param %>% 
+  pls_nnet_param |> 
   update(learn_rate = learn_rate(c(-2, -1/2)))
 
-new_rate %>% 
-  filter(id == "learn_rate") %>% 
+new_rate |> 
+  filter(id == "learn_rate") |> 
   pluck("object")
 ```
 

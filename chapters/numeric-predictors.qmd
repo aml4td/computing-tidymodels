@@ -85,13 +85,13 @@ In the last chapter, our manipulation and splitting code was:
 data(ames, package = "modeldata")
 
 ames <-
-  ames %>%
+  ames |>
   select(Sale_Price, Bldg_Type, Neighborhood, Year_Built, Gr_Liv_Area, Full_Bath,
-         Half_Bath, Year_Sold, Lot_Area, Central_Air, Longitude, Latitude) %>%
+         Half_Bath, Year_Sold, Lot_Area, Central_Air, Longitude, Latitude) |>
   mutate(
     Sale_Price = log10(Sale_Price),
     Baths = Full_Bath  + Half_Bath/2
-  ) %>%
+  ) |>
   select(-Half_Bath, -Full_Bath)
 
 set.seed(3024)
@@ -128,8 +128,8 @@ Here's a short function to show basic results:
 ```{r}
 #| label: show-cols
 show_columns <- function(f) {
-  model.matrix(f, data = ames_train) %>% 
-  tibble::as_tibble() %>% 
+  model.matrix(f, data = ames_train) |> 
+  tibble::as_tibble() |> 
   dplyr::slice(c(1, 3, 9))
 }
 show_columns(f_01)
@@ -215,8 +215,8 @@ _However_, this may produce unexpected results when multiple factor predictors e
 f_11 <- Sale_Price ~ Bldg_Type + Central_Air + 0
 f_12 <- Sale_Price ~ Central_Air + Bldg_Type + 0
 
-show_columns(f_11) %>% names() %>% sort()
-show_columns(f_12) %>% names() %>% sort()
+show_columns(f_11) |> names() |> sort()
+show_columns(f_12) |> names() |> sort()
 ```
 
 There model predictions and `anova()` results will be the same but the interpretation of their coefficients will be very different. 
@@ -287,7 +287,7 @@ The main text mentions that the distribution of the `Lot_Area` variable is skewe
 #| fig-height: 3.25
 #| out-width: 60%
 
-ames_train %>% 
+ames_train |> 
   ggplot(aes(Lot_Area)) + 
   geom_histogram(bins = 30, col = "white", fill = "#8E195C", alpha = 1 / 2) +
   geom_rug(alpha = 1 / 2, length = unit(0.03, "npc"), linewidth = 1) +
@@ -311,12 +311,12 @@ We’ll add different recipe step functions from this initial object to declare 
 #| label: yj-step
 
 unskew_rec <- 
-  recipe(Sale_Price ~ ., data = ames_train) %>% 
+  recipe(Sale_Price ~ ., data = ames_train) |> 
   step_YeoJohnson(Lot_Area)
 
 # or use a dplyr selector:
 unskew_rec <- 
-  recipe(Sale_Price ~ ., data = ames_train) %>% 
+  recipe(Sale_Price ~ ., data = ames_train) |> 
   step_YeoJohnson(any_of("Lot_Area"))
 
 unskew_rec
@@ -367,8 +367,8 @@ Did it work? Let's look at the whole training set:
 #| fig-height: 3.25
 #| out-width: 60%
 
-unskew_rec %>% 
-  bake(new_data = ames_train) %>% 
+unskew_rec |> 
+  bake(new_data = ames_train) |> 
   ggplot(aes(Lot_Area)) +
   geom_rug(alpha = 1 / 2, length = unit(0.03, "npc"), linewidth = 1) + 
   geom_histogram(bins = 30, col = "white", fill = "#8E195C", alpha = 1 / 2) +
@@ -392,7 +392,7 @@ Note that the last method has its step function in the `r pkg(bestNormalize)` pa
 There is also a general step for _simple_ computations that do not need to be estimated. If we were to log transform the data, we would use: 
 
 ```r
-recipe(Sale_Price ~ ., data = ames_train) %>% 
+recipe(Sale_Price ~ ., data = ames_train) |> 
   step_mutate(Lot_Area = log10(Lot_Area))
 ```
 
@@ -425,8 +425,8 @@ The two main steps for standardizing columns to have the same units are `step_no
 #| label: step-norm
 
 norm_rec <- 
-  unskew_rec %>% 
-  step_zv(all_predictors()) %>% 
+  unskew_rec |> 
+  step_zv(all_predictors()) |> 
   step_normalize(all_numeric_predictors())
 
 norm_rec
@@ -451,11 +451,11 @@ Unsurprisingly, the step to compute the spatial sign is `step_spatialsign()`. It
 library(bestNormalize)
 
 sp_sign_rec <- 
-  recipe(Sale_Price ~ Lot_Area + Gr_Liv_Area, data = ames_train) %>% 
-  step_YeoJohnson(any_of(c("Lot_Area", "Gr_Liv_Area"))) %>% 
-  step_zv(all_predictors()) %>% 
-  step_orderNorm(all_numeric_predictors()) %>% 
-  step_spatialsign(all_numeric_predictors()) %>% 
+  recipe(Sale_Price ~ Lot_Area + Gr_Liv_Area, data = ames_train) |> 
+  step_YeoJohnson(any_of(c("Lot_Area", "Gr_Liv_Area"))) |> 
+  step_zv(all_predictors()) |> 
+  step_orderNorm(all_numeric_predictors()) |> 
+  step_spatialsign(all_numeric_predictors()) |> 
   prep()
 
 sp_sign_data <- bake(sp_sign_rec, new_data = NULL)
@@ -468,7 +468,7 @@ sp_sign_data
 #| fig-height: 4
 #| out-width: 40%
 
-sp_sign_data %>% 
+sp_sign_data |> 
   ggplot(aes(Lot_Area, Gr_Liv_Area)) +
   geom_point(cex =  2, alpha = 1 / 10, pch = 1) +
   coord_equal() 

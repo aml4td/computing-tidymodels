@@ -5,7 +5,7 @@
 
 /.quarto/
 
-# intermediate results 
+# intermediate results
 /_site/
 /_book/
 /_cache/
@@ -18,3 +18,5 @@ index.pdf
 index.tex
 index.toc
 .Renviron
+
+**/*.quarto_ipynb

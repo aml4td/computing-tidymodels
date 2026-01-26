@@ -1,7 +1,7 @@
 Type: Quarto
 Package: aml4td.tidymodels
 Title: tidymodels computing supplement
-Version: 25.07.25
+Version: 26.01.26
 Authors@R: 
     person("Max", "Kuhn", , "mxkuhn@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0003-2402-136X"))
@@ -9,15 +9,18 @@ Description: Sources to build books.
 License: CC BY-SA (see license file)
 Imports: 
     aorsf,
+    aplore3,
     bestNormalize,
+    betacal,
     broom,
     broom.mixed,
     brulee (>= 0.2.0),
     C50,
+    car,
     caret,
     cli,
-    colino,
     Cubist,
+    DALEXtra,
     devtools,
     dials,
     dimRed,
@@ -26,6 +29,7 @@ Imports:
     downlit,
     dplyr,
     e1071,
+    earth,
     embed,
     emmeans,
     fastICA,
@@ -40,16 +44,20 @@ Imports:
     hardhat (>= 1.2.0.9000),
     hstats,
     igraph,
+    important,
     janitor,
     jsonlite,
     kableExtra,
+    kknn,
     klaR,
     knitr,
     lme4,
+    mda,
     Matrix,
     mixOmics,
     modeldata (>= 1.1.0),
     modeldatatoo,
+    multcomp,
     naniar,
     pak,
     parallel,
@@ -96,9 +104,7 @@ Imports:
 Suggests: 
     testthat (>= 3.0.0)
 Remotes:
-    r-lib/downlit,
-    tidymodels/recipes@v1.2.1,
-    stevenpawley/colino
+    r-lib/downlit
 Config/testthat/edition: 3
 Encoding: UTF-8
 LazyData: true

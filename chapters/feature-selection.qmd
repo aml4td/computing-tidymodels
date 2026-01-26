@@ -30,7 +30,7 @@ options(crayon.enabled = FALSE)
 options(pillar.advice = FALSE, pillar.min_title_chars = Inf, pillar.sigfig = 4)
 
 source("../R/_common.R")
-req_pkg <- c("bestNormalize", "future.mirai", "janitor", "kernlab", "partykit", 
+req_pkg <- c("bestNormalize", "important", "mirai", "janitor", "kernlab", "partykit", 
              "QSARdata", "ranger", "rpart", "tidymodels")
 ```
 
@@ -44,7 +44,7 @@ We will use the following package in this chapter: `r pkg_list(req_pkg)`. To ins
 #| label: feature-selection-installs
 #| eval: false
 #| echo: true
-req_pkg <- c("bestNormalize", "future.mirai", "janitor", "kernlab", "partykit", 
+req_pkg <- c("bestNormalize", "important", "mirai", "janitor", "kernlab", "partykit", 
              "QSARdata", "ranger", "rpart", "tidymodels")
 
 # Check to see if they are installed: 
@@ -55,9 +55,6 @@ if ( any(!pkg_installed) ) {
   install_list <- names(pkg_installed)[!pkg_installed]
   pak::pak(install_list)
 }
-
-# For coliono, install from GitHub
-pak::pak("stevenpawley/colino")
 ```
 
 ```{r}
@@ -67,9 +64,9 @@ pak::pak("stevenpawley/colino")
 #| warning: false
 library(partykit)
 library(tidymodels)
-library(colino)
+library(important)
 library(bestNormalize)
-library(future.mirai)
+library(mirai)
 library(janitor)
 
 tidymodels_prefer()
@@ -84,15 +81,15 @@ data(PLD, package = "QSARdata")
 
 drug_data <- 
   # Merge the outcome data with a subset of possible predictors.
-  PLD_Outcome %>% 
-  full_join(PLD_VolSurfPlus, by = "Molecule") %>% 
-  full_join(PLD_PipelinePilot_FP %>% select(1, contains("FCFP")), 
-            by = "Molecule") %>% 
-  select(-Molecule) %>% 
-  clean_names() %>% 
-  as_tibble() %>% 
+  PLD_Outcome |> 
+  full_join(PLD_VolSurfPlus, by = "Molecule") |> 
+  full_join(PLD_PipelinePilot_FP |> select(1, contains("FCFP")), 
+            by = "Molecule") |> 
+  select(-Molecule) |> 
+  clean_names() |> 
+  as_tibble() |> 
   # Make shorter names:
-  rename_with(~ gsub("vol_surf_plus_", "", .x), everything()) %>% 
+  rename_with(~ gsub("vol_surf_plus_", "", .x), everything()) |> 
   rename_with(~ gsub("ppfp_fcfp_", "fp_", .x), everything())
 
 set.seed(106)
@@ -113,14 +110,14 @@ Let's load the meta package, manage some between-package function conflicts, and
 ```{r}
 #| label: start
 library(tidymodels)
-library(colino)
+library(important)
 library(bestNormalize)
-library(future.mirai)
+library(mirai)
 library(janitor)
 
 tidymodels_prefer()
 theme_set(theme_bw())
-plan(mirai_multisession)
+mirai::daemons(parallel::detectCores())
 ```
 
 There are a few different data frames for these data. We'll merge two and clean up and shorten the variable names, use a 4:1 split of the data, and then initialize multiple repeats of 10-fold cross-validation:
@@ -135,7 +132,7 @@ There is a class imbalance for these data:
 ```{r}
 #| label: data-dims
 dim(drug_train)
-drug_train %>% count(class)
+drug_train |> count(class)
 ```
 
 The level "inducer" indicates that the molecule has been proven to cause phospholipidosis.
@@ -167,8 +164,8 @@ For the drug toxicity data, we can visualize the amount of predictor correlation
 ```{r}
 #| label: cor-mat
 cor_mat <- 
-  drug_train %>% 
-  select(-class) %>% 
+  drug_train |> 
+  select(-class) |> 
   cor()
 ```
 
@@ -176,7 +173,7 @@ Note the warning: some columns have a single unique value. Let's look at this ac
 
 ```{r}
 #| label: num-unique
-num_unique <- map_int(drug_train %>% select(-class), vctrs::vec_unique_count)
+num_unique <- map_int(drug_train |> select(-class), vctrs::vec_unique_count)
 names(num_unique)[num_unique == 1]
 ```
 
@@ -185,7 +182,7 @@ We’ll start a recipe with the step that will eliminate these:
 ```{r}
 #| label: drug-rec
 drug_rec <- 
-  recipe(class ~ ., data = drug_train) %>% 
+  recipe(class ~ ., data = drug_train) |> 
   step_zv(all_predictors())
 ```
 
@@ -200,8 +197,8 @@ pairwise_cor <- cor_mat[upper.tri(cor_mat)]
 
 sum(abs(pairwise_cor) >= 3 / 4, na.rm = TRUE)
 
-tibble(correlation = pairwise_cor) %>% 
-  filter(!is.na(correlation)) %>% 
+tibble(correlation = pairwise_cor) |> 
+  filter(!is.na(correlation)) |> 
   ggplot(aes(x = correlation)) + 
   geom_histogram(binwidth = 0.1, col = "white")
 ```
@@ -210,7 +207,7 @@ This isn't too bad, but if we wanted to reduce the extreme pairwise correlations
 
 ```{r}
 #| label: low-cor
-drug_rec %>% 
+drug_rec |> 
   step_corr(all_predictors(), threshold = 0.75)
 ```
 
@@ -234,7 +231,7 @@ We can pass that to the model fit when we set the engine:
 cart_ctrl <- rpart::rpart.control(maxcompete = 0, maxsurrogate = 0)
 
 cart_spec <- 
-  decision_tree(mode = "classification") %>% 
+  decision_tree(mode = "classification") |> 
   set_engine("rpart", control = !!cart_ctrl)
 ```
 
@@ -245,7 +242,7 @@ Here’s the model fit:
 
 ```{r}
 #| label: cart-fit
-cart_drug_fit <- cart_spec %>% fit(class ~ ., data = drug_train)
+cart_drug_fit <- cart_spec |> fit(class ~ ., data = drug_train)
 cart_drug_fit
 ```
 
@@ -259,8 +256,8 @@ Of the `r ncol(drug_train) - 1` predictors, only `r length(cart_drug_fit$fit$var
 library(partykit)
 
 cart_drug_party <- 
-  cart_drug_fit %>% 
-  extract_fit_engine() %>% 
+  cart_drug_fit |> 
+  extract_fit_engine() |> 
   as.party()
 plot(cart_drug_party)
 ```
@@ -271,10 +268,10 @@ As previously mentioned, trees produced by the `r pkg(rpart)` package have an in
 #| label: cart-imp
 get_active_features <- function(x) {
   require(tidymodels)
-  x %>% 
-    extract_fit_engine() %>% 
-    pluck("variable.importance") %>% 
-    enframe() %>% 
+  x |> 
+    extract_fit_engine() |> 
+    pluck("variable.importance") |> 
+    tibble::enframe() |> 
     setNames(c("predictor", "importance"))
 }
 
@@ -292,7 +289,7 @@ To determine this, we can resample the model and save the importance scores for 
 
 ctrl <- control_resamples(extract = get_active_features)
 cart_drug_res <- 
-  cart_spec %>% 
+  cart_spec |> 
   fit_resamples(
     class ~ ., 
     resamples = drug_rs, 
@@ -314,13 +311,13 @@ We can extract the results from all the resamples, unnest, and count the number 
 ```{r}
 #| label: all-extract
 resampled_selection <- 
-  cart_drug_res %>% 
-  collect_extracts() %>% 
-  unnest(.extracts) %>% 
-  count(predictor) %>%
+  cart_drug_res |> 
+  collect_extracts() |> 
+  unnest(.extracts) |> 
+  count(predictor) |>
   arrange(desc(n))
 
-resampled_selection %>% slice_head(n = 5)
+resampled_selection |> slice_head(n = 5)
 ```
 
 A visualization illustrates that a small number of predictors were reliably selected:
@@ -331,7 +328,7 @@ A visualization illustrates that a small number of predictors were reliably sele
 #| fig-width: 6
 #| out-width: 70%
 
-resampled_selection %>% 
+resampled_selection |> 
   ggplot(aes(n)) +
   geom_histogram(binwidth = 2, col = "white") +
   labs(x = "# Times Selected (of 100)")
@@ -371,47 +368,23 @@ R code from the Feature Engineering and Selection book can also be found at [`ht
 
 ## Filter Methods {#sec-filters}
 
-Currently, the majority of supervised filters live in the `r pkg(colino)` package (although this will change in the Autumn of 2025). Those steps include: 
+The important package has three recipe steps for supervised feature selection. These tools can use one or more scores to determine which predictors to retain in the model. We’ll use it below, but see the documentation [here](https://important.tidymodels.org/) for more details. The `r pkg(colino)` package also has a variety of recipe feature filter steps that can be used (found on GitHub [here](https://github.com/stevenpawley/colino)). 
 
-- `step_select_aov()`: filter categorical predictors using the ANOVA F-test.
-- `step_select_boruta()`: feature selection step using the Boruta algorithm [(pdf)](https://www.jmlr.org/papers/volume3/stoppiglia03a/stoppiglia03a.pdf).
-- `step_select_carscore()`: feature selection step using [CAR scores](https://arxiv.org/abs/1007.5516).
-- `step_select_fcbf()`: fast correlation-based filter.
-- `step_select_forests()`: feature selection step using random forest feature importance scores.
-- `step_select_infgain()`: information gain feature selection step.
-- `step_select_linear()`: feature selection step using the magnitude of a linear models' coefficients.
-- `step_select_mrmr()`: apply minimum redundancy maximum relevance feature selection (MRMR).
-- `step_select_relief()`: feature selection step using the Relief algorithm.
-- `step_select_roc()`: filter numeric predictors using ROC curve.
-- `step_select_tree()`: feature selection step using a decision tree importance scores.
-- `step_select_vip()`: feature selection step using a model's feature importance scores or coefficients.
-- `step_select_xtab()`: filter categorical predictors using contingency tables.
-
-These steps contain tuning parameters that control how many predictors to retain: 
-
- - `top_n` specifies the number to retain while
- - `threshold` describes the cut-point for the metric being used to filter
-
-Let’s add a supervised filter based on the popular random forest importance scores to demonstrate. The step requires a model declaration via a `r pkg(parsnip)` specification. We’ll choose random forest model and optimize the number of top predictors that should be retained and then given to the model. 
+We’ll focus on using a basic random forest permutation importance as a scoring mechanism. We’ll still use the unsupervised correlation filters before the supervised analysis. `important::step_predictor_best()` requires a `score` argument to specify the ranking mechanism. Possible values are listed in the [manual page](https://important.tidymodels.org/reference/step_predictor_best.html#scoring-functions) for the function. For our instance, we’ll use `score = "imp_rf"`. You can also specify the _proportion_ of features to retain via the `prop_terms` argument. The default tuning range is [5%, 100%], which we’ll use. The code is: 
 
 ```{r}
 #| label: vip-rec
 
-base_model <- 
-  rand_forest(trees = 1000, mode = "classification") %>%
-  set_engine("ranger", importance = "permutation")
-
 drug_rec <- 
-  recipe(class ~ ., data = drug_train) %>% 
-  step_zv(all_predictors(), id = "zv") %>% 
-  step_corr(all_numeric_predictors(), threshold = tune(), id = "cor")  %>%
-  step_select_vip(
-    all_numeric_predictors(),
-    outcome = "class",
-    model = base_model,
-    top_p = tune(),
+  recipe(class ~ ., data = drug_train) |> 
+  step_zv(all_predictors(), id = "zv") |> 
+  step_corr(all_numeric_predictors(), threshold = tune(), id = "cor")  |>
+  step_predictor_best(
+    all_predictors(),
+    score = "imp_rf",
+    prop_terms = tune(),
     id = "vip"
-  ) %>%
+  ) |>
   step_orderNorm(all_numeric_predictors())
 ```
 
@@ -424,45 +397,44 @@ Now we can specify the supervised model, tag two parameters for optimization, an
 ```{r}
 #| label: vip-wflow
 svm_spec <- 
-  svm_rbf(cost = tune(), rbf_sigma = tune()) %>% 
+  svm_rbf(cost = tune(), rbf_sigma = tune()) |> 
   set_mode("classification")
 
 vip_svm_wflow <- workflow(drug_rec, svm_spec)
 ```
 
-Let’s add specific ranges for the supervised filter parameter since its upper range depends on the data dimensions. We’re not sure how many predictors will pass the unsupervised filter steps, but we’ll guess that we should include, at most, 100 predictors. If we overestimate this number, `step_select_vip()` will adjust the range to the upper limit. 
-
-We'll also adjust the range of the correlation filter to make it more aggressively remove highly correlated predictors: 
+Let’s adjust the range of the correlation filter to make it slightly more aggressively remove highly correlated predictors: 
 
 ```{r}
 #| label: vip-wflow-param
 vip_svm_param <- 
-  vip_svm_wflow %>% 
-  extract_parameter_set_dials() %>% 
+  vip_svm_wflow |> 
+  extract_parameter_set_dials() |> 
   update(
-  top_p = top_p(c(1L, 100L)), 
-  threshold = threshold(c(0.50, 0.99))
+  threshold = threshold(c(0.25, 0.99))
   )
 ```
 
-_Finally_, let’s tune the model via Bayesian optimization and use the Brier score to guide the process to the best values of the tuning parameters: 
+_Finally_, let’s tune the model via Bayesian optimization and use the Brier score to guide the process to the best values of the tuning parameters. This is a long computation; lowering the value of `iter` will make it finish more quickly. 
 
 ```{r}
 #| label: vip-results
+ctrl <- control_bayes(parallel_over = "everything")
 
-ctrl <- control_bayes(no_improve = Inf, parallel_over = "everything")
-
-vip_svm_res <- 
-  vip_svm_wflow %>% 
+set.seed(1487)
+vip_svm_res <-
+  vip_svm_wflow |>
   tune_bayes(
     resamples = drug_rs,
     metrics = metric_set(brier_class, roc_auc),
-    initial = 10L,
-    iter = 25L,
+    initial = 4,
+    iter = 15,
     control = ctrl,
     param_info = vip_svm_param
   )
 ```
+
+Keep in mind that the `r pkg(kernlab)` implementation of SVMs for classification uses its own random number generator and not the one in base R. This will probably yield different results when run again.  
 
 A visualization of the process shows that the search does reduce the Brier score during the search: 
 
@@ -475,7 +447,7 @@ A visualization of the process shows that the search does reduce the Brier score
 autoplot(vip_svm_res, metric = "brier_class", type = "performance")
 ```
 
-When we plot the parameter choices over iterations, we see that each tuning parameter converges to specific ranges. The number of predictors retained fluctuates, and a few choices could be used (say, between 5 and 15 predictors). 
+We can plot the parameter choices over iterations: 
 
 ```{r}
 #| label: vip-param
@@ -486,15 +458,25 @@ When we plot the parameter choices over iterations, we see that each tuning para
 autoplot(vip_svm_res, type = "parameters")
 ```
 
-A plot of the parameter values versus the Brier score tells a similar story:
+A plot of the filtering parameter values versus the Brier score tells a similar story:
 
 ```{r}
 #| label: vip-profile
-#| fig-height: 4
-#| fig-width: 8
-#| out-width: 80%
+#| fig-height: 6
+#| fig-width: 6.1
+#| out-width: 60%
 
-autoplot(vip_svm_res, metric = "brier_class")
+vip_svm_res |>
+  collect_metrics() |>
+  filter(.metric == "brier_class") |>
+  rename(Brier = mean) |>
+  ggplot(aes(threshold, prop_terms, size = Brier, col = Brier)) +
+  geom_point(alpha = 2 / 4) +
+  coord_fixed(ratio = (0.99 - 0.25) / (0.99-0.05)) +
+  labs(
+    x = "Correlation Filter Threshold", 
+    y = "Proportion of Predictors Kept"
+  )
 ```
 
 The numerically best results are:
@@ -512,8 +494,8 @@ Let's update our workflow with the best parameters, then fit the final model on 
 #| label: best-fit
 set.seed(124)
 final_model <- 
-  vip_svm_wflow %>% 
-  finalize_workflow(best_param) %>% 
+  vip_svm_wflow |> 
+  finalize_workflow(best_param) |> 
   fit(drug_train)
 final_model
 ```
@@ -525,19 +507,20 @@ How many predictors were removed, and how many made it to the final model? We ca
 get_filter_info <- function(x) {
   fit_rec <- extract_recipe(x)
   # The tidy methods show the predictors that were eliminated:
-  corr_rm <- nrow(tidy(fit_rec, id = "cor"))
-  zv_rm <- nrow(tidy(fit_rec, id = "zv"))
-  vip_rm <- nrow(tidy(fit_rec, id = "vip"))
+  corr_filter <- nrow(tidy(fit_rec, id = "cor"))
+  zv_filter <- nrow(tidy(fit_rec, id = "zv"))
+  vip_filter <- sum(tidy(fit_rec, id = "vip")$removed)
+  original <- ncol(drug_train) - 1
   
   # The mold has a 'predictors' element that describes the
   # columns which are given to the model: 
-  kept <- 
-    x %>% 
-    extract_mold() %>% 
-    pluck("predictors") %>% 
+  retained <- 
+    x |> 
+    extract_mold() |> 
+    pluck("predictors") |> 
     ncol()
   # We'll save them as a tibble:
-  tibble(corr_rm, zv_rm, vip_rm, kept)
+  tibble(original, zv_filter, corr_filter, vip_filter, retained)
 }
 
 get_filter_info(final_model)
@@ -550,8 +533,8 @@ How does the model work on the test set of `r nrow(drug_test)` molecules?
 ```{r}
 #| label: test-pred
 test_pred <- augment(final_model, drug_test)
-test_pred %>% brier_class(class, .pred_inducer)
-test_pred %>% roc_auc(class, .pred_inducer)
+test_pred |> brier_class(class, .pred_inducer)
+test_pred |> roc_auc(class, .pred_inducer)
 ```
 
 `r back("feature-selection.html#sec-filters")`

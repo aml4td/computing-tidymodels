@@ -224,7 +224,7 @@ cls_mtr <-
   metric_set(brier_class, mn_log_loss, pr_auc, roc_auc, accuracy)
 
 nb_res <-
-  naive_Bayes() %>%
+  naive_Bayes() |>
   fit_resamples(
     class ~ .,
     resamples = shroom_rs,
@@ -233,7 +233,6 @@ nb_res <-
     control = control_resamples(save_pred = TRUE, save_workflow = TRUE)
   )
 ```
-
 
 We'll also generate the trained model using `fit_best()`: 
 
@@ -412,7 +411,6 @@ val_pred |>
   classification_cost(class, .pred_poisonous, costs = custom_costs)
 ```
 
-
 There are several functions to produce curves: 
 
  - `yardstick::gain_curve()` 
@@ -476,7 +474,6 @@ val_pred |>
 ```
 
 There are functions for the windowed/binned estimates of calibration. For example, the sliding average method is computed using: 
-
 
 ```{r}
 #| label: cal-plot-windowed
@@ -587,7 +584,7 @@ cart_spec <-
   set_mode("classification")
 
 cart_res <-
-  cart_spec %>%
+  cart_spec |>
   tune_grid(
     class ~ .,
     resamples = shroom_rs,

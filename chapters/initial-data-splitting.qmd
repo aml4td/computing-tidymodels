@@ -77,13 +77,13 @@ These data are in the `r pkg(modeldata)` package, which is part of  `r pkg(tidym
 data(ames, package = "modeldata")
 
 ames <-
-  ames %>%
+  ames |>
   select(Sale_Price, Bldg_Type, Neighborhood, Year_Built, Gr_Liv_Area, Full_Bath,
-         Half_Bath, Year_Sold, Lot_Area, Central_Air, Longitude, Latitude) %>%
+         Half_Bath, Year_Sold, Lot_Area, Central_Air, Longitude, Latitude) |>
   mutate(
     Sale_Price = log10(Sale_Price),
     Baths = Full_Bath  + Half_Bath/2
-  ) %>%
+  ) |>
   select(-Half_Bath, -Full_Bath)
 
 glimpse(ames)
@@ -162,45 +162,45 @@ Maximum dissimilarity sampling can be conducted using `caret::maxDissim()`. It s
 # Since we will be using distances in the calculations, create centered 
 # and scaled versions of the coordinates then add a row index column. 
 ames_scaled <-
-  ames %>%
-  select(Longitude, Latitude) %>%
+  ames |>
+  select(Longitude, Latitude) |>
   mutate(
     scaled_lon = scale(Longitude)[,1], 
     scaled_lat = scale(Latitude)[,1]
-  ) %>%
-  select(starts_with("scaled")) %>% 
+  ) |>
+  select(starts_with("scaled")) |> 
   add_rowindex()
 
 # Select an initial data point closest to the middle
 seed_row <-
-  ames_scaled %>%
+  ames_scaled |>
   mutate(
     dist = (scaled_lon)^2 + (scaled_lat)^2
-  ) %>%
-  slice_min(dist, n = 1) %>%
+  ) |>
+  slice_min(dist, n = 1) |>
   pluck(".row")
 
 # Partition the data
-ames_scaled_seed <- ames_scaled %>% slice( seed_row)
-ames_scaled_pool <- ames_scaled %>% slice(-seed_row)
+ames_scaled_seed <- ames_scaled |> slice( seed_row)
+ames_scaled_pool <- ames_scaled |> slice(-seed_row)
 
 # Conduct the selection process
 selection_path <- 
   caret::maxDissim(
     # Only give the function the predictor columns for each data set
-    ames_scaled_seed %>% select(-.row), 
-    ames_scaled_pool %>% select(-.row), 
+    ames_scaled_seed |> select(-.row), 
+    ames_scaled_pool |> select(-.row), 
     n = 24
   )
 
 # Get the selected row numbers that correspond to the 'ames' data frame.
 selected_rows <- c(seed_row, ames_scaled_pool$.row[selection_path])
 
-selected_data <- ames %>% slice(selected_rows)
+selected_data <- ames |> slice(selected_rows)
 
 # A non-map plot of the values: 
-selected_data %>%
-  mutate(xend = lead(Longitude), yend = lead(Latitude)) %>%
+selected_data |>
+  mutate(xend = lead(Longitude), yend = lead(Latitude)) |>
   ggplot(aes(Longitude, Latitude)) +
   geom_point() +
   geom_segment(aes(xend = xend, yend = yend),
@@ -295,10 +295,10 @@ The function to make the conversion is `sf::st_as_sf()`:
 ```{r}
 #| label: cols-to-geom
 ames_sf <-
-  ames %>%
+  ames |>
   st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
 
-ames_sf %>% select(geometry)
+ames_sf |> select(geometry)
 ```
 
 The `crs` argument specifies a [coordinate reference system](https://en.wikipedia.org/wiki/Spatial_reference_system). We used [4326](https://spatialreference.org/ref/epsg/4326/) since it contains the US. 
