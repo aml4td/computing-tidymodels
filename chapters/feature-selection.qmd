@@ -447,7 +447,7 @@ A visualization of the process shows that the search does reduce the Brier score
 autoplot(vip_svm_res, metric = "brier_class", type = "performance")
 ```
 
-When we plot the parameter choices over iterations, we see that each tuning parameter converges to specific ranges. The number of predictors retained fluctuates, and a few choices could be used (say, between 5 and 15 predictors). 
+We can plot the parameter choices over iterations: 
 
 ```{r}
 #| label: vip-param
@@ -458,7 +458,7 @@ When we plot the parameter choices over iterations, we see that each tuning para
 autoplot(vip_svm_res, type = "parameters")
 ```
 
-A plot of the parameter values versus the Brier score tells a similar story:
+A plot of the filtering parameter values versus the Brier score tells a similar story:
 
 ```{r}
 #| label: vip-profile
