@@ -1,75 +1,67 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>https://tidymodels.aml4td.org/chapters/feature-selection.html</loc>
+    <lastmod>2026-01-26T15:33:29.282Z</lastmod>
+  </url>
+  <url>
+    <loc>https://tidymodels.aml4td.org/chapters/cls-nonlinear.html</loc>
+    <lastmod>2026-01-26T15:33:29.280Z</lastmod>
+  </url>
+  <url>
+    <loc>https://tidymodels.aml4td.org/chapters/cls-linear.html</loc>
+    <lastmod>2026-01-26T15:33:29.258Z</lastmod>
+  </url>
+  <url>
     <loc>https://tidymodels.aml4td.org/index.html</loc>
-    <lastmod>2025-05-21T18:04:35.845Z</lastmod>
-  </url>
-  <url>
-    <loc>https://tidymodels.aml4td.org/chapters/news.html</loc>
-    <lastmod>2025-07-25T10:55:30.708Z</lastmod>
-  </url>
-  <url>
-    <loc>https://tidymodels.aml4td.org/chapters/contributing.html</loc>
-    <lastmod>2025-07-25T15:42:38.261Z</lastmod>
-  </url>
-  <url>
-    <loc>https://tidymodels.aml4td.org/chapters/introduction.html</loc>
-    <lastmod>2025-06-24T12:38:15.041Z</lastmod>
-  </url>
-  <url>
-    <loc>https://tidymodels.aml4td.org/chapters/whole-game.html</loc>
-    <lastmod>2025-07-25T10:54:10.057Z</lastmod>
-  </url>
-  <url>
-    <loc>https://tidymodels.aml4td.org/chapters/initial-data-splitting.html</loc>
-    <lastmod>2025-06-24T12:38:15.041Z</lastmod>
-  </url>
-  <url>
-    <loc>https://tidymodels.aml4td.org/chapters/missing-data.html</loc>
-    <lastmod>2025-06-24T12:38:15.041Z</lastmod>
-  </url>
-  <url>
-    <loc>https://tidymodels.aml4td.org/chapters/numeric-predictors.html</loc>
-    <lastmod>2025-06-24T12:38:15.042Z</lastmod>
-  </url>
-  <url>
-    <loc>https://tidymodels.aml4td.org/chapters/categorical-predictors.html</loc>
-    <lastmod>2025-06-24T12:38:14.997Z</lastmod>
-  </url>
-  <url>
-    <loc>https://tidymodels.aml4td.org/chapters/embeddings.html</loc>
-    <lastmod>2025-06-24T12:38:15.040Z</lastmod>
-  </url>
-  <url>
-    <loc>https://tidymodels.aml4td.org/chapters/interactions-nonlinear.html</loc>
-    <lastmod>2025-06-24T12:38:15.041Z</lastmod>
-  </url>
-  <url>
-    <loc>https://tidymodels.aml4td.org/chapters/overfitting.html</loc>
-    <lastmod>2025-06-24T12:38:15.042Z</lastmod>
-  </url>
-  <url>
-    <loc>https://tidymodels.aml4td.org/chapters/resampling.html</loc>
-    <lastmod>2025-06-24T12:38:15.042Z</lastmod>
-  </url>
-  <url>
-    <loc>https://tidymodels.aml4td.org/chapters/grid.html</loc>
-    <lastmod>2025-06-24T12:38:15.040Z</lastmod>
+    <lastmod>2025-11-24T02:16:59.300Z</lastmod>
   </url>
   <url>
     <loc>https://tidymodels.aml4td.org/chapters/iterative-search.html</loc>
-    <lastmod>2025-06-24T12:38:15.041Z</lastmod>
+    <lastmod>2026-01-26T15:33:29.283Z</lastmod>
   </url>
   <url>
-    <loc>https://tidymodels.aml4td.org/chapters/feature-selection.html</loc>
-    <lastmod>2025-06-24T12:38:15.040Z</lastmod>
+    <loc>https://tidymodels.aml4td.org/chapters/initial-data-splitting.html</loc>
+    <lastmod>2026-01-26T15:33:29.282Z</lastmod>
+  </url>
+  <url>
+    <loc>https://tidymodels.aml4td.org/chapters/missing-data.html</loc>
+    <lastmod>2026-01-26T15:33:29.283Z</lastmod>
+  </url>
+  <url>
+    <loc>https://tidymodels.aml4td.org/chapters/numeric-predictors.html</loc>
+    <lastmod>2026-01-26T15:33:29.283Z</lastmod>
+  </url>
+  <url>
+    <loc>https://tidymodels.aml4td.org/chapters/categorical-predictors.html</loc>
+    <lastmod>2026-01-26T15:33:29.258Z</lastmod>
+  </url>
+  <url>
+    <loc>https://tidymodels.aml4td.org/chapters/embeddings.html</loc>
+    <lastmod>2026-01-26T15:33:29.281Z</lastmod>
+  </url>
+  <url>
+    <loc>https://tidymodels.aml4td.org/chapters/interactions-nonlinear.html</loc>
+    <lastmod>2026-01-26T15:33:29.282Z</lastmod>
+  </url>
+  <url>
+    <loc>https://tidymodels.aml4td.org/chapters/overfitting.html</loc>
+    <lastmod>2026-01-26T15:33:29.283Z</lastmod>
+  </url>
+  <url>
+    <loc>https://tidymodels.aml4td.org/chapters/resampling.html</loc>
+    <lastmod>2026-01-26T15:33:29.283Z</lastmod>
+  </url>
+  <url>
+    <loc>https://tidymodels.aml4td.org/chapters/grid.html</loc>
+    <lastmod>2026-01-26T15:33:29.282Z</lastmod>
   </url>
   <url>
     <loc>https://tidymodels.aml4td.org/chapters/comparing-models.html</loc>
-    <lastmod>2025-06-24T12:38:14.997Z</lastmod>
+    <lastmod>2026-01-26T15:33:29.280Z</lastmod>
   </url>
   <url>
     <loc>https://tidymodels.aml4td.org/chapters/cls-metrics.html</loc>
-    <lastmod>2025-07-25T10:54:10.056Z</lastmod>
+    <lastmod>2026-01-26T15:33:29.280Z</lastmod>
   </url>
 </urlset>

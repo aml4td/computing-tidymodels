@@ -1,0 +1,1766 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.26">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>16&nbsp; Generalized Linear and Additive Classifiers – Tidymodels Computing Supplement</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../chapters/cls-nonlinear.html" rel="next">
+<link href="../chapters/cls-metrics.html" rel="prev">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-7c647e586662db48eb79d76466712003.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/quarto-contrib/fontawesome6-1.2.0/all.min.css" rel="stylesheet">
+<link href="../site_libs/quarto-contrib/fontawesome6-1.2.0/latex-fontsize.css" rel="stylesheet"><script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+</head>
+<body class="nav-sidebar docked quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top"><nav class="quarto-secondary-nav"><div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <a class="flex-grow-1 no-decor" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+          <h1 class="quarto-secondary-nav-title"><span id="sec-cls-linear" class="quarto-section-identifier"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Generalized Linear and Additive Classifiers</span></span></h1>
+        </a>     
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav></header><!-- content --><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto"><div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../"></a> 
+        <div class="sidebar-tools-main tools-wide">
+    <a href="https://github.com/aml4td/computing-tidymodels/" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
+    <div class="dropdown">
+      <a href="" title="Share" id="quarto-navigation-tool-dropdown-0" class="quarto-navigation-tool dropdown-toggle px-1" data-bs-toggle="dropdown" aria-expanded="false" role="link" aria-label="Share"><i class="bi bi-share"></i></a>
+      <ul class="dropdown-menu" aria-labelledby="quarto-navigation-tool-dropdown-0">
+<li>
+            <a class="dropdown-item sidebar-tools-main-item" href="https://twitter.com/intent/tweet?url=|url|">
+              <i class="bi bi-twitter pe-1"></i>
+            Twitter
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item sidebar-tools-main-item" href="https://www.facebook.com/sharer/sharer.php?u=|url|">
+              <i class="bi bi-facebook pe-1"></i>
+            Facebook
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item sidebar-tools-main-item" href="https://www.linkedin.com/sharing/share-offsite/?url=|url|">
+              <i class="bi bi-linkedin pe-1"></i>
+            LinkedIn
+            </a>
+          </li>
+      </ul>
+</div>
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Preface</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/news.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">News</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/contributing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Contributing</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="false">
+ <span class="menu-text">Introduction</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 ">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/introduction.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/whole-game.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">The Whole Game</span></span></a>
+  </div>
+</li>
+      </ul>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false">
+ <span class="menu-text">Preparation</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 ">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/initial-data-splitting.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Initial Data Splitting</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/missing-data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Missing Data</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/numeric-predictors.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Transforming Numeric Predictors</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/categorical-predictors.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Working with Categorical Predictors</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/embeddings.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Embeddings</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/interactions-nonlinear.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Interactions and Nonlinear Features</span></span></a>
+  </div>
+</li>
+      </ul>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false">
+ <span class="menu-text">Optmization</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 ">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/overfitting.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Overfitting</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/resampling.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Measuring Performance with Resampling</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/grid.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Grid Search</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/iterative-search.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Iterative Search</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/feature-selection.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Feature Selection</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/comparing-models.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Comparing Models</span></span></a>
+  </div>
+</li>
+      </ul>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Classification</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/cls-metrics.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Characterizing Classification Models</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/cls-linear.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Generalized Linear and Additive Classifiers</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/cls-nonlinear.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Complex Nonlinear Boundaries</span></span></a>
+  </div>
+</li>
+      </ul>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <span class="sidebar-item-text sidebar-link text-start">
+ <span class="menu-text">Regression</span></span>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <span class="sidebar-item-text sidebar-link text-start">
+ <span class="menu-text">Characterization</span></span>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <span class="sidebar-item-text sidebar-link text-start">
+ <span class="menu-text">Finalization</span></span>
+  </li>
+    </ul>
+</div>
+</nav><div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active"><h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+<li><a href="#requirements" id="toc-requirements" class="nav-link active" data-scroll-target="#requirements"><span class="header-section-number">16.1</span> Requirements</a></li>
+  <li><a href="#sec-forestation-eda" id="toc-sec-forestation-eda" class="nav-link" data-scroll-target="#sec-forestation-eda"><span class="header-section-number">16.2</span> Exploring Forestation Data</a></li>
+  <li>
+<a href="#sec-logistic-reg" id="toc-sec-logistic-reg" class="nav-link" data-scroll-target="#sec-logistic-reg"><span class="header-section-number">16.3</span> Logistic Regression</a>
+  <ul class="collapse">
+<li><a href="#sec-logistic-diagnostic" id="toc-sec-logistic-diagnostic" class="nav-link" data-scroll-target="#sec-logistic-diagnostic"><span class="header-section-number">16.3.1</span> Examining the Model</a></li>
+  <li><a href="#sec-logistic-interpretability" id="toc-sec-logistic-interpretability" class="nav-link" data-scroll-target="#sec-logistic-interpretability"><span class="header-section-number">16.3.2</span> Interpreting the Logistic Model</a></li>
+  <li><a href="#sec-logistic-multicollinearity" id="toc-sec-logistic-multicollinearity" class="nav-link" data-scroll-target="#sec-logistic-multicollinearity"><span class="header-section-number">16.3.3</span> A Potential Problem: Multicollinearity</a></li>
+  <li><a href="#sec-logistic-bayes" id="toc-sec-logistic-bayes" class="nav-link" data-scroll-target="#sec-logistic-bayes"><span class="header-section-number">16.3.4</span> Bayesian Estimation</a></li>
+  </ul>
+</li>
+  <li><a href="#sec-multinomial-reg" id="toc-sec-multinomial-reg" class="nav-link" data-scroll-target="#sec-multinomial-reg"><span class="header-section-number">16.4</span> Multinomial Regression</a></li>
+  <li><a href="#sec-cls-gam" id="toc-sec-cls-gam" class="nav-link" data-scroll-target="#sec-cls-gam"><span class="header-section-number">16.5</span> Generalized Additive Models</a></li>
+  </ul></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block default"><div class="quarto-title">
+<h1 class="title d-none d-lg-block"><span id="sec-cls-linear" class="quarto-section-identifier"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Generalized Linear and Additive Classifiers</span></span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header><p>This chapter describes how to develop classifiers that have linear or additive structures.</p>
+<section id="requirements" class="level2" data-number="16.1"><h2 data-number="16.1" class="anchored" data-anchor-id="requirements">
+<span class="header-section-number">16.1</span> Requirements</h2>
+<p>You’ll need 10 packages (<span class="pkg"><a href="https://cran.r-project.org/package=bestNormalize">bestNormalize</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=car">car</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=DALEXtra">DALEXtra</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=embed">embed</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=glmnet">glmnet</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=mirai">mirai</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=probably">probably</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=rstanarm">rstanarm</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=spatialsample">spatialsample</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=tidymodels">tidymodels</a></span>) for this chapter:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># skip: fmt</span></span>
+<span><span class="va">req_pkg</span> <span class="op">&lt;-</span> </span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"bestNormalize"</span>, <span class="st">"car"</span>, <span class="st">"DALEXtra"</span>, <span class="st">"embed"</span>, <span class="st">"glmnet"</span>, <span class="st">"mirai"</span>, </span>
+<span>    <span class="st">"probably"</span>, <span class="st">"rstanarm"</span>, <span class="st">"spatialsample"</span>, <span class="st">"tidymodels"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Check to see if they are installed: </span></span>
+<span><span class="va">pkg_installed</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">vapply</a></span><span class="op">(</span><span class="va">req_pkg</span>, <span class="fu">rlang</span><span class="fu">::</span><span class="va"><a href="https://rlang.r-lib.org/reference/is_installed.html">is_installed</a></span>, <span class="fu"><a href="https://rdrr.io/r/base/logical.html">logical</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Install missing packages: </span></span>
+<span><span class="kw">if</span> <span class="op">(</span> <span class="fu"><a href="https://rdrr.io/r/base/any.html">any</a></span><span class="op">(</span><span class="op">!</span><span class="va">pkg_installed</span><span class="op">)</span> <span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">install_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">pkg_installed</span><span class="op">)</span><span class="op">[</span><span class="op">!</span><span class="va">pkg_installed</span><span class="op">]</span></span>
+<span>  <span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html">pak</a></span><span class="op">(</span><span class="va">install_list</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Let’s load the meta package and manage some between-package function conflicts.</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidymodels.tidymodels.org">tidymodels</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tidymodels/spatialsample">spatialsample</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://embed.tidymodels.org">embed</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://petersonr.github.io/bestNormalize/">bestNormalize</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tidymodels/probably">probably</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://patchwork.data-imaginist.com">patchwork</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://r-forge.r-project.org/projects/car/">car</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://ModelOriented.github.io/DALEXtra/">DALEXtra</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://tidymodels.tidymodels.org/reference/tidymodels_prefer.html">tidymodels_prefer</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="fu">theme_set</span><span class="op">(</span><span class="fu">theme_bw</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co"># We'll use parallel processing too:</span></span>
+<span><span class="fu">mirai</span><span class="fu">::</span><span class="fu"><a href="https://mirai.r-lib.org/reference/daemons.html">daemons</a></span><span class="op">(</span><span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html">detectCores</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section><section id="sec-forestation-eda" class="level2" data-number="16.2"><h2 data-number="16.2" class="anchored" data-anchor-id="sec-forestation-eda">
+<span class="header-section-number">16.2</span> Exploring Forestation Data</h2>
+<p>The forestation data have already been split and resampled. The results are contained in an RData file called <code>forested_data.RData</code>. Let’s load that from GitHub:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="st">"https://raw.githubusercontent.com/aml4td/website/main/RData/forested_data.RData"</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/connections.html">url</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/load.html">load</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>We have already precomputed some H-statistics for these data using a boosted tree as the substrate model. The <a href="https://github.com/aml4td/website/blob/main/R/forested_interactions.R">code to do that is on GitHub</a>, and we’ll load another <code>RData</code> file with the results:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="st">"https://raw.githubusercontent.com/aml4td/website/main/RData/forested_interactions.RData"</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/connections.html">url</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span>  </span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/load.html">load</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>The code for the exploratory data analysis plot is shown here. We’ll need to take our training set and stack the numeric predictors on one another:</p>
+<p>The first data plot shows the predictors by their <em>percentiles</em>, so we should compute these for each predictor. Some columns do not have a lot of unique values, so we compute the maximum granularity of the data and use that if there are fewer than 21 unique values:</p>
+<p>Then we compute the percentiles for each using <code><a href="https://dplyr.tidyverse.org/reference/ntile.html">dplyr::ntile()</a></code>:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">percentiles</span> <span class="op">&lt;-</span></span>
+<span>  <span class="va">vert_forest</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">full_join</span><span class="op">(</span><span class="va">num_unique</span>, by <span class="op">=</span> <span class="st">"Predictor"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="co"># Create a list column with the data for each predictor: </span></span>
+<span>  <span class="fu">group_nest</span><span class="op">(</span><span class="va">Predictor</span>, <span class="va">num_vals</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">mutate</span><span class="op">(</span></span>
+<span>    <span class="co"># Map over the predictor data sets and their respective</span></span>
+<span>    <span class="co"># number of bins (21 or fewer) to add a `group` column</span></span>
+<span>    <span class="co"># with the group number: </span></span>
+<span>    pctl <span class="op">=</span> <span class="fu">map2</span><span class="op">(</span></span>
+<span>      <span class="va">data</span>,</span>
+<span>      <span class="va">num_vals</span>,</span>
+<span>      <span class="op">~</span> <span class="fu">tibble</span><span class="op">(</span>group <span class="op">=</span> <span class="fu">ntile</span><span class="op">(</span><span class="va">.x</span><span class="op">$</span><span class="va">value</span>, n <span class="op">=</span> <span class="va">.y</span><span class="op">)</span>, class <span class="op">=</span> <span class="va">.x</span><span class="op">$</span><span class="va">class</span><span class="op">)</span></span>
+<span>    <span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="co"># Remove the original data</span></span>
+<span>  <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">data</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="co"># Expand the list column of data frames into one table:</span></span>
+<span>  <span class="fu">unnest</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">pctl</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="co"># Compute the percentile number from the group number</span></span>
+<span>  <span class="fu">mutate</span><span class="op">(</span>pctl <span class="op">=</span> <span class="op">(</span><span class="va">group</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span> <span class="op">/</span> <span class="va">num_vals</span> <span class="op">*</span> <span class="fl">100</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="co"># Compute the number of forested locations in the percentile</span></span>
+<span>  <span class="co"># for each predictor: </span></span>
+<span>  <span class="fu">summarize</span><span class="op">(</span></span>
+<span>    events <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">class</span> <span class="op">==</span> <span class="st">"Yes"</span><span class="op">)</span>,</span>
+<span>    total <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">class</span><span class="op">)</span>,</span>
+<span>    .by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">Predictor</span>, <span class="va">pctl</span><span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="co"># Get the estimated proportion and confidence intervals: </span></span>
+<span>  <span class="fu">mutate</span><span class="op">(</span></span>
+<span>    prop_obj <span class="op">=</span> <span class="fu">map2</span><span class="op">(</span><span class="va">events</span>, <span class="va">total</span>, <span class="op">~</span> <span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html">tidy</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/binom.test.html">binom.test</a></span><span class="op">(</span><span class="va">.x</span>, <span class="va">.y</span>, conf.level <span class="op">=</span> <span class="fl">0.9</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">events</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">unnest</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">prop_obj</span><span class="op">)</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Finally, we create the plot:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">percentiles</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">ggplot</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span><span class="va">pctl</span>, <span class="va">estimate</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">geom_line</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">geom_ribbon</span><span class="op">(</span></span>
+<span>    <span class="fu">aes</span><span class="op">(</span>ymin <span class="op">=</span> <span class="va">conf.low</span>, ymax <span class="op">=</span> <span class="va">conf.high</span><span class="op">)</span>,</span>
+<span>    alpha <span class="op">=</span> <span class="fl">1</span> <span class="op">/</span> <span class="fl">5</span>,</span>
+<span>    fill <span class="op">=</span> <span class="st">"#D85434FF"</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">facet_wrap</span><span class="op">(</span><span class="op">~</span><span class="va">Predictor</span>, ncol <span class="op">=</span> <span class="fl">3</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">labs</span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Percentile"</span>, y <span class="op">=</span> <span class="st">"Rate of Forestation"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure"><p><img src="cls-linear_files/figure-html/forest-percentiles-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:80.0%"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>For the county data, we compute <code><a href="https://rdrr.io/r/stats/binom.test.html">binom.test()</a></code> for each county, pull out the results, and do some formatting:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">obs_rates</span> <span class="op">&lt;-</span></span>
+<span>  <span class="va">forested_train</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">summarize</span><span class="op">(</span></span>
+<span>    rate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">class</span> <span class="op">==</span> <span class="st">"Yes"</span><span class="op">)</span>,</span>
+<span>    events <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">class</span> <span class="op">==</span> <span class="st">"Yes"</span><span class="op">)</span>,</span>
+<span>    total <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">class</span><span class="op">)</span>,</span>
+<span>    .by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">county</span><span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">mutate</span><span class="op">(</span></span>
+<span>    object <span class="op">=</span> <span class="fu">map2</span><span class="op">(</span><span class="va">events</span>, <span class="va">total</span>, <span class="va">binom.test</span>, conf.level <span class="op">=</span> <span class="fl">0.9</span><span class="op">)</span>,</span>
+<span>    pct <span class="op">=</span> <span class="va">rate</span> <span class="op">*</span> <span class="fl">100</span>,</span>
+<span>    .lower <span class="op">=</span> <span class="fu">map_dbl</span><span class="op">(</span><span class="va">object</span>, <span class="op">~</span> <span class="va">.x</span><span class="op">$</span><span class="va">conf.int</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span>,</span>
+<span>    .upper <span class="op">=</span> <span class="fu">map_dbl</span><span class="op">(</span><span class="va">object</span>, <span class="op">~</span> <span class="va">.x</span><span class="op">$</span><span class="va">conf.int</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span>,</span>
+<span>    county <span class="op">=</span> <span class="fu">tools</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/tools/toTitleCase.html">toTitleCase</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html">gsub</a></span><span class="op">(</span><span class="st">"_"</span>, <span class="st">" "</span>, <span class="va">county</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    county <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">county</span><span class="op">)</span>,</span>
+<span>    county <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/reorder.factor.html">reorder</a></span><span class="op">(</span><span class="va">county</span>, <span class="va">rate</span><span class="op">)</span>,</span>
+<span>    `# Locations` <span class="op">=</span> <span class="va">total</span></span>
+<span>  <span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Here is the plot code:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">obs_rates</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">ggplot</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>y <span class="op">=</span> <span class="va">county</span>, col <span class="op">=</span> <span class="va">`# Locations`</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">geom_point</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">rate</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">geom_errorbar</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>xmin <span class="op">=</span> <span class="va">.lower</span>, xmax <span class="op">=</span> <span class="va">.upper</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">labs</span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Rate of Forestation"</span>, y <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme</span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"top"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">scale_color_viridis_c</span><span class="op">(</span>option <span class="op">=</span> <span class="st">"mako"</span>, begin <span class="op">=</span> <span class="fl">.2</span>, end <span class="op">=</span> <span class="fl">.8</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure"><p><img src="cls-linear_files/figure-html/counties-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:40.0%"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>From our interaction analysis, which used H-statistics, 105 pairwise interactions were assessed. We can look at their H values along with 90% confidence intervals for the top 25 interactions:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">forested_hstats_text</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">slice_max</span><span class="op">(</span><span class="va">mean_score</span>, n <span class="op">=</span> <span class="fl">25</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">ggplot</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>y <span class="op">=</span> <span class="va">term</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">geom_point</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">mean_score</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">geom_errorbar</span><span class="op">(</span></span>
+<span>    <span class="fu">aes</span><span class="op">(</span>xmin <span class="op">=</span> <span class="va">.lower</span>, xmax <span class="op">=</span> <span class="va">.upper</span><span class="op">)</span>,</span>
+<span>    alpha <span class="op">=</span> <span class="fl">1</span> <span class="op">/</span> <span class="fl">2</span>,</span>
+<span>    width <span class="op">=</span> <span class="fl">1</span> <span class="op">/</span> <span class="fl">2</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">labs</span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Mean H-Statistic"</span>, y <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure"><p><img src="cls-linear_files/figure-html/forested-interactions-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:90.0%"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>We’ll use the top five interactions in our model. A precomputed formula for those is:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">forested_int_form</span></span>
+<span><span class="co">#&gt; ~dew_temp:elevation + dew_temp:temp_annual_max + dew_temp:temp_january_min + </span></span>
+<span><span class="co">#&gt;     eastness:vapor_max + temp_annual_max:vapor_max</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p><a href="https://aml4td.org/chapters/cls-linear.html#sec-forestation-eda"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+</section><section id="sec-logistic-reg" class="level2" data-number="16.3"><h2 data-number="16.3" class="anchored" data-anchor-id="sec-logistic-reg">
+<span class="header-section-number">16.3</span> Logistic Regression</h2>
+<p>To start, the focus is on basic logistic regression via maximum likelihood using the <code><a href="https://rdrr.io/r/stats/glm.html">glm()</a></code> function.</p>
+<section id="generalized-linear-models" class="level4 unnumbered"><h4 class="unnumbered anchored" data-anchor-id="generalized-linear-models">Generalized Linear Models</h4>
+<p>In R, the function to produce logistic regression models is one of the most well-known: <code>glm</code>(). To train this model for the forestry data, the simplest invocation is:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">lr_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html">glm</a></span><span class="op">(</span><span class="va">class</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">forested_train</span>, family <span class="op">=</span> <span class="va">binomial</span><span class="op">)</span></span>
+<span><span class="va">lr_fit</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Call:  glm(formula = class ~ ., family = binomial, data = forested_train)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Coefficients:</span></span>
+<span><span class="co">#&gt;        (Intercept)                year           elevation            eastness  </span></span>
+<span><span class="co">#&gt;          -5.51e+01            4.39e-03           -8.38e-04            2.53e-04  </span></span>
+<span><span class="co">#&gt;          northness           roughness            dew_temp       precip_annual  </span></span>
+<span><span class="co">#&gt;          -1.64e-03           -9.77e-03            4.89e-01           -1.23e-03  </span></span>
+<span><span class="co">#&gt;   temp_annual_mean     temp_annual_min     temp_annual_max    temp_january_min  </span></span>
+<span><span class="co">#&gt;           8.32e+00            1.28e+00           -5.64e+00           -5.34e+00  </span></span>
+<span><span class="co">#&gt;          vapor_min           vapor_max        countyasotin        countybenton  </span></span>
+<span><span class="co">#&gt;           1.32e-02            1.53e-02           -1.54e+01           -4.90e-01  </span></span>
+<span><span class="co">#&gt;       countychelan       countyclallam         countyclark      countycolumbia  </span></span>
+<span><span class="co">#&gt;          -1.74e+01           -1.75e+01           -1.45e+01           -1.50e+01  </span></span>
+<span><span class="co">#&gt;      countycowlitz       countydouglas         countyferry      countyfranklin  </span></span>
+<span><span class="co">#&gt;          -1.60e+01            1.23e+00           -1.98e+01           -1.22e+00  </span></span>
+<span><span class="co">#&gt;     countygarfield         countygrant  countygrays_harbor        countyisland  </span></span>
+<span><span class="co">#&gt;          -1.54e+01           -1.34e-01           -1.56e+01           -1.51e+01  </span></span>
+<span><span class="co">#&gt;    countyjefferson          countyking        countykitsap      countykittitas  </span></span>
+<span><span class="co">#&gt;          -1.66e+01           -1.54e+01           -1.74e+01           -1.62e+01  </span></span>
+<span><span class="co">#&gt;    countyklickitat         countylewis       countylincoln         countymason  </span></span>
+<span><span class="co">#&gt;          -1.74e+01           -1.68e+01           -1.43e+01           -1.71e+01  </span></span>
+<span><span class="co">#&gt;     countyokanogan       countypacific  countypend_oreille        countypierce  </span></span>
+<span><span class="co">#&gt;          -1.75e+01           -1.59e+01           -1.82e+01           -1.57e+01  </span></span>
+<span><span class="co">#&gt;     countysan_juan        countyskagit      countyskamania     countysnohomish  </span></span>
+<span><span class="co">#&gt;          -1.76e+01           -1.49e+01           -1.68e+01           -1.51e+01  </span></span>
+<span><span class="co">#&gt;      countyspokane       countystevens      countythurston     countywahkiakum  </span></span>
+<span><span class="co">#&gt;          -1.65e+01           -1.84e+01           -1.61e+01           -1.50e+01  </span></span>
+<span><span class="co">#&gt;  countywalla_walla       countywhatcom       countywhitman        countyyakima  </span></span>
+<span><span class="co">#&gt;          -1.42e+01           -1.49e+01           -1.42e+01           -1.70e+01  </span></span>
+<span><span class="co">#&gt;          longitude            latitude  </span></span>
+<span><span class="co">#&gt;          -3.24e-01            7.23e-01  </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Degrees of Freedom: 4831 Total (i.e. Null);  4778 Residual</span></span>
+<span><span class="co">#&gt; Null Deviance:       6620 </span></span>
+<span><span class="co">#&gt; Residual Deviance: 3040  AIC: 3150</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>The <code>family</code> argument is required to indicate that we are optimizing the binomial/Bernoulli log-likelihood function.</p>
+<p>The default formula method in R converts our <code>county</code> predictor to a set of 38 binary indicator columns. No other preprocessing is done by <code><a href="https://rdrr.io/r/stats/glm.html">glm()</a></code>.</p>
+<p>There is a summary method for <code><a href="https://rdrr.io/r/stats/glm.html">glm()</a></code> that gives more information regarding the parameter estimates (but is fairly long).:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="va">lr_fit</span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Call:</span></span>
+<span><span class="co">#&gt; glm(formula = class ~ ., family = binomial, data = forested_train)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Coefficients:</span></span>
+<span><span class="co">#&gt;                     Estimate Std. Error z value Pr(&gt;|z|)    </span></span>
+<span><span class="co">#&gt; (Intercept)        -5.51e+01   5.58e+02   -0.10   0.9213    </span></span>
+<span><span class="co">#&gt; year                4.39e-03   1.37e-02    0.32   0.7482    </span></span>
+<span><span class="co">#&gt; elevation          -8.38e-04   6.27e-04   -1.34   0.1811    </span></span>
+<span><span class="co">#&gt; eastness            2.53e-04   6.59e-04    0.38   0.7014    </span></span>
+<span><span class="co">#&gt; northness          -1.64e-03   6.71e-04   -2.44   0.0145 *  </span></span>
+<span><span class="co">#&gt; roughness          -9.77e-03   1.47e-03   -6.64  3.2e-11 ***</span></span>
+<span><span class="co">#&gt; dew_temp            4.89e-01   1.92e-01    2.54   0.0111 *  </span></span>
+<span><span class="co">#&gt; precip_annual      -1.23e-03   1.36e-04   -9.04  &lt; 2e-16 ***</span></span>
+<span><span class="co">#&gt; temp_annual_mean    8.32e+00   1.13e+01    0.74   0.4604    </span></span>
+<span><span class="co">#&gt; temp_annual_min     1.28e+00   1.33e-01    9.56  &lt; 2e-16 ***</span></span>
+<span><span class="co">#&gt; temp_annual_max    -5.64e+00   5.64e+00   -1.00   0.3177    </span></span>
+<span><span class="co">#&gt; temp_january_min   -5.34e+00   5.63e+00   -0.95   0.3436    </span></span>
+<span><span class="co">#&gt; vapor_min           1.32e-02   3.79e-03    3.48   0.0005 ***</span></span>
+<span><span class="co">#&gt; vapor_max           1.53e-02   1.36e-03   11.23  &lt; 2e-16 ***</span></span>
+<span><span class="co">#&gt; countyasotin       -1.54e+01   5.57e+02   -0.03   0.9780    </span></span>
+<span><span class="co">#&gt; countybenton       -4.90e-01   7.45e+02    0.00   0.9995    </span></span>
+<span><span class="co">#&gt; countychelan       -1.74e+01   5.57e+02   -0.03   0.9751    </span></span>
+<span><span class="co">#&gt; countyclallam      -1.75e+01   5.57e+02   -0.03   0.9749    </span></span>
+<span><span class="co">#&gt; countyclark        -1.45e+01   5.57e+02   -0.03   0.9792    </span></span>
+<span><span class="co">#&gt; countycolumbia     -1.50e+01   5.57e+02   -0.03   0.9785    </span></span>
+<span><span class="co">#&gt; countycowlitz      -1.60e+01   5.57e+02   -0.03   0.9771    </span></span>
+<span><span class="co">#&gt; countydouglas       1.23e+00   8.21e+02    0.00   0.9988    </span></span>
+<span><span class="co">#&gt; countyferry        -1.98e+01   5.57e+02   -0.04   0.9717    </span></span>
+<span><span class="co">#&gt; countyfranklin     -1.22e+00   8.28e+02    0.00   0.9988    </span></span>
+<span><span class="co">#&gt; countygarfield     -1.54e+01   5.57e+02   -0.03   0.9779    </span></span>
+<span><span class="co">#&gt; countygrant        -1.34e-01   7.01e+02    0.00   0.9998    </span></span>
+<span><span class="co">#&gt; countygrays_harbor -1.56e+01   5.57e+02   -0.03   0.9776    </span></span>
+<span><span class="co">#&gt; countyisland       -1.51e+01   5.57e+02   -0.03   0.9783    </span></span>
+<span><span class="co">#&gt; countyjefferson    -1.66e+01   5.57e+02   -0.03   0.9762    </span></span>
+<span><span class="co">#&gt; countyking         -1.54e+01   5.57e+02   -0.03   0.9779    </span></span>
+<span><span class="co">#&gt; countykitsap       -1.74e+01   5.57e+02   -0.03   0.9750    </span></span>
+<span><span class="co">#&gt; countykittitas     -1.62e+01   5.57e+02   -0.03   0.9768    </span></span>
+<span><span class="co">#&gt; countyklickitat    -1.74e+01   5.57e+02   -0.03   0.9750    </span></span>
+<span><span class="co">#&gt; countylewis        -1.68e+01   5.57e+02   -0.03   0.9759    </span></span>
+<span><span class="co">#&gt; countylincoln      -1.43e+01   5.57e+02   -0.03   0.9796    </span></span>
+<span><span class="co">#&gt; countymason        -1.71e+01   5.57e+02   -0.03   0.9755    </span></span>
+<span><span class="co">#&gt; countyokanogan     -1.75e+01   5.57e+02   -0.03   0.9750    </span></span>
+<span><span class="co">#&gt; countypacific      -1.59e+01   5.57e+02   -0.03   0.9772    </span></span>
+<span><span class="co">#&gt; countypend_oreille -1.82e+01   5.57e+02   -0.03   0.9740    </span></span>
+<span><span class="co">#&gt; countypierce       -1.57e+01   5.57e+02   -0.03   0.9775    </span></span>
+<span><span class="co">#&gt; countysan_juan     -1.76e+01   5.57e+02   -0.03   0.9748    </span></span>
+<span><span class="co">#&gt; countyskagit       -1.49e+01   5.57e+02   -0.03   0.9786    </span></span>
+<span><span class="co">#&gt; countyskamania     -1.68e+01   5.57e+02   -0.03   0.9759    </span></span>
+<span><span class="co">#&gt; countysnohomish    -1.51e+01   5.57e+02   -0.03   0.9783    </span></span>
+<span><span class="co">#&gt; countyspokane      -1.65e+01   5.57e+02   -0.03   0.9763    </span></span>
+<span><span class="co">#&gt; countystevens      -1.84e+01   5.57e+02   -0.03   0.9736    </span></span>
+<span><span class="co">#&gt; countythurston     -1.61e+01   5.57e+02   -0.03   0.9769    </span></span>
+<span><span class="co">#&gt; countywahkiakum    -1.50e+01   5.57e+02   -0.03   0.9785    </span></span>
+<span><span class="co">#&gt; countywalla_walla  -1.42e+01   5.57e+02   -0.03   0.9796    </span></span>
+<span><span class="co">#&gt; countywhatcom      -1.49e+01   5.57e+02   -0.03   0.9786    </span></span>
+<span><span class="co">#&gt; countywhitman      -1.42e+01   5.57e+02   -0.03   0.9796    </span></span>
+<span><span class="co">#&gt; countyyakima       -1.70e+01   5.57e+02   -0.03   0.9757    </span></span>
+<span><span class="co">#&gt; longitude          -3.24e-01   1.79e-01   -1.80   0.0711 .  </span></span>
+<span><span class="co">#&gt; latitude            7.23e-01   2.53e-01    2.86   0.0042 ** </span></span>
+<span><span class="co">#&gt; ---</span></span>
+<span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; (Dispersion parameter for binomial family taken to be 1)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;     Null deviance: 6624.9  on 4831  degrees of freedom</span></span>
+<span><span class="co">#&gt; Residual deviance: 3042.0  on 4778  degrees of freedom</span></span>
+<span><span class="co">#&gt; AIC: 3150</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Number of Fisher Scoring iterations: 17</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>If you would like the model estimates in a more computationally-friendly format, the <code><a href="https://generics.r-lib.org/reference/tidy.html">tidy()</a></code> method works well:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">lr_coefs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html">tidy</a></span><span class="op">(</span><span class="va">lr_fit</span><span class="op">)</span></span>
+<span><span class="va">lr_coefs</span></span>
+<span><span class="co">#&gt; # A tibble: 54 × 5</span></span>
+<span><span class="co">#&gt;   term           estimate   std.error statistic   p.value</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;             &lt;dbl&gt;       &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1 (Intercept) -55.12      557.9        -0.09880 9.213e- 1</span></span>
+<span><span class="co">#&gt; 2 year          0.004392    0.01368     0.3211  7.482e- 1</span></span>
+<span><span class="co">#&gt; 3 elevation    -0.0008383   0.0006269  -1.337   1.811e- 1</span></span>
+<span><span class="co">#&gt; 4 eastness      0.0002527   0.0006591   0.3835  7.014e- 1</span></span>
+<span><span class="co">#&gt; 5 northness    -0.001641    0.0006714  -2.444   1.452e- 2</span></span>
+<span><span class="co">#&gt; 6 roughness    -0.009767    0.001471   -6.639   3.151e-11</span></span>
+<span><span class="co">#&gt; # ℹ 48 more rows</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>The <code><a href="https://rdrr.io/r/stats/predict.html">predict()</a></code> method is very limited. Using <code>type = "response"</code>, get the estimated probability of the <em>second</em> factor level, with, in our case, the probability of being unforested. The is also a <code>type = "link"</code>, which estimates the linear predictor values. There is also <code><a href="https://generics.r-lib.org/reference/augment.html">augment()</a></code> which attaches the predictions and, if possible, the residuals. These are bound to the data being predicted:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://generics.r-lib.org/reference/augment.html">augment</a></span><span class="op">(</span><span class="va">lr_fit</span>,  newdata <span class="op">=</span> <span class="va">forested_train</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span>,<span class="op">]</span>, type.predict <span class="op">=</span> <span class="st">"response"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu">relocate</span><span class="op">(</span><span class="va">.fitted</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 2 × 18</span></span>
+<span><span class="co">#&gt;   .fitted class  year elevation eastness northness roughness dew_temp precip_annual</span></span>
+<span><span class="co">#&gt;     &lt;dbl&gt; &lt;fct&gt; &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;         &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1  0.2218 Yes    2005       113      -25        96        30     6.4           1710</span></span>
+<span><span class="co">#&gt; 2  0.2807 No     2005       164      -84        53        13     6.06          1297</span></span>
+<span><span class="co">#&gt; # ℹ 9 more variables: temp_annual_mean &lt;dbl&gt;, temp_annual_min &lt;dbl&gt;,</span></span>
+<span><span class="co">#&gt; #   temp_annual_max &lt;dbl&gt;, temp_january_min &lt;dbl&gt;, vapor_min &lt;dbl&gt;,</span></span>
+<span><span class="co">#&gt; #   vapor_max &lt;dbl&gt;, county &lt;fct&gt;, longitude &lt;dbl&gt;, latitude &lt;dbl&gt;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>The object contains a fair amount of excess data. We can use the <span class="pkg"><a href="https://cran.r-project.org/package=butcher">butcher</a></span> package to see the size of the components in the object:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://butcher.tidymodels.org/">butcher</a></span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://butcher.tidymodels.org/reference/weigh.html">weigh</a></span><span class="op">(</span><span class="va">lr_fit</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 79 × 2</span></span>
+<span><span class="co">#&gt;    object               size</span></span>
+<span><span class="co">#&gt;    &lt;chr&gt;               &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt;  1 qr.qr             2.112  </span></span>
+<span><span class="co">#&gt;  2 residuals         0.3487 </span></span>
+<span><span class="co">#&gt;  3 fitted.values     0.3487 </span></span>
+<span><span class="co">#&gt;  4 linear.predictors 0.3487 </span></span>
+<span><span class="co">#&gt;  5 weights           0.3487 </span></span>
+<span><span class="co">#&gt;  6 prior.weights     0.3487 </span></span>
+<span><span class="co">#&gt;  7 y                 0.3487 </span></span>
+<span><span class="co">#&gt;  8 effects           0.08110</span></span>
+<span><span class="co">#&gt;  9 family.variance   0.04368</span></span>
+<span><span class="co">#&gt; 10 family.dev.resids 0.04368</span></span>
+<span><span class="co">#&gt; # ℹ 69 more rows</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>The <code>qr.qr</code> element contains some crucial matrix algebra data, but there are many other elements that are not required if we would like to predict with this object (e.g., <code>residuals</code>, <code>fitted.values</code>, etc.). We can trim the object using <code><a href="https://butcher.tidymodels.org/reference/butcher.html">butcher()</a></code>:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># In MB:</span></span>
+<span><span class="fu"><a href="https://butcher.tidymodels.org/reference/weigh.html">weigh</a></span><span class="op">(</span><span class="va">lr_fit</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">select</span><span class="op">(</span><span class="va">size</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/colSums.html">colSums</a></span><span class="op">(</span><span class="op">)</span> </span>
+<span><span class="co">#&gt;  size </span></span>
+<span><span class="co">#&gt; 5.818</span></span>
+<span><span class="va">lr_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://butcher.tidymodels.org/reference/butcher.html">butcher</a></span><span class="op">(</span><span class="va">lr_fit</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://butcher.tidymodels.org/reference/weigh.html">weigh</a></span><span class="op">(</span><span class="va">lr_fit</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">select</span><span class="op">(</span><span class="va">size</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/colSums.html">colSums</a></span><span class="op">(</span><span class="op">)</span> </span>
+<span><span class="co">#&gt;  size </span></span>
+<span><span class="co">#&gt; 4.498</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>When using <span class="pkg"><a href="https://cran.r-project.org/package=parsnip">parsnip</a></span> there is slightly more work:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">lr_fit</span> <span class="op">&lt;-</span> <span class="fu">logistic_reg</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://generics.r-lib.org/reference/fit.html">fit</a></span><span class="op">(</span><span class="va">class</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">forested_train</span><span class="op">)</span></span>
+<span><span class="va">lr_fit</span></span>
+<span><span class="co">#&gt; parsnip model object</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Call:  stats::glm(formula = class ~ ., family = stats::binomial, data = data)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Coefficients:</span></span>
+<span><span class="co">#&gt;        (Intercept)                year           elevation            eastness  </span></span>
+<span><span class="co">#&gt;          -5.51e+01            4.39e-03           -8.38e-04            2.53e-04  </span></span>
+<span><span class="co">#&gt;          northness           roughness            dew_temp       precip_annual  </span></span>
+<span><span class="co">#&gt;          -1.64e-03           -9.77e-03            4.89e-01           -1.23e-03  </span></span>
+<span><span class="co">#&gt;   temp_annual_mean     temp_annual_min     temp_annual_max    temp_january_min  </span></span>
+<span><span class="co">#&gt;           8.32e+00            1.28e+00           -5.64e+00           -5.34e+00  </span></span>
+<span><span class="co">#&gt;          vapor_min           vapor_max        countyasotin        countybenton  </span></span>
+<span><span class="co">#&gt;           1.32e-02            1.53e-02           -1.54e+01           -4.90e-01  </span></span>
+<span><span class="co">#&gt;       countychelan       countyclallam         countyclark      countycolumbia  </span></span>
+<span><span class="co">#&gt;          -1.74e+01           -1.75e+01           -1.45e+01           -1.50e+01  </span></span>
+<span><span class="co">#&gt;      countycowlitz       countydouglas         countyferry      countyfranklin  </span></span>
+<span><span class="co">#&gt;          -1.60e+01            1.23e+00           -1.98e+01           -1.22e+00  </span></span>
+<span><span class="co">#&gt;     countygarfield         countygrant  countygrays_harbor        countyisland  </span></span>
+<span><span class="co">#&gt;          -1.54e+01           -1.34e-01           -1.56e+01           -1.51e+01  </span></span>
+<span><span class="co">#&gt;    countyjefferson          countyking        countykitsap      countykittitas  </span></span>
+<span><span class="co">#&gt;          -1.66e+01           -1.54e+01           -1.74e+01           -1.62e+01  </span></span>
+<span><span class="co">#&gt;    countyklickitat         countylewis       countylincoln         countymason  </span></span>
+<span><span class="co">#&gt;          -1.74e+01           -1.68e+01           -1.43e+01           -1.71e+01  </span></span>
+<span><span class="co">#&gt;     countyokanogan       countypacific  countypend_oreille        countypierce  </span></span>
+<span><span class="co">#&gt;          -1.75e+01           -1.59e+01           -1.82e+01           -1.57e+01  </span></span>
+<span><span class="co">#&gt;     countysan_juan        countyskagit      countyskamania     countysnohomish  </span></span>
+<span><span class="co">#&gt;          -1.76e+01           -1.49e+01           -1.68e+01           -1.51e+01  </span></span>
+<span><span class="co">#&gt;      countyspokane       countystevens      countythurston     countywahkiakum  </span></span>
+<span><span class="co">#&gt;          -1.65e+01           -1.84e+01           -1.61e+01           -1.50e+01  </span></span>
+<span><span class="co">#&gt;  countywalla_walla       countywhatcom       countywhitman        countyyakima  </span></span>
+<span><span class="co">#&gt;          -1.42e+01           -1.49e+01           -1.42e+01           -1.70e+01  </span></span>
+<span><span class="co">#&gt;          longitude            latitude  </span></span>
+<span><span class="co">#&gt;          -3.24e-01            7.23e-01  </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Degrees of Freedom: 4831 Total (i.e. Null);  4778 Residual</span></span>
+<span><span class="co">#&gt; Null Deviance:       6620 </span></span>
+<span><span class="co">#&gt; Residual Deviance: 3040  AIC: 3150</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>We don’t set the mode because logistic regression is only for classification, and the default engine is <code>glm</code>, so we don’t have to set that either. Note that the <code>family</code> value is set, but if an alternate value is required, this and other arguments can be passed as engine parameters (via <code>set_engine()</code>).</p>
+<p><code><a href="https://rdrr.io/r/stats/predict.html">predict()</a></code> and <code><a href="https://generics.r-lib.org/reference/augment.html">augment()</a></code> have the same overall goal with two exceptions:</p>
+<ul>
+<li>The prediction types are <code>"class"</code> and <code>"prob"</code> since those are the tidymodels standards.</li>
+<li>
+<code><a href="https://generics.r-lib.org/reference/augment.html">augment()</a></code> for <span class="pkg"><a href="https://cran.r-project.org/package=parsnip">parsnip</a></span> objects generates all prediction types at once.</li>
+</ul>
+<p>The <code><a href="https://butcher.tidymodels.org/reference/butcher.html">butcher()</a></code> and <code><a href="https://generics.r-lib.org/reference/tidy.html">tidy()</a></code> methods also work the same.</p>
+<p>If odds ratios are of interest, the <code><a href="https://generics.r-lib.org/reference/tidy.html">tidy()</a></code> method includes an option to exponentiate the coefficients. There is also an option to produce confidence intervals:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html">tidy</a></span><span class="op">(</span><span class="va">lr_fit</span>, conf.int <span class="op">=</span> <span class="cn">TRUE</span>, conf.level <span class="op">=</span> <span class="fl">0.90</span>, exponentiate <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html">grepl</a></span><span class="op">(</span><span class="st">"county"</span>, <span class="va">term</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 38 × 7</span></span>
+<span><span class="co">#&gt;   term                estimate std.error  statistic p.value   conf.low  conf.high</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;                  &lt;dbl&gt;     &lt;dbl&gt;      &lt;dbl&gt;   &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1 countyasotin   0.0000002099      556.7 -0.02762    0.9780 8.353e-217 3.069e-188</span></span>
+<span><span class="co">#&gt; 2 countybenton   0.6124            744.7 -0.0006586  0.9995 7.214e-  2 5.294e+  0</span></span>
+<span><span class="co">#&gt; 3 countychelan   0.00000002833     556.7 -0.03122    0.9751 1.193e-224 3.451e-193</span></span>
+<span><span class="co">#&gt; 4 countyclallam  0.00000002556     556.7 -0.03141    0.9749 5.434e-215 1.471e-187</span></span>
+<span><span class="co">#&gt; 5 countyclark    0.0000005036      556.7 -0.02605    0.9792 2.761e-214 1.312e-186</span></span>
+<span><span class="co">#&gt; 6 countycolumbia 0.0000003091      556.7 -0.02693    0.9785 1.313e-218 3.178e-189</span></span>
+<span><span class="co">#&gt; # ℹ 32 more rows</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>A few inconsequential warnings are produced when running these calculations.</p>
+<p>In the output above, the <code>estimate</code> column is the odds ratios relative to the county in the reference cell (<code>adams</code>).</p>
+<p><a href="https://aml4td.org/chapters/cls-linear.html#generalized-linear-models"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+</section><section id="forestation-model-development" class="level4 unnumbered"><h4 class="unnumbered anchored" data-anchor-id="forestation-model-development">Forestation Model Development</h4>
+<p>In the text, we fit the same model under different preprocessing conditions. We’ll create a set of recipes, then use a <em>workflow set</em> to create and resample the combinations of preprocessors and our basic logistic model.</p>
+<p>To get started, we create a basic recipe that contains dummy indicators for <code>county</code> and removes any zero-variance predictors:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">bare_rec</span> <span class="op">&lt;-</span></span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span><span class="va">class</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">forested_train</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_dummy.html">step_dummy</a></span><span class="op">(</span><span class="va">county</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_zv.html">step_zv</a></span><span class="op">(</span><span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html">all_predictors</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>We could let <code><a href="https://rdrr.io/r/stats/glm.html">glm()</a></code> do this for us. However, one nice thing about the recipe is that the indicator columns are formatted better than when generated by base R (e.g., <code>county_asotin</code> versus <code>countyasotin</code>), and we can remove near-zero predictors before sending data to the model. If <code><a href="https://rdrr.io/r/stats/glm.html">glm()</a></code> encounters such a predictor, it gives an <code>NA</code> value to the corresponding coefficient and issues a warning. The recipe provides a smoother experience, and we can further build on this preprocessor.</p>
+<p>Now we add a step that uses the orderNorm transformation to ensure numeric predictors have symmetric distributions with equal mean and variance. Neither of these benefits is really needed for a basic logistic model, but the symmetry can often generate a small improvement in the results.</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">transformed_rec</span> <span class="op">&lt;-</span></span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span><span class="va">class</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">forested_train</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://petersonr.github.io/bestNormalize/reference/step_orderNorm.html">step_orderNorm</a></span><span class="op">(</span><span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html">all_numeric_predictors</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_dummy.html">step_dummy</a></span><span class="op">(</span><span class="va">county</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_zv.html">step_zv</a></span><span class="op">(</span><span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html">all_predictors</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Next, we will swap the step that generates dummy variables with an effect encoding method:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">forest_rec</span> <span class="op">&lt;-</span></span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span><span class="va">class</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">forested_train</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://petersonr.github.io/bestNormalize/reference/step_orderNorm.html">step_orderNorm</a></span><span class="op">(</span><span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html">all_numeric_predictors</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://embed.tidymodels.org/reference/step_lencode_mixed.html">step_lencode_mixed</a></span><span class="op">(</span><span class="va">county</span>, outcome <span class="op">=</span> <span class="st">"class"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>As previously mentioned, we precomputed a set of potential interaction effects via the H-statistic. Now let’s add those interaction terms:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb22"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">forest_int_rec</span> <span class="op">&lt;-</span></span>
+<span>  <span class="va">forest_rec</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_interact.html">step_interact</a></span><span class="op">(</span><span class="op">!</span><span class="op">!</span><span class="va">forested_int_form</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>What is the <code>!!</code> about? This is a tool from the <span class="pkg"><a href="https://cran.r-project.org/package=rlang">rlang</a></span> package that can <em>splice</em> an object into an argument. We could type out the long(ish) formula in <code>forested_int_form</code> shown above. However, since it was programmatically generated and we have it as an R expression, we can insert it into the step function to get the same result.</p>
+<p><em>Finally</em>, we add spline terms to a few predictors based on the figure above, which plots binned forestation rates versus data percentiles. From there, a few predictors may benefit from including some nonlinear terms. We’ll generate 10 spine terms for numeric predictors that are <em>not</em> interactions (from the <code>contains("_x_")</code> specification), nothing/east-ness, the year, or the encoded <code>county</code> predictor.</p>
+<p>Additionally, as we will describe shortly, <code><a href="https://recipes.tidymodels.org/reference/step_lincomb.html">step_lincomb()</a></code> is used to eliminate any linear combinations of the predictors that may occur. These won’t throw an error in <code><a href="https://rdrr.io/r/stats/glm.html">glm()</a></code>, but they will generate noisy, cryptic warning messages.</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb23"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">forest_spline_rec</span> <span class="op">&lt;-</span></span>
+<span>  <span class="va">forest_int_rec</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_spline_natural.html">step_spline_natural</a></span><span class="op">(</span></span>
+<span>    <span class="co"># fmt: skip</span></span>
+<span>    <span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html">all_numeric_predictors</a></span><span class="op">(</span><span class="op">)</span>, <span class="op">-</span><span class="va">county</span>, <span class="op">-</span><span class="va">eastness</span>, <span class="op">-</span><span class="va">northness</span>, <span class="op">-</span><span class="va">year</span>, <span class="op">-</span><span class="fu">contains</span><span class="op">(</span><span class="st">"_x_"</span><span class="op">)</span>,</span>
+<span>    deg_free <span class="op">=</span> <span class="fl">10</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_lincomb.html">step_lincomb</a></span><span class="op">(</span><span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html">all_predictors</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Let’s also create a metric set for a few performance measures:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb24"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cls_mtr</span> <span class="op">&lt;-</span> <span class="fu">metric_set</span><span class="op">(</span><span class="va">brier_class</span>, <span class="va">roc_auc</span>, <span class="va">pr_auc</span>, <span class="va">mn_log_loss</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Now that everything is prepared, let’s create the grid of workflows and then resample them. The <code>preproc</code> and <code>model</code> arguments take named lists of recipes and models, respectively. The names are used to create unique workflow IDs.</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb25"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">forest_set</span> <span class="op">&lt;-</span></span>
+<span>  <span class="fu">workflow_set</span><span class="op">(</span></span>
+<span>    preproc <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span></span>
+<span>      simple <span class="op">=</span> <span class="va">bare_rec</span>,</span>
+<span>      <span class="st">"encoded + transformations"</span> <span class="op">=</span> <span class="va">transformed_rec</span>,</span>
+<span>      encoded <span class="op">=</span> <span class="va">forest_rec</span>,</span>
+<span>      <span class="st">"encoded + interactions"</span> <span class="op">=</span> <span class="va">forest_int_rec</span>,</span>
+<span>      <span class="st">"encoded + transformations + splines"</span> <span class="op">=</span> <span class="va">forest_spline_rec</span></span>
+<span>    <span class="op">)</span>,</span>
+<span>    model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>logistic_mle <span class="op">=</span> <span class="fu">logistic_reg</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>To resample them, we apply <code>workflow_map()</code> and add several options that are passed to <code>fit_resamples()</code>:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb26"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">forest_res</span> <span class="op">&lt;-</span></span>
+<span>  <span class="va">forest_set</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">workflow_map</span><span class="op">(</span></span>
+<span>    fn <span class="op">=</span> <span class="st">"fit_resamples"</span>,</span>
+<span>    resamples <span class="op">=</span> <span class="va">forested_rs</span>,</span>
+<span>    control <span class="op">=</span> <span class="fu">control_resamples</span><span class="op">(</span>save_pred <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>    metrics <span class="op">=</span> <span class="va">cls_mtr</span></span>
+<span>  <span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Printing out the results isn’t very informative.</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">forest_res</span> </span>
+<span><span class="co">#&gt; # A workflow set/tibble: 5 × 4</span></span>
+<span><span class="co">#&gt;   wflow_id                                         info     option    result   </span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;                                            &lt;list&gt;   &lt;list&gt;    &lt;list&gt;   </span></span>
+<span><span class="co">#&gt; 1 simple_logistic_mle                              &lt;tibble&gt; &lt;opts[3]&gt; &lt;rsmp[+]&gt;</span></span>
+<span><span class="co">#&gt; 2 encoded + transformations_logistic_mle           &lt;tibble&gt; &lt;opts[3]&gt; &lt;rsmp[+]&gt;</span></span>
+<span><span class="co">#&gt; 3 encoded_logistic_mle                             &lt;tibble&gt; &lt;opts[3]&gt; &lt;rsmp[+]&gt;</span></span>
+<span><span class="co">#&gt; 4 encoded + interactions_logistic_mle              &lt;tibble&gt; &lt;opts[3]&gt; &lt;rsmp[+]&gt;</span></span>
+<span><span class="co">#&gt; 5 encoded + transformations + splines_logistic_mle &lt;tibble&gt; &lt;opts[3]&gt; &lt;rsmp[+]&gt;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>However, there are a variety of helper functions for this object class:</p>
+<ul>
+<li>
+<code>rank_results()</code> will order the models (or model configurations) by a metric of the user’s choice.</li>
+<li>
+<code>extract_workflow_set_result()</code> pulls out the object produced by <code>fit_resamples()</code> so that you can plot or examine the results.</li>
+<li>
+<code><a href="https://tune.tidymodels.org/reference/collect_predictions.html">collect_metrics()</a></code> and <code><a href="https://tune.tidymodels.org/reference/collect_predictions.html">collect_predictions()</a></code> can be used to get an overall list by model and configuration. The latter function only works if the control option <code>save_pred = TRUE</code> was used for each of the workflows (which we did in this case).</li>
+</ul>
+<p>Let’s rank by the Brier score:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb28"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">ranked</span> <span class="op">&lt;-</span> </span>
+<span>  <span class="fu">rank_results</span><span class="op">(</span><span class="va">forest_res</span>, rank_metric <span class="op">=</span> <span class="st">"brier_class"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">.metric</span> <span class="op">==</span> <span class="st">"brier_class"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu">select</span><span class="op">(</span><span class="va">rank</span>, <span class="va">wflow_id</span>, <span class="va">mean</span>, <span class="va">std_err</span>, <span class="va">n</span><span class="op">)</span></span>
+<span><span class="va">ranked</span></span>
+<span><span class="co">#&gt; # A tibble: 5 × 5</span></span>
+<span><span class="co">#&gt;    rank wflow_id                                            mean  std_err     n</span></span>
+<span><span class="co">#&gt;   &lt;int&gt; &lt;chr&gt;                                              &lt;dbl&gt;    &lt;dbl&gt; &lt;int&gt;</span></span>
+<span><span class="co">#&gt; 1     1 encoded + transformations + splines_logistic_mle 0.08365 0.007238    10</span></span>
+<span><span class="co">#&gt; 2     2 encoded + interactions_logistic_mle              0.09357 0.008852    10</span></span>
+<span><span class="co">#&gt; 3     3 encoded + transformations_logistic_mle           0.1019  0.009187    10</span></span>
+<span><span class="co">#&gt; 4     4 encoded_logistic_mle                             0.1057  0.01044     10</span></span>
+<span><span class="co">#&gt; 5     5 simple_logistic_mle                              0.1093  0.009861    10</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Let’s get the final model for the highest ranked workflow:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb29"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">lr_best</span> <span class="op">&lt;-</span> </span>
+<span>  <span class="va">forest_res</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu">extract_workflow</span><span class="op">(</span><span class="va">forest_res</span>, id <span class="op">=</span> <span class="va">ranked</span><span class="op">$</span><span class="va">wflow_id</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://generics.r-lib.org/reference/fit.html">fit</a></span><span class="op">(</span><span class="va">forested_train</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>The main text computed a few more statistics related to model performance. First, we can compute bootstrap confidence intervals for our metrics btw pulling out the results of <code>fit_resamples()</code>, then running <code>int_pctl()</code>:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb30"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">799</span><span class="op">)</span></span>
+<span><span class="va">lr_best_int</span> <span class="op">&lt;-</span></span>
+<span>  <span class="va">forest_res</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">extract_workflow_set_result</span><span class="op">(</span>id <span class="op">=</span> <span class="va">ranked</span><span class="op">$</span><span class="va">wflow_id</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">int_pctl</span><span class="op">(</span>times <span class="op">=</span> <span class="fl">2000</span>, metrics <span class="op">=</span> <span class="va">cls_mtr</span>, alpha <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span></span>
+<span><span class="va">lr_best_int</span></span>
+<span><span class="co">#&gt; # A tibble: 4 × 6</span></span>
+<span><span class="co">#&gt;   .metric     .estimator  .lower .estimate  .upper .config        </span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;       &lt;chr&gt;        &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt; &lt;chr&gt;          </span></span>
+<span><span class="co">#&gt; 1 brier_class bootstrap  0.07906   0.08372 0.08834 pre0_mod0_post0</span></span>
+<span><span class="co">#&gt; 2 mn_log_loss bootstrap  0.2761    0.2935  0.3108  pre0_mod0_post0</span></span>
+<span><span class="co">#&gt; 3 pr_auc      bootstrap  0.9365    0.9439  0.9512  pre0_mod0_post0</span></span>
+<span><span class="co">#&gt; 4 roc_auc     bootstrap  0.9407    0.9459  0.9512  pre0_mod0_post0</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Also, we can estimate the no-information rate for the Brier score: how bad could the statistic be if there were no relationship between the observed and predicted data? To do this, we pull the out-of-sample predictions, create 50 data sets with permuted class labels, then recompute the Brier score. We can average these 50 values to get a good sense of what a truly bad Brier score would be.</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb31"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">assessment_pred</span> <span class="op">&lt;-</span> </span>
+<span>  <span class="va">forest_res</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">extract_workflow_set_result</span><span class="op">(</span>id <span class="op">=</span> <span class="va">ranked</span><span class="op">$</span><span class="va">wflow_id</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://tune.tidymodels.org/reference/collect_predictions.html">collect_predictions</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">365</span><span class="op">)</span></span>
+<span><span class="va">brier_perm</span> <span class="op">&lt;-</span></span>
+<span>  <span class="va">assessment_pred</span> <span class="op">|&gt;</span></span>
+<span>  <span class="co"># This randomizes the rows of the column named in `permute`:</span></span>
+<span>  <span class="fu">permutations</span><span class="op">(</span>permute <span class="op">=</span> <span class="st">"class"</span>, times <span class="op">=</span> <span class="fl">50</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">mutate</span><span class="op">(</span></span>
+<span>    data <span class="op">=</span> <span class="fu">map</span><span class="op">(</span><span class="va">splits</span>, <span class="va">analysis</span><span class="op">)</span>,</span>
+<span>    brier <span class="op">=</span> <span class="fu">map_dbl</span><span class="op">(</span><span class="va">data</span>, <span class="op">~</span> <span class="fu">brier_class</span><span class="op">(</span><span class="va">.x</span>, <span class="va">class</span>, <span class="va">.pred_Yes</span><span class="op">)</span><span class="op">$</span><span class="va">.estimate</span><span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">summarize</span><span class="op">(</span></span>
+<span>    permutation <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">brier</span><span class="op">)</span>,</span>
+<span>    n <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">brier</span><span class="op">)</span>,</span>
+<span>    std_err <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/sd.html">sd</a></span><span class="op">(</span><span class="va">brier</span><span class="op">)</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">sqrt</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">mutate</span><span class="op">(</span></span>
+<span>    lower <span class="op">=</span> <span class="va">permutation</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">qnorm</a></span><span class="op">(</span><span class="fl">.95</span><span class="op">)</span> <span class="op">*</span> <span class="va">std_err</span>,</span>
+<span>    upper <span class="op">=</span> <span class="va">permutation</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">qnorm</a></span><span class="op">(</span><span class="fl">.95</span><span class="op">)</span> <span class="op">*</span> <span class="va">std_err</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="va">brier_perm</span></span>
+<span><span class="co">#&gt; # A tibble: 1 × 5</span></span>
+<span><span class="co">#&gt;   permutation     n   std_err  lower  upper</span></span>
+<span><span class="co">#&gt;         &lt;dbl&gt; &lt;int&gt;     &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1      0.4214    50 0.0008111 0.4201 0.4227</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>We can also check visual diagnostics of performance, such as the calibration and ROC curves. These pool data across all assessment sets, so consider these curves approximations of the real curves.</p>
+<p>For calibration, we can use the <code><a href="https://probably.tidymodels.org/reference/cal_plot_windowed.html">cal_plot_windowed()</a></code> function from the <span class="pkg"><a href="https://cran.r-project.org/package=probably">probably</a></span> package. There are two interfaces that we can use. The first just passes the results to <code>fit_resamples()</code>, which knows which columns are the observed and predicted outcomes:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb32"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">forest_res</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu">extract_workflow_set_result</span><span class="op">(</span>id <span class="op">=</span> <span class="va">ranked</span><span class="op">$</span><span class="va">wflow_id</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://probably.tidymodels.org/reference/cal_plot_windowed.html">cal_plot_windowed</a></span><span class="op">(</span>step_size <span class="op">=</span> <span class="fl">0.02</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>The second interface uses the data frame of observed and predicted values as input; however, we must specify the appropriate column names as arguments. This approach is best when you have other plots in mind or if you are not using tidymodels to create the models.</p>
+<p>This code chunk creates two visualizations that are based on <span class="pkg"><a href="https://cran.r-project.org/package=ggplot2">ggplot2</a></span>. We’ve also loaded the <span class="pkg"><a href="https://cran.r-project.org/package=patchwork">patchwork</a></span> package. This enables the last line, which combines two <code>ggplot2</code> objects, to render them side by side.</p>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure"><p><img src="cls-linear_files/figure-html/forest-logistic-diag-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:80.0%"></p>
+</figure>
+</div>
+</div>
+</div>
+<p><a href="https://aml4td.org/chapters/cls-linear.html#forestation-model-development"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+</section><section id="sec-logistic-diagnostic" class="level3" data-number="16.3.1"><h3 data-number="16.3.1" class="anchored" data-anchor-id="sec-logistic-diagnostic">
+<span class="header-section-number">16.3.1</span> Examining the Model</h3>
+<p>The main text uses deviance residuals to make more fine-grained appraisals of how well the model fits the data. Those residuals were originally defined for generalized linear models and contrast a perfect “saturated” model to our current model. For a <code>glm</code> object, the function <code><a href="https://rdrr.io/r/stats/residuals.html">stats::resid()</a></code> can compute them. Also, in most cases, <code><a href="https://generics.r-lib.org/reference/augment.html">broom::augment()</a></code> adds a column for them.</p>
+<p>Here is a <span class="pkg"><a href="https://cran.r-project.org/package=dplyr">dplyr</a></span> pipeline to compute them for any model that has predicted binary outcomes:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb33"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">logistic_resdiduals</span> <span class="op">&lt;-</span></span>
+<span>  <span class="va">assessment_pred</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">mutate</span><span class="op">(</span></span>
+<span>    indicator <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">class</span> <span class="op">==</span> <span class="st">"Yes"</span>, <span class="fl">1</span>, <span class="fl">0</span><span class="op">)</span>,</span>
+<span>    error <span class="op">=</span> <span class="va">indicator</span> <span class="op">-</span> <span class="va">.pred_Yes</span>,</span>
+<span>    dev_1 <span class="op">=</span> <span class="va">indicator</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span><span class="op">(</span><span class="va">.pred_Yes</span><span class="op">)</span>,</span>
+<span>    dev_2 <span class="op">=</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">indicator</span><span class="op">)</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">.pred_Yes</span><span class="op">)</span>,</span>
+<span>    deviance <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sign.html">sign</a></span><span class="op">(</span><span class="va">error</span><span class="op">)</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">sqrt</a></span><span class="op">(</span><span class="op">(</span><span class="op">-</span><span class="fl">2</span> <span class="op">*</span> <span class="op">(</span><span class="va">dev_1</span> <span class="op">+</span> <span class="va">dev_2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">inner_join</span><span class="op">(</span><span class="va">forested_train</span> <span class="op">|&gt;</span> <span class="fu">add_rowindex</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">class</span><span class="op">)</span>, by <span class="op">=</span> <span class="st">".row"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu">relocate</span><span class="op">(</span><span class="va">deviance</span>, .after <span class="op">=</span> <span class="va">class</span><span class="op">)</span></span>
+<span>  </span>
+<span><span class="va">logistic_resdiduals</span><span class="op">[</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span></span>
+<span><span class="co">#&gt; # A tibble: 4,832 × 5</span></span>
+<span><span class="co">#&gt;   .pred_Yes .pred_No id     class  deviance</span></span>
+<span><span class="co">#&gt;       &lt;dbl&gt;    &lt;dbl&gt; &lt;chr&gt;  &lt;fct&gt;     &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1 7.072e- 1 0.2928   Fold01 Yes    8.325e-1</span></span>
+<span><span class="co">#&gt; 2 9.305e- 1 0.06945  Fold01 Yes    3.794e-1</span></span>
+<span><span class="co">#&gt; 3 9.606e- 1 0.03944  Fold01 Yes    2.837e-1</span></span>
+<span><span class="co">#&gt; 4 4.559e- 1 0.5441   Fold01 No    -1.103e+0</span></span>
+<span><span class="co">#&gt; 5 9.906e- 1 0.009407 Fold01 Yes    1.375e-1</span></span>
+<span><span class="co">#&gt; 6 2.220e-16 1        Fold01 No    -2.107e-8</span></span>
+<span><span class="co">#&gt; # ℹ 4,826 more rows</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>These results <em>will not match</em> what <code><a href="https://rdrr.io/r/stats/residuals.html">resid()</a></code> or <code><a href="https://generics.r-lib.org/reference/augment.html">augment()</a></code> would produce, since those functions compute residuals based on the training data, whereas we are computing them from the assessment set predictions.</p>
+<p>We can plot these for our model:</p>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure"><p><img src="cls-linear_files/figure-html/deviance-residuals-plot-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:60.0%"></p>
+</figure>
+</div>
+</div>
+</div>
+<p><a href="https://aml4td.org/chapters/cls-linear.html#sec-logistic-diagnostic"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+</section><section id="sec-logistic-interpretability" class="level3" data-number="16.3.2"><h3 data-number="16.3.2" class="anchored" data-anchor-id="sec-logistic-interpretability">
+<span class="header-section-number">16.3.2</span> Interpreting the Logistic Model</h3>
+<p>In this section, we’ll focus on generating global explainers using the <span class="pkg"><a href="https://cran.r-project.org/package=DALEXtra">DALEXtra</a></span> package. More extensive methods will be discussed in a later chapter.</p>
+<p>To begin, we have to create an <em>explainer</em> object that contains the model fit and the data to use as substrate. Any data set with a sufficient number of rows can be used; there is no overfitting when using the training set. The <code><a href="https://ModelOriented.github.io/DALEXtra/reference/explain_tidymodels.html">explain_tidymodels()</a></code> function will create the appropriate object. One note: for classification models, the option <code>type = "prob"</code> is required.</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb34"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">explainer_logistic</span> <span class="op">&lt;-</span></span>
+<span>  <span class="fu"><a href="https://ModelOriented.github.io/DALEXtra/reference/explain_tidymodels.html">explain_tidymodels</a></span><span class="op">(</span></span>
+<span>    <span class="va">lr_best</span>,</span>
+<span>    data <span class="op">=</span> <span class="va">forested_train</span> <span class="op">|&gt;</span> <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">class</span><span class="op">)</span>,</span>
+<span>    y <span class="op">=</span> <span class="va">forested_train</span><span class="op">$</span><span class="va">class</span>,</span>
+<span>    label <span class="op">=</span> <span class="st">""</span>,</span>
+<span>    type <span class="op">=</span> <span class="st">"prob"</span>,</span>
+<span>    verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  <span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Now that we have this object, we can produce partial dependence plots (PDPs) for any predictor using <code><a href="https://modeloriented.github.io/DALEX/reference/model_profile.html">model_profile()</a></code>. Here is one for <code>longitude</code>:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb35"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">1805</span><span class="op">)</span></span>
+<span><span class="va">pdp_longitude</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://modeloriented.github.io/DALEX/reference/model_profile.html">model_profile</a></span><span class="op">(</span></span>
+<span>  <span class="va">explainer_logistic</span>,</span>
+<span>  N <span class="op">=</span> <span class="fl">1000</span>,</span>
+<span>  variables <span class="op">=</span> <span class="st">"longitude"</span></span>
+<span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>There is a <code><a href="https://rdrr.io/r/graphics/plot.default.html">plot()</a></code> method for this object, but we’ve created a <span class="pkg"><a href="https://cran.r-project.org/package=ggplot2">ggplot2</a></span> function to create a simple plot:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb36"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">ggplot_pdp</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">obj</span>, <span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">p</span> <span class="op">&lt;-</span></span>
+<span>    <span class="co"># Convert the "aggregated profiles" to a tibble</span></span>
+<span>    <span class="fu">as_tibble</span><span class="op">(</span><span class="va">obj</span><span class="op">$</span><span class="va">agr_profiles</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="co"># Alter the `_label_` column a bit</span></span>
+<span>    <span class="fu">mutate</span><span class="op">(</span>`_label_` <span class="op">=</span> <span class="fu">stringr</span><span class="fu">::</span><span class="fu"><a href="https://stringr.tidyverse.org/reference/str_remove.html">str_remove</a></span><span class="op">(</span><span class="va">`_label_`</span>, <span class="st">"^[^_]*_"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="co"># Here `_x_` is the variable being profiled and `_yhat_` is the predicted</span></span>
+<span>    <span class="co"># value. For a binary `glm` object, this is the probability of the _second_</span></span>
+<span>    <span class="co"># factor level. To get the probability that a location is forested, we </span></span>
+<span>    <span class="co"># use 1 = _yhat_. </span></span>
+<span>    <span class="fu">ggplot</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span><span class="va">`_x_`</span>, <span class="fl">1</span> <span class="op">-</span> <span class="va">`_yhat_`</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu">geom_line</span><span class="op">(</span></span>
+<span>      <span class="co"># We create the light grey lines for the profiles produced for each of </span></span>
+<span>      <span class="co"># the sampled data points (where the sample number is in `_ids_)</span></span>
+<span>      data <span class="op">=</span> <span class="fu">as_tibble</span><span class="op">(</span><span class="va">obj</span><span class="op">$</span><span class="va">cp_profiles</span><span class="op">)</span>,</span>
+<span>      <span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="op">{</span><span class="op">{</span> <span class="va">x</span> <span class="op">}</span><span class="op">}</span>, group <span class="op">=</span> <span class="va">`_ids_`</span><span class="op">)</span>,</span>
+<span>      linewidth <span class="op">=</span> <span class="fl">0.5</span>,</span>
+<span>      alpha <span class="op">=</span> <span class="fl">0.05</span>,</span>
+<span>      color <span class="op">=</span> <span class="st">"gray50"</span></span>
+<span>    <span class="op">)</span></span>
+<span></span>
+<span>  <span class="va">num_colors</span> <span class="op">&lt;-</span> <span class="fu">n_distinct</span><span class="op">(</span><span class="va">obj</span><span class="op">$</span><span class="va">agr_profiles</span><span class="op">$</span><span class="va">`_label_`</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="co"># Now add the line(s) for the mean prediction:</span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="va">num_colors</span> <span class="op">&gt;</span> <span class="fl">1</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">p</span> <span class="op">&lt;-</span> <span class="va">p</span> <span class="op">+</span> <span class="fu">geom_line</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>color <span class="op">=</span> <span class="va">`_label_`</span><span class="op">)</span>, linewidth <span class="op">=</span> <span class="fl">1.2</span>, alpha <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span></span>
+<span>  <span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
+<span>    <span class="va">p</span> <span class="op">&lt;-</span> <span class="va">p</span> <span class="op">+</span> <span class="fu">geom_line</span><span class="op">(</span>color <span class="op">=</span> <span class="st">"darkred"</span>, linewidth <span class="op">=</span> <span class="fl">1.2</span>, alpha <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span></span>
+<span>  <span class="op">}</span></span>
+<span></span>
+<span>  <span class="va">p</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="fu">ggplot_pdp</span><span class="op">(</span><span class="va">pdp_longitude</span>, <span class="va">longitude</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">labs</span><span class="op">(</span>y <span class="op">=</span> <span class="st">"Probability of Forestation"</span>, x <span class="op">=</span> <span class="st">"Longitude"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="co"># Let's add a "rug" to show where the training set data values are located:</span></span>
+<span>  <span class="fu">geom_rug</span><span class="op">(</span>data <span class="op">=</span> <span class="va">forested_train</span>, <span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">longitude</span>, y <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span>, alpha <span class="op">=</span> <span class="fl">1</span> <span class="op">/</span> <span class="fl">10</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure"><p><img src="cls-linear_files/figure-html/longitude-pdp-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%"></p>
+</figure>
+</div>
+</div>
+</div>
+<p><a href="https://aml4td.org/chapters/cls-linear.html#sec-logistic-interpretability"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+</section><section id="sec-logistic-multicollinearity" class="level3" data-number="16.3.3"><h3 data-number="16.3.3" class="anchored" data-anchor-id="sec-logistic-multicollinearity">
+<span class="header-section-number">16.3.3</span> A Potential Problem: Multicollinearity</h3>
+<p>To diagnose multicollinearity in a generalized linear model, the <span class="pkg"><a href="https://cran.r-project.org/package=car">car</a></span> package has a <code><a href="https://rdrr.io/pkg/car/man/vif.html">vif()</a></code> function. This produces a named numeric vector with variance inflation factor values. While there is no <code><a href="https://generics.r-lib.org/reference/tidy.html">tidy()</a></code> method as of now, we can pull out the <code>glm</code> object from our previous parsnip fit and tidy it:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb37"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span>  <span class="va">lr_best</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">extract_fit_engine</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">car</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/car/man/vif.html">vif</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/enframe.html">enframe</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">set_names</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"term"</span>, <span class="st">"estimate"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 129 × 2</span></span>
+<span><span class="co">#&gt;   term                       estimate</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;                         &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1 year                          1.076</span></span>
+<span><span class="co">#&gt; 2 eastness                      1.165</span></span>
+<span><span class="co">#&gt; 3 northness                     1.080</span></span>
+<span><span class="co">#&gt; 4 county                        2.800</span></span>
+<span><span class="co">#&gt; 5 dew_temp_x_elevation        301.8  </span></span>
+<span><span class="co">#&gt; 6 dew_temp_x_temp_annual_max  310.2  </span></span>
+<span><span class="co">#&gt; # ℹ 123 more rows</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p><a href="https://aml4td.org/chapters/cls-linear.html#sec-logistic-interpretability"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p>As shown before### Regularization Through Penalization {#sec-logistic-penalized}</p>
+<p>The primary package for regularized generalized linear models is <span class="pkg"><a href="https://cran.r-project.org/package=glmnet">glmnet</a></span>. A few notes about <code><a href="https://glmnet.stanford.edu/reference/glmnet.html">glmnet::glmnet()</a></code>:</p>
+<ul>
+<li>It only takes x/y inputs, where <code>x</code> must be a matrix. This means that any feature engineering and preprocessing must be performed before running the function.</li>
+<li>
+<code>x</code> <em>could</em> be a sparse matrix, which can reduce memory requirements and execution time. If your data contains many sparse columns (perhaps from binary indicators), create these columns in a recipe, and it will automatically create a tibble of sparse vectors and then hand that data to glmnet() in a sparse format.</li>
+<li>
+<code>x</code> should have at least two columns.</li>
+<li>
+<code>glmnet()</code>, be default, automatically selects a set of <em>path values</em>; these are the penalty values that it will evaluate. If you want to predict other penalties, it will use linear interpolation. Note that, within resampling, the paths will change as the data changes. With tidymodels, you can pass an engine argument called <code>path_values</code> with a sequence of penalties. This will standardize the path across resamples. See this <a href="https://parsnip.tidymodels.org/reference/glmnet-details.html">parsnip documentation package</a> for more information.</li>
+<li>If you plan on predicting a glmnet model that does not penalize, you may not get the correct value. Setting the engine option <code>lambda.min.ratio = 0</code> <em>or</em> include 0.0 in the path. See this <a href="https://github.com/tidymodels/parsnip/issues/431">GitHub issue</a> for an example and discussions.</li>
+</ul>
+<p>Let’s show how to fit a single glmnet model with parsnip. The main changes reflect the differences between <code><a href="https://rdrr.io/r/stats/glm.html">glm()</a></code> and <code>glmnet()</code>. To demonstrate setting the path, we’ll start by making a sequence of penalties, then pass that in an engine argument:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb38"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">glmn_pen</span> <span class="op">&lt;-</span> <span class="fl">10</span><span class="op">^</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="op">-</span><span class="fl">6</span>, <span class="op">-</span><span class="fl">1</span>, length.out <span class="op">=</span> <span class="fl">50</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">glmn_spec</span> <span class="op">&lt;-</span> </span>
+<span>  <span class="fu">logistic_reg</span><span class="op">(</span>penalty <span class="op">=</span> <span class="fl">0.01</span>, mixture <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="co"># No need to set the mode</span></span>
+<span>  <span class="fu">set_engine</span><span class="op">(</span><span class="st">"glmnet"</span>, path_values <span class="op">=</span> <span class="op">!</span><span class="op">!</span><span class="va">glmn_pen</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>As described above, we use <code>!!</code> to splice the <em>value</em> of <code>glmn_pen</code> into the object (instead of R making a reference to it).</p>
+<p>From here, we can create a workflow with a recipe and then <code><a href="https://generics.r-lib.org/reference/fit.html">fit()</a></code>:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb39"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">glmn_wflow</span> <span class="op">&lt;-</span> <span class="fu">workflow</span><span class="op">(</span><span class="va">forest_spline_rec</span>, <span class="va">glmn_spec</span><span class="op">)</span></span>
+<span><span class="va">glmn_fit</span> <span class="op">&lt;-</span> <span class="va">glmn_wflow</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://generics.r-lib.org/reference/fit.html">fit</a></span><span class="op">(</span><span class="va">forested_train</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>There are two extra niceties for this model. First, there is the <code><a href="https://generics.r-lib.org/reference/tidy.html">tidy()</a></code> method, which returns the model’s coefficients. When used on the parsnip object (e.g., <code>glmn_fit</code>), the default returns the coefficients for the penalty specified for the model. However, you can get estimates for a (single) other penalty all by passing an argument <code>penalty</code>:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb40"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># One penalty only: </span></span>
+<span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html">tidy</a></span><span class="op">(</span><span class="va">glmn_fit</span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Attaching package: 'Matrix'</span></span>
+<span><span class="co">#&gt; The following objects are masked from 'package:tidyr':</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;     expand, pack, unpack</span></span>
+<span><span class="co">#&gt; Loaded glmnet 4.1-10</span></span>
+<span><span class="co">#&gt; # A tibble: 130 × 3</span></span>
+<span><span class="co">#&gt;   term                  estimate penalty</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;                    &lt;dbl&gt;   &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1 (Intercept)          -0.1295      0.01</span></span>
+<span><span class="co">#&gt; 2 year                  0           0.01</span></span>
+<span><span class="co">#&gt; 3 eastness              0           0.01</span></span>
+<span><span class="co">#&gt; 4 northness            -0.009435    0.01</span></span>
+<span><span class="co">#&gt; 5 county               -0.4190      0.01</span></span>
+<span><span class="co">#&gt; 6 dew_temp_x_elevation -0.1673      0.01</span></span>
+<span><span class="co">#&gt; # ℹ 124 more rows</span></span>
+<span></span>
+<span><span class="co"># All penalties on the path: </span></span>
+<span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html">tidy</a></span><span class="op">(</span><span class="va">glmn_fit</span>, penalty <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 130 × 3</span></span>
+<span><span class="co">#&gt;   term                 estimate penalty</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;                   &lt;dbl&gt;   &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1 (Intercept)           -0.4299     0.1</span></span>
+<span><span class="co">#&gt; 2 year                   0          0.1</span></span>
+<span><span class="co">#&gt; 3 eastness               0          0.1</span></span>
+<span><span class="co">#&gt; 4 northness              0          0.1</span></span>
+<span><span class="co">#&gt; 5 county                -0.2297     0.1</span></span>
+<span><span class="co">#&gt; 6 dew_temp_x_elevation   0          0.1</span></span>
+<span><span class="co">#&gt; # ℹ 124 more rows</span></span>
+<span></span>
+<span><span class="co"># Get everything on the path: </span></span>
+<span><span class="fu">purrr</span><span class="fu">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/map_dfr.html">map_dfr</a></span><span class="op">(</span><span class="va">glmn_pen</span>, <span class="op">~</span> <span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html">tidy</a></span><span class="op">(</span><span class="va">glmn_fit</span>, penalty <span class="op">=</span> <span class="va">.x</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 6,500 × 3</span></span>
+<span><span class="co">#&gt;   term                  estimate  penalty</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;                    &lt;dbl&gt;    &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1 (Intercept)          -4.517    0.000001</span></span>
+<span><span class="co">#&gt; 2 year                  0.003240 0.000001</span></span>
+<span><span class="co">#&gt; 3 eastness             -0.06090  0.000001</span></span>
+<span><span class="co">#&gt; 4 northness            -0.1109   0.000001</span></span>
+<span><span class="co">#&gt; 5 county               -0.7114   0.000001</span></span>
+<span><span class="co">#&gt; 6 dew_temp_x_elevation -0.7942   0.000001</span></span>
+<span><span class="co">#&gt; # ℹ 6,494 more rows</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>There is also a <code><a href="https://generics.r-lib.org/reference/tidy.html">tidy()</a></code> method for the <code>glmnet</code> fit object. It has similar results but uses the engine names for the columns.</p>
+<p>The second nicety is the <code><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot()</a></code> function:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb41"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># Pull the parsnip fit out of the workflow</span></span>
+<span><span class="va">glmn_fit</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu">extract_fit_parsnip</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure"><p><img src="cls-linear_files/figure-html/glmnet-autoplot-parsnip-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:60.0%"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>This shows how the parameters change over the penalty values. The <a href="https://parsnip.tidymodels.org/reference/autoplot.model_fit.html">documentation page</a> shows the different options for highlighting specific model terms at different penalties.</p>
+<p>When tuning this model, it can be helpful to use a regular grid for the two glmnet parameters. Since all penalties are “trained” at once, a single fit is required for each mixture value. Using a space-filling design accidentally circumvents this feature.</p>
+<p>Also, if tidymodels creates an automatic grid for you, it sets the minimum mixture to 0.05 instead of 0.0 to avoid a pure ridge fit. See this <a href="https://github.com/tidymodels/parsnip/issues/1308">GitHub issue</a> for an example and explanation.</p>
+<p>Currently, <code>glmnet</code> is the only engine in tidymodels for (non-Bayesian) regularized regression. SCAD and MCP penalties can be fit using the <span class="pkg"><a href="https://cran.r-project.org/package=ncvreg">ncvreg</a></span> directly.</p>
+<p><a href="https://aml4td.org/chapters/cls-linear.html#sec-logistic-penalizedy"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<section id="refitting-the-forestation-model" class="level4 unnumbered"><h4 class="unnumbered anchored" data-anchor-id="refitting-the-forestation-model">Refitting the Forestation Model</h4>
+<p>The code used to tune the glmnet model using the more complex recipe was:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb42"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># Path and regular grid: </span></span>
+<span><span class="va">glmn_pen</span> <span class="op">&lt;-</span> <span class="fl">10</span><span class="op">^</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="op">-</span><span class="fl">6</span>, <span class="op">-</span><span class="fl">1</span>, length.out <span class="op">=</span> <span class="fl">50</span><span class="op">)</span></span>
+<span><span class="va">glmn_grid</span> <span class="op">&lt;-</span> <span class="fu">crossing</span><span class="op">(</span>penalty <span class="op">=</span> <span class="va">glmn_pen</span>, mixture <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span><span class="op">:</span><span class="fl">4</span><span class="op">)</span> <span class="op">/</span> <span class="fl">4</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">glmn_spec</span> <span class="op">&lt;-</span></span>
+<span>  <span class="fu">logistic_reg</span><span class="op">(</span>penalty <span class="op">=</span> <span class="fu">tune</span><span class="op">(</span><span class="op">)</span>, mixture <span class="op">=</span> <span class="fu">tune</span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">set_engine</span><span class="op">(</span><span class="st">"glmnet"</span>, path_values <span class="op">=</span> <span class="op">!</span><span class="op">!</span><span class="va">glmn_pen</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">glmn_wflow</span> <span class="op">&lt;-</span></span>
+<span>  <span class="va">best_mle_wflow</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">update_model</span><span class="op">(</span><span class="va">glmn_spec</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">glmn_res</span> <span class="op">&lt;-</span></span>
+<span>  <span class="va">glmn_wflow</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">tune_grid</span><span class="op">(</span></span>
+<span>    resamples <span class="op">=</span> <span class="va">forested_rs</span>,</span>
+<span>    grid <span class="op">=</span> <span class="va">glmn_grid</span>,</span>
+<span>    control <span class="op">=</span> <span class="fu">control_grid</span><span class="op">(</span>save_pred <span class="op">=</span> <span class="cn">TRUE</span>, save_workflow <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>    metrics <span class="op">=</span> <span class="va">cls_mtr</span></span>
+<span>  <span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p><a href="https://aml4td.org/chapters/cls-linear.html#refitting-the-forestation-model"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+</section></section><section id="sec-logistic-bayes" class="level3" data-number="16.3.4"><h3 data-number="16.3.4" class="anchored" data-anchor-id="sec-logistic-bayes">
+<span class="header-section-number">16.3.4</span> Bayesian Estimation</h3>
+<p>For fitting logistic regression models using Bayesian estimation, there are a few options. For a simple model, use the <code>"stan"</code> engine. This fits a non-hierarchical model. If you have rows in the training set that cause correlated errors (e.g., measurements of people over time, etc.), the <code>"stan_glmer"</code> engine is more appropriate. We’ll focus on the former.</p>
+<p>tidymodels uses the <span class="pkg"><a href="https://cran.r-project.org/package=rstanarm">rstanarm</a></span> package for estimation, which relies on the sophisticated <a href="https://mc-stan.org/"><code>stan</code> framework</a> for estimation. The underlying function that is called is <code><a href="https://mc-stan.org/rstanarm/reference/stan_glm.html">rstanarm::stan_glm()</a></code>. It has syntax very similar to <code><a href="https://rdrr.io/r/stats/glm.html">glm()</a></code>, but has extra arguments. In tidymodels, these can be passed as engine arguments.</p>
+<p>Main prior options (<a href="https://mc-stan.org/rstanarm/reference/priors.html">documentation page</a>):</p>
+<ul>
+<li>
+<code>prior</code>: The prior distribution(s) for the (non-hierarchical) regression coefficients. For example, <code><a href="https://mc-stan.org/rstanarm/reference/priors.html">rstanarm::normal()</a></code> for Gaussian, <code><a href="https://mc-stan.org/rstanarm/reference/priors.html">rstanarm::laplace()</a></code> for Laplacian, etc.</li>
+<li>
+<code>prior_int</code>: The prior for the random intercept (if any). This is the prior after the regression terms have been scaled.</li>
+</ul>
+<p>Sampling options (<a href="https://mc-stan.org/rstan/reference/stanmodel-method-sampling.html">documentation page</a>, <a href="https://mc-stan.org/rstanarm/articles/priors.html">package vignette</a>):</p>
+<ul>
+<li>
+<code>chains</code>: The number of parallel Markov chain Monte Carlo (MCMC) optimizations to run.</li>
+<li>
+<code>iter</code>: How many total iterations to run in each chain. By default, it will use half of these as the warmup.</li>
+<li>
+<code>warmup</code>: How many of <code>iter</code> are used for warmup.</li>
+<li>
+<code>thin</code>: The period for saving samples. The default saves all samples (post-warmup) to approximate the posterior.</li>
+<li>
+<code>cores</code>: How many worker processes are used to run the MCMC chains.</li>
+<li>
+<code>seed</code>: An integer seed value to control randomness. If not set, tidymodels pulls an integer from the current random number stream.</li>
+</ul>
+<p>Other relevant options are:</p>
+<ul>
+<li>
+<code>refresh</code>: How often, in iterations, to print an update. This is set to 0 when used via tidymodels.</li>
+</ul>
+<p>Bayesian estimation can be computationally expensive. To demonstrate, let’s recreate the simulated data from the main text:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb43"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># We'll simulate a single point prior:</span></span>
+<span><span class="va">true_means</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1.0</span>, <span class="op">-</span><span class="fl">1.5</span><span class="op">)</span></span>
+<span><span class="va">num_samples</span> <span class="op">&lt;-</span> <span class="fl">100</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html">runif</a></span><span class="op">(</span><span class="va">num_samples</span>, min <span class="op">=</span> <span class="op">-</span><span class="fl">1</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span></span>
+<span><span class="va">example_tr_data</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
+<span>  x <span class="op">=</span> <span class="va">x</span>,</span>
+<span>  lp <span class="op">=</span> <span class="va">true_means</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span> <span class="op">+</span> <span class="va">true_means</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span> <span class="op">*</span> <span class="va">x</span>,</span>
+<span>  truth <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Logistic.html">plogis</a></span><span class="op">(</span><span class="va">lp</span><span class="op">)</span>,</span>
+<span>  random <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html">runif</a></span><span class="op">(</span><span class="va">num_samples</span><span class="op">)</span>,</span>
+<span>  class <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">random</span> <span class="op">&lt;=</span> <span class="va">truth</span>, <span class="st">"A"</span>, <span class="st">"B"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>To get started, let’s fit the model using default (wide Gaussian) priors, using a single chain:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb44"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">282</span><span class="op">)</span></span>
+<span><span class="va">example_fit</span> <span class="op">&lt;-</span> </span>
+<span>  <span class="fu">logistic_reg</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu">set_engine</span><span class="op">(</span><span class="st">"stan"</span>, chains <span class="op">=</span> <span class="fl">1</span>, iter <span class="op">=</span> <span class="fl">10000</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://generics.r-lib.org/reference/fit.html">fit</a></span><span class="op">(</span><span class="va">class</span> <span class="op">~</span> <span class="va">x</span>, data <span class="op">=</span> <span class="va">example_tr_data</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">example_fit</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span>digits <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="co">#&gt; parsnip model object</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; stan_glm</span></span>
+<span><span class="co">#&gt;  family:       binomial [logit]</span></span>
+<span><span class="co">#&gt;  formula:      class ~ x</span></span>
+<span><span class="co">#&gt;  observations: 100</span></span>
+<span><span class="co">#&gt;  predictors:   2</span></span>
+<span><span class="co">#&gt; ------</span></span>
+<span><span class="co">#&gt;             Median MAD_SD</span></span>
+<span><span class="co">#&gt; (Intercept) -0.967  0.241</span></span>
+<span><span class="co">#&gt; x            1.402  0.477</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ------</span></span>
+<span><span class="co">#&gt; * For help interpreting the printed output see ?print.stanreg</span></span>
+<span><span class="co">#&gt; * For info on the priors used see ?prior_summary.stanreg</span></span>
+<span></span>
+<span><span class="fu"><a href="https://generics.r-lib.org/reference/augment.html">augment</a></span><span class="op">(</span><span class="va">example_fit</span>, new_data <span class="op">=</span> <span class="fu">tibble</span><span class="op">(</span>x <span class="op">=</span> <span class="op">(</span><span class="fl">0</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span><span class="op">/</span><span class="fl">5</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 6 × 4</span></span>
+<span><span class="co">#&gt;   .pred_class .pred_A .pred_B     x</span></span>
+<span><span class="co">#&gt;   &lt;fct&gt;         &lt;dbl&gt;   &lt;dbl&gt; &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1 A            0.7257  0.2743   0  </span></span>
+<span><span class="co">#&gt; 2 A            0.6657  0.3343   0.2</span></span>
+<span><span class="co">#&gt; 3 A            0.6000  0.4000   0.4</span></span>
+<span><span class="co">#&gt; 4 A            0.5304  0.4696   0.6</span></span>
+<span><span class="co">#&gt; 5 B            0.4596  0.5404   0.8</span></span>
+<span><span class="co">#&gt; 6 B            0.3904  0.6096   1</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>The predictions are based on the posterior mean. The simplest way to get the posterior samples is to use <code><a href="https://rdrr.io/r/base/matrix.html">as.matrix()</a></code> on the underlying <code>rstanarm</code> object:</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb45"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">rstanrm_fit</span> <span class="op">&lt;-</span> </span>
+<span>  <span class="va">example_fit</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu">extract_fit_engine</span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">post_df</span> <span class="op">&lt;-</span>  </span>
+<span>  <span class="va">rstanrm_fit</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu">as_tibble</span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">post_df</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu">ggplot</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span><span class="va">`(Intercept)`</span>, <span class="va">x</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>  <span class="fu">geom_point</span><span class="op">(</span>alpha <span class="op">=</span> <span class="fl">1</span> <span class="op">/</span> <span class="fl">5</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>  <span class="fu">geom_density2d</span><span class="op">(</span>col <span class="op">=</span> <span class="st">"blue"</span>, bins <span class="op">=</span> <span class="fl">5</span>, linewidth <span class="op">=</span> <span class="fl">1</span>, adjust <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure"><p><img src="cls-linear_files/figure-html/logistic-posterior-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:50.0%"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>There are <em>many</em> more operations on the engine fit object, including posterior diagnostics and visualizations. Two resources are:</p>
+<ul>
+<li>The <span class="pkg"><a href="https://cran.r-project.org/package=tidybayes">tidybayes</a></span> package <a href="https://mjskay.github.io/tidybayes/">website</a>.</li>
+<li><a href="https://mc-stan.org/rstanarm/articles/rstanarm.html"><em>How to Use the rstanarm Package</em></a></li>
+</ul>
+<p><a href="https://aml4td.org/chapters/cls-linear.html#sec-logistic-bayes"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+</section></section><section id="sec-multinomial-reg" class="level2" data-number="16.4"><h2 data-number="16.4" class="anchored" data-anchor-id="sec-multinomial-reg">
+<span class="header-section-number">16.4</span> Multinomial Regression</h2>
+<p><a href="https://aml4td.org/chapters/cls_linear.html#sec-multinomial-reg"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+</section><section id="sec-cls-gam" class="level2" data-number="16.5"><h2 data-number="16.5" class="anchored" data-anchor-id="sec-cls-gam">
+<span class="header-section-number">16.5</span> Generalized Additive Models</h2>
+<p><a href="https://aml4td.org/chapters/cls_linear.html#sec-cls-gam"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+
+
+</section></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/tidymodels\.aml4td\.org\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script><nav class="page-navigation"><div class="nav-page nav-page-previous">
+      <a href="../chapters/cls-metrics.html" class="pagination-link" aria-label="Characterizing Classification Models">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Characterizing Classification Models</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../chapters/cls-nonlinear.html" class="pagination-link" aria-label="Complex Nonlinear Boundaries">
+        <span class="nav-page-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Complex Nonlinear Boundaries</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+</body></html>

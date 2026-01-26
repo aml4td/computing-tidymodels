@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.31">
+<meta name="generator" content="quarto-1.8.26">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <title>9&nbsp; Overfitting – Tidymodels Computing Supplement</title>
 <style>
@@ -65,14 +65,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../chapters/interactions-nonlinear.html" rel="prev">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-e1a5c8363afafaef2c763b6775fbf3ca.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-109f5ab760e167ab0a7984bfec541ac0.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light"><script id="quarto-search-options" type="application/json">{
+<link href="../site_libs/bootstrap/bootstrap-7c647e586662db48eb79d76466712003.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light"><script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
   "collapse-after": 3,
@@ -109,7 +110,7 @@ const typesetMath = (el) => {
     var macros = [];
     for (var i = 0; i < mathElements.length; i++) {
       var texText = mathElements[i].firstChild;
-      if (mathElements[i].tagName == "SPAN") {
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
         window.katex.render(texText.data, mathElements[i], {
           displayMode: mathElements[i].classList.contains('display'),
           throwOnError: false,
@@ -150,19 +151,19 @@ window.Quarto = {
       <a href="" title="Share" id="quarto-navigation-tool-dropdown-0" class="quarto-navigation-tool dropdown-toggle px-1" data-bs-toggle="dropdown" aria-expanded="false" role="link" aria-label="Share"><i class="bi bi-share"></i></a>
       <ul class="dropdown-menu" aria-labelledby="quarto-navigation-tool-dropdown-0">
 <li>
-            <a class="dropdown-item sidebar-tools-main-item" href="https://twitter.com/intent/tweet?url=%7Curl%7C">
+            <a class="dropdown-item sidebar-tools-main-item" href="https://twitter.com/intent/tweet?url=|url|">
               <i class="bi bi-twitter pe-1"></i>
             Twitter
             </a>
           </li>
           <li>
-            <a class="dropdown-item sidebar-tools-main-item" href="https://www.facebook.com/sharer/sharer.php?u=%7Curl%7C">
+            <a class="dropdown-item sidebar-tools-main-item" href="https://www.facebook.com/sharer/sharer.php?u=|url|">
               <i class="bi bi-facebook pe-1"></i>
             Facebook
             </a>
           </li>
           <li>
-            <a class="dropdown-item sidebar-tools-main-item" href="https://www.linkedin.com/sharing/share-offsite/?url=%7Curl%7C">
+            <a class="dropdown-item sidebar-tools-main-item" href="https://www.linkedin.com/sharing/share-offsite/?url=|url|">
               <i class="bi bi-linkedin pe-1"></i>
             LinkedIn
             </a>
@@ -334,6 +335,18 @@ window.Quarto = {
  <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Characterizing Classification Models</span></span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/cls-linear.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Generalized Linear and Additive Classifiers</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/cls-nonlinear.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Complex Nonlinear Boundaries</span></span></a>
+  </div>
+</li>
       </ul>
 </li>
         <li class="sidebar-item sidebar-item-section">
@@ -384,7 +397,7 @@ window.Quarto = {
 <span class="header-section-number">9.1</span> Requirements</h2>
 <p>You’ll need 2 packages (<span class="pkg"><a href="https://cran.r-project.org/package=bestNormalize">bestNormalize</a></span> and <span class="pkg"><a href="https://cran.r-project.org/package=tidymodels">tidymodels</a></span>) for this chapter. You can install them via:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">req_pkg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"bestNormalize"</span>, <span class="st">"tidymodels"</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">req_pkg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"bestNormalize"</span>, <span class="st">"tidymodels"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Check to see if they are installed: </span></span>
 <span><span class="va">pkg_installed</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">vapply</a></span><span class="op">(</span><span class="va">req_pkg</span>, <span class="fu">rlang</span><span class="fu">::</span><span class="va"><a href="https://rlang.r-lib.org/reference/is_installed.html">is_installed</a></span>, <span class="fu"><a href="https://rdrr.io/r/base/logical.html">logical</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
@@ -393,13 +406,13 @@ window.Quarto = {
 <span><span class="kw">if</span> <span class="op">(</span> <span class="fu"><a href="https://rdrr.io/r/base/any.html">any</a></span><span class="op">(</span><span class="op">!</span><span class="va">pkg_installed</span><span class="op">)</span> <span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">install_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">pkg_installed</span><span class="op">)</span><span class="op">[</span><span class="op">!</span><span class="va">pkg_installed</span><span class="op">]</span></span>
 <span>  <span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html">pak</a></span><span class="op">(</span><span class="va">install_list</span><span class="op">)</span></span>
-<span><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Let’s load the meta package and manage some between-package function conflicts.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidymodels.tidymodels.org">tidymodels</a></span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidymodels.tidymodels.org">tidymodels</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://petersonr.github.io/bestNormalize/">bestNormalize</a></span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://tidymodels.tidymodels.org/reference/tidymodels_prefer.html">tidymodels_prefer</a></span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="fu"><a href="https://tidymodels.tidymodels.org/reference/tidymodels_prefer.html">tidymodels_prefer</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section><section id="sec-tuning-parameters" class="level2" data-number="9.2"><h2 data-number="9.2" class="anchored" data-anchor-id="sec-tuning-parameters">
 <span class="header-section-number">9.2</span> Tuning Paramters</h2>
@@ -417,13 +430,13 @@ window.Quarto = {
 </ul>
 <p>Let’s look at an example. In the <a href="https://aml4td.org/chapters/embeddings.html">embeddings chapter</a>, the barley data had a high degree of correlation between the predictors. We discussed PCA, PLS, and other methods to deal with this (via recipe steps). We might try a neural network (say, using the <span class="pkg"><a href="https://cran.r-project.org/package=brulee">brulee</a></span> engine) for a model. The code to specify this pipeline would be:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">pls_rec</span> <span class="op">&lt;-</span></span>
-<span>  <span class="fu">recipe</span><span class="op">(</span><span class="va">barley</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">barley_train</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
-<span>  <span class="fu">step_zv</span><span class="op">(</span><span class="fu">all_predictors</span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
-<span>  <span class="fu"><a href="https://petersonr.github.io/bestNormalize/reference/step_orderNorm.html">step_orderNorm</a></span><span class="op">(</span><span class="fu">all_numeric_predictors</span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">pls_rec</span> <span class="op">&lt;-</span></span>
+<span>  <span class="fu">recipe</span><span class="op">(</span><span class="va">barley</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">barley_train</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">step_zv</span><span class="op">(</span><span class="fu">all_predictors</span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://petersonr.github.io/bestNormalize/reference/step_orderNorm.html">step_orderNorm</a></span><span class="op">(</span><span class="fu">all_numeric_predictors</span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">step_pls</span><span class="op">(</span><span class="fu">all_numeric_predictors</span><span class="op">(</span><span class="op">)</span>,</span>
 <span>           outcome <span class="op">=</span> <span class="st">"barley"</span>,</span>
-<span>           num_comp <span class="op">=</span> <span class="fl">20</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>           num_comp <span class="op">=</span> <span class="fl">20</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">step_normalize</span><span class="op">(</span><span class="fu">all_predictors</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">nnet_spec</span> <span class="op">&lt;-</span></span>
@@ -433,25 +446,25 @@ window.Quarto = {
 <span>    penalty <span class="op">=</span> <span class="fl">0.01</span>,</span>
 <span>    epochs <span class="op">=</span> <span class="fl">1000</span>,</span>
 <span>    learn_rate <span class="op">=</span> <span class="fl">0.1</span></span>
-<span>  <span class="op">)</span> <span class="op">%&gt;%</span></span>
-<span>  <span class="fu">set_mode</span><span class="op">(</span><span class="st">"regression"</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">set_mode</span><span class="op">(</span><span class="st">"regression"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">set_engine</span><span class="op">(</span><span class="st">"brulee"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">pls_nnet_wflow</span> <span class="op">&lt;-</span> <span class="fu">workflow</span><span class="op">(</span><span class="va">pls_rec</span>, <span class="va">nnet_spec</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="va">pls_nnet_wflow</span> <span class="op">&lt;-</span> <span class="fu">workflow</span><span class="op">(</span><span class="va">pls_rec</span>, <span class="va">nnet_spec</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>We’ve filled in specific values for each of these arguments, although we don’t know if these are best that we can do.</p>
 </section><section id="sec-tag-for-tuning" class="level2" data-number="9.3"><h2 data-number="9.3" class="anchored" data-anchor-id="sec-tag-for-tuning">
 <span class="header-section-number">9.3</span> Marking Parameters for Optimization</h2>
 <p>To tune these parameters, we can give them a value of the function <code>tune()</code>. This special function just returns an expression with the value “<code>tune()</code>”. For example:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">pls_rec</span> <span class="op">&lt;-</span></span>
-<span>  <span class="fu">recipe</span><span class="op">(</span><span class="va">barley</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">barley_train</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
-<span>  <span class="fu">step_zv</span><span class="op">(</span><span class="fu">all_predictors</span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
-<span>  <span class="fu"><a href="https://petersonr.github.io/bestNormalize/reference/step_orderNorm.html">step_orderNorm</a></span><span class="op">(</span><span class="fu">all_numeric_predictors</span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">pls_rec</span> <span class="op">&lt;-</span></span>
+<span>  <span class="fu">recipe</span><span class="op">(</span><span class="va">barley</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">barley_train</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">step_zv</span><span class="op">(</span><span class="fu">all_predictors</span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://petersonr.github.io/bestNormalize/reference/step_orderNorm.html">step_orderNorm</a></span><span class="op">(</span><span class="fu">all_numeric_predictors</span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">step_pls</span><span class="op">(</span><span class="fu">all_numeric_predictors</span><span class="op">(</span><span class="op">)</span>,</span>
 <span>           outcome <span class="op">=</span> <span class="st">"barley"</span>,</span>
 <span>           <span class="co"># For demonstration, we'll use a label</span></span>
-<span>           num_comp <span class="op">=</span> <span class="fu">tune</span><span class="op">(</span><span class="st">"pca comps"</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>           num_comp <span class="op">=</span> <span class="fu">tune</span><span class="op">(</span><span class="st">"pca comps"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">step_normalize</span><span class="op">(</span><span class="fu">all_predictors</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">nnet_spec</span> <span class="op">&lt;-</span></span>
@@ -461,90 +474,90 @@ window.Quarto = {
 <span>    penalty <span class="op">=</span> <span class="fu">tune</span><span class="op">(</span><span class="op">)</span>,</span>
 <span>    epochs <span class="op">=</span> <span class="fu">tune</span><span class="op">(</span><span class="op">)</span>,</span>
 <span>    learn_rate <span class="op">=</span> <span class="fu">tune</span><span class="op">(</span><span class="op">)</span></span>
-<span>  <span class="op">)</span> <span class="op">%&gt;%</span></span>
-<span>  <span class="fu">set_mode</span><span class="op">(</span><span class="st">"regression"</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">set_mode</span><span class="op">(</span><span class="st">"regression"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">set_engine</span><span class="op">(</span><span class="st">"brulee"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">pls_nnet_wflow</span> <span class="op">&lt;-</span> <span class="fu">workflow</span><span class="op">(</span><span class="va">pls_rec</span>, <span class="va">nnet_spec</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="va">pls_nnet_wflow</span> <span class="op">&lt;-</span> <span class="fu">workflow</span><span class="op">(</span><span class="va">pls_rec</span>, <span class="va">nnet_spec</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Optionally, we can give a label as an argument to the function:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/str.html">str</a></span><span class="op">(</span><span class="fu">tune</span><span class="op">(</span><span class="st">"#PCA components"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt;  language tune("#PCA components")</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/str.html">str</a></span><span class="op">(</span><span class="fu">tune</span><span class="op">(</span><span class="st">"#PCA components"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt;  language tune("#PCA components")</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>This is useful when the pipeline has two arguments with the same name. For example, if you wanted to use splines for two predictors but allow them to have different degrees of freedom, the resulting set of parameters would not be unique since both of them would have the default label of <code>deg_free</code>. In this case, one recipe step could use <code>tune("predictor 1 deg free")</code> and another could be <code>tune("predictor 2 deg free")</code>.</p>
 <p>Engine arguments are set by <code>set_engine()</code>. For example:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">nnet_spec</span> <span class="op">&lt;-</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">nnet_spec</span> <span class="op">&lt;-</span></span>
 <span>  <span class="fu">mlp</span><span class="op">(</span></span>
 <span>    hidden_units <span class="op">=</span> <span class="fu">tune</span><span class="op">(</span><span class="op">)</span>,</span>
 <span>    activation <span class="op">=</span> <span class="fu">tune</span><span class="op">(</span><span class="op">)</span>,</span>
 <span>    penalty <span class="op">=</span> <span class="fu">tune</span><span class="op">(</span><span class="op">)</span>,</span>
 <span>    epochs <span class="op">=</span> <span class="fu">tune</span><span class="op">(</span><span class="op">)</span>,</span>
 <span>    learn_rate <span class="op">=</span> <span class="fu">tune</span><span class="op">(</span><span class="op">)</span></span>
-<span>  <span class="op">)</span> <span class="op">%&gt;%</span></span>
-<span>  <span class="fu">set_mode</span><span class="op">(</span><span class="st">"regression"</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">set_mode</span><span class="op">(</span><span class="st">"regression"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">set_engine</span><span class="op">(</span><span class="st">"brulee"</span>, stop_iter <span class="op">=</span> <span class="fl">5</span>, rate_schedule <span class="op">=</span> <span class="fu">tune</span><span class="op">(</span><span class="op">)</span><span class="op">)</span> </span>
 <span></span>
-<span><span class="va">pls_nnet_wflow</span> <span class="op">&lt;-</span> <span class="fu">workflow</span><span class="op">(</span><span class="va">pls_rec</span>, <span class="va">nnet_spec</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="va">pls_nnet_wflow</span> <span class="op">&lt;-</span> <span class="fu">workflow</span><span class="op">(</span><span class="va">pls_rec</span>, <span class="va">nnet_spec</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section><section id="sec-param-functions" class="level2" data-number="9.4"><h2 data-number="9.4" class="anchored" data-anchor-id="sec-param-functions">
 <span class="header-section-number">9.4</span> Parameter Functions</h2>
 <p>Each tuning parameter has a corresponding function from the <span class="pkg"><a href="https://cran.r-project.org/package=dials">dials</a></span> package containing information on the parameter type, parameter ranges (or possible values), and other data.</p>
 <p>For example, the function for the <code>penalty</code> argument is:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">penalty</span><span class="op">(</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">penalty</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Amount of Regularization (quantitative)</span></span>
 <span><span class="co">#&gt; Transformer: log-10 [1e-100, Inf]</span></span>
-<span><span class="co">#&gt; Range (transformed scale): [-10, 0]</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; Range (transformed scale): [-10, 0]</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>This parameter has a default range from 10<sup>-10</sup> to 1.0. It also has a corresponding transformation function (log base 10). This means that when values are created, they are uniformly distributed on the log scale. This is common for parameters that have values that span several orders of magnitude and cannot be negative.</p>
 <p>We can change these defaults via arguments:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">penalty</span><span class="op">(</span>range <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>, trans <span class="op">=</span> <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/transform_identity.html">transform_identity</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">penalty</span><span class="op">(</span>range <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>, trans <span class="op">=</span> <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/transform_identity.html">transform_identity</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Amount of Regularization (quantitative)</span></span>
 <span><span class="co">#&gt; Transformer: identity [-Inf, Inf]</span></span>
-<span><span class="co">#&gt; Range (transformed scale): [0, 1]</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; Range (transformed scale): [0, 1]</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>In some cases, we can’t know the range <em>a priori</em>. Parameters like the number of possible PCA components or random forest’s <span class="math inline">\(m_{try}\)</span> depend on the data dimensions. In the case of <span class="math inline">\(m_{try}\)</span> , the default has an unknown in its range:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">mtry</span><span class="op">(</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">mtry</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # Randomly Selected Predictors (quantitative)</span></span>
-<span><span class="co">#&gt; Range: [1, ?]</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; Range: [1, ?]</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>We would need to set this range to use the parameter.</p>
 <p>In a few situations, the argument name to a recipe step or model function will use a dials function that has a different name than the argument. For example, there are a few different types of “degrees”. There is (real-valued) polynomial exponent degree:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">degree</span><span class="op">(</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">degree</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Polynomial Degree (quantitative)</span></span>
 <span><span class="co">#&gt; Range: [1, 3]</span></span>
 <span></span>
 <span><span class="co"># Data type: </span></span>
 <span><span class="fu">degree</span><span class="op">(</span><span class="op">)</span><span class="op">$</span><span class="va">type</span></span>
-<span><span class="co">#&gt; [1] "double"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; [1] "double"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>but for the spline recipe steps we need an integer value:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># Data type: </span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># Data type: </span></span>
 <span><span class="fu">spline_degree</span><span class="op">(</span><span class="op">)</span><span class="op">$</span><span class="va">type</span></span>
-<span><span class="co">#&gt; [1] "integer"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; [1] "integer"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>In some cases, tidymodels has methods for automatically changing the parameter function to be used, the range of values, and so on. We’ll see that in a minute.</p>
 <p>There are also functions to manipulate individual parameters:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># Function list:</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># Function list:</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/apropos.html">apropos</a></span><span class="op">(</span><span class="st">"^value_"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "value_inverse"   "value_sample"    "value_seq"       "value_set"      </span></span>
 <span><span class="co">#&gt; [5] "value_transform" "value_validate"</span></span>
 <span></span>
 <span><span class="fu">value_seq</span><span class="op">(</span><span class="fu">hidden_units</span><span class="op">(</span><span class="op">)</span>, n <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1]  1  4  7 10</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; [1]  1  4  7 10</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section><section id="sec-param-sets" class="level2" data-number="9.5"><h2 data-number="9.5" class="anchored" data-anchor-id="sec-param-sets">
 <span class="header-section-number">9.5</span> Sets of Parameters</h2>
 <p>For our pipeline <code>pls_nnet_wflow</code>, we can extract a <em>parameter set</em> that collects all of the parameters and their suggested information. There is a function to do this:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">pls_nnet_param</span> <span class="op">&lt;-</span> <span class="fu">extract_parameter_set_dials</span><span class="op">(</span><span class="va">pls_nnet_wflow</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">pls_nnet_param</span> <span class="op">&lt;-</span> <span class="fu">extract_parameter_set_dials</span><span class="op">(</span><span class="va">pls_nnet_wflow</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/class.html">class</a></span><span class="op">(</span><span class="va">pls_nnet_param</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "parameters" "tbl_df"     "tbl"        "data.frame"</span></span>
@@ -564,14 +577,14 @@ window.Quarto = {
 <span><span class="co">#&gt;     learn_rate    learn_rate nparam[+]</span></span>
 <span><span class="co">#&gt;  rate_schedule rate_schedule dparam[+]</span></span>
 <span><span class="co">#&gt;      pca comps      num_comp nparam[+]</span></span>
-<span><span class="co">#&gt; </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; </span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The difference in the <code>type</code> and <code>identifier</code> columns only occurs when the <code>tune()</code> value has a label (as with the final row).</p>
 <p>The output <code>"nparam[+]"</code> indicates a numeric parameter, and the plus indicates that it is fully specified. If our pipeline had used <span class="math inline">\(m_{try}\)</span>, that value would show <code>"nparam[?]"</code>. The rate schedule is a qualitative parameter and has a label of <code>"dparam[+]"</code> (“d” for discrete).</p>
 <p>Let’s look at the information for the learning rate parameter by viewing the parameter information set by tidymodels. It is different than the default:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">pls_nnet_param</span> <span class="op">%&gt;%</span> </span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">id</span> <span class="op">==</span> <span class="st">"learn_rate"</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">pls_nnet_param</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">id</span> <span class="op">==</span> <span class="st">"learn_rate"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu">pluck</span><span class="op">(</span><span class="st">"object"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [[1]]</span></span>
 <span><span class="co">#&gt; Learning Rate (quantitative)</span></span>
@@ -582,27 +595,27 @@ window.Quarto = {
 <span><span class="fu">learn_rate</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Learning Rate (quantitative)</span></span>
 <span><span class="co">#&gt; Transformer: log-10 [1e-100, Inf]</span></span>
-<span><span class="co">#&gt; Range (transformed scale): [-10, -1]</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; Range (transformed scale): [-10, -1]</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Why are they different? The main function has a wider range since it can be used by boosted trees, neural networks, UMAP, and other tools. The range is more narrow for this pipeline since we know that neural networks tend to work better with faster learning rates (so we set a different default).</p>
 <p>Suppose we want to change the range to be even more narrow. We can use the <code><a href="https://rdrr.io/r/stats/update.html">update()</a></code> function to change defaults or to use a different <span class="pkg"><a href="https://cran.r-project.org/package=dials">dials</a></span> parameter function:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">new_rate</span> <span class="op">&lt;-</span> </span>
-<span>  <span class="va">pls_nnet_param</span> <span class="op">%&gt;%</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">new_rate</span> <span class="op">&lt;-</span> </span>
+<span>  <span class="va">pls_nnet_param</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/stats/update.html">update</a></span><span class="op">(</span>learn_rate <span class="op">=</span> <span class="fu">learn_rate</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">2</span>, <span class="op">-</span><span class="fl">1</span><span class="op">/</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">new_rate</span> <span class="op">%&gt;%</span> </span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">id</span> <span class="op">==</span> <span class="st">"learn_rate"</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span><span class="va">new_rate</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">id</span> <span class="op">==</span> <span class="st">"learn_rate"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu">pluck</span><span class="op">(</span><span class="st">"object"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [[1]]</span></span>
 <span><span class="co">#&gt; Learning Rate (quantitative)</span></span>
 <span><span class="co">#&gt; Transformer: log-10 [1e-100, Inf]</span></span>
-<span><span class="co">#&gt; Range (transformed scale): [-2, -0.5]</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; Range (transformed scale): [-2, -0.5]</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>You don’t always have to extract or modify a parameter set; this is an optional tool in case you want to change default values.</p>
 <p>The parameter set is sometimes passed as an argument to grid creation functions or to iterative optimization functions that need to simulate/sample random candidates. For example, to create a random grid with 4 candidate values:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">220</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">220</span><span class="op">)</span></span>
 <span><span class="fu">grid_random</span><span class="op">(</span><span class="va">pls_nnet_param</span>, size <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 4 × 7</span></span>
 <span><span class="co">#&gt;   hidden_units  penalty epochs activation  learn_rate rate_schedule `pca comps`</span></span>
@@ -610,7 +623,7 @@ window.Quarto = {
 <span><span class="co">#&gt; 1           36 1.883e-3    112 elu            0.04998 cyclic                  3</span></span>
 <span><span class="co">#&gt; 2            7 3.417e-2    362 tanhshrink     0.05164 cyclic                  2</span></span>
 <span><span class="co">#&gt; 3            7 1.593e-9    444 log_sigmoid    0.03668 cyclic                  1</span></span>
-<span><span class="co">#&gt; 4           38 4.803e-8    150 tanhshrink     0.02776 step                    3</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; 4           38 4.803e-8    150 tanhshrink     0.02776 step                    3</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 
 
@@ -665,13 +678,14 @@ window.Quarto = {
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy

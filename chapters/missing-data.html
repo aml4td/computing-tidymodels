@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.31">
+<meta name="generator" content="quarto-1.8.26">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <title>4&nbsp; Missing Data – Tidymodels Computing Supplement</title>
 <style>
@@ -65,14 +65,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../chapters/initial-data-splitting.html" rel="prev">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-e1a5c8363afafaef2c763b6775fbf3ca.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-109f5ab760e167ab0a7984bfec541ac0.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-7c647e586662db48eb79d76466712003.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <link href="../site_libs/quarto-contrib/fontawesome6-1.2.0/all.min.css" rel="stylesheet">
 <link href="../site_libs/quarto-contrib/fontawesome6-1.2.0/latex-fontsize.css" rel="stylesheet"><script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
@@ -111,7 +112,7 @@ const typesetMath = (el) => {
     var macros = [];
     for (var i = 0; i < mathElements.length; i++) {
       var texText = mathElements[i].firstChild;
-      if (mathElements[i].tagName == "SPAN") {
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
         window.katex.render(texText.data, mathElements[i], {
           displayMode: mathElements[i].classList.contains('display'),
           throwOnError: false,
@@ -152,19 +153,19 @@ window.Quarto = {
       <a href="" title="Share" id="quarto-navigation-tool-dropdown-0" class="quarto-navigation-tool dropdown-toggle px-1" data-bs-toggle="dropdown" aria-expanded="false" role="link" aria-label="Share"><i class="bi bi-share"></i></a>
       <ul class="dropdown-menu" aria-labelledby="quarto-navigation-tool-dropdown-0">
 <li>
-            <a class="dropdown-item sidebar-tools-main-item" href="https://twitter.com/intent/tweet?url=%7Curl%7C">
+            <a class="dropdown-item sidebar-tools-main-item" href="https://twitter.com/intent/tweet?url=|url|">
               <i class="bi bi-twitter pe-1"></i>
             Twitter
             </a>
           </li>
           <li>
-            <a class="dropdown-item sidebar-tools-main-item" href="https://www.facebook.com/sharer/sharer.php?u=%7Curl%7C">
+            <a class="dropdown-item sidebar-tools-main-item" href="https://www.facebook.com/sharer/sharer.php?u=|url|">
               <i class="bi bi-facebook pe-1"></i>
             Facebook
             </a>
           </li>
           <li>
-            <a class="dropdown-item sidebar-tools-main-item" href="https://www.linkedin.com/sharing/share-offsite/?url=%7Curl%7C">
+            <a class="dropdown-item sidebar-tools-main-item" href="https://www.linkedin.com/sharing/share-offsite/?url=|url|">
               <i class="bi bi-linkedin pe-1"></i>
             LinkedIn
             </a>
@@ -336,6 +337,18 @@ window.Quarto = {
  <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Characterizing Classification Models</span></span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/cls-linear.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Generalized Linear and Additive Classifiers</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/cls-nonlinear.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Complex Nonlinear Boundaries</span></span></a>
+  </div>
+</li>
       </ul>
 </li>
         <li class="sidebar-item sidebar-item-section">
@@ -400,7 +413,7 @@ window.Quarto = {
 <span class="header-section-number">4.1</span> Requirements</h2>
 <p>You’ll need 3 packages (<span class="pkg"><a href="https://cran.r-project.org/package=naniar">naniar</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=ranger">ranger</a></span>, and <span class="pkg"><a href="https://cran.r-project.org/package=tidymodels">tidymodels</a></span>) for this chapter. You can install them via:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">req_pkg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"naniar"</span>, <span class="st">"ranger"</span>, <span class="st">"tidymodels"</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">req_pkg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"naniar"</span>, <span class="st">"ranger"</span>, <span class="st">"tidymodels"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Check to see if they are installed: </span></span>
 <span><span class="va">pkg_installed</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">vapply</a></span><span class="op">(</span><span class="va">req_pkg</span>, <span class="fu">rlang</span><span class="fu">::</span><span class="va"><a href="https://rlang.r-lib.org/reference/is_installed.html">is_installed</a></span>, <span class="fu"><a href="https://rdrr.io/r/base/logical.html">logical</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
@@ -409,50 +422,50 @@ window.Quarto = {
 <span><span class="kw">if</span> <span class="op">(</span> <span class="fu"><a href="https://rdrr.io/r/base/any.html">any</a></span><span class="op">(</span><span class="op">!</span><span class="va">pkg_installed</span><span class="op">)</span> <span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">install_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">pkg_installed</span><span class="op">)</span><span class="op">[</span><span class="op">!</span><span class="va">pkg_installed</span><span class="op">]</span></span>
 <span>  <span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html">pak</a></span><span class="op">(</span><span class="va">install_list</span><span class="op">)</span></span>
-<span><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Let’s load the meta package and manage some between-package function conflicts.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidymodels.tidymodels.org">tidymodels</a></span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidymodels.tidymodels.org">tidymodels</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://tidymodels.tidymodels.org/reference/tidymodels_prefer.html">tidymodels_prefer</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="fu">theme_set</span><span class="op">(</span><span class="fu">theme_bw</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="fu">theme_set</span><span class="op">(</span><span class="fu">theme_bw</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The data are automatically attached when the <span class="pkg"><a href="https://cran.r-project.org/package=tidymodels">tidymodels</a></span> package is loaded. The data frame is named <code>scat</code>. Let’s split the data into training and testing, create some resamples (to be discussed in chapter TODO), and a data frame of predictor values. For both data splitting steps, we’ll stratify by the species since the frequencies of each are not balanced.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">383</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">383</span><span class="op">)</span></span>
 <span><span class="va">scat_split</span> <span class="op">&lt;-</span> <span class="fu">initial_split</span><span class="op">(</span><span class="va">scat</span>, strata <span class="op">=</span> <span class="va">Species</span><span class="op">)</span></span>
 <span><span class="va">scat_tr</span> <span class="op">&lt;-</span> <span class="fu">training</span><span class="op">(</span><span class="va">scat_split</span><span class="op">)</span></span>
 <span><span class="va">scat_te</span> <span class="op">&lt;-</span> <span class="fu">testing</span><span class="op">(</span><span class="va">scat_split</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">scat_rs</span> <span class="op">&lt;-</span> <span class="fu">vfold_cv</span><span class="op">(</span><span class="va">scat_tr</span>, repeats <span class="op">=</span> <span class="fl">5</span>, strata <span class="op">=</span> <span class="va">Species</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">scat_tr_preds</span> <span class="op">&lt;-</span> <span class="va">scat_tr</span> <span class="op">%&gt;%</span> <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">Species</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="va">scat_tr_preds</span> <span class="op">&lt;-</span> <span class="va">scat_tr</span> <span class="op">|&gt;</span> <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">Species</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Here is the breakdown of the species per data partition:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">scat_tr</span> <span class="op">%&gt;%</span> <span class="fu">count</span><span class="op">(</span><span class="va">Species</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">scat_tr</span> <span class="op">|&gt;</span> <span class="fu">count</span><span class="op">(</span><span class="va">Species</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 3 × 2</span></span>
 <span><span class="co">#&gt;   Species      n</span></span>
 <span><span class="co">#&gt;   &lt;fct&gt;    &lt;int&gt;</span></span>
 <span><span class="co">#&gt; 1 bobcat      42</span></span>
 <span><span class="co">#&gt; 2 coyote      21</span></span>
 <span><span class="co">#&gt; 3 gray_fox    18</span></span>
-<span><span class="va">scat_te</span> <span class="op">%&gt;%</span> <span class="fu">count</span><span class="op">(</span><span class="va">Species</span><span class="op">)</span></span>
+<span><span class="va">scat_te</span> <span class="op">|&gt;</span> <span class="fu">count</span><span class="op">(</span><span class="va">Species</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 3 × 2</span></span>
 <span><span class="co">#&gt;   Species      n</span></span>
 <span><span class="co">#&gt;   &lt;fct&gt;    &lt;int&gt;</span></span>
 <span><span class="co">#&gt; 1 bobcat      15</span></span>
 <span><span class="co">#&gt; 2 coyote       7</span></span>
-<span><span class="co">#&gt; 3 gray_fox     7</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; 3 gray_fox     7</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>We’ll spend some time on visualization and summary techniques that are helpful when performing exploratory data analysis.</p>
 </section><section id="sec-missing-eda" class="level2" data-number="4.2"><h2 data-number="4.2" class="anchored" data-anchor-id="sec-missing-eda">
 <span class="header-section-number">4.2</span> Investigating Missing Data</h2>
 <p>The <span class="pkg"><a href="https://cran.r-project.org/package=naniar">naniar</a></span> package is an excellent tool for missing data. Let’s load it and then get a summary of our training set variables.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/njtierney/naniar">naniar</a></span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/njtierney/naniar">naniar</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://naniar.njtierney.com/reference/miss_var_summary.html">miss_var_summary</a></span><span class="op">(</span><span class="va">scat_tr_preds</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span>n <span class="op">=</span> <span class="cn">Inf</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://naniar.njtierney.com/reference/miss_var_summary.html">miss_var_summary</a></span><span class="op">(</span><span class="va">scat_tr_preds</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span>n <span class="op">=</span> <span class="cn">Inf</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 18 × 3</span></span>
 <span><span class="co">#&gt;    variable  n_miss pct_miss</span></span>
 <span><span class="co">#&gt;    &lt;chr&gt;      &lt;int&gt;    &lt;num&gt;</span></span>
@@ -473,19 +486,32 @@ window.Quarto = {
 <span><span class="co">#&gt; 15 ropey          0    0    </span></span>
 <span><span class="co">#&gt; 16 segmented      0    0    </span></span>
 <span><span class="co">#&gt; 17 flat           0    0    </span></span>
-<span><span class="co">#&gt; 18 scrape         0    0</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; 18 scrape         0    0</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The <code><a href="https://naniar.njtierney.com/reference/miss_var_summary.html">miss_var_summary()</a></code> function summarizes the missing data in the predictors. The <code>n_miss</code> column is the number of missing values, and the <code>p_miss</code> column is the proportion of missing values.</p>
 <p>For convenience, let’s make character vectors of column names for predictors with and without missing values.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">miss_cols</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Taper"</span>, <span class="st">"TI"</span>, <span class="st">"Diameter"</span>, <span class="st">"Mass"</span>, <span class="st">"d13C"</span>, <span class="st">"d15N"</span>, <span class="st">"CN"</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">miss_cols</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Taper"</span>, <span class="st">"TI"</span>, <span class="st">"Diameter"</span>, <span class="st">"Mass"</span>, <span class="st">"d13C"</span>, <span class="st">"d15N"</span>, <span class="st">"CN"</span><span class="op">)</span></span>
 <span><span class="va">non_miss_cols</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Month"</span>, <span class="st">"Year"</span>, <span class="st">"Site"</span>, <span class="st">"Location"</span>, <span class="st">"Age"</span>, <span class="st">"Number"</span>, <span class="st">"Length"</span>, </span>
-<span>                   <span class="st">"ropey"</span>, <span class="st">"segmented"</span>, <span class="st">"flat"</span>, <span class="st">"scrape"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>                   <span class="st">"ropey"</span>, <span class="st">"segmented"</span>, <span class="st">"flat"</span>, <span class="st">"scrape"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>We can make an <em>upset plot</em>, which visualizes frequently occurring subsets in the high-dimensional Venn diagram where each predictor is encoded as missing/not missing:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/njtierney/naniar">naniar</a></span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://naniar.njtierney.com/reference/gg_miss_upset.html">gg_miss_upset</a></span><span class="op">(</span><span class="va">scat_tr_preds</span>, nsets <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/njtierney/naniar">naniar</a></span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://naniar.njtierney.com/reference/gg_miss_upset.html">gg_miss_upset</a></span><span class="op">(</span><span class="va">scat_tr_preds</span>, nsets <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning: `aes_string()` was deprecated in ggplot2 3.0.0.</span></span>
+<span><span class="co">#&gt; ℹ Please use tidy evaluation idioms with `aes()`.</span></span>
+<span><span class="co">#&gt; ℹ See also `vignette("ggplot2-in-packages")` for more information.</span></span>
+<span><span class="co">#&gt; ℹ The deprecated feature was likely used in the UpSetR package.</span></span>
+<span><span class="co">#&gt;   Please report the issue to the authors.</span></span>
+<span><span class="co">#&gt; Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.</span></span>
+<span><span class="co">#&gt; ℹ Please use `linewidth` instead.</span></span>
+<span><span class="co">#&gt; ℹ The deprecated feature was likely used in the UpSetR package.</span></span>
+<span><span class="co">#&gt;   Please report the issue to the authors.</span></span>
+<span><span class="co">#&gt; Warning: The `size` argument of `element_line()` is deprecated as of ggplot2 3.4.0.</span></span>
+<span><span class="co">#&gt; ℹ Please use the `linewidth` argument instead.</span></span>
+<span><span class="co">#&gt; ℹ The deprecated feature was likely used in the UpSetR package.</span></span>
+<span><span class="co">#&gt;   Please report the issue to the authors.</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure"><p><img src="missing-data_files/figure-html/upset-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:95.0%"></p>
@@ -501,7 +527,7 @@ window.Quarto = {
 <p>A recipe consists of an initialized object and a sequence of one or more “steps” that define specific actions/computations that should be done to the data prior to modeling.</p>
 <p>The initialization consists of a call to <code>recipe::recipe()</code>. The most common interface used there is a formula. This declares which column is the outcome and which are predictors. For example:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">scat_rec</span> <span class="op">&lt;-</span> <span class="fu">recipe</span><span class="op">(</span><span class="va">Species</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">scat_tr</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">scat_rec</span> <span class="op">&lt;-</span> <span class="fu">recipe</span><span class="op">(</span><span class="va">Species</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">scat_tr</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>At this point, the recipe catalogs each column’s name, data type, and role (i.e., predictor or outcome). From there, we can add step functions to specify what should be done to what columns.</p>
 <p>Two recipes steps can be used for filtering missing data: <code><a href="https://recipes.tidymodels.org/reference/step_naomit.html">recipes::step_naomit()</a></code> and <code><a href="https://recipes.tidymodels.org/reference/step_filter_missing.html">recipes::step_filter_missing()</a></code>. The former removes rows of the training set, and the latter removes predictors if they have too many missing values.</p>
@@ -509,30 +535,30 @@ window.Quarto = {
 <span class="header-section-number">4.3.1</span> Row Filtering</h3>
 <p>Let’s add <code>step_naomit()</code> to the recipe and declare the <span class="pkg"><a href="https://cran.r-project.org/package=dplyr">dplyr</a></span> selector <code><a href="https://tidyselect.r-lib.org/reference/everything.html">dplyr::everything()</a></code> should be used to capture which columns should be checked for missing rows:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">na_omit_rec</span> <span class="op">&lt;-</span> </span>
-<span>  <span class="va">scat_rec</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
-<span>  <span class="fu">step_naomit</span><span class="op">(</span><span class="fu">everything</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">na_omit_rec</span> <span class="op">&lt;-</span> </span>
+<span>  <span class="va">scat_rec</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu">step_naomit</span><span class="op">(</span><span class="fu">everything</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>To estimate the recipe (manually), we can use <code><a href="https://recipes.tidymodels.org/reference/prep.html">recipes::prep()</a></code> to process the training set and use these values to decide which rows to omit:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">na_omit_rec</span> <span class="op">&lt;-</span> </span>
-<span>  <span class="va">scat_rec</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
-<span>  <span class="fu">step_naomit</span><span class="op">(</span><span class="fu">everything</span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
-<span>  <span class="fu">prep</span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">na_omit_rec</span> <span class="op">&lt;-</span> </span>
+<span>  <span class="va">scat_rec</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu">step_naomit</span><span class="op">(</span><span class="fu">everything</span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu">prep</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The <code><a href="https://recipes.tidymodels.org/reference/bake.html">recipes::bake()</a></code> function can be used to apply the recipe to a data set. Before processing, there are 81 scat samples in the training set. How many remain after applying the recipe?</p>
 <p>To do this, we can use the <code>bake()</code> function but supply <code>new_data = NULL</code>. This is a shortcut: when preparing the recipe, we must execute all the steps on the entire training set. By default, recipes save the preprocessed version of the training set in the recipe object. There’s no need to re-process the data.</p>
 <p>The results is that we loose 16 scat samples due to missingness:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">all_complete</span> <span class="op">&lt;-</span> <span class="fu">bake</span><span class="op">(</span><span class="va">na_omit_rec</span>, new_data <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">all_complete</span> <span class="op">&lt;-</span> <span class="fu">bake</span><span class="op">(</span><span class="va">na_omit_rec</span>, new_data <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">all_complete</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 65</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; [1] 65</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p><em>However</em>, <code>step_naomit()</code> is a bit irregular compared to other recipe steps. It is designed to <a href="https://recipes.tidymodels.org/articles/Skipping.html">skip execution on every other data set</a>. This is an important (and appropriate) choice for this method.</p>
 <p>If we were to apply the recipe to the test set, it would <em>not</em> exclude the missing rows:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">bake</span><span class="op">(</span><span class="va">na_omit_rec</span>, new_data <span class="op">=</span> <span class="va">scat_te</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">bake</span><span class="op">(</span><span class="va">na_omit_rec</span>, new_data <span class="op">=</span> <span class="va">scat_te</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 29</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">scat_te</span><span class="op">)</span></span>
@@ -540,7 +566,7 @@ window.Quarto = {
 <span></span>
 <span><span class="co"># but there are missing values:</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/stats/complete.cases.html">complete.cases</a></span><span class="op">(</span><span class="va">scat_te</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 3</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; [1] 3</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p><a href="https://aml4td.org/chapters/missing-data.html#sec-removing-missing-data"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section><section id="sec-removing-missing-cols" class="level3" data-number="4.3.2"><h3 data-number="4.3.2" class="anchored" data-anchor-id="sec-removing-missing-cols">
@@ -548,14 +574,14 @@ window.Quarto = {
 <p>The sample size of this data set is not large; removing rows might be more problematic than removing columns with a lot of missingness. We can use the <code>step_filter_missing()</code> step to do this. We decide on a threshold representing our “line of dignity” regarding how much missingness is acceptable. That can be specified as a proportion of missing data and is passed to the <code>threshold</code> argument.</p>
 <p>Here’s an example where we determine that more than 10% missingness is too much. Based on our results from the <span class="pkg"><a href="https://cran.r-project.org/package=naniar">naniar</a></span> package above, this should eliminate two predictors (<code>Taper</code> and <code>TI</code>).</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">filter_features_rec</span> <span class="op">&lt;-</span> </span>
-<span>  <span class="va">scat_rec</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
-<span>  <span class="fu">step_filter_missing</span><span class="op">(</span><span class="fu">everything</span><span class="op">(</span><span class="op">)</span>, threshold <span class="op">=</span> <span class="fl">0.10</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">filter_features_rec</span> <span class="op">&lt;-</span> </span>
+<span>  <span class="va">scat_rec</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu">step_filter_missing</span><span class="op">(</span><span class="fu">everything</span><span class="op">(</span><span class="op">)</span>, threshold <span class="op">=</span> <span class="fl">0.10</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu">prep</span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">ncol</a></span><span class="op">(</span><span class="va">scat_tr</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 19</span></span>
-<span><span class="fu">bake</span><span class="op">(</span><span class="va">filter_features_rec</span>, new_data <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">ncol</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="fu">bake</span><span class="op">(</span><span class="va">filter_features_rec</span>, new_data <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">ncol</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 17</span></span>
 <span></span>
 <span><span class="co"># use the tody method to determine which were removed: </span></span>
@@ -564,7 +590,7 @@ window.Quarto = {
 <span><span class="co">#&gt;   terms id                  </span></span>
 <span><span class="co">#&gt;   &lt;chr&gt; &lt;chr&gt;               </span></span>
 <span><span class="co">#&gt; 1 Taper filter_missing_jh0Cw</span></span>
-<span><span class="co">#&gt; 2 TI    filter_missing_jh0Cw</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; 2 TI    filter_missing_jh0Cw</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p><a href="https://aml4td.org/chapters/missing-data.html#sec-removing-missing-data"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section></section><section id="imputation" class="level2" data-number="4.4"><h2 data-number="4.4" class="anchored" data-anchor-id="imputation">
@@ -575,28 +601,28 @@ window.Quarto = {
 <p>Let’s consider using linear regression to predict the rows missing their value of <code>Taper</code>. The imputation steps allow you to select which column to impute and which predictors to use as predictors in the imputation model.</p>
 <p>If we were to predictor <code>Taper</code> as a function of <code>Age</code>, <code>Length</code>, <code>Number</code>, and <code>Location</code>, the code would be:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">lin_impute_rec</span> <span class="op">&lt;-</span> </span>
-<span>  <span class="va">scat_rec</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
-<span>  <span class="fu">step_impute_linear</span><span class="op">(</span><span class="va">Taper</span>, impute_with <span class="op">=</span> <span class="fu">imp_vars</span><span class="op">(</span><span class="va">Age</span>, <span class="va">Length</span>, <span class="va">Number</span>, <span class="va">Location</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">lin_impute_rec</span> <span class="op">&lt;-</span> </span>
+<span>  <span class="va">scat_rec</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu">step_impute_linear</span><span class="op">(</span><span class="va">Taper</span>, impute_with <span class="op">=</span> <span class="fu">imp_vars</span><span class="op">(</span><span class="va">Age</span>, <span class="va">Length</span>, <span class="va">Number</span>, <span class="va">Location</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu">prep</span><span class="op">(</span><span class="op">)</span> <span class="co"># &lt;- This estimates the regression</span></span>
 <span></span>
 <span><span class="co"># Imputing the test set: </span></span>
-<span><span class="va">lin_impute_rec</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
-<span>  <span class="fu">bake</span><span class="op">(</span>new_data <span class="op">=</span> <span class="va">scat_te</span>, <span class="va">Taper</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span><span class="va">lin_impute_rec</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu">bake</span><span class="op">(</span>new_data <span class="op">=</span> <span class="va">scat_te</span>, <span class="va">Taper</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span><span class="va">Taper</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 0 × 1</span></span>
-<span><span class="co">#&gt; # ℹ 1 variable: Taper &lt;dbl&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; # ℹ 1 variable: Taper &lt;dbl&gt;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The <code>tidy()</code> methods can extract the model object. We’ll use <code>tidyr::enframe()</code> to get the coefficients:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">lm_res</span> <span class="op">&lt;-</span> <span class="fu">tidy</span><span class="op">(</span><span class="va">lin_impute_rec</span>, number <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">lm_res</span> <span class="op">&lt;-</span> <span class="fu">tidy</span><span class="op">(</span><span class="va">lin_impute_rec</span>, number <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> </span>
 <span><span class="va">lm_res</span></span>
 <span><span class="co">#&gt; # A tibble: 1 × 3</span></span>
 <span><span class="co">#&gt;   terms model  id                 </span></span>
 <span><span class="co">#&gt;   &lt;chr&gt; &lt;list&gt; &lt;chr&gt;              </span></span>
 <span><span class="co">#&gt; 1 Taper &lt;lm&gt;   impute_linear_dtBVd</span></span>
 <span></span>
-<span><span class="fu">enframe</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">lm_res</span><span class="op">$</span><span class="va">model</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/enframe.html">enframe</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">lm_res</span><span class="op">$</span><span class="va">model</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 6 × 2</span></span>
 <span><span class="co">#&gt;   name               value</span></span>
 <span><span class="co">#&gt;   &lt;chr&gt;              &lt;dbl&gt;</span></span>
@@ -605,26 +631,26 @@ window.Quarto = {
 <span><span class="co">#&gt; 3 Length            0.2712</span></span>
 <span><span class="co">#&gt; 4 Number           -2.480 </span></span>
 <span><span class="co">#&gt; 5 Locationmiddle   -5.366 </span></span>
-<span><span class="co">#&gt; 6 Locationoff_edge  5.216</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; 6 Locationoff_edge  5.216</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>We might also want to impute the predictor based on its mean value but would like it to be different based on some other grouping column. We can accomplish this by using a single categorical predictor in the formula (such as <code>Location</code>):</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">group_impute_rec</span> <span class="op">&lt;-</span> </span>
-<span>  <span class="va">scat_rec</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
-<span>  <span class="fu">step_mutate</span><span class="op">(</span>Taper_missing <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span><span class="va">Taper</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
-<span>  <span class="fu">step_impute_linear</span><span class="op">(</span><span class="va">Taper</span>, impute_with <span class="op">=</span> <span class="fu">imp_vars</span><span class="op">(</span><span class="va">Location</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">group_impute_rec</span> <span class="op">&lt;-</span> </span>
+<span>  <span class="va">scat_rec</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu">step_mutate</span><span class="op">(</span>Taper_missing <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span><span class="va">Taper</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu">step_impute_linear</span><span class="op">(</span><span class="va">Taper</span>, impute_with <span class="op">=</span> <span class="fu">imp_vars</span><span class="op">(</span><span class="va">Location</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu">prep</span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">group_impute_rec</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
-<span>  <span class="fu">bake</span><span class="op">(</span>new_data <span class="op">=</span> <span class="va">scat_tr</span>, <span class="va">Taper</span>, <span class="va">Taper_missing</span>, <span class="va">Location</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">Taper_missing</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span><span class="va">group_impute_rec</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu">bake</span><span class="op">(</span>new_data <span class="op">=</span> <span class="va">scat_tr</span>, <span class="va">Taper</span>, <span class="va">Taper_missing</span>, <span class="va">Location</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">Taper_missing</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu">count</span><span class="op">(</span><span class="va">Taper</span>, <span class="va">Location</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 3 × 3</span></span>
 <span><span class="co">#&gt;   Taper Location     n</span></span>
 <span><span class="co">#&gt;   &lt;dbl&gt; &lt;fct&gt;    &lt;int&gt;</span></span>
 <span><span class="co">#&gt; 1 24.18 middle      10</span></span>
 <span><span class="co">#&gt; 2 29.87 edge         2</span></span>
-<span><span class="co">#&gt; 3 30.52 off_edge     2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; 3 30.52 off_edge     2</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p><a href="https://aml4td.org/chapters/missing-data.html#sec-imputation-linear"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section><section id="sec-imputation-knn" class="level3" data-number="4.4.2"><h3 data-number="4.4.2" class="anchored" data-anchor-id="sec-imputation-knn">
@@ -632,20 +658,20 @@ window.Quarto = {
 <p>The syntax for imputation steps is very consistent, so the only change that would be made to move from linear imputation to a nonlinear, nearest-neighbor method would be to change the name.</p>
 <p>The number of neighbors defaults to five. We can change that using the <code>neighbors</code> option:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">knn_impute_rec</span> <span class="op">&lt;-</span> </span>
-<span>  <span class="va">scat_rec</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">knn_impute_rec</span> <span class="op">&lt;-</span> </span>
+<span>  <span class="va">scat_rec</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu">step_impute_knn</span><span class="op">(</span></span>
 <span>    <span class="fu">all_of</span><span class="op">(</span><span class="va">miss_cols</span><span class="op">)</span>, </span>
 <span>    impute_with <span class="op">=</span> <span class="fu">imp_vars</span><span class="op">(</span><span class="va">Age</span>, <span class="va">Length</span>, <span class="va">Number</span>, <span class="va">Location</span><span class="op">)</span>,</span>
-<span>    neighbors <span class="op">=</span> <span class="fl">5</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>    neighbors <span class="op">=</span> <span class="fl">5</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu">prep</span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">imputed_train</span> <span class="op">&lt;-</span> </span>
-<span>  <span class="va">knn_impute_rec</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="va">knn_impute_rec</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu">bake</span><span class="op">(</span>new_data <span class="op">=</span> <span class="va">scat_tr</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/complete.cases.html">complete.cases</a></span><span class="op">(</span><span class="va">imputed_train</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; [1] 1</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Note that this step uses <a href="">Gower distance</a> to define the neighbors. This method does <em>not</em> require the predictors to be numeric or in the same units; they can be left as-is. Also, the function keeps the imputed data in the same format. A categorical predictor being imputed will remain a categorical predictor.</p>
 <p><a href="https://aml4td.org/chapters/missing-data.html#sec-imputation-knn"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
@@ -656,39 +682,41 @@ window.Quarto = {
 <p>Let’s use our neighbor-based imputation method but tune the number of neighbors. At the same time, we can tune the random forest <span class="math inline">\(n_{min}\)</span> parameter using a space-filling grid.</p>
 <p>To do this, we give the <code>neighbors</code> argument of <code>step_impute_knn()</code> a value of <code>tune()</code>. This marks it for optimization. tidymodels knows a lot about these parameters and can make informed decisions about the range and scale of the tuning parameters. With the <code><a href="https://tune.tidymodels.org/reference/tune_grid.html">tune::tune_grid()</a></code> function, using <code>grid = 15</code> will automatically create a two-factor grid of candidate models to evaluate.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">knn_impute_rec</span> <span class="op">&lt;-</span> </span>
-<span>  <span class="va">scat_rec</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">knn_impute_rec</span> <span class="op">&lt;-</span> </span>
+<span>  <span class="va">scat_rec</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu">step_impute_knn</span><span class="op">(</span></span>
 <span>    <span class="fu">all_of</span><span class="op">(</span><span class="va">miss_cols</span><span class="op">)</span>, </span>
 <span>    impute_with <span class="op">=</span> <span class="fu">imp_vars</span><span class="op">(</span><span class="va">Age</span>, <span class="va">Length</span>, <span class="va">Number</span>, <span class="va">Location</span><span class="op">)</span>,</span>
 <span>    neighbors <span class="op">=</span> <span class="fu">tune</span><span class="op">(</span><span class="op">)</span><span class="op">)</span> </span>
 <span></span>
 <span><span class="va">rf_spec</span> <span class="op">&lt;-</span> </span>
-<span>  <span class="fu">rand_forest</span><span class="op">(</span>min_n <span class="op">=</span> <span class="fu">tune</span><span class="op">(</span><span class="op">)</span>, trees <span class="op">=</span> <span class="fl">1000</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu">rand_forest</span><span class="op">(</span>min_n <span class="op">=</span> <span class="fu">tune</span><span class="op">(</span><span class="op">)</span>, trees <span class="op">=</span> <span class="fl">1000</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu">set_mode</span><span class="op">(</span><span class="st">"classification"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">knn_rf_wflow</span> <span class="op">&lt;-</span> <span class="fu">workflow</span><span class="op">(</span><span class="va">knn_impute_rec</span>, <span class="va">rf_spec</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">knn_rf_res</span> <span class="op">&lt;-</span> </span>
-<span>  <span class="va">knn_rf_wflow</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="va">knn_rf_wflow</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu">tune_grid</span><span class="op">(</span></span>
 <span>    <span class="va">scat_rs</span>,</span>
 <span>    grid <span class="op">=</span> <span class="fl">15</span></span>
-<span>  <span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>  <span class="op">)</span></span>
+<span><span class="co">#&gt; Warning: Using `all_of()` outside of a selecting function was deprecated in tidyselect 1.2.0.</span></span>
+<span><span class="co">#&gt; ℹ See details at &lt;https://tidyselect.r-lib.org/reference/faq-selection-context.html&gt;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Looking at the results below, we can see that the number of neighbors does not seem to affect performance (measured via a Brier score). However, for these data, the random forests <span class="math inline">\(n_{min}\)</span> parameter does have a profound effect on model performance.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">show_best</span><span class="op">(</span><span class="va">knn_rf_res</span>, metric <span class="op">=</span> <span class="st">"brier_class"</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">show_best</span><span class="op">(</span><span class="va">knn_rf_res</span>, metric <span class="op">=</span> <span class="st">"brier_class"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 5 × 8</span></span>
-<span><span class="co">#&gt;   min_n neighbors .metric     .estimator   mean     n  std_err .config              </span></span>
-<span><span class="co">#&gt;   &lt;int&gt;     &lt;int&gt; &lt;chr&gt;       &lt;chr&gt;       &lt;dbl&gt; &lt;int&gt;    &lt;dbl&gt; &lt;chr&gt;                </span></span>
-<span><span class="co">#&gt; 1     2         6 brier_class multiclass 0.1843    50 0.008136 Preprocessor01_Model1</span></span>
-<span><span class="co">#&gt; 2     4         2 brier_class multiclass 0.1855    50 0.007938 Preprocessor02_Model1</span></span>
-<span><span class="co">#&gt; 3    10         9 brier_class multiclass 0.1900    50 0.007496 Preprocessor04_Model1</span></span>
-<span><span class="co">#&gt; 4     7         4 brier_class multiclass 0.1904    50 0.007951 Preprocessor03_Model1</span></span>
-<span><span class="co">#&gt; 5    12         1 brier_class multiclass 0.1937    50 0.007449 Preprocessor05_Model1</span></span>
+<span><span class="co">#&gt;   min_n neighbors .metric     .estimator   mean     n  std_err .config          </span></span>
+<span><span class="co">#&gt;   &lt;int&gt;     &lt;int&gt; &lt;chr&gt;       &lt;chr&gt;       &lt;dbl&gt; &lt;int&gt;    &lt;dbl&gt; &lt;chr&gt;            </span></span>
+<span><span class="co">#&gt; 1     2         6 brier_class multiclass 0.1835    50 0.008198 pre06_mod01_post0</span></span>
+<span><span class="co">#&gt; 2     4         2 brier_class multiclass 0.1852    50 0.007793 pre02_mod02_post0</span></span>
+<span><span class="co">#&gt; 3    10         9 brier_class multiclass 0.1903    50 0.007488 pre09_mod04_post0</span></span>
+<span><span class="co">#&gt; 4     7         4 brier_class multiclass 0.1907    50 0.007837 pre04_mod03_post0</span></span>
+<span><span class="co">#&gt; 5    12         1 brier_class multiclass 0.1935    50 0.007364 pre01_mod05_post0</span></span>
 <span></span>
-<span><span class="fu">autoplot</span><span class="op">(</span><span class="va">knn_rf_res</span>, metric <span class="op">=</span> <span class="st">"brier_class"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="fu">autoplot</span><span class="op">(</span><span class="va">knn_rf_res</span>, metric <span class="op">=</span> <span class="st">"brier_class"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure"><p><img src="missing-data_files/figure-html/impute-knn-tune-res-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:50.0%"></p>
@@ -749,13 +777,14 @@ window.Quarto = {
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy

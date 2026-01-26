@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.31">
+<meta name="generator" content="quarto-1.8.26">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <title>1&nbsp; Introduction – Tidymodels Computing Supplement</title>
 <style>
@@ -65,14 +65,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../chapters/contributing.html" rel="prev">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-e1a5c8363afafaef2c763b6775fbf3ca.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-109f5ab760e167ab0a7984bfec541ac0.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light"><script id="quarto-search-options" type="application/json">{
+<link href="../site_libs/bootstrap/bootstrap-7c647e586662db48eb79d76466712003.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light"><script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
   "collapse-after": 3,
@@ -125,19 +126,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <a href="" title="Share" id="quarto-navigation-tool-dropdown-0" class="quarto-navigation-tool dropdown-toggle px-1" data-bs-toggle="dropdown" aria-expanded="false" role="link" aria-label="Share"><i class="bi bi-share"></i></a>
       <ul class="dropdown-menu" aria-labelledby="quarto-navigation-tool-dropdown-0">
 <li>
-            <a class="dropdown-item sidebar-tools-main-item" href="https://twitter.com/intent/tweet?url=%7Curl%7C">
+            <a class="dropdown-item sidebar-tools-main-item" href="https://twitter.com/intent/tweet?url=|url|">
               <i class="bi bi-twitter pe-1"></i>
             Twitter
             </a>
           </li>
           <li>
-            <a class="dropdown-item sidebar-tools-main-item" href="https://www.facebook.com/sharer/sharer.php?u=%7Curl%7C">
+            <a class="dropdown-item sidebar-tools-main-item" href="https://www.facebook.com/sharer/sharer.php?u=|url|">
               <i class="bi bi-facebook pe-1"></i>
             Facebook
             </a>
           </li>
           <li>
-            <a class="dropdown-item sidebar-tools-main-item" href="https://www.linkedin.com/sharing/share-offsite/?url=%7Curl%7C">
+            <a class="dropdown-item sidebar-tools-main-item" href="https://www.linkedin.com/sharing/share-offsite/?url=|url|">
               <i class="bi bi-linkedin pe-1"></i>
             LinkedIn
             </a>
@@ -309,6 +310,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Characterizing Classification Models</span></span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/cls-linear.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Generalized Linear and Additive Classifiers</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/cls-nonlinear.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Complex Nonlinear Boundaries</span></span></a>
+  </div>
+</li>
       </ul>
 </li>
         <li class="sidebar-item sidebar-item-section">
@@ -362,39 +375,39 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>We’ll reference these and other resources as needed.</p>
 <section id="installation" class="level2" data-number="1.1"><h2 data-number="1.1" class="anchored" data-anchor-id="installation">
 <span class="header-section-number">1.1</span> Installation</h2>
-<p>tidymodels is built in R so you’ll need to install that. We used R version 4.5.1 (2025-06-13) for these notes. To install R, you can go to <a href="https://cran.r-project.org/">CRAN</a><a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> to download it for your operating system. If you are comfortable at the command line, the <a href="https://github.com/r-lib/rig">rig</a> application is an excellent way to install and manage R versions.</p>
+<p>tidymodels is built in R so you’ll need to install that. We used R version 4.5.2 (2025-10-31) for these notes. To install R, you can go to <a href="https://cran.r-project.org/">CRAN</a><a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> to download it for your operating system. If you are comfortable at the command line, the <a href="https://github.com/r-lib/rig">rig</a> application is an excellent way to install and manage R versions.</p>
 <p>You probably want to use an integrated development environment (IDE); it will make your life much better. We use the RStudio IDE, which can be downloaded <a href="https://posit.co/downloads/">here</a>. Other applications are <a href="https://code.visualstudio.com/docs/languages/r">Visual Studio</a> and <a href="https://ess.r-project.org">emacs</a>.</p>
 <p>To use tidymodels, you need to install multiple packages. The core packages are bundled into a “verse” package called <span class="pkg"><a href="https://cran.r-project.org/package=tidymodels">tidymodels</a></span>. When you install that, you get the primary packages as well as some tidyverse packages such as <span class="pkg"><a href="https://cran.r-project.org/package=dplyr">dplyr</a></span> and <span class="pkg"><a href="https://cran.r-project.org/package=ggplot2">ggplot2</a></span>.</p>
 <p>To install it, you can use</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="st">"tidymodels"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="st">"tidymodels"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>We suggest using the <span class="pkg"><a href="https://cran.r-project.org/package=pak">pak</a></span> package for installation. To do this, first install that and then use it for further installations:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="st">"pak"</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="st">"pak"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># check that it is installed then use it to install tidymodels</span></span>
 <span><span class="kw">if</span> <span class="op">(</span><span class="kw"><a href="https://rdrr.io/r/base/library.html">require</a></span><span class="op">(</span><span class="va"><a href="https://pak.r-lib.org/">pak</a></span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html">pak</a></span><span class="op">(</span><span class="st">"tidymodels"</span><span class="op">)</span></span>
-<span><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section><section id="sec-tidymodels-pkg" class="level2" data-number="1.2"><h2 data-number="1.2" class="anchored" data-anchor-id="sec-tidymodels-pkg">
 <span class="header-section-number">1.2</span> Loading Tidymodels</h2>
 <p>Once you do that, load <span class="pkg"><a href="https://cran.r-project.org/package=tidymodels">tidymodels</a></span>:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidymodels.tidymodels.org">tidymodels</a></span><span class="op">)</span></span>
-<span><span class="co">#&gt; ── Attaching packages ─────────────────────────────────────────── tidymodels 1.3.0 ──</span></span>
-<span><span class="co">#&gt; ✔ broom        1.0.8     ✔ recipes      1.2.1</span></span>
-<span><span class="co">#&gt; ✔ dials        1.4.0     ✔ rsample      1.3.0</span></span>
-<span><span class="co">#&gt; ✔ dplyr        1.1.4     ✔ tibble       3.3.0</span></span>
-<span><span class="co">#&gt; ✔ ggplot2      3.5.2     ✔ tidyr        1.3.1</span></span>
-<span><span class="co">#&gt; ✔ infer        1.0.8     ✔ tune         1.3.0</span></span>
-<span><span class="co">#&gt; ✔ modeldata    1.4.0     ✔ workflows    1.2.0</span></span>
-<span><span class="co">#&gt; ✔ parsnip      1.3.2     ✔ workflowsets 1.1.1</span></span>
-<span><span class="co">#&gt; ✔ purrr        1.0.4     ✔ yardstick    1.3.2</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidymodels.tidymodels.org">tidymodels</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; ── Attaching packages ─────────────────────────────────────────── tidymodels 1.4.1 ──</span></span>
+<span><span class="co">#&gt; ✔ broom        1.0.11     ✔ recipes      1.3.1 </span></span>
+<span><span class="co">#&gt; ✔ dials        1.4.2      ✔ rsample      1.3.1 </span></span>
+<span><span class="co">#&gt; ✔ dplyr        1.1.4      ✔ tailor       0.1.0 </span></span>
+<span><span class="co">#&gt; ✔ ggplot2      4.0.1      ✔ tidyr        1.3.2 </span></span>
+<span><span class="co">#&gt; ✔ infer        1.1.0      ✔ tune         2.0.1 </span></span>
+<span><span class="co">#&gt; ✔ modeldata    1.5.1      ✔ workflows    1.3.0 </span></span>
+<span><span class="co">#&gt; ✔ parsnip      1.4.1      ✔ workflowsets 1.1.1 </span></span>
+<span><span class="co">#&gt; ✔ purrr        1.2.1      ✔ yardstick    1.3.2</span></span>
 <span><span class="co">#&gt; ── Conflicts ────────────────────────────────────────────── tidymodels_conflicts() ──</span></span>
 <span><span class="co">#&gt; ✖ purrr::discard() masks scales::discard()</span></span>
 <span><span class="co">#&gt; ✖ dplyr::filter()  masks stats::filter()</span></span>
 <span><span class="co">#&gt; ✖ dplyr::lag()     masks stats::lag()</span></span>
-<span><span class="co">#&gt; ✖ recipes::step()  masks stats::step()</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; ✖ recipes::step()  masks stats::step()</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The default output shows the packages that are automatically attached. There are a lot of functions in tidy models, but by loading this meta-package, you don’t have to remember which functions come from which packages.</p>
 <p>Note the lines at the bottom that messages like :</p>
@@ -404,7 +417,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>This means that two packages, <span class="pkg"><a href="https://cran.r-project.org/package=dplyr">dplyr</a></span> and <span class="pkg">stats</span>, have functions with the same name (<code><a href="https://rdrr.io/r/stats/filter.html">filter()</a></code>)<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>. If you were to type <code>filter</code> at an R prompt, the function that you get corresponds to the one in the most recently loaded package. That’s not ideal.</p>
 To handle this, we have a function called <code><a href="https://tidymodels.tidymodels.org/reference/tidymodels_prefer.html">tidymodels_prefer()</a></code>. When you use this, it prioritizes functions from the tidy models and tidyverse groups so that you get those <a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a> If you want to see the specific conflicts and how we resolve them, see this output:
 <details><div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://tidymodels.tidymodels.org/reference/tidymodels_prefer.html">tidymodels_prefer</a></span><span class="op">(</span>quiet <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://tidymodels.tidymodels.org/reference/tidymodels_prefer.html">tidymodels_prefer</a></span><span class="op">(</span>quiet <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [conflicted] Will prefer agua::refit over any other package.</span></span>
 <span><span class="co">#&gt; [conflicted] Will prefer DALEX::explain over any other package.</span></span>
 <span><span class="co">#&gt; [conflicted] Will prefer dials::Laplace over any other package.</span></span>
@@ -446,7 +459,7 @@ To handle this, we have a function called <code><a href="https://tidymodels.tidy
 <span><span class="co">#&gt; [conflicted] Will prefer yardstick::spec over any other package.</span></span>
 <span><span class="co">#&gt; [conflicted] Removing existing preference.</span></span>
 <span><span class="co">#&gt; [conflicted] Will prefer recipes::update over Matrix::update.</span></span>
-<span><span class="co">#&gt; ── Conflicts ───────────────────────────────────────────────── tidymodels_prefer() ──</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; ── Conflicts ───────────────────────────────────────────────── tidymodels_prefer() ──</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </details><p>If you want to know more about <em>why</em> tidymodels exists, we’ve written a bit about this in the <a href="https://www.tmwr.org/software-modeling">tidymodels book</a>. The second chapter describes how <a href="https://www.tmwr.org/tidyverse">tidyverse principles can be used for modeling</a>.</p>
 </section><section id="sec-repro" class="level2" data-number="1.3"><h2 data-number="1.3" class="anchored" data-anchor-id="sec-repro">
@@ -454,112 +467,113 @@ To handle this, we have a function called <code><a href="https://tidymodels.tidy
 <p>We will do our best to use versions of our packages corresponding to the CRAN versions. We can’t always do that, and, for many packages, a version number ending with a value in the 9000 range (e.g., version “1.1.4.9001”) means that it was a development version of the package and was most likely installed from a GitHub repository.</p>
 <p>At the end of each session, we’ll show which packages were loaded and used:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">sessioninfo</span><span class="fu">::</span><span class="fu"><a href="https://sessioninfo.r-lib.org/reference/session_info.html">session_info</a></span><span class="op">(</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">sessioninfo</span><span class="fu">::</span><span class="fu"><a href="https://sessioninfo.r-lib.org/reference/session_info.html">session_info</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; ─ Session info ────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt;  setting  value</span></span>
-<span><span class="co">#&gt;  version  R version 4.5.1 (2025-06-13)</span></span>
-<span><span class="co">#&gt;  os       macOS Sequoia 15.5</span></span>
+<span><span class="co">#&gt;  version  R version 4.5.2 (2025-10-31)</span></span>
+<span><span class="co">#&gt;  os       macOS Tahoe 26.1</span></span>
 <span><span class="co">#&gt;  system   aarch64, darwin20</span></span>
 <span><span class="co">#&gt;  ui       X11</span></span>
 <span><span class="co">#&gt;  language (EN)</span></span>
 <span><span class="co">#&gt;  collate  en_US.UTF-8</span></span>
 <span><span class="co">#&gt;  ctype    en_US.UTF-8</span></span>
 <span><span class="co">#&gt;  tz       America/New_York</span></span>
-<span><span class="co">#&gt;  date     2025-07-25</span></span>
-<span><span class="co">#&gt;  pandoc   3.6.3 @ /Applications/quarto/bin/tools/ (via rmarkdown)</span></span>
-<span><span class="co">#&gt;  quarto   1.7.31 @ /usr/local/bin/quarto</span></span>
+<span><span class="co">#&gt;  date     2026-01-23</span></span>
+<span><span class="co">#&gt;  pandoc   3.8.2.1 @ /opt/homebrew/bin/ (via rmarkdown)</span></span>
+<span><span class="co">#&gt;  quarto   1.8.26 @ /usr/local/bin/quarto</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ─ Packages ────────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt;  ! package      * version    date (UTC) lib source</span></span>
 <span><span class="co">#&gt;  P backports      1.5.0      2024-05-23 [?] RSPM</span></span>
-<span><span class="co">#&gt;  P BiocManager    1.30.26    2025-06-05 [?] CRAN (R 4.5.0)</span></span>
-<span><span class="co">#&gt;  P broom        * 1.0.8      2025-03-28 [?] CRAN (R 4.5.0)</span></span>
+<span><span class="co">#&gt;  P BiocManager    1.30.27    2025-11-14 [?] CRAN (R 4.5.2)</span></span>
+<span><span class="co">#&gt;  P broom        * 1.0.11     2025-12-04 [?] CRAN (R 4.5.2)</span></span>
 <span><span class="co">#&gt;  P cachem         1.1.0      2024-05-16 [?] RSPM</span></span>
-<span><span class="co">#&gt;  P class          7.3-23     2025-01-01 [?] CRAN (R 4.5.0)</span></span>
+<span><span class="co">#&gt;  P class          7.3-23     2025-01-01 [?] CRAN (R 4.5.2)</span></span>
 <span><span class="co">#&gt;  P cli            3.6.5      2025-04-23 [?] RSPM (R 4.5.0)</span></span>
-<span><span class="co">#&gt;  P codetools      0.2-20     2024-03-31 [?] CRAN (R 4.5.0)</span></span>
-<span><span class="co">#&gt;  P conflicted     1.2.0      2023-02-01 [?] RSPM</span></span>
-<span><span class="co">#&gt;  P data.table     1.17.6     2025-06-17 [?] CRAN (R 4.5.0)</span></span>
-<span><span class="co">#&gt;  P dials        * 1.4.0      2025-02-13 [?] RSPM</span></span>
-<span><span class="co">#&gt;  P DiceDesign     1.10       2023-12-07 [?] RSPM</span></span>
-<span><span class="co">#&gt;  P digest         0.6.37     2024-08-19 [?] RSPM</span></span>
-<span><span class="co">#&gt;  P downlit        0.4.4.9000 2025-05-21 [?] Github (r-lib/downlit@cdaa2f1)</span></span>
+<span><span class="co">#&gt;  P codetools      0.2-20     2024-03-31 [?] CRAN (R 4.5.2)</span></span>
+<span><span class="co">#&gt;  P conflicted     1.2.0      2023-02-01 [?] CRAN (R 4.5.0)</span></span>
+<span><span class="co">#&gt;  P data.table     1.18.0     2025-12-24 [?] CRAN (R 4.5.2)</span></span>
+<span><span class="co">#&gt;  P dials        * 1.4.2      2025-09-04 [?] RSPM</span></span>
+<span><span class="co">#&gt;  P DiceDesign     1.10       2023-12-07 [?] CRAN (R 4.5.0)</span></span>
+<span><span class="co">#&gt;  P digest         0.6.39     2025-11-19 [?] CRAN (R 4.5.2)</span></span>
+<span><span class="co">#&gt;  P downlit        0.4.5.9000 2025-11-24 [?] Github (r-lib/downlit@44d2797)</span></span>
 <span><span class="co">#&gt;  P dplyr        * 1.1.4      2023-11-17 [?] RSPM</span></span>
-<span><span class="co">#&gt;  P evaluate       1.0.4      2025-06-18 [?] CRAN (R 4.5.0)</span></span>
+<span><span class="co">#&gt;  P evaluate       1.0.5      2025-08-27 [?] RSPM</span></span>
 <span><span class="co">#&gt;  P farver         2.1.2      2024-05-13 [?] RSPM</span></span>
 <span><span class="co">#&gt;  P fastmap        1.2.0      2024-05-15 [?] RSPM</span></span>
-<span><span class="co">#&gt;  P foreach        1.5.2      2022-02-02 [?] RSPM</span></span>
-<span><span class="co">#&gt;  P furrr          0.3.1      2022-08-15 [?] RSPM</span></span>
-<span><span class="co">#&gt;  P future         1.58.0     2025-06-05 [?] CRAN (R 4.5.0)</span></span>
-<span><span class="co">#&gt;  P future.apply   1.20.0     2025-06-06 [?] CRAN (R 4.5.0)</span></span>
+<span><span class="co">#&gt;  P furrr          0.3.1      2022-08-15 [?] CRAN (R 4.5.0)</span></span>
+<span><span class="co">#&gt;  P future         1.68.0     2025-11-17 [?] RSPM</span></span>
+<span><span class="co">#&gt;  P future.apply   1.20.1     2025-12-09 [?] CRAN (R 4.5.2)</span></span>
 <span><span class="co">#&gt;  P generics       0.1.4      2025-05-09 [?] CRAN (R 4.5.0)</span></span>
-<span><span class="co">#&gt;  P ggplot2      * 3.5.2      2025-04-09 [?] RSPM</span></span>
-<span><span class="co">#&gt;  P globals        0.18.0     2025-05-08 [?] RSPM</span></span>
+<span><span class="co">#&gt;  P ggplot2      * 4.0.1      2025-11-14 [?] RSPM</span></span>
+<span><span class="co">#&gt;  P globals        0.18.0     2025-05-08 [?] CRAN (R 4.5.0)</span></span>
 <span><span class="co">#&gt;  P glue           1.8.0      2024-09-30 [?] RSPM (R 4.5.0)</span></span>
 <span><span class="co">#&gt;  P gower          1.0.2      2024-12-17 [?] RSPM</span></span>
-<span><span class="co">#&gt;  P GPfit          1.0-9      2025-04-12 [?] RSPM</span></span>
+<span><span class="co">#&gt;  P GPfit          1.0-9      2025-04-12 [?] CRAN (R 4.5.0)</span></span>
 <span><span class="co">#&gt;  P gtable         0.3.6      2024-10-25 [?] RSPM</span></span>
-<span><span class="co">#&gt;  P hardhat        1.4.1      2025-01-31 [?] RSPM</span></span>
-<span><span class="co">#&gt;  P htmltools      0.5.8.1    2024-04-04 [?] RSPM</span></span>
+<span><span class="co">#&gt;  P hardhat        1.4.2      2025-08-20 [?] RSPM</span></span>
+<span><span class="co">#&gt;  P htmltools      0.5.9      2025-12-04 [?] CRAN (R 4.5.2)</span></span>
 <span><span class="co">#&gt;  P htmlwidgets    1.6.4      2023-12-06 [?] CRAN (R 4.5.0)</span></span>
-<span><span class="co">#&gt;  P infer        * 1.0.8      2025-04-14 [?] RSPM</span></span>
-<span><span class="co">#&gt;  P ipred          0.9-15     2024-07-18 [?] RSPM</span></span>
-<span><span class="co">#&gt;  P iterators      1.0.14     2022-02-05 [?] CRAN (R 4.5.0)</span></span>
-<span><span class="co">#&gt;  P jsonlite       2.0.0      2025-03-27 [?] RSPM</span></span>
-<span><span class="co">#&gt;  P knitr          1.50       2025-03-16 [?] CRAN (R 4.5.0)</span></span>
-<span><span class="co">#&gt;  P lattice        0.22-7     2025-04-02 [?] RSPM</span></span>
-<span><span class="co">#&gt;  P lava           1.8.1      2025-01-12 [?] RSPM</span></span>
+<span><span class="co">#&gt;  P infer        * 1.1.0      2025-12-18 [?] CRAN (R 4.5.2)</span></span>
+<span><span class="co">#&gt;  P ipred          0.9-15     2024-07-18 [?] CRAN (R 4.5.0)</span></span>
+<span><span class="co">#&gt;  P jsonlite       2.0.0      2025-03-27 [?] CRAN (R 4.5.0)</span></span>
+<span><span class="co">#&gt;  P knitr          1.51       2025-12-20 [?] CRAN (R 4.5.2)</span></span>
+<span><span class="co">#&gt;  P lattice        0.22-7     2025-04-02 [?] CRAN (R 4.5.2)</span></span>
+<span><span class="co">#&gt;  P lava           1.8.2      2025-10-30 [?] CRAN (R 4.5.0)</span></span>
 <span><span class="co">#&gt;  P lhs            1.2.0      2024-06-30 [?] RSPM</span></span>
-<span><span class="co">#&gt;  P lifecycle      1.0.4      2023-11-07 [?] RSPM (R 4.5.0)</span></span>
-<span><span class="co">#&gt;  P listenv        0.9.1      2024-01-29 [?] CRAN (R 4.5.0)</span></span>
+<span><span class="co">#&gt;  P lifecycle      1.0.5      2026-01-08 [?] CRAN (R 4.5.2)</span></span>
+<span><span class="co">#&gt;  P listenv        0.10.0     2025-11-02 [?] RSPM</span></span>
 <span><span class="co">#&gt;  P lubridate      1.9.4      2024-12-08 [?] CRAN (R 4.5.0)</span></span>
-<span><span class="co">#&gt;  P magrittr       2.0.3      2022-03-30 [?] RSPM (R 4.5.0)</span></span>
-<span><span class="co">#&gt;  P MASS           7.3-65     2025-02-28 [?] CRAN (R 4.5.0)</span></span>
-<span><span class="co">#&gt;  P Matrix         1.7-3      2025-03-11 [?] CRAN (R 4.5.0)</span></span>
-<span><span class="co">#&gt;  P memoise        2.0.1      2021-11-26 [?] RSPM</span></span>
-<span><span class="co">#&gt;  P modeldata    * 1.4.0      2024-06-19 [?] RSPM</span></span>
-<span><span class="co">#&gt;  P nnet           7.3-20     2025-01-01 [?] CRAN (R 4.5.0)</span></span>
-<span><span class="co">#&gt;  P parallelly     1.45.0     2025-06-02 [?] CRAN (R 4.5.0)</span></span>
-<span><span class="co">#&gt;  P parsnip      * 1.3.2      2025-05-28 [?] local</span></span>
-<span><span class="co">#&gt;  P pillar         1.10.2     2025-04-05 [?] RSPM</span></span>
-<span><span class="co">#&gt;  P pkgconfig      2.0.3      2019-09-22 [?] RSPM</span></span>
+<span><span class="co">#&gt;  P magrittr       2.0.4      2025-09-12 [?] CRAN (R 4.5.0)</span></span>
+<span><span class="co">#&gt;  P MASS           7.3-65     2025-02-28 [?] CRAN (R 4.5.2)</span></span>
+<span><span class="co">#&gt;  P Matrix         1.7-4      2025-08-28 [?] CRAN (R 4.5.2)</span></span>
+<span><span class="co">#&gt;  P memoise        2.0.1      2021-11-26 [?] CRAN (R 4.5.0)</span></span>
+<span><span class="co">#&gt;  P modeldata    * 1.5.1      2025-08-22 [?] RSPM</span></span>
+<span><span class="co">#&gt;  P nnet           7.3-20     2025-01-01 [?] CRAN (R 4.5.2)</span></span>
+<span><span class="co">#&gt;  P otel           0.2.0      2025-08-29 [?] RSPM</span></span>
+<span><span class="co">#&gt;  P parallelly     1.46.1     2026-01-08 [?] CRAN (R 4.5.2)</span></span>
+<span><span class="co">#&gt;  P parsnip      * 1.4.1      2026-01-11 [?] CRAN (R 4.5.2)</span></span>
+<span><span class="co">#&gt;  P pillar         1.11.1     2025-09-17 [?] CRAN (R 4.5.0)</span></span>
+<span><span class="co">#&gt;  P pkgconfig      2.0.3      2019-09-22 [?] CRAN (R 4.5.0)</span></span>
 <span><span class="co">#&gt;  P prodlim        2025.04.28 2025-04-28 [?] RSPM</span></span>
-<span><span class="co">#&gt;  P purrr        * 1.0.4      2025-02-05 [?] RSPM (R 4.5.0)</span></span>
-<span><span class="co">#&gt;  P R6             2.6.1      2025-02-15 [?] RSPM</span></span>
-<span><span class="co">#&gt;  P RColorBrewer   1.1-3      2022-04-03 [?] RSPM</span></span>
-<span><span class="co">#&gt;  P Rcpp           1.0.14     2025-01-12 [?] RSPM</span></span>
-<span><span class="co">#&gt;  P recipes      * 1.2.1      2025-05-21 [?] Github (tidymodels/recipes@96bd6fd)</span></span>
-<span><span class="co">#&gt;    renv           1.1.4      2025-03-20 [1] RSPM</span></span>
-<span><span class="co">#&gt;  P rlang          1.1.6      2025-04-11 [?] RSPM (R 4.5.0)</span></span>
-<span><span class="co">#&gt;  P rmarkdown      2.29       2024-11-04 [?] RSPM</span></span>
-<span><span class="co">#&gt;  P rpart          4.1.24     2025-01-07 [?] CRAN (R 4.5.0)</span></span>
-<span><span class="co">#&gt;  P rsample      * 1.3.0      2025-04-02 [?] RSPM</span></span>
-<span><span class="co">#&gt;  P rstudioapi     0.17.1     2024-10-22 [?] CRAN (R 4.5.0)</span></span>
-<span><span class="co">#&gt;  P scales       * 1.4.0      2025-04-24 [?] CRAN (R 4.5.0)</span></span>
-<span><span class="co">#&gt;  P sessioninfo    1.2.3      2025-02-05 [?] RSPM</span></span>
-<span><span class="co">#&gt;  P survival       3.8-3      2024-12-17 [?] CRAN (R 4.5.0)</span></span>
-<span><span class="co">#&gt;  P tibble       * 3.3.0      2025-06-08 [?] CRAN (R 4.5.0)</span></span>
-<span><span class="co">#&gt;  P tidymodels   * 1.3.0      2025-02-21 [?] RSPM</span></span>
-<span><span class="co">#&gt;  P tidyr        * 1.3.1      2024-01-24 [?] RSPM</span></span>
-<span><span class="co">#&gt;  P tidyselect     1.2.1      2024-03-11 [?] RSPM</span></span>
-<span><span class="co">#&gt;  P timechange     0.3.0      2024-01-18 [?] RSPM</span></span>
-<span><span class="co">#&gt;  P timeDate       4041.110   2024-09-22 [?] RSPM</span></span>
-<span><span class="co">#&gt;  P tune         * 1.3.0      2025-02-21 [?] RSPM</span></span>
+<span><span class="co">#&gt;  P purrr        * 1.2.1      2026-01-09 [?] CRAN (R 4.5.2)</span></span>
+<span><span class="co">#&gt;  P R6             2.6.1      2025-02-15 [?] CRAN (R 4.5.0)</span></span>
+<span><span class="co">#&gt;  P RColorBrewer   1.1-3      2022-04-03 [?] CRAN (R 4.5.0)</span></span>
+<span><span class="co">#&gt;  P Rcpp           1.1.1      2026-01-10 [?] CRAN (R 4.5.2)</span></span>
+<span><span class="co">#&gt;    recipes      * 1.3.1      2025-05-21 [1] CRAN (R 4.5.0)</span></span>
+<span><span class="co">#&gt;    renv           1.1.5      2025-07-24 [1] CRAN (R 4.5.0)</span></span>
+<span><span class="co">#&gt;  P rlang          1.1.7      2026-01-09 [?] CRAN (R 4.5.2)</span></span>
+<span><span class="co">#&gt;  P rmarkdown      2.30       2025-09-28 [?] CRAN (R 4.5.0)</span></span>
+<span><span class="co">#&gt;  P rpart          4.1.24     2025-01-07 [?] CRAN (R 4.5.2)</span></span>
+<span><span class="co">#&gt;  P rsample      * 1.3.1      2025-07-29 [?] RSPM</span></span>
+<span><span class="co">#&gt;  P rstudioapi     0.17.1     2024-10-22 [?] RSPM</span></span>
+<span><span class="co">#&gt;  P S7             0.2.1      2025-11-14 [?] CRAN (R 4.5.2)</span></span>
+<span><span class="co">#&gt;  P scales       * 1.4.0      2025-04-24 [?] RSPM</span></span>
+<span><span class="co">#&gt;  P sessioninfo    1.2.3      2025-02-05 [?] CRAN (R 4.5.0)</span></span>
+<span><span class="co">#&gt;  P survival       3.8-3      2024-12-17 [?] CRAN (R 4.5.2)</span></span>
+<span><span class="co">#&gt;  P tailor       * 0.1.0      2025-08-25 [?] CRAN (R 4.5.0)</span></span>
+<span><span class="co">#&gt;  P tibble         3.3.1      2026-01-11 [?] CRAN (R 4.5.2)</span></span>
+<span><span class="co">#&gt;  P tidymodels   * 1.4.1      2025-09-08 [?] CRAN (R 4.5.0)</span></span>
+<span><span class="co">#&gt;  P tidyr        * 1.3.2      2025-12-19 [?] CRAN (R 4.5.2)</span></span>
+<span><span class="co">#&gt;  P tidyselect     1.2.1      2024-03-11 [?] CRAN (R 4.5.0)</span></span>
+<span><span class="co">#&gt;  P timechange     0.3.0      2024-01-18 [?] CRAN (R 4.5.0)</span></span>
+<span><span class="co">#&gt;  P timeDate       4051.111   2025-10-17 [?] RSPM</span></span>
+<span><span class="co">#&gt;  P tune         * 2.0.1      2025-10-17 [?] CRAN (R 4.5.0)</span></span>
 <span><span class="co">#&gt;  P vctrs          0.6.5      2023-12-01 [?] RSPM (R 4.5.0)</span></span>
-<span><span class="co">#&gt;  P withr          3.0.2      2024-10-28 [?] RSPM</span></span>
-<span><span class="co">#&gt;  P workflows    * 1.2.0      2025-02-19 [?] CRAN (R 4.5.0)</span></span>
-<span><span class="co">#&gt;  P workflowsets * 1.1.1      2025-05-27 [?] CRAN (R 4.5.0)</span></span>
-<span><span class="co">#&gt;  P xfun           0.52       2025-04-02 [?] RSPM</span></span>
-<span><span class="co">#&gt;  P yaml           2.3.10     2024-07-26 [?] CRAN (R 4.5.0)</span></span>
+<span><span class="co">#&gt;  P withr          3.0.2      2024-10-28 [?] CRAN (R 4.5.0)</span></span>
+<span><span class="co">#&gt;  P workflows    * 1.3.0      2025-08-27 [?] CRAN (R 4.5.0)</span></span>
+<span><span class="co">#&gt;  P workflowsets * 1.1.1      2025-05-27 [?] RSPM</span></span>
+<span><span class="co">#&gt;  P xfun           0.55       2025-12-16 [?] CRAN (R 4.5.2)</span></span>
+<span><span class="co">#&gt;  P yaml           2.3.12     2025-12-10 [?] CRAN (R 4.5.2)</span></span>
 <span><span class="co">#&gt;  P yardstick    * 1.3.2      2025-01-22 [?] CRAN (R 4.5.0)</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  [1] /Users/max/github/computing-tidymodels/renv/library/macos/R-4.5/aarch64-apple-darwin20</span></span>
+<span><span class="co">#&gt;  [1] /Users/max/content/computing-tidymodels/renv/library/macos/R-4.5/aarch64-apple-darwin20</span></span>
 <span><span class="co">#&gt;  [2] /Users/max/Library/Caches/org.R-project.R/R/renv/sandbox/macos/R-4.5/aarch64-apple-darwin20/4cd76b74</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  * ── Packages attached to the search path.</span></span>
 <span><span class="co">#&gt;  P ── Loaded and on-disk path mismatch.</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; ───────────────────────────────────────────────────────────────────────────────────</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; ───────────────────────────────────────────────────────────────────────────────────</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 
 
@@ -619,13 +633,14 @@ To handle this, we have a function called <code><a href="https://tidymodels.tidy
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy

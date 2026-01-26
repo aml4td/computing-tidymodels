@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.31">
+<meta name="generator" content="quarto-1.8.26">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <title>3&nbsp; Initial Data Splitting – Tidymodels Computing Supplement</title>
 <style>
@@ -65,14 +65,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../chapters/whole-game.html" rel="prev">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-e1a5c8363afafaef2c763b6775fbf3ca.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-109f5ab760e167ab0a7984bfec541ac0.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-7c647e586662db48eb79d76466712003.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <link href="../site_libs/quarto-contrib/fontawesome6-1.2.0/all.min.css" rel="stylesheet">
 <link href="../site_libs/quarto-contrib/fontawesome6-1.2.0/latex-fontsize.css" rel="stylesheet"><script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
@@ -127,19 +128,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <a href="" title="Share" id="quarto-navigation-tool-dropdown-0" class="quarto-navigation-tool dropdown-toggle px-1" data-bs-toggle="dropdown" aria-expanded="false" role="link" aria-label="Share"><i class="bi bi-share"></i></a>
       <ul class="dropdown-menu" aria-labelledby="quarto-navigation-tool-dropdown-0">
 <li>
-            <a class="dropdown-item sidebar-tools-main-item" href="https://twitter.com/intent/tweet?url=%7Curl%7C">
+            <a class="dropdown-item sidebar-tools-main-item" href="https://twitter.com/intent/tweet?url=|url|">
               <i class="bi bi-twitter pe-1"></i>
             Twitter
             </a>
           </li>
           <li>
-            <a class="dropdown-item sidebar-tools-main-item" href="https://www.facebook.com/sharer/sharer.php?u=%7Curl%7C">
+            <a class="dropdown-item sidebar-tools-main-item" href="https://www.facebook.com/sharer/sharer.php?u=|url|">
               <i class="bi bi-facebook pe-1"></i>
             Facebook
             </a>
           </li>
           <li>
-            <a class="dropdown-item sidebar-tools-main-item" href="https://www.linkedin.com/sharing/share-offsite/?url=%7Curl%7C">
+            <a class="dropdown-item sidebar-tools-main-item" href="https://www.linkedin.com/sharing/share-offsite/?url=|url|">
               <i class="bi bi-linkedin pe-1"></i>
             LinkedIn
             </a>
@@ -311,6 +312,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Characterizing Classification Models</span></span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/cls-linear.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Generalized Linear and Additive Classifiers</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/cls-nonlinear.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Complex Nonlinear Boundaries</span></span></a>
+  </div>
+</li>
       </ul>
 </li>
         <li class="sidebar-item sidebar-item-section">
@@ -364,7 +377,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span class="header-section-number">3.1</span> Requirements</h2>
 <p>You’ll need 4 packages (<span class="pkg"><a href="https://cran.r-project.org/package=caret">caret</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=spatialsample">spatialsample</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=tidymodels">tidymodels</a></span>, and <span class="pkg"><a href="https://cran.r-project.org/package=tidysdm">tidysdm</a></span>) for this chapter. You can install them via:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">req_pkg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"caret"</span>, <span class="st">"spatialsample"</span>, <span class="st">"tidymodels"</span>, <span class="st">"tidysdm"</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">req_pkg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"caret"</span>, <span class="st">"spatialsample"</span>, <span class="st">"tidymodels"</span>, <span class="st">"tidysdm"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Check to see if they are installed: </span></span>
 <span><span class="va">pkg_installed</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">vapply</a></span><span class="op">(</span><span class="va">req_pkg</span>, <span class="fu">rlang</span><span class="fu">::</span><span class="va"><a href="https://rlang.r-lib.org/reference/is_installed.html">is_installed</a></span>, <span class="fu"><a href="https://rdrr.io/r/base/logical.html">logical</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
@@ -373,28 +386,28 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="kw">if</span> <span class="op">(</span> <span class="fu"><a href="https://rdrr.io/r/base/any.html">any</a></span><span class="op">(</span><span class="op">!</span><span class="va">pkg_installed</span><span class="op">)</span> <span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">install_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">pkg_installed</span><span class="op">)</span><span class="op">[</span><span class="op">!</span><span class="va">pkg_installed</span><span class="op">]</span></span>
 <span>  <span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html">pak</a></span><span class="op">(</span><span class="va">install_list</span><span class="op">)</span></span>
-<span><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Let’s load the meta package and manage some between-package function conflicts.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidymodels.tidymodels.org">tidymodels</a></span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://tidymodels.tidymodels.org/reference/tidymodels_prefer.html">tidymodels_prefer</a></span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidymodels.tidymodels.org">tidymodels</a></span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://tidymodels.tidymodels.org/reference/tidymodels_prefer.html">tidymodels_prefer</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The data used here are both in R packages that are already installed. Let’s work with the primary data set: the Ames Iowa housing data.</p>
 </section><section id="sec-ames-intro" class="level2" data-number="3.2"><h2 data-number="3.2" class="anchored" data-anchor-id="sec-ames-intro">
 <span class="header-section-number">3.2</span> The Ames Housing Data</h2>
 <p>These data are in the <span class="pkg"><a href="https://cran.r-project.org/package=modeldata">modeldata</a></span> package, which is part of <span class="pkg"><a href="https://cran.r-project.org/package=tidymodels">tidymodels</a></span>. Let’s load the data, subset a few columns, and modify the sale price units. We’ll also combine the two bathroom-related columns into a single column.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">ames</span>, package <span class="op">=</span> <span class="st">"modeldata"</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">ames</span>, package <span class="op">=</span> <span class="st">"modeldata"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">ames</span> <span class="op">&lt;-</span></span>
-<span>  <span class="va">ames</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="va">ames</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">select</span><span class="op">(</span><span class="va">Sale_Price</span>, <span class="va">Bldg_Type</span>, <span class="va">Neighborhood</span>, <span class="va">Year_Built</span>, <span class="va">Gr_Liv_Area</span>, <span class="va">Full_Bath</span>,</span>
-<span>         <span class="va">Half_Bath</span>, <span class="va">Year_Sold</span>, <span class="va">Lot_Area</span>, <span class="va">Central_Air</span>, <span class="va">Longitude</span>, <span class="va">Latitude</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>         <span class="va">Half_Bath</span>, <span class="va">Year_Sold</span>, <span class="va">Lot_Area</span>, <span class="va">Central_Air</span>, <span class="va">Longitude</span>, <span class="va">Latitude</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">mutate</span><span class="op">(</span></span>
 <span>    Sale_Price <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">log10</a></span><span class="op">(</span><span class="va">Sale_Price</span><span class="op">)</span>,</span>
 <span>    Baths <span class="op">=</span> <span class="va">Full_Bath</span>  <span class="op">+</span> <span class="va">Half_Bath</span><span class="op">/</span><span class="fl">2</span></span>
-<span>  <span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">Half_Bath</span>, <span class="op">-</span><span class="va">Full_Bath</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">glimpse</span><span class="op">(</span><span class="va">ames</span><span class="op">)</span></span>
@@ -410,7 +423,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="co">#&gt; $ Central_Air  &lt;fct&gt; Y, Y, Y, Y, Y, Y, Y, Y, Y, Y, Y, Y, Y, Y, Y, Y, Y, Y, Y, Y, Y…</span></span>
 <span><span class="co">#&gt; $ Longitude    &lt;dbl&gt; -93.62, -93.62, -93.62, -93.62, -93.64, -93.64, -93.63, -93.6…</span></span>
 <span><span class="co">#&gt; $ Latitude     &lt;dbl&gt; 42.05, 42.05, 42.05, 42.05, 42.06, 42.06, 42.06, 42.06, 42.06…</span></span>
-<span><span class="co">#&gt; $ Baths        &lt;dbl&gt; 1.0, 1.0, 1.5, 2.5, 2.5, 2.5, 2.0, 2.0, 2.0, 2.5, 2.5, 2.0, 2…</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; $ Baths        &lt;dbl&gt; 1.0, 1.0, 1.5, 2.5, 2.5, 2.5, 2.0, 2.0, 2.0, 2.5, 2.5, 2.0, 2…</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>tidymodels requires that, for outcome data, any basic transformations should occur before data splitting.</p>
 <p><a href="https://aml4td.org/chapters/initial-data-splitting.html#sec-ames-intro"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
@@ -430,17 +443,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Most of our applications will use the first function, where the default is to use 75% for training and 25% for testing. This is determined at random; there is no need to randomly sort the rows before splitting. By default, a simple random split is used.</p>
 <p>Let’s do that with the Ames data:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">3024</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">3024</span><span class="op">)</span></span>
 <span><span class="va">ames_split</span> <span class="op">&lt;-</span> <span class="fu">initial_split</span><span class="op">(</span><span class="va">ames</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">ames_split</span></span>
 <span><span class="co">#&gt; &lt;Training/Testing/Total&gt;</span></span>
-<span><span class="co">#&gt; &lt;2197/733/2930&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; &lt;2197/733/2930&gt;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The output shows the size of the resulting data sets. To get the two data sets, there are simple accessor functions:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">ames_train</span> <span class="op">&lt;-</span> <span class="fu">training</span><span class="op">(</span><span class="va">ames_split</span><span class="op">)</span></span>
-<span><span class="va">ames_test</span>  <span class="op">&lt;-</span> <span class="fu">testing</span><span class="op">(</span><span class="va">ames_split</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">ames_train</span> <span class="op">&lt;-</span> <span class="fu">training</span><span class="op">(</span><span class="va">ames_split</span><span class="op">)</span></span>
+<span><span class="va">ames_test</span>  <span class="op">&lt;-</span> <span class="fu">testing</span><span class="op">(</span><span class="va">ames_split</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Consistent with the printed output, there are 2,197 data points in the training set and 733 reserved for testing.</p>
 <p>We won’t touch on <code>initial_time_split()</code> here but only mention that it takes the fraction of the data specified for testing from the bottom/tail of the data frame. Unlike the previous function, the order of the rows matters since the rows at the end of the data frame as used as the test set.</p>
@@ -450,12 +463,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span class="header-section-number">3.4</span> Using the Outcome</h2>
 <p>For the Ames data, we know that the distribution of sale prices has some outlying points. To deal with this, we can use a stratified split (on the outcome) using 5 quantiles of the data in <code>ames</code>:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">3024</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">3024</span><span class="op">)</span></span>
 <span><span class="va">ames_block_split</span> <span class="op">&lt;-</span> <span class="fu">initial_split</span><span class="op">(</span><span class="va">ames</span>, strata <span class="op">=</span> <span class="va">Sale_Price</span>, breaks <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">ames_block_split</span></span>
 <span><span class="co">#&gt; &lt;Training/Testing/Total&gt;</span></span>
-<span><span class="co">#&gt; &lt;2196/734/2930&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; &lt;2196/734/2930&gt;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Nothing else changes; the same functions can be used to access the training and testing data.</p>
 <p><a href="https://aml4td.org/chapters/initial-data-splitting.html#sec-split-with-outcome"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
@@ -464,54 +477,54 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Instead of using the outcome to partition the data, other columns can be used when applicable. The text mentions using the <span class="pkg"><a href="https://cran.r-project.org/package=twinning">twinning</a></span> package (<a href="https://cran.r-project.org/package=twinning">CRAN page</a>). The same authors have a second approach that can be found in the <span class="pkg"><a href="https://cran.r-project.org/package=SPlit">SPlit</a></span> package (<a href="https://cran.r-project.org/package=SPlit">CRAN</a>). Both are straightforward to use.</p>
 <p>Maximum dissimilarity sampling can be conducted using <code><a href="https://rdrr.io/pkg/caret/man/maxDissim.html">caret::maxDissim()</a></code>. It starts with an initial set of one or more or fewer data points to use as a starter. Unless there is a specific set of points of interest, picking one close to the center of the multivariate predictor distribution might make sense. Here is some code that uses the geographic coordinates as the splitting variables:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># Since we will be using distances in the calculations, create centered </span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># Since we will be using distances in the calculations, create centered </span></span>
 <span><span class="co"># and scaled versions of the coordinates then add a row index column. </span></span>
 <span><span class="va">ames_scaled</span> <span class="op">&lt;-</span></span>
-<span>  <span class="va">ames</span> <span class="op">%&gt;%</span></span>
-<span>  <span class="fu">select</span><span class="op">(</span><span class="va">Longitude</span>, <span class="va">Latitude</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="va">ames</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">select</span><span class="op">(</span><span class="va">Longitude</span>, <span class="va">Latitude</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">mutate</span><span class="op">(</span></span>
 <span>    scaled_lon <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/scale.html">scale</a></span><span class="op">(</span><span class="va">Longitude</span><span class="op">)</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span>, </span>
 <span>    scaled_lat <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/scale.html">scale</a></span><span class="op">(</span><span class="va">Latitude</span><span class="op">)</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span></span>
-<span>  <span class="op">)</span> <span class="op">%&gt;%</span></span>
-<span>  <span class="fu">select</span><span class="op">(</span><span class="fu">starts_with</span><span class="op">(</span><span class="st">"scaled"</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">select</span><span class="op">(</span><span class="fu">starts_with</span><span class="op">(</span><span class="st">"scaled"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu">add_rowindex</span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Select an initial data point closest to the middle</span></span>
 <span><span class="va">seed_row</span> <span class="op">&lt;-</span></span>
-<span>  <span class="va">ames_scaled</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="va">ames_scaled</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">mutate</span><span class="op">(</span></span>
 <span>    dist <span class="op">=</span> <span class="op">(</span><span class="va">scaled_lon</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span> <span class="op">+</span> <span class="op">(</span><span class="va">scaled_lat</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span></span>
-<span>  <span class="op">)</span> <span class="op">%&gt;%</span></span>
-<span>  <span class="fu">slice_min</span><span class="op">(</span><span class="va">dist</span>, n <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">slice_min</span><span class="op">(</span><span class="va">dist</span>, n <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">pluck</span><span class="op">(</span><span class="st">".row"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Partition the data</span></span>
-<span><span class="va">ames_scaled_seed</span> <span class="op">&lt;-</span> <span class="va">ames_scaled</span> <span class="op">%&gt;%</span> <span class="fu">slice</span><span class="op">(</span> <span class="va">seed_row</span><span class="op">)</span></span>
-<span><span class="va">ames_scaled_pool</span> <span class="op">&lt;-</span> <span class="va">ames_scaled</span> <span class="op">%&gt;%</span> <span class="fu">slice</span><span class="op">(</span><span class="op">-</span><span class="va">seed_row</span><span class="op">)</span></span>
+<span><span class="va">ames_scaled_seed</span> <span class="op">&lt;-</span> <span class="va">ames_scaled</span> <span class="op">|&gt;</span> <span class="fu">slice</span><span class="op">(</span> <span class="va">seed_row</span><span class="op">)</span></span>
+<span><span class="va">ames_scaled_pool</span> <span class="op">&lt;-</span> <span class="va">ames_scaled</span> <span class="op">|&gt;</span> <span class="fu">slice</span><span class="op">(</span><span class="op">-</span><span class="va">seed_row</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Conduct the selection process</span></span>
 <span><span class="va">selection_path</span> <span class="op">&lt;-</span> </span>
 <span>  <span class="fu">caret</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/caret/man/maxDissim.html">maxDissim</a></span><span class="op">(</span></span>
 <span>    <span class="co"># Only give the function the predictor columns for each data set</span></span>
-<span>    <span class="va">ames_scaled_seed</span> <span class="op">%&gt;%</span> <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">.row</span><span class="op">)</span>, </span>
-<span>    <span class="va">ames_scaled_pool</span> <span class="op">%&gt;%</span> <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">.row</span><span class="op">)</span>, </span>
+<span>    <span class="va">ames_scaled_seed</span> <span class="op">|&gt;</span> <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">.row</span><span class="op">)</span>, </span>
+<span>    <span class="va">ames_scaled_pool</span> <span class="op">|&gt;</span> <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">.row</span><span class="op">)</span>, </span>
 <span>    n <span class="op">=</span> <span class="fl">24</span></span>
 <span>  <span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Get the selected row numbers that correspond to the 'ames' data frame.</span></span>
 <span><span class="va">selected_rows</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">seed_row</span>, <span class="va">ames_scaled_pool</span><span class="op">$</span><span class="va">.row</span><span class="op">[</span><span class="va">selection_path</span><span class="op">]</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">selected_data</span> <span class="op">&lt;-</span> <span class="va">ames</span> <span class="op">%&gt;%</span> <span class="fu">slice</span><span class="op">(</span><span class="va">selected_rows</span><span class="op">)</span></span>
+<span><span class="va">selected_data</span> <span class="op">&lt;-</span> <span class="va">ames</span> <span class="op">|&gt;</span> <span class="fu">slice</span><span class="op">(</span><span class="va">selected_rows</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># A non-map plot of the values: </span></span>
-<span><span class="va">selected_data</span> <span class="op">%&gt;%</span></span>
-<span>  <span class="fu">mutate</span><span class="op">(</span>xend <span class="op">=</span> <span class="fu">lead</span><span class="op">(</span><span class="va">Longitude</span><span class="op">)</span>, yend <span class="op">=</span> <span class="fu">lead</span><span class="op">(</span><span class="va">Latitude</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span><span class="va">selected_data</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">mutate</span><span class="op">(</span>xend <span class="op">=</span> <span class="fu">lead</span><span class="op">(</span><span class="va">Longitude</span><span class="op">)</span>, yend <span class="op">=</span> <span class="fu">lead</span><span class="op">(</span><span class="va">Latitude</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">ggplot</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span><span class="va">Longitude</span>, <span class="va">Latitude</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">geom_point</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">geom_segment</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>xend <span class="op">=</span> <span class="va">xend</span>, yend <span class="op">=</span> <span class="va">yend</span><span class="op">)</span>,</span>
 <span>               arrow <span class="op">=</span> <span class="fu">arrow</span><span class="op">(</span>length <span class="op">=</span> <span class="fu">unit</span><span class="op">(</span><span class="fl">0.1</span>, <span class="st">"inches"</span><span class="op">)</span>, type <span class="op">=</span> <span class="st">"closed"</span><span class="op">)</span>,</span>
 <span>               col <span class="op">=</span> <span class="st">"blue"</span>, alpha <span class="op">=</span> <span class="fl">1</span> <span class="op">/</span> <span class="fl">5</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">theme_bw</span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>  <span class="fu">theme_bw</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure"><p><img src="initial-data-splitting_files/figure-html/ames-dissim-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:50.0%"></p>
@@ -524,18 +537,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span class="header-section-number">3.6</span> Validation Sets</h2>
 <p>To add a validation set at the outset, <code>initial_validation_split()</code> works the same as <code>initial_split()</code>. The <code>prop</code> argument requires <em>two values</em> now: the first is the training set proportion, and the second is for the validation set. In this example below, we add 80% to training, 10% to validation, and the remaining 10% to the testing set:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">4</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">4</span><span class="op">)</span></span>
 <span><span class="va">ames_val_split</span> <span class="op">&lt;-</span> <span class="fu">initial_validation_split</span><span class="op">(</span><span class="va">ames</span>, strata <span class="op">=</span> <span class="va">Sale_Price</span>, prop <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.8</span>, <span class="fl">0.1</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">ames_val_split</span></span>
 <span><span class="co">#&gt; &lt;Training/Validation/Testing/Total&gt;</span></span>
-<span><span class="co">#&gt; &lt;2342/293/295/2930&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; &lt;2342/293/295/2930&gt;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Again, the acquisition of data is the same but has the additional use of the <code>validation()</code> function:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">ames_train</span> <span class="op">&lt;-</span> <span class="fu">training</span><span class="op">(</span><span class="va">ames_val_split</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">ames_train</span> <span class="op">&lt;-</span> <span class="fu">training</span><span class="op">(</span><span class="va">ames_val_split</span><span class="op">)</span></span>
 <span><span class="va">ames_val</span>   <span class="op">&lt;-</span> <span class="fu">validation</span><span class="op">(</span><span class="va">ames_val_split</span><span class="op">)</span></span>
-<span><span class="va">ames_test</span>  <span class="op">&lt;-</span> <span class="fu">testing</span><span class="op">(</span><span class="va">ames_val_split</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="va">ames_test</span>  <span class="op">&lt;-</span> <span class="fu">testing</span><span class="op">(</span><span class="va">ames_val_split</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p><code><a href="https://rsample.tidymodels.org/reference/initial_validation_split.html">rsample::initial_validation_time_split()</a></code> does the same thing but based on the ordering of the data (as opposed to random selection).</p>
 <p>Suppose a data frame had 100 rows. Using <code>prop = c(0.8, 0.1)</code> would place the first 80 rows into training, the next 10 into validation, and the last 10 into testing. Keeping the data appropriately ordered is important when using validation sets in tidymodels.</p>
@@ -545,28 +558,28 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>This section will focus on data with a rational grouping of data. For example, medical data might follow patient over time so that there are multiple rows per patient. The patient is the independent experimental unit (IEU), meaning that the data between patients are thought to be independent, and those within a patient are (statistically) related. We want to partition the data so that all of the data for each IEU end up in <em>either</em> the training or test sets but not both. We want to sample the data by the group – where the group in this example is the patient.</p>
 <p>There are other applications of grouped data but the example data that we’ll use fits into the description above: 27 patients were followed and had data collected at four time points. The data are in the <span class="pkg"><a href="https://cran.r-project.org/package=nlme">nlme</a></span> package:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">Orthodont</span>, package <span class="op">=</span> <span class="st">"nlme"</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">Orthodont</span>, package <span class="op">=</span> <span class="st">"nlme"</span><span class="op">)</span></span>
 <span><span class="fu">glimpse</span><span class="op">(</span><span class="va">Orthodont</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Rows: 108</span></span>
 <span><span class="co">#&gt; Columns: 4</span></span>
 <span><span class="co">#&gt; $ distance &lt;dbl&gt; 26.0, 25.0, 29.0, 31.0, 21.5, 22.5, 23.0, 26.5, 23.0, 22.5, 24.0,…</span></span>
 <span><span class="co">#&gt; $ age      &lt;dbl&gt; 8, 10, 12, 14, 8, 10, 12, 14, 8, 10, 12, 14, 8, 10, 12, 14, 8, 10…</span></span>
 <span><span class="co">#&gt; $ Subject  &lt;ord&gt; M01, M01, M01, M01, M02, M02, M02, M02, M03, M03, M03, M03, M04, …</span></span>
-<span><span class="co">#&gt; $ Sex      &lt;fct&gt; Male, Male, Male, Male, Male, Male, Male, Male, Male, Male, Male,…</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; $ Sex      &lt;fct&gt; Male, Male, Male, Male, Male, Male, Male, Male, Male, Male, Male,…</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>To use <code><a href="https://rsample.tidymodels.org/reference/initial_split.html">rsample::group_initial_split()</a></code>, we must supply a <code>group</code> argument that corresponds to one of the columns in the data. There is also a <code>prop</code> argument that specifies the proportion of the groups that should go into the training set.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">93</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">93</span><span class="op">)</span></span>
 <span><span class="va">orth_split</span> <span class="op">&lt;-</span> <span class="fu">group_initial_split</span><span class="op">(</span><span class="va">Orthodont</span>, group <span class="op">=</span> <span class="va">Subject</span>, prop <span class="op">=</span> <span class="fl">2</span> <span class="op">/</span> <span class="fl">3</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># The numbers in this output are individual rows (not numbers of groups)</span></span>
 <span><span class="va">orth_split</span></span>
 <span><span class="co">#&gt; &lt;Training/Testing/Total&gt;</span></span>
-<span><span class="co">#&gt; &lt;72/36/108&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; &lt;72/36/108&gt;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>From here, the code to get the resulting data sets is the same as previously shown. We’ll also verify that no subjects are in both data sets:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">orth_tr</span> <span class="op">&lt;-</span> <span class="fu">training</span><span class="op">(</span><span class="va">orth_split</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">orth_tr</span> <span class="op">&lt;-</span> <span class="fu">training</span><span class="op">(</span><span class="va">orth_split</span><span class="op">)</span></span>
 <span><span class="va">orth_te</span>  <span class="op">&lt;-</span> <span class="fu">testing</span><span class="op">(</span><span class="va">orth_split</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Is there any overlap in the subjects? </span></span>
@@ -575,25 +588,25 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/sets.html">intersect</a></span><span class="op">(</span><span class="va">subjects_train</span>, <span class="va">subjects_test</span><span class="op">)</span></span>
 <span><span class="co">#&gt; ordered()</span></span>
-<span><span class="co">#&gt; 27 Levels: M16 &lt; M05 &lt; M02 &lt; M11 &lt; M07 &lt; M08 &lt; M03 &lt; M12 &lt; M13 &lt; M14 &lt; ... &lt; F11</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; 27 Levels: M16 &lt; M05 &lt; M02 &lt; M11 &lt; M07 &lt; M08 &lt; M03 &lt; M12 &lt; M13 &lt; M14 &lt; ... &lt; F11</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p><a href="https://aml4td.org/chapters/initial-data-splitting.html#sec-multilevel-splitting"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section><section id="sec-spatial-splitting" class="level2" data-number="3.8"><h2 data-number="3.8" class="anchored" data-anchor-id="sec-spatial-splitting">
 <span class="header-section-number">3.8</span> Splitting Spatial Data</h2>
 <p>For spatial data, we need to convert longitude and latitude to a special type of vector called a <a href="https://r-spatial.github.io/sf/reference/st_geometry.html">geometry</a> vector. The <span class="pkg"><a href="https://cran.r-project.org/package=sf">sf</a></span> package can do this so let’s load that and two others:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/">sf</a></span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/">sf</a></span><span class="op">)</span></span>
 <span><span class="co">#&gt; Linking to GEOS 3.13.0, GDAL 3.8.5, PROJ 9.5.1; sf_use_s2() is TRUE</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tidymodels/spatialsample">spatialsample</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/EvolEcolGroup/tidysdm">tidysdm</a></span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/EvolEcolGroup/tidysdm">tidysdm</a></span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The function to make the conversion is <code><a href="https://r-spatial.github.io/sf/reference/st_as_sf.html">sf::st_as_sf()</a></code>:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">ames_sf</span> <span class="op">&lt;-</span></span>
-<span>  <span class="va">ames</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">ames_sf</span> <span class="op">&lt;-</span></span>
+<span>  <span class="va">ames</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_as_sf.html">st_as_sf</a></span><span class="op">(</span>coords <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Longitude"</span>, <span class="st">"Latitude"</span><span class="op">)</span>, crs <span class="op">=</span> <span class="fl">4326</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">ames_sf</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span> <span class="fu">select</span><span class="op">(</span><span class="va">geometry</span><span class="op">)</span></span>
+<span><span class="va">ames_sf</span> <span class="op">|&gt;</span> <span class="fu">select</span><span class="op">(</span><span class="va">geometry</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Simple feature collection with 2930 features and 0 fields</span></span>
 <span><span class="co">#&gt; Geometry type: POINT</span></span>
 <span><span class="co">#&gt; Dimension:     XY</span></span>
@@ -608,7 +621,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="co">#&gt; 4 (-93.62 42.05)</span></span>
 <span><span class="co">#&gt; 5 (-93.64 42.06)</span></span>
 <span><span class="co">#&gt; 6 (-93.64 42.06)</span></span>
-<span><span class="co">#&gt; # ℹ 2,924 more rows</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; # ℹ 2,924 more rows</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The <code>crs</code> argument specifies a <a href="https://en.wikipedia.org/wiki/Spatial_reference_system">coordinate reference system</a>. We used <a href="https://spatialreference.org/ref/epsg/4326/">4326</a> since it contains the US.</p>
 <p>Note that this is a <em>sticky</em> column and can’t be removed via normal means. There is a function to do this though: <code><a href="https://r-spatial.github.io/sf/reference/st_geometry.html">sf::st_drop_geometry()</a></code>.</p>
@@ -622,7 +635,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ul>
 <p>For the blocking method, we need to specify the number of blocks (<code>n</code>), whether the block is square or hexagonal (<code>square</code>), and (optionally) the radius for a buffer (<code>buffer</code>). These options will define how to create blocks. There is another option that designates how the blocks are assigned to the training set: <code>method</code>. You should experiment with these for your data. We’ll use <code>method = "continuous"</code> in this example.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">318</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">318</span><span class="op">)</span></span>
 <span><span class="va">ames_block_split</span> <span class="op">&lt;-</span></span>
 <span>  <span class="fu"><a href="https://evolecolgroup.github.io/tidysdm/reference/spatial_initial_split.html">spatial_initial_split</a></span><span class="op">(</span></span>
 <span>    <span class="va">ames_sf</span>, </span>
@@ -633,13 +646,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span>    square <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="va">ames_block_split</span></span>
 <span><span class="co">#&gt; &lt;Training/Testing/Total&gt;</span></span>
-<span><span class="co">#&gt; &lt;2326/604/2930&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; &lt;2326/604/2930&gt;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>There is a handy <code><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot()</a></code> method to visually assess the results:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot</a></span><span class="op">(</span><span class="va">ames_block_split</span>, cex <span class="op">=</span> <span class="fl">1</span> <span class="op">/</span> <span class="fl">2</span><span class="op">)</span> <span class="op">+</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot</a></span><span class="op">(</span><span class="va">ames_block_split</span>, cex <span class="op">=</span> <span class="fl">1</span> <span class="op">/</span> <span class="fl">2</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>  <span class="fu">ggtitle</span><span class="op">(</span><span class="st">"Blocking, no buffer"</span><span class="op">)</span> <span class="op">+</span> </span>
-<span>  <span class="fu">theme_bw</span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>  <span class="fu">theme_bw</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure"><p><img src="initial-data-splitting_files/figure-html/ames-split-block-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%"></p>
@@ -649,7 +662,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>Let’s add a buffer around these blocks to stop adjacent data from being the training and testing sets. We can experiment with the <code>buffer</code> argument until we have results that seem acceptable.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">318</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">318</span><span class="op">)</span></span>
 <span><span class="va">ames_block_buff_split</span> <span class="op">&lt;-</span></span>
 <span>  <span class="fu"><a href="https://evolecolgroup.github.io/tidysdm/reference/spatial_initial_split.html">spatial_initial_split</a></span><span class="op">(</span></span>
 <span>    <span class="va">ames_sf</span>, </span>
@@ -661,13 +674,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span>    buffer <span class="op">=</span> <span class="fl">250</span><span class="op">)</span></span>
 <span><span class="va">ames_block_buff_split</span></span>
 <span><span class="co">#&gt; &lt;Training/Testing/Total&gt;</span></span>
-<span><span class="co">#&gt; &lt;1587/604/2930&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; &lt;1587/604/2930&gt;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The buffer points are on gray:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot</a></span><span class="op">(</span><span class="va">ames_block_buff_split</span>, cex <span class="op">=</span> <span class="fl">1</span> <span class="op">/</span> <span class="fl">2</span><span class="op">)</span> <span class="op">+</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot</a></span><span class="op">(</span><span class="va">ames_block_buff_split</span>, cex <span class="op">=</span> <span class="fl">1</span> <span class="op">/</span> <span class="fl">2</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>  <span class="fu">ggtitle</span><span class="op">(</span><span class="st">"Blocking with a buffer"</span><span class="op">)</span> <span class="op">+</span> </span>
-<span>  <span class="fu">theme_bw</span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>  <span class="fu">theme_bw</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure"><p><img src="initial-data-splitting_files/figure-html/ames-split-block-buff-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%"></p>
@@ -730,13 +743,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy

@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.31">
+<meta name="generator" content="quarto-1.8.26">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <title>15&nbsp; Characterizing Classification Models – Tidymodels Computing Supplement</title>
 <style>
@@ -61,17 +61,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../">
+<link href="../chapters/cls-linear.html" rel="next">
 <link href="../chapters/comparing-models.html" rel="prev">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-e1a5c8363afafaef2c763b6775fbf3ca.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-109f5ab760e167ab0a7984bfec541ac0.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-7c647e586662db48eb79d76466712003.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <link href="../site_libs/quarto-contrib/fontawesome6-1.2.0/all.min.css" rel="stylesheet">
 <link href="../site_libs/quarto-contrib/fontawesome6-1.2.0/latex-fontsize.css" rel="stylesheet"><script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
@@ -126,19 +128,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <a href="" title="Share" id="quarto-navigation-tool-dropdown-0" class="quarto-navigation-tool dropdown-toggle px-1" data-bs-toggle="dropdown" aria-expanded="false" role="link" aria-label="Share"><i class="bi bi-share"></i></a>
       <ul class="dropdown-menu" aria-labelledby="quarto-navigation-tool-dropdown-0">
 <li>
-            <a class="dropdown-item sidebar-tools-main-item" href="https://twitter.com/intent/tweet?url=%7Curl%7C">
+            <a class="dropdown-item sidebar-tools-main-item" href="https://twitter.com/intent/tweet?url=|url|">
               <i class="bi bi-twitter pe-1"></i>
             Twitter
             </a>
           </li>
           <li>
-            <a class="dropdown-item sidebar-tools-main-item" href="https://www.facebook.com/sharer/sharer.php?u=%7Curl%7C">
+            <a class="dropdown-item sidebar-tools-main-item" href="https://www.facebook.com/sharer/sharer.php?u=|url|">
               <i class="bi bi-facebook pe-1"></i>
             Facebook
             </a>
           </li>
           <li>
-            <a class="dropdown-item sidebar-tools-main-item" href="https://www.linkedin.com/sharing/share-offsite/?url=%7Curl%7C">
+            <a class="dropdown-item sidebar-tools-main-item" href="https://www.linkedin.com/sharing/share-offsite/?url=|url|">
               <i class="bi bi-linkedin pe-1"></i>
             LinkedIn
             </a>
@@ -310,6 +312,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Characterizing Classification Models</span></span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/cls-linear.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Generalized Linear and Additive Classifiers</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/cls-nonlinear.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Complex Nonlinear Boundaries</span></span></a>
+  </div>
+</li>
       </ul>
 </li>
         <li class="sidebar-item sidebar-item-section">
@@ -366,7 +380,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span class="header-section-number">15.1</span> Requirements</h2>
 <p>You’ll need 9 packages (<span class="pkg"><a href="https://cran.r-project.org/package=betacal">betacal</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=discrim">discrim</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=desirability2">desirability2</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=klaR">klaR</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=mgcv">mgcv</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=patchwork">patchwork</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=probably">probably</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=rpart">rpart</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=tidymodels">tidymodels</a></span>) for this chapter:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># skip: fmt</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># skip: fmt</span></span>
 <span><span class="va">req_pkg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"betacal"</span>, <span class="st">"discrim"</span>, <span class="st">"desirability2"</span>, <span class="st">"klaR"</span>, <span class="st">"mgcv"</span>, <span class="st">"patchwork"</span>, </span>
 <span>             <span class="st">"probably"</span>, <span class="st">"rpart"</span>, <span class="st">"tidymodels"</span><span class="op">)</span></span>
 <span></span>
@@ -377,27 +391,27 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="kw">if</span> <span class="op">(</span> <span class="fu"><a href="https://rdrr.io/r/base/any.html">any</a></span><span class="op">(</span><span class="op">!</span><span class="va">pkg_installed</span><span class="op">)</span> <span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">install_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">pkg_installed</span><span class="op">)</span><span class="op">[</span><span class="op">!</span><span class="va">pkg_installed</span><span class="op">]</span></span>
 <span>  <span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html">pak</a></span><span class="op">(</span><span class="va">install_list</span><span class="op">)</span></span>
-<span><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Let’s load the meta package and manage some between-package function conflicts.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidymodels.tidymodels.org">tidymodels</a></span><span class="op">)</span>  <span class="co"># &lt;- includes yardstick</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidymodels.tidymodels.org">tidymodels</a></span><span class="op">)</span>  <span class="co"># &lt;- includes yardstick</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tidymodels/discrim">discrim</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tidymodels/probably">probably</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://desirability2.tidymodels.org">desirability2</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://patchwork.data-imaginist.com">patchwork</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://tidymodels.tidymodels.org/reference/tidymodels_prefer.html">tidymodels_prefer</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="fu">theme_set</span><span class="op">(</span><span class="fu">theme_bw</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="fu">theme_set</span><span class="op">(</span><span class="fu">theme_bw</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section><section id="sec-cls-metrics" class="level2" data-number="15.2"><h2 data-number="15.2" class="anchored" data-anchor-id="sec-cls-metrics">
 <span class="header-section-number">15.2</span> Metric Functions</h2>
 <p>For tidymodels, functions to compute performance metrics are largely in the <span class="pkg"><a href="https://cran.r-project.org/package=yardstick">yardstick</a></span> package. For classification models, the functions come in two forms: “class” metrics (for hard class predictions) and “probability” metrics that take class probability estimates as inputs. For example:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">accuracy</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">accuracy</span></span>
 <span><span class="co">#&gt; A class metric | direction: maximize</span></span>
 <span><span class="va">roc_auc</span></span>
-<span><span class="co">#&gt; A probability metric | direction: maximize</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; A probability metric | direction: maximize</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Class metrics take inputs:</p>
 <ul>
@@ -410,7 +424,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ul>
 <p>For example, for the positive predictive value:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># example data: </span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># example data: </span></span>
 <span><span class="va">two_class_example</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/str.html">str</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; 'data.frame':    500 obs. of  4 variables:</span></span>
 <span><span class="co">#&gt;  $ truth    : Factor w/ 2 levels "Class1","Class2": 2 1 2 1 2 1 1 1 2 2 ...</span></span>
@@ -422,25 +436,25 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="co">#&gt; # A tibble: 1 × 3</span></span>
 <span><span class="co">#&gt;   .metric .estimator .estimate</span></span>
 <span><span class="co">#&gt;   &lt;chr&gt;   &lt;chr&gt;          &lt;dbl&gt;</span></span>
-<span><span class="co">#&gt; 1 ppv     binary        0.8195</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; 1 ppv     binary        0.8195</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The <code>.estimator</code> column gives some information on the type of computation that was done. For this example, it is a simple proportion of binary data (we’ll see other types of estimates below).</p>
 <p>For probability metrics, we don’t need the <code>estimate</code> argument. Instead, these functions require column names that contain the probability estimates for the classes (in the same order as the factor levels). There is no argument name for these, and they are captured by the <code>...</code>.</p>
 <p>For example, to compute the area under the precision-recall curve:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/levels.html">levels</a></span><span class="op">(</span><span class="va">two_class_example</span><span class="op">$</span><span class="va">truth</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/levels.html">levels</a></span><span class="op">(</span><span class="va">two_class_example</span><span class="op">$</span><span class="va">truth</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "Class1" "Class2"</span></span>
 <span><span class="va">two_class_example</span> <span class="op">|&gt;</span> <span class="fu">pr_auc</span><span class="op">(</span><span class="va">truth</span>, <span class="va">Class1</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 1 × 3</span></span>
 <span><span class="co">#&gt;   .metric .estimator .estimate</span></span>
 <span><span class="co">#&gt;   &lt;chr&gt;   &lt;chr&gt;          &lt;dbl&gt;</span></span>
-<span><span class="co">#&gt; 1 pr_auc  binary        0.9464</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; 1 pr_auc  binary        0.9464</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>This example has two classes, so only the probability estimate for the first class levels is required. For 3+ classes, all of the probability columns are required.</p>
 <p>For metrics associated with <em>curves</em> (e.g., ROC), there are also functions that end in <code>_curve</code> that you can use to get the entire curve.</p>
 <p>Metric functions are also “group-aware” so that you can get statistics for an arbitrary number of subgroups:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">two_class_example</span> <span class="op">|&gt;</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">two_class_example</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu">mutate</span><span class="op">(</span>group <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="va">letters</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span>, each <span class="op">=</span> <span class="fl">125</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu">group_by</span><span class="op">(</span><span class="va">group</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu">pr_auc</span><span class="op">(</span><span class="va">truth</span>, <span class="va">Class1</span><span class="op">)</span></span>
@@ -450,7 +464,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="co">#&gt; 1 a     pr_auc  binary        0.9460</span></span>
 <span><span class="co">#&gt; 2 b     pr_auc  binary        0.9495</span></span>
 <span><span class="co">#&gt; 3 c     pr_auc  binary        0.9367</span></span>
-<span><span class="co">#&gt; 4 d     pr_auc  binary        0.9618</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; 4 d     pr_auc  binary        0.9618</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Finally, metric functions have an argument called <code>case_weights</code> that can be used to weight individual observations. Currently, tidymodels supports two types of case weights:</p>
 <ul>
@@ -464,28 +478,28 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span class="header-section-number">15.3</span> Metric Sets</h2>
 <p>Metrics sets are functions to compute multiple metrics, perhaps of different types, at once. The <code>metric_set()</code> function takes metric names as inputs and produces a <em>function</em> that you can use. For example:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cls_mtr</span> <span class="op">&lt;-</span> <span class="fu">metric_set</span><span class="op">(</span><span class="va">roc_auc</span>, <span class="va">brier_class</span>, <span class="va">sensitivity</span>, <span class="va">specificity</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cls_mtr</span> <span class="op">&lt;-</span> <span class="fu">metric_set</span><span class="op">(</span><span class="va">roc_auc</span>, <span class="va">brier_class</span>, <span class="va">sensitivity</span>, <span class="va">specificity</span><span class="op">)</span></span>
 <span><span class="va">cls_mtr</span></span>
 <span><span class="co">#&gt; A metric set, consisting of:</span></span>
 <span><span class="co">#&gt; - `roc_auc()`, a probability metric     | direction: maximize</span></span>
 <span><span class="co">#&gt; - `brier_class()`, a probability metric | direction: minimize</span></span>
 <span><span class="co">#&gt; - `sensitivity()`, a class metric       | direction: maximize</span></span>
-<span><span class="co">#&gt; - `specificity()`, a class metric       | direction: maximize</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; - `specificity()`, a class metric       | direction: maximize</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Since it contains <em>both</em> types of classification metrics, we need to use the <code>estimate</code> argument as well as the <code>...</code> to pass class probability columns:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">two_class_example</span> <span class="op">|&gt;</span> <span class="fu">cls_mtr</span><span class="op">(</span><span class="va">truth</span>, estimate <span class="op">=</span> <span class="va">predicted</span>, <span class="va">Class1</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">two_class_example</span> <span class="op">|&gt;</span> <span class="fu">cls_mtr</span><span class="op">(</span><span class="va">truth</span>, estimate <span class="op">=</span> <span class="va">predicted</span>, <span class="va">Class1</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 4 × 3</span></span>
 <span><span class="co">#&gt;   .metric     .estimator .estimate</span></span>
 <span><span class="co">#&gt;   &lt;chr&gt;       &lt;chr&gt;          &lt;dbl&gt;</span></span>
 <span><span class="co">#&gt; 1 sensitivity binary        0.8798</span></span>
 <span><span class="co">#&gt; 2 specificity binary        0.7934</span></span>
 <span><span class="co">#&gt; 3 roc_auc     binary        0.9393</span></span>
-<span><span class="co">#&gt; 4 brier_class binary        0.1056</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; 4 brier_class binary        0.1056</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>You can mix metric types within the same model mode. You can’t mix between modes:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">metric_set</span><span class="op">(</span><span class="va">rmse</span>, <span class="va">accuracy</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">metric_set</span><span class="op">(</span><span class="va">rmse</span>, <span class="va">accuracy</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Error in `metric_set()`:</span></span>
 <span><span class="co">#&gt; ✖ The combination of metric functions must be:</span></span>
 <span><span class="co">#&gt; • only numeric metrics.</span></span>
@@ -493,7 +507,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="co">#&gt; • a mix of dynamic and static survival metrics.</span></span>
 <span><span class="co">#&gt; ℹ The following metric function types are being mixed:</span></span>
 <span><span class="co">#&gt; - numeric (rmse)</span></span>
-<span><span class="co">#&gt; - class (accuracy)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; - class (accuracy)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The order of the metrics in a metric set does not change the computations. However, some optimization methods use a single metric to guide model tuning (e.g., Bayesian optimization). For those functions, the <em>first</em> metric listed in the metric set is used for the optimization.</p>
 <p>Now let’s use the mushroom data to demonstrate the nuances of these functions.</p>
@@ -502,7 +516,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>These data are available from the <a href="https://archive.ics.uci.edu/">UCI ML Database</a> in a <a href="&quot;https://archive.ics.uci.edu/static/public/848/secondary+mushroom+dataset.zip&quot;">zip file</a>. For the analysis here, the code used to prepare the data is in the main GitHub repository (<a href="https://github.com/aml4td/website/blob/main/R/setup_mushrooms.R"><code>setup_mushrooms.R</code></a>). We’ll load the file that contains the final data objects below.</p>
 <p>It is worth discussing that, for these data, there is enough data to do a four-way split: training, validation, calibration, and testing sets. To do this, an initial validation split was used to produce three data sets, then an additional split was used to create the final test set and save some data for calibration. Here’s what that looks like:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># Make a three-way split into train/validation/"test" where "test" will have</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># Make a three-way split into train/validation/"test" where "test" will have</span></span>
 <span><span class="co"># rows for the calibration data and the actual test data</span></span>
 <span></span>
 <span><span class="co"># In the end, we want the proportions to be 70% for training and 10% for the </span></span>
@@ -519,36 +533,36 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="va">shroom_other</span> <span class="op">&lt;-</span> <span class="fu">testing</span><span class="op">(</span><span class="va">shroom_split</span><span class="op">)</span></span>
 <span><span class="va">cal_test_split</span> <span class="op">&lt;-</span> <span class="fu">initial_split</span><span class="op">(</span><span class="va">shroom_other</span>, prop <span class="op">=</span> <span class="fl">1</span><span class="op">/</span><span class="fl">2</span><span class="op">)</span></span>
 <span><span class="va">shroom_cal</span> <span class="op">&lt;-</span> <span class="fu">training</span><span class="op">(</span><span class="va">cal_test_split</span><span class="op">)</span></span>
-<span><span class="va">shroom_test</span> <span class="op">&lt;-</span> <span class="fu">testing</span><span class="op">(</span><span class="va">cal_test_split</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="va">shroom_test</span> <span class="op">&lt;-</span> <span class="fu">testing</span><span class="op">(</span><span class="va">cal_test_split</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Now let’s load the finished products:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="st">"https://github.com/aml4td/website/raw/refs/heads/main/RData/mushrooms.RData"</span> <span class="op">|&gt;</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="st">"https://github.com/aml4td/website/raw/refs/heads/main/RData/mushrooms.RData"</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/connections.html">url</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/load.html">load</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/ls.html">ls</a></span><span class="op">(</span>pattern <span class="op">=</span> <span class="st">"^shroom_"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "shroom_cal"   "shroom_rs"    "shroom_test"  "shroom_train" "shroom_val"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; [1] "shroom_cal"   "shroom_rs"    "shroom_test"  "shroom_train" "shroom_val"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The text used a naive Bayes model. For the computations, we’ll use the <code><a href="https://rdrr.io/pkg/klaR/man/NaiveBayes.html">klaR::NaiveBayes()</a></code> function. To access a <span class="pkg"><a href="https://cran.r-project.org/package=parsnip">parsnip</a></span> model definition, we needed to load the <span class="pkg"><a href="https://cran.r-project.org/package=discrim">discrim</a></span> package. Let’s make a small metric set, resample the model, and save the validation set.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># skip: fmt</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># skip: fmt</span></span>
 <span><span class="va">cls_mtr</span> <span class="op">&lt;-</span></span>
 <span>  <span class="fu">metric_set</span><span class="op">(</span><span class="va">brier_class</span>, <span class="va">mn_log_loss</span>, <span class="va">pr_auc</span>, <span class="va">roc_auc</span>, <span class="va">accuracy</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">nb_res</span> <span class="op">&lt;-</span></span>
-<span>  <span class="fu"><a href="https://parsnip.tidymodels.org/reference/naive_Bayes.html">naive_Bayes</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://parsnip.tidymodels.org/reference/naive_Bayes.html">naive_Bayes</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">fit_resamples</span><span class="op">(</span></span>
 <span>    <span class="va">class</span> <span class="op">~</span> <span class="va">.</span>,</span>
 <span>    resamples <span class="op">=</span> <span class="va">shroom_rs</span>,</span>
 <span>    metrics <span class="op">=</span> <span class="va">cls_mtr</span>,</span>
 <span>    <span class="co"># Saves the workflow object and the validation set predictions</span></span>
 <span>    control <span class="op">=</span> <span class="fu">control_resamples</span><span class="op">(</span>save_pred <span class="op">=</span> <span class="cn">TRUE</span>, save_workflow <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span>  <span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>  <span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>We’ll also generate the trained model using <code>fit_best()</code>:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">nb_fit</span> <span class="op">&lt;-</span> <span class="fu">fit_best</span><span class="op">(</span><span class="va">nb_res</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">nb_fit</span> <span class="op">&lt;-</span> <span class="fu">fit_best</span><span class="op">(</span><span class="va">nb_res</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Although we don’t show them here, <code>NaiveBayes()</code> issues numerous warnings, such as</p>
 <blockquote class="blockquote">
@@ -557,31 +571,31 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>These are not problematic; the model multiplies many probabilities together, and the result becomes very close to zero. The warnings are generated because R cannot distinguish these values from zero. However, this does not mean that the model cannot adequately compute posterior probabilities.</p>
 <p>As seen previously, we can extract the metrics estimates from the resampling object:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://tune.tidymodels.org/reference/collect_predictions.html">collect_metrics</a></span><span class="op">(</span><span class="va">nb_res</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://tune.tidymodels.org/reference/collect_predictions.html">collect_metrics</a></span><span class="op">(</span><span class="va">nb_res</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 5 × 6</span></span>
-<span><span class="co">#&gt;   .metric     .estimator   mean     n std_err .config             </span></span>
-<span><span class="co">#&gt;   &lt;chr&gt;       &lt;chr&gt;       &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;               </span></span>
-<span><span class="co">#&gt; 1 accuracy    binary     0.7848     1      NA Preprocessor1_Model1</span></span>
-<span><span class="co">#&gt; 2 brier_class binary     0.1502     1      NA Preprocessor1_Model1</span></span>
-<span><span class="co">#&gt; 3 mn_log_loss binary     0.4550     1      NA Preprocessor1_Model1</span></span>
-<span><span class="co">#&gt; 4 pr_auc      binary     0.8987     1      NA Preprocessor1_Model1</span></span>
-<span><span class="co">#&gt; 5 roc_auc     binary     0.8706     1      NA Preprocessor1_Model1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt;   .metric     .estimator   mean     n std_err .config        </span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;       &lt;chr&gt;       &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;          </span></span>
+<span><span class="co">#&gt; 1 accuracy    binary     0.7848     1      NA pre0_mod0_post0</span></span>
+<span><span class="co">#&gt; 2 brier_class binary     0.1502     1      NA pre0_mod0_post0</span></span>
+<span><span class="co">#&gt; 3 mn_log_loss binary     0.4550     1      NA pre0_mod0_post0</span></span>
+<span><span class="co">#&gt; 4 pr_auc      binary     0.8987     1      NA pre0_mod0_post0</span></span>
+<span><span class="co">#&gt; 5 roc_auc     binary     0.8706     1      NA pre0_mod0_post0</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The <code>n</code> column above represents the number of performance estimates, not the size of the data used to compute the estimate. For example, for 10-fold cross-validation, we would see <code>n = 10</code>.</p>
 <p>Let’s also extract the out-of-sample predictions:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">val_pred</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tune.tidymodels.org/reference/collect_predictions.html">collect_predictions</a></span><span class="op">(</span><span class="va">nb_res</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">val_pred</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tune.tidymodels.org/reference/collect_predictions.html">collect_predictions</a></span><span class="op">(</span><span class="va">nb_res</span><span class="op">)</span></span>
 <span><span class="va">val_pred</span></span>
 <span><span class="co">#&gt; # A tibble: 6,107 × 7</span></span>
-<span><span class="co">#&gt;   .pred_class .pred_poisonous .pred_edible id          .row class     .config       </span></span>
-<span><span class="co">#&gt;   &lt;fct&gt;                 &lt;dbl&gt;        &lt;dbl&gt; &lt;chr&gt;      &lt;int&gt; &lt;fct&gt;     &lt;chr&gt;         </span></span>
-<span><span class="co">#&gt; 1 edible               0.3330       0.6670 validation 42749 poisonous Preprocessor1…</span></span>
-<span><span class="co">#&gt; 2 edible               0.2938       0.7062 validation 42750 poisonous Preprocessor1…</span></span>
-<span><span class="co">#&gt; 3 edible               0.4178       0.5822 validation 42751 poisonous Preprocessor1…</span></span>
-<span><span class="co">#&gt; 4 edible               0.1938       0.8062 validation 42752 poisonous Preprocessor1…</span></span>
-<span><span class="co">#&gt; 5 edible               0.1763       0.8237 validation 42753 poisonous Preprocessor1…</span></span>
-<span><span class="co">#&gt; 6 edible               0.2634       0.7366 validation 42754 poisonous Preprocessor1…</span></span>
-<span><span class="co">#&gt; # ℹ 6,101 more rows</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt;   .pred_class .pred_poisonous .pred_edible id         class      .row .config       </span></span>
+<span><span class="co">#&gt;   &lt;fct&gt;                 &lt;dbl&gt;        &lt;dbl&gt; &lt;chr&gt;      &lt;fct&gt;     &lt;int&gt; &lt;chr&gt;         </span></span>
+<span><span class="co">#&gt; 1 edible               0.3330       0.6670 validation poisonous 42749 pre0_mod0_pos…</span></span>
+<span><span class="co">#&gt; 2 edible               0.2938       0.7062 validation poisonous 42750 pre0_mod0_pos…</span></span>
+<span><span class="co">#&gt; 3 edible               0.4178       0.5822 validation poisonous 42751 pre0_mod0_pos…</span></span>
+<span><span class="co">#&gt; 4 edible               0.1938       0.8062 validation poisonous 42752 pre0_mod0_pos…</span></span>
+<span><span class="co">#&gt; 5 edible               0.1763       0.8237 validation poisonous 42753 pre0_mod0_pos…</span></span>
+<span><span class="co">#&gt; 6 edible               0.2634       0.7366 validation poisonous 42754 pre0_mod0_pos…</span></span>
+<span><span class="co">#&gt; # ℹ 6,101 more rows</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>In our example, these are the validation set predictions.</p>
 <p>The default metrics computed for classification models are accuracy, the area under the ROC curve, and the Brier score.</p>
@@ -590,7 +604,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span class="header-section-number">15.5</span> Assessing Hard Class Predictions</h2>
 <p>The <span class="pkg"><a href="https://cran.r-project.org/package=yardstick">yardstick</a></span> package website has a <a href="https://yardstick.tidymodels.org/reference/index.html#classification-metrics">list of classification metrics for hard predictions</a>. For example:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">val_pred</span> <span class="op">|&gt;</span> <span class="fu">accuracy</span><span class="op">(</span><span class="va">class</span>, estimate <span class="op">=</span> <span class="va">.pred_class</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">val_pred</span> <span class="op">|&gt;</span> <span class="fu">accuracy</span><span class="op">(</span><span class="va">class</span>, estimate <span class="op">=</span> <span class="va">.pred_class</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 1 × 3</span></span>
 <span><span class="co">#&gt;   .metric  .estimator .estimate</span></span>
 <span><span class="co">#&gt;   &lt;chr&gt;    &lt;chr&gt;          &lt;dbl&gt;</span></span>
@@ -601,20 +615,20 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="co">#&gt; # A tibble: 1 × 3</span></span>
 <span><span class="co">#&gt;   .metric .estimator .estimate</span></span>
 <span><span class="co">#&gt;   &lt;chr&gt;   &lt;chr&gt;          &lt;dbl&gt;</span></span>
-<span><span class="co">#&gt; 1 kap     binary        0.5679</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; 1 kap     binary        0.5679</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>There is also a function for confusion matrices:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">confusing</span> <span class="op">&lt;-</span> <span class="va">val_pred</span> <span class="op">|&gt;</span> <span class="fu">conf_mat</span><span class="op">(</span><span class="va">class</span>, <span class="va">.pred_class</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">confusing</span> <span class="op">&lt;-</span> <span class="va">val_pred</span> <span class="op">|&gt;</span> <span class="fu">conf_mat</span><span class="op">(</span><span class="va">class</span>, <span class="va">.pred_class</span><span class="op">)</span></span>
 <span><span class="va">confusing</span></span>
 <span><span class="co">#&gt;            Truth</span></span>
 <span><span class="co">#&gt; Prediction  poisonous edible</span></span>
 <span><span class="co">#&gt;   poisonous      2613    564</span></span>
-<span><span class="co">#&gt;   edible          750   2180</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt;   edible          750   2180</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>This object has an <code><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot()</a></code> method to produce a <a href="https://en.wikipedia.org/wiki/Mosaic_plot">mosaic plot</a></p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot</a></span><span class="op">(</span><span class="va">confusing</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot</a></span><span class="op">(</span><span class="va">confusing</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure"><p><img src="cls-metrics_files/figure-html/confusion-mosic-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:50.0%"></p>
@@ -624,7 +638,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>or a heatmap:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot</a></span><span class="op">(</span><span class="va">confusing</span>, type <span class="op">=</span> <span class="st">"heatmap"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot</a></span><span class="op">(</span><span class="va">confusing</span>, type <span class="op">=</span> <span class="st">"heatmap"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure"><p><img src="cls-metrics_files/figure-html/confusion-heatmap-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:50.0%"></p>
@@ -643,7 +657,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span class="header-section-number">15.7</span> Weighted Performance Metrics</h2>
 <p>As mentioned in the text, there are methods for computing metrics for binary outcomes with more than three classes via weighting. The default weighting scheme in yardstick is “macro” but all three can be used. Here is example:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">hpc_mtr</span> <span class="op">&lt;-</span> <span class="fu">metric_set</span><span class="op">(</span><span class="va">sensitivity</span>, <span class="va">specificity</span>, <span class="va">pr_auc</span>, <span class="va">roc_auc</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">hpc_mtr</span> <span class="op">&lt;-</span> <span class="fu">metric_set</span><span class="op">(</span><span class="va">sensitivity</span>, <span class="va">specificity</span>, <span class="va">pr_auc</span>, <span class="va">roc_auc</span><span class="op">)</span></span>
 <span><span class="fu">modeldata</span><span class="fu">::</span><span class="va"><a href="https://modeldata.tidymodels.org/reference/hpc_cv.html">hpc_cv</a></span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu">hpc_mtr</span><span class="op">(</span><span class="va">obs</span>, estimate <span class="op">=</span> <span class="va">pred</span>, <span class="va">VF</span><span class="op">:</span><span class="va">L</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 4 × 3</span></span>
@@ -652,12 +666,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="co">#&gt; 1 sensitivity macro         0.5603</span></span>
 <span><span class="co">#&gt; 2 specificity macro         0.8792</span></span>
 <span><span class="co">#&gt; 3 pr_auc      macro         0.6222</span></span>
-<span><span class="co">#&gt; 4 roc_auc     hand_till     0.8289</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; 4 roc_auc     hand_till     0.8289</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Note that the ROC curve did not use weighting; R implements an ROC method that can compute a multidimensional AUC for multiclass data.</p>
 <p>If you want to use one of the other weighting schemes, you can create a new metric function by wrapping the original with the proper argument value. Here’s an example of using a macro weighted sensitivity:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># See example in ?metric_set examples</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># See example in ?metric_set examples</span></span>
 <span><span class="va">sensitivity_macro_wt</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">data</span>, <span class="va">truth</span>, <span class="va">estimate</span>, <span class="va">na_rm</span> <span class="op">=</span> <span class="cn">TRUE</span>, <span class="va">...</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu">sensitivity</span><span class="op">(</span></span>
 <span>    data <span class="op">=</span> <span class="va">data</span>,</span>
@@ -674,7 +688,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="co">#&gt; # A tibble: 1 × 3</span></span>
 <span><span class="co">#&gt;   .metric     .estimator     .estimate</span></span>
 <span><span class="co">#&gt;   &lt;chr&gt;       &lt;chr&gt;              &lt;dbl&gt;</span></span>
-<span><span class="co">#&gt; 1 sensitivity macro_weighted    0.7087</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; 1 sensitivity macro_weighted    0.7087</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>See the documentation for <code><a href="https://yardstick.tidymodels.org/reference/metric_set.html">yardstick::metric_set()</a></code> for more information and examples.</p>
 <p><a href="https://aml4td.org/chapters/cls-metrics.html#sec-cls-metrics-wts"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
@@ -683,7 +697,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Similar to hard predictions, the <span class="pkg"><a href="https://cran.r-project.org/package=yardstick">yardstick</a></span> package website has a <a href="https://yardstick.tidymodels.org/reference/index.html#class-probability-metrics">list of metrics based on probability estimates</a>.</p>
 <p>As previously mentioned, there is no need to use the <code>estimate</code> argument; just list the probability column(s) unquoted. For models with two outcome classes, you should provide the column corresponding to the factor level associated with the event (by default, the first factor level). For example:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">val_pred</span> <span class="op">|&gt;</span> <span class="fu">mn_log_loss</span><span class="op">(</span><span class="va">class</span>, <span class="va">.pred_poisonous</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb22"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">val_pred</span> <span class="op">|&gt;</span> <span class="fu">mn_log_loss</span><span class="op">(</span><span class="va">class</span>, <span class="va">.pred_poisonous</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 1 × 3</span></span>
 <span><span class="co">#&gt;   .metric     .estimator .estimate</span></span>
 <span><span class="co">#&gt;   &lt;chr&gt;       &lt;chr&gt;          &lt;dbl&gt;</span></span>
@@ -692,13 +706,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="co"># Pass both to get an error</span></span>
 <span><span class="va">val_pred</span> <span class="op">|&gt;</span> <span class="fu">mn_log_loss</span><span class="op">(</span><span class="va">class</span>, <span class="va">.pred_poisonous</span><span class="op">:</span><span class="va">.pred_edible</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Error in `mn_log_loss()`:</span></span>
-<span><span class="co">#&gt; ! You are using a binary metric but have passed multiple columns to `...`.</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; ! You are using a binary metric but have passed multiple columns to `...`.</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>For 3 or more classes, pass all of the probability columns (in order).</p>
 <p>There is also a function that computes the general cost value with user-specified penalties. For example, correct predictions should have zero cost, but we might want to penalize false negatives 5 times more than false positives (to avoid poison). To do this, we create a data frame with all combinations of the cells in a confusion metric and create columns <code>truth</code>, <code>estimate</code>, and <code>cost</code>. The latter reflects the price of a bad prediction.</p>
 <p>Here’s an example:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">lvls</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/levels.html">levels</a></span><span class="op">(</span><span class="va">val_pred</span><span class="op">$</span><span class="va">class</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb23"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">lvls</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/levels.html">levels</a></span><span class="op">(</span><span class="va">val_pred</span><span class="op">$</span><span class="va">class</span><span class="op">)</span></span>
 <span><span class="va">unique_vals</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">lvls</span>, levels <span class="op">=</span> <span class="va">lvls</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">custom_costs</span> <span class="op">&lt;-</span> </span>
@@ -719,7 +733,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="co">#&gt; # A tibble: 1 × 3</span></span>
 <span><span class="co">#&gt;   .metric             .estimator .estimate</span></span>
 <span><span class="co">#&gt;   &lt;chr&gt;               &lt;chr&gt;          &lt;dbl&gt;</span></span>
-<span><span class="co">#&gt; 1 classification_cost binary        0.8437</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; 1 classification_cost binary        0.8437</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>There are several functions to produce curves:</p>
 <ul>
@@ -730,7 +744,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ul>
 <p>Each has an <code><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot()</a></code> method and is group-aware. The first two plots show different aspects of the same analysis. The lift curve shows a ratio of probabilities that reflects how enriched the sampling is for the event class, while the gain curve shows the proportion of events selected:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="op">(</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb24"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="op">(</span></span>
 <span>  <span class="va">val_pred</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu">gain_curve</span><span class="op">(</span><span class="va">class</span>, <span class="va">.pred_poisonous</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> </span>
@@ -740,7 +754,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span>  <span class="fu">lift_curve</span><span class="op">(</span><span class="va">class</span>, <span class="va">.pred_poisonous</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>  <span class="fu">ggtitle</span><span class="op">(</span><span class="st">"Lift Curve"</span><span class="op">)</span></span>
-<span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure"><p><img src="cls-metrics_files/figure-html/gain-left-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:90.0%"></p>
@@ -754,9 +768,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>The <span class="pkg"><a href="https://cran.r-project.org/package=probably">probably</a></span> package has functions to estimate, validate, and apply calibration models and to assess the model visually.</p>
 <p>The visualization functions that have names that match the pattern <code>cal_plot_*()</code>. To use a simple logistic model to assess calibration in the validation set:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># No spline terms:</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb25"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># No spline terms:</span></span>
 <span><span class="va">val_pred</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu"><a href="https://probably.tidymodels.org/reference/cal_plot_logistic.html">cal_plot_logistic</a></span><span class="op">(</span>truth <span class="op">=</span> <span class="va">class</span>, estimate <span class="op">=</span> <span class="va">.pred_poisonous</span>, smooth <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>  <span class="fu"><a href="https://probably.tidymodels.org/reference/cal_plot_logistic.html">cal_plot_logistic</a></span><span class="op">(</span>truth <span class="op">=</span> <span class="va">class</span>, estimate <span class="op">=</span> <span class="va">.pred_poisonous</span>, smooth <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure"><p><img src="cls-metrics_files/figure-html/cal-plot-logistic-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:50.0%"></p>
@@ -766,8 +780,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>The default is to use splines to get a more nuanced pattern:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">val_pred</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu"><a href="https://probably.tidymodels.org/reference/cal_plot_logistic.html">cal_plot_logistic</a></span><span class="op">(</span>truth <span class="op">=</span> <span class="va">class</span>, estimate <span class="op">=</span> <span class="va">.pred_poisonous</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb26"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">val_pred</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://probably.tidymodels.org/reference/cal_plot_logistic.html">cal_plot_logistic</a></span><span class="op">(</span>truth <span class="op">=</span> <span class="va">class</span>, estimate <span class="op">=</span> <span class="va">.pred_poisonous</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure"><p><img src="cls-metrics_files/figure-html/cal-plot-logistic-spline-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:50.0%"></p>
@@ -777,14 +791,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>There are functions for the windowed/binned estimates of calibration. For example, the sliding average method is computed using:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">val_pred</span> <span class="op">|&gt;</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">val_pred</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://probably.tidymodels.org/reference/cal_plot_windowed.html">cal_plot_windowed</a></span><span class="op">(</span></span>
 <span>    truth <span class="op">=</span> <span class="va">class</span>,</span>
 <span>    estimate <span class="op">=</span> <span class="va">.pred_poisonous</span>,</span>
 <span>    <span class="co"># Make a 10% window that moves with 2.5% increments</span></span>
 <span>    window_size <span class="op">=</span> <span class="fl">0.1</span>,</span>
 <span>    step_size <span class="op">=</span> <span class="fl">0.025</span></span>
-<span>  <span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>  <span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure"><p><img src="cls-metrics_files/figure-html/cal-plot-windowed-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:50.0%"></p>
@@ -803,14 +817,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>One very important complication is what data are used to estimate the calibrator and which are used to assess its effectiveness. We have a lot of data in this example, so we’ll use the calibration set to estimate models and the validation set to measure them.</p>
 <p>We’ll demonstrate using the Beta calibration method of <a href="https://scholar.google.com/scholar?hl=en&amp;as_sdt=0%2C7&amp;q=%22Beyond+sigmoids%3A+How+to+obtain+well-calibrated+probabilities+from+binary+classifiers+with+beta+calibration%22&amp;btnG">Kull, Silva Filho, and Flach (2017).</a>:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cal_pred</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://generics.r-lib.org/reference/augment.html">augment</a></span><span class="op">(</span><span class="va">nb_fit</span>, new_data <span class="op">=</span> <span class="va">shroom_cal</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb28"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cal_pred</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://generics.r-lib.org/reference/augment.html">augment</a></span><span class="op">(</span><span class="va">nb_fit</span>, new_data <span class="op">=</span> <span class="va">shroom_cal</span><span class="op">)</span></span>
 <span><span class="va">beta_cal</span> <span class="op">&lt;-</span> <span class="va">cal_pred</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://probably.tidymodels.org/reference/cal_estimate_beta.html">cal_estimate_beta</a></span><span class="op">(</span>truth <span class="op">=</span> <span class="va">class</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">beta_cal</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="va">beta_cal</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>If we don’t have a validation set, we can take the out-of-sample predictions, resampling them (again), and compute metrics before and after calibration:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">453</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb29"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">453</span><span class="op">)</span></span>
 <span><span class="va">val_pred</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu">vfold_cv</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://probably.tidymodels.org/reference/cal_validate_beta.html">cal_validate_beta</a></span><span class="op">(</span>truth <span class="op">=</span> <span class="va">class</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
@@ -819,31 +833,31 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="co">#&gt;   .metric     .type        .estimator   mean     n  std_err .config</span></span>
 <span><span class="co">#&gt;   &lt;chr&gt;       &lt;chr&gt;        &lt;chr&gt;       &lt;dbl&gt; &lt;int&gt;    &lt;dbl&gt; &lt;chr&gt;  </span></span>
 <span><span class="co">#&gt; 1 brier_class uncalibrated binary     0.1502    10 0.002576 config </span></span>
-<span><span class="co">#&gt; 2 brier_class calibrated   binary     0.1464    10 0.002265 config</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; 2 brier_class calibrated   binary     0.1464    10 0.002265 config</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>This is probably a real improvement that has a very small effect on the results.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">val_recal_pred</span> <span class="op">&lt;-</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb30"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">val_recal_pred</span> <span class="op">&lt;-</span> </span>
 <span>  <span class="va">val_pred</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://probably.tidymodels.org/reference/cal_apply.html">cal_apply</a></span><span class="op">(</span><span class="va">beta_cal</span><span class="op">)</span></span>
 <span><span class="va">val_recal_pred</span></span>
 <span><span class="co">#&gt; # A tibble: 6,107 × 7</span></span>
-<span><span class="co">#&gt;   .pred_class .pred_poisonous .pred_edible id          .row class     .config       </span></span>
-<span><span class="co">#&gt;   &lt;fct&gt;                 &lt;dbl&gt;        &lt;dbl&gt; &lt;chr&gt;      &lt;int&gt; &lt;fct&gt;     &lt;chr&gt;         </span></span>
-<span><span class="co">#&gt; 1 edible               0.4035       0.5965 validation 42749 poisonous Preprocessor1…</span></span>
-<span><span class="co">#&gt; 2 edible               0.3731       0.6269 validation 42750 poisonous Preprocessor1…</span></span>
-<span><span class="co">#&gt; 3 edible               0.4665       0.5335 validation 42751 poisonous Preprocessor1…</span></span>
-<span><span class="co">#&gt; 4 edible               0.2892       0.7108 validation 42752 poisonous Preprocessor1…</span></span>
-<span><span class="co">#&gt; 5 edible               0.2730       0.7270 validation 42753 poisonous Preprocessor1…</span></span>
-<span><span class="co">#&gt; 6 edible               0.3487       0.6513 validation 42754 poisonous Preprocessor1…</span></span>
-<span><span class="co">#&gt; # ℹ 6,101 more rows</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt;   .pred_class .pred_poisonous .pred_edible id         class      .row .config       </span></span>
+<span><span class="co">#&gt;   &lt;fct&gt;                 &lt;dbl&gt;        &lt;dbl&gt; &lt;chr&gt;      &lt;fct&gt;     &lt;int&gt; &lt;chr&gt;         </span></span>
+<span><span class="co">#&gt; 1 edible               0.4035       0.5965 validation poisonous 42749 pre0_mod0_pos…</span></span>
+<span><span class="co">#&gt; 2 edible               0.3731       0.6269 validation poisonous 42750 pre0_mod0_pos…</span></span>
+<span><span class="co">#&gt; 3 edible               0.4665       0.5335 validation poisonous 42751 pre0_mod0_pos…</span></span>
+<span><span class="co">#&gt; 4 edible               0.2892       0.7108 validation poisonous 42752 pre0_mod0_pos…</span></span>
+<span><span class="co">#&gt; 5 edible               0.2730       0.7270 validation poisonous 42753 pre0_mod0_pos…</span></span>
+<span><span class="co">#&gt; 6 edible               0.3487       0.6513 validation poisonous 42754 pre0_mod0_pos…</span></span>
+<span><span class="co">#&gt; # ℹ 6,101 more rows</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p><a href="https://aml4td.org/chapters/cls-metrics.html#sec-cls-calibration"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section><section id="sec-ordered-categories" class="level2" data-number="15.10"><h2 data-number="15.10" class="anchored" data-anchor-id="sec-ordered-categories">
 <span class="header-section-number">15.10</span> Ordered Categories</h2>
 <p>R has a specialized factor class called <code><a href="https://rdrr.io/r/base/factor.html">ordered()</a></code> that can be used to model ordered categories. To demonstrate, let’s load the Wordle predictions from the main text that we produced by a RuleFit model:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="st">"https://github.com/aml4td/website/raw/refs/heads/main/RData/wordle_results.RData"</span> <span class="op">|&gt;</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb31"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="st">"https://github.com/aml4td/website/raw/refs/heads/main/RData/wordle_results.RData"</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/connections.html">url</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/load.html">load</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
@@ -862,12 +876,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="co">#&gt; 4 3     3           0.01119   0.5492 0.07538 0.04194 0.3195   0.002724</span></span>
 <span><span class="co">#&gt; 5 3     3           0.007882  0.6209 0.07477 0.05872 0.2343   0.003451</span></span>
 <span><span class="co">#&gt; 6 3     4           0.04769   0.1140 0.7410  0.07764 0.01267  0.007019</span></span>
-<span><span class="co">#&gt; # ℹ 343 more rows</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; # ℹ 343 more rows</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The current development version of the <span class="pkg"><a href="https://cran.r-project.org/package=yardstick">yardstick</a></span> package has a function for ranked-probability scores called <code>yardstick::ranked_prob_score()</code>.</p>
 <p>For weighted Kappa estimates, there is an option to <code><a href="https://yardstick.tidymodels.org/reference/kap.html">yardstick::kap()</a></code> called <code>weighting</code> that takes values <code>"none"</code>, <code>"linear"</code>, and <code>"quadratic"</code>:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">bind_rows</span><span class="op">(</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb32"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">bind_rows</span><span class="op">(</span></span>
 <span>  <span class="va">rule_oob_pred</span> <span class="op">|&gt;</span> <span class="fu">kap</span><span class="op">(</span><span class="va">tries</span>, <span class="va">.pred_class</span><span class="op">)</span>,</span>
 <span>  <span class="va">rule_oob_pred</span> <span class="op">|&gt;</span> <span class="fu">kap</span><span class="op">(</span><span class="va">tries</span>, <span class="va">.pred_class</span>, weighting <span class="op">=</span> <span class="st">"linear"</span><span class="op">)</span>,</span>
 <span>  <span class="va">rule_oob_pred</span> <span class="op">|&gt;</span> <span class="fu">kap</span><span class="op">(</span><span class="va">tries</span>, <span class="va">.pred_class</span>, weighting <span class="op">=</span> <span class="st">"quadratic"</span><span class="op">)</span></span>
@@ -877,7 +891,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="co">#&gt;   &lt;chr&gt;   &lt;chr&gt;          &lt;dbl&gt;</span></span>
 <span><span class="co">#&gt; 1 kap     multiclass    0.5919</span></span>
 <span><span class="co">#&gt; 2 kap     multiclass    0.6296</span></span>
-<span><span class="co">#&gt; 3 kap     multiclass    0.6683</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; 3 kap     multiclass    0.6683</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p><a href="https://aml4td.org/chapters/cls-metrics.html#sec-ordered-categories"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section><section id="sec-cls-multi-objectives" class="level2" data-number="15.11"><h2 data-number="15.11" class="anchored" data-anchor-id="sec-cls-multi-objectives">
@@ -885,14 +899,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Currently, tidymodels has one method for the simultaneous optimization of several characters (i.e., performance metrics). The <span class="pkg"><a href="https://cran.r-project.org/package=desirability2">desirability2</a></span> package has general functions for desirability functions but also includes analogs to some functions from the <span class="pkg"><a href="https://cran.r-project.org/package=tune">tune</a></span> package: <code><a href="https://desirability2.tidymodels.org/reference/show_best_desirability.html">desirability2::show_best_desirability()</a></code> and <code><a href="https://desirability2.tidymodels.org/reference/show_best_desirability.html">desirability2::select_best_desirability()</a></code>.</p>
 <p>To demonstrate, let’s tune a single CART tree over two tuning parameters using grid search. We’ll collect four metrics:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cls_mtr</span> <span class="op">&lt;-</span> <span class="fu">metric_set</span><span class="op">(</span><span class="va">brier_class</span>, <span class="va">mn_log_loss</span>, <span class="va">pr_auc</span>, <span class="va">roc_auc</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb33"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cls_mtr</span> <span class="op">&lt;-</span> <span class="fu">metric_set</span><span class="op">(</span><span class="va">brier_class</span>, <span class="va">mn_log_loss</span>, <span class="va">pr_auc</span>, <span class="va">roc_auc</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">cart_spec</span> <span class="op">&lt;-</span> </span>
 <span>  <span class="fu"><a href="https://parsnip.tidymodels.org/reference/decision_tree.html">decision_tree</a></span><span class="op">(</span>cost_complexity <span class="op">=</span> <span class="fu"><a href="https://hardhat.tidymodels.org/reference/tune.html">tune</a></span><span class="op">(</span><span class="op">)</span>, min_n <span class="op">=</span> <span class="fu"><a href="https://hardhat.tidymodels.org/reference/tune.html">tune</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://parsnip.tidymodels.org/reference/set_args.html">set_mode</a></span><span class="op">(</span><span class="st">"classification"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">cart_res</span> <span class="op">&lt;-</span></span>
-<span>  <span class="va">cart_spec</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="va">cart_spec</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">tune_grid</span><span class="op">(</span></span>
 <span>    <span class="va">class</span> <span class="op">~</span> <span class="va">.</span>,</span>
 <span>    resamples <span class="op">=</span> <span class="va">shroom_rs</span>,</span>
@@ -904,60 +918,60 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="co">#&gt; # A tibble: 100 × 8</span></span>
 <span><span class="co">#&gt;   cost_complexity min_n .metric     .estimator     mean     n std_err .config       </span></span>
 <span><span class="co">#&gt;             &lt;dbl&gt; &lt;int&gt; &lt;chr&gt;       &lt;chr&gt;         &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;         </span></span>
-<span><span class="co">#&gt; 1       1    e-10    24 brier_class binary     0.003260     1      NA Preprocessor1…</span></span>
-<span><span class="co">#&gt; 2       1    e-10    24 mn_log_loss binary     0.03056      1      NA Preprocessor1…</span></span>
-<span><span class="co">#&gt; 3       1    e-10    24 pr_auc      binary     0.9994       1      NA Preprocessor1…</span></span>
-<span><span class="co">#&gt; 4       1    e-10    24 roc_auc     binary     0.9991       1      NA Preprocessor1…</span></span>
-<span><span class="co">#&gt; 5       2.371e-10    13 brier_class binary     0.002105     1      NA Preprocessor1…</span></span>
-<span><span class="co">#&gt; 6       2.371e-10    13 mn_log_loss binary     0.03122      1      NA Preprocessor1…</span></span>
-<span><span class="co">#&gt; # ℹ 94 more rows</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; 1       1    e-10    24 brier_class binary     0.003260     1      NA pre0_mod01_po…</span></span>
+<span><span class="co">#&gt; 2       1    e-10    24 mn_log_loss binary     0.03056      1      NA pre0_mod01_po…</span></span>
+<span><span class="co">#&gt; 3       1    e-10    24 pr_auc      binary     0.9994       1      NA pre0_mod01_po…</span></span>
+<span><span class="co">#&gt; 4       1    e-10    24 roc_auc     binary     0.9991       1      NA pre0_mod01_po…</span></span>
+<span><span class="co">#&gt; 5       2.371e-10    13 brier_class binary     0.002105     1      NA pre0_mod02_po…</span></span>
+<span><span class="co">#&gt; 6       2.371e-10    13 mn_log_loss binary     0.03122      1      NA pre0_mod02_po…</span></span>
+<span><span class="co">#&gt; # ℹ 94 more rows</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>We’ll select different candidates when we optimize for a single metric:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">show_best</span><span class="op">(</span><span class="va">cart_res</span>, metric <span class="op">=</span> <span class="st">"brier_class"</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb34"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">show_best</span><span class="op">(</span><span class="va">cart_res</span>, metric <span class="op">=</span> <span class="st">"brier_class"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 5 × 8</span></span>
 <span><span class="co">#&gt;   cost_complexity min_n .metric     .estimator     mean     n std_err .config       </span></span>
 <span><span class="co">#&gt;             &lt;dbl&gt; &lt;int&gt; &lt;chr&gt;       &lt;chr&gt;         &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;         </span></span>
-<span><span class="co">#&gt; 1       1    e- 7     3 brier_class binary     0.001308     1      NA Preprocessor1…</span></span>
-<span><span class="co">#&gt; 2       1.334e- 9     5 brier_class binary     0.001644     1      NA Preprocessor1…</span></span>
-<span><span class="co">#&gt; 3       3.162e- 6     8 brier_class binary     0.001755     1      NA Preprocessor1…</span></span>
-<span><span class="co">#&gt; 4       1    e- 4     2 brier_class binary     0.001800     1      NA Preprocessor1…</span></span>
-<span><span class="co">#&gt; 5       2.371e-10    13 brier_class binary     0.002105     1      NA Preprocessor1…</span></span>
+<span><span class="co">#&gt; 1       1    e- 7     3 brier_class binary     0.001308     1      NA pre0_mod09_po…</span></span>
+<span><span class="co">#&gt; 2       1.334e- 9     5 brier_class binary     0.001644     1      NA pre0_mod04_po…</span></span>
+<span><span class="co">#&gt; 3       3.162e- 6     8 brier_class binary     0.001755     1      NA pre0_mod13_po…</span></span>
+<span><span class="co">#&gt; 4       1    e- 4     2 brier_class binary     0.001800     1      NA pre0_mod17_po…</span></span>
+<span><span class="co">#&gt; 5       2.371e-10    13 brier_class binary     0.002105     1      NA pre0_mod02_po…</span></span>
 <span><span class="fu">show_best</span><span class="op">(</span><span class="va">cart_res</span>, metric <span class="op">=</span> <span class="st">"pr_auc"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 5 × 8</span></span>
-<span><span class="co">#&gt;   cost_complexity min_n .metric .estimator   mean     n std_err .config             </span></span>
-<span><span class="co">#&gt;             &lt;dbl&gt; &lt;int&gt; &lt;chr&gt;   &lt;chr&gt;       &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;               </span></span>
-<span><span class="co">#&gt; 1       1    e-10    24 pr_auc  binary     0.9994     1      NA Preprocessor1_Model…</span></span>
-<span><span class="co">#&gt; 2       1.778e- 5    25 pr_auc  binary     0.9994     1      NA Preprocessor1_Model…</span></span>
-<span><span class="co">#&gt; 3       7.499e- 9    27 pr_auc  binary     0.9994     1      NA Preprocessor1_Model…</span></span>
-<span><span class="co">#&gt; 4       7.499e- 6    16 pr_auc  binary     0.9994     1      NA Preprocessor1_Model…</span></span>
-<span><span class="co">#&gt; 5       2.371e-10    13 pr_auc  binary     0.9994     1      NA Preprocessor1_Model…</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt;   cost_complexity min_n .metric .estimator   mean     n std_err .config         </span></span>
+<span><span class="co">#&gt;             &lt;dbl&gt; &lt;int&gt; &lt;chr&gt;   &lt;chr&gt;       &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;           </span></span>
+<span><span class="co">#&gt; 1       1    e-10    24 pr_auc  binary     0.9994     1      NA pre0_mod01_post0</span></span>
+<span><span class="co">#&gt; 2       1.778e- 5    25 pr_auc  binary     0.9994     1      NA pre0_mod15_post0</span></span>
+<span><span class="co">#&gt; 3       7.499e- 9    27 pr_auc  binary     0.9994     1      NA pre0_mod06_post0</span></span>
+<span><span class="co">#&gt; 4       7.499e- 6    16 pr_auc  binary     0.9994     1      NA pre0_mod14_post0</span></span>
+<span><span class="co">#&gt; 5       2.371e-10    13 pr_auc  binary     0.9994     1      NA pre0_mod02_post0</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The additional ranking functions take an object produced by one of the tuning functions (e.g., <code>tune_grid()</code>) as well as directives for hop to optimize each metric that was measured. For example, if we want to focus on minimizing the Brier score but also maximize the area under the ROC curve and minimize cross-entropy, we could use:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cart_desire</span> <span class="op">&lt;-</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb35"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cart_desire</span> <span class="op">&lt;-</span> </span>
 <span>  <span class="fu"><a href="https://desirability2.tidymodels.org/reference/show_best_desirability.html">show_best_desirability</a></span><span class="op">(</span></span>
 <span>    <span class="va">cart_res</span>, </span>
 <span>    <span class="fu"><a href="https://desirability2.tidymodels.org/reference/aliases.html">minimize</a></span><span class="op">(</span><span class="va">brier_class</span>, scale <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span>
 <span>    <span class="fu"><a href="https://desirability2.tidymodels.org/reference/aliases.html">maximize</a></span><span class="op">(</span><span class="va">roc_auc</span><span class="op">)</span>, </span>
 <span>    <span class="fu"><a href="https://desirability2.tidymodels.org/reference/aliases.html">minimize</a></span><span class="op">(</span><span class="va">mn_log_loss</span><span class="op">)</span></span>
-<span>  <span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>  <span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Here are the top five metric values:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cart_desire</span> <span class="op">|&gt;</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="op">-</span><span class="fu">starts_with</span><span class="op">(</span><span class="st">".d_"</span><span class="op">)</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb36"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cart_desire</span> <span class="op">|&gt;</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="op">-</span><span class="fu">starts_with</span><span class="op">(</span><span class="st">".d_"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 5 × 7</span></span>
-<span><span class="co">#&gt;   cost_complexity min_n .config               brier_class mn_log_loss pr_auc roc_auc</span></span>
-<span><span class="co">#&gt;             &lt;dbl&gt; &lt;int&gt; &lt;chr&gt;                       &lt;dbl&gt;       &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;</span></span>
-<span><span class="co">#&gt; 1       2.371e-10    13 Preprocessor1_Model02    0.002105     0.03122 0.9994  0.9991</span></span>
-<span><span class="co">#&gt; 2       4.217e- 8    11 Preprocessor1_Model08    0.002105     0.03122 0.9994  0.9991</span></span>
-<span><span class="co">#&gt; 3       7.499e- 6    16 Preprocessor1_Model14    0.002265     0.03129 0.9994  0.9991</span></span>
-<span><span class="co">#&gt; 4       1.334e- 9     5 Preprocessor1_Model04    0.001644     0.03462 0.9992  0.9990</span></span>
-<span><span class="co">#&gt; 5       1    e- 7     3 Preprocessor1_Model09    0.001308     0.03738 0.9993  0.9990</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt;   cost_complexity min_n .config          brier_class mn_log_loss pr_auc roc_auc</span></span>
+<span><span class="co">#&gt;             &lt;dbl&gt; &lt;int&gt; &lt;chr&gt;                  &lt;dbl&gt;       &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1       2.371e-10    13 pre0_mod02_post0    0.002105     0.03122 0.9994  0.9991</span></span>
+<span><span class="co">#&gt; 2       4.217e- 8    11 pre0_mod08_post0    0.002105     0.03122 0.9994  0.9991</span></span>
+<span><span class="co">#&gt; 3       7.499e- 6    16 pre0_mod14_post0    0.002265     0.03129 0.9994  0.9991</span></span>
+<span><span class="co">#&gt; 4       1.334e- 9     5 pre0_mod04_post0    0.001644     0.03462 0.9992  0.9990</span></span>
+<span><span class="co">#&gt; 5       1    e- 7     3 pre0_mod09_post0    0.001308     0.03738 0.9993  0.9990</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>and their corresponding desirability scores plus the overall desirability:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cart_desire</span> <span class="op">|&gt;</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">cost_complexity</span>, <span class="va">min_n</span>, <span class="fu">starts_with</span><span class="op">(</span><span class="st">".d_"</span><span class="op">)</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb37"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cart_desire</span> <span class="op">|&gt;</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">cost_complexity</span>, <span class="va">min_n</span>, <span class="fu">starts_with</span><span class="op">(</span><span class="st">".d_"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 5 × 6</span></span>
 <span><span class="co">#&gt;   cost_complexity min_n .d_min_brier_class .d_max_roc_auc .d_min_mn_log_loss</span></span>
 <span><span class="co">#&gt;             &lt;dbl&gt; &lt;int&gt;              &lt;dbl&gt;          &lt;dbl&gt;              &lt;dbl&gt;</span></span>
@@ -966,7 +980,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="co">#&gt; 3       7.499e- 6    16             0.9913         0.9999             0.9952</span></span>
 <span><span class="co">#&gt; 4       1.334e- 9     5             0.9969         0.9996             0.9896</span></span>
 <span><span class="co">#&gt; 5       1    e- 7     3             1              0.9996             0.9851</span></span>
-<span><span class="co">#&gt; # ℹ 1 more variable: .d_overall &lt;dbl&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; # ℹ 1 more variable: .d_overall &lt;dbl&gt;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p><a href="https://aml4td.org/chapters/cls-metrics.html#sec-cls-multi-objectives"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 
@@ -1022,13 +1036,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy
@@ -1375,6 +1390,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       </a>          
   </div>
   <div class="nav-page nav-page-next">
+      <a href="../chapters/cls-linear.html" class="pagination-link" aria-label="Generalized Linear and Additive Classifiers">
+        <span class="nav-page-text"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Generalized Linear and Additive Classifiers</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
   </div>
 </nav>
 </div> <!-- /content -->
