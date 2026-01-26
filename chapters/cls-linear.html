@@ -354,7 +354,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><a href="#sec-logistic-diagnostic" id="toc-sec-logistic-diagnostic" class="nav-link" data-scroll-target="#sec-logistic-diagnostic"><span class="header-section-number">16.3.1</span> Examining the Model</a></li>
   <li><a href="#sec-logistic-interpretability" id="toc-sec-logistic-interpretability" class="nav-link" data-scroll-target="#sec-logistic-interpretability"><span class="header-section-number">16.3.2</span> Interpreting the Logistic Model</a></li>
   <li><a href="#sec-logistic-multicollinearity" id="toc-sec-logistic-multicollinearity" class="nav-link" data-scroll-target="#sec-logistic-multicollinearity"><span class="header-section-number">16.3.3</span> A Potential Problem: Multicollinearity</a></li>
-  <li><a href="#sec-logistic-bayes" id="toc-sec-logistic-bayes" class="nav-link" data-scroll-target="#sec-logistic-bayes"><span class="header-section-number">16.3.4</span> Bayesian Estimation</a></li>
+  <li><a href="#sec-logistic-penalized" id="toc-sec-logistic-penalized" class="nav-link" data-scroll-target="#sec-logistic-penalized"><span class="header-section-number">16.3.4</span> Regularization Through Penalization</a></li>
+  <li><a href="#sec-logistic-bayes" id="toc-sec-logistic-bayes" class="nav-link" data-scroll-target="#sec-logistic-bayes"><span class="header-section-number">16.3.5</span> Bayesian Estimation</a></li>
   </ul>
 </li>
   <li><a href="#sec-multinomial-reg" id="toc-sec-multinomial-reg" class="nav-link" data-scroll-target="#sec-multinomial-reg"><span class="header-section-number">16.4</span> Multinomial Regression</a></li>
@@ -1109,8 +1110,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="co">#&gt; 6 dew_temp_x_temp_annual_max  310.2  </span></span>
 <span><span class="co">#&gt; # ℹ 123 more rows</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p><a href="https://aml4td.org/chapters/cls-linear.html#sec-logistic-interpretability"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
-<p>As shown before### Regularization Through Penalization {#sec-logistic-penalized}</p>
+<p><a href="https://aml4td.org/chapters/cls-linear.html#sec-logistic-multicollinearity"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+</section><section id="sec-logistic-penalized" class="level3" data-number="16.3.4"><h3 data-number="16.3.4" class="anchored" data-anchor-id="sec-logistic-penalized">
+<span class="header-section-number">16.3.4</span> Regularization Through Penalization</h3>
 <p>The primary package for regularized generalized linear models is <span class="pkg"><a href="https://cran.r-project.org/package=glmnet">glmnet</a></span>. A few notes about <code><a href="https://glmnet.stanford.edu/reference/glmnet.html">glmnet::glmnet()</a></code>:</p>
 <ul>
 <li>It only takes x/y inputs, where <code>x</code> must be a matrix. This means that any feature engineering and preprocessing must be performed before running the function.</li>
@@ -1202,7 +1204,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>When tuning this model, it can be helpful to use a regular grid for the two glmnet parameters. Since all penalties are “trained” at once, a single fit is required for each mixture value. Using a space-filling design accidentally circumvents this feature.</p>
 <p>Also, if tidymodels creates an automatic grid for you, it sets the minimum mixture to 0.05 instead of 0.0 to avoid a pure ridge fit. See this <a href="https://github.com/tidymodels/parsnip/issues/1308">GitHub issue</a> for an example and explanation.</p>
 <p>Currently, <code>glmnet</code> is the only engine in tidymodels for (non-Bayesian) regularized regression. SCAD and MCP penalties can be fit using the <span class="pkg"><a href="https://cran.r-project.org/package=ncvreg">ncvreg</a></span> directly.</p>
-<p><a href="https://aml4td.org/chapters/cls-linear.html#sec-logistic-penalizedy"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/cls-linear.html#sec-logistic-penalized"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 <section id="refitting-the-forestation-model" class="level4 unnumbered"><h4 class="unnumbered anchored" data-anchor-id="refitting-the-forestation-model">Refitting the Forestation Model</h4>
 <p>The code used to tune the glmnet model using the more complex recipe was:</p>
 <div class="cell" data-layout-align="center">
@@ -1228,8 +1230,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span>  <span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p><a href="https://aml4td.org/chapters/cls-linear.html#refitting-the-forestation-model"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
-</section></section><section id="sec-logistic-bayes" class="level3" data-number="16.3.4"><h3 data-number="16.3.4" class="anchored" data-anchor-id="sec-logistic-bayes">
-<span class="header-section-number">16.3.4</span> Bayesian Estimation</h3>
+</section></section><section id="sec-logistic-bayes" class="level3" data-number="16.3.5"><h3 data-number="16.3.5" class="anchored" data-anchor-id="sec-logistic-bayes">
+<span class="header-section-number">16.3.5</span> Bayesian Estimation</h3>
 <p>For fitting logistic regression models using Bayesian estimation, there are a few options. For a simple model, use the <code>"stan"</code> engine. This fits a non-hierarchical model. If you have rows in the training set that cause correlated errors (e.g., measurements of people over time, etc.), the <code>"stan_glmer"</code> engine is more appropriate. We’ll focus on the former.</p>
 <p>tidymodels uses the <span class="pkg"><a href="https://cran.r-project.org/package=rstanarm">rstanarm</a></span> package for estimation, which relies on the sophisticated <a href="https://mc-stan.org/"><code>stan</code> framework</a> for estimation. The underlying function that is called is <code><a href="https://mc-stan.org/rstanarm/reference/stan_glm.html">rstanarm::stan_glm()</a></code>. It has syntax very similar to <code><a href="https://rdrr.io/r/stats/glm.html">glm()</a></code>, but has extra arguments. In tidymodels, these can be passed as engine arguments.</p>
 <p>Main prior options (<a href="https://mc-stan.org/rstanarm/reference/priors.html">documentation page</a>):</p>

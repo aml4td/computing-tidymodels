@@ -494,7 +494,7 @@ window.Quarto = {
 </div>
 <p>There was some merit in tuning the kernel smoothness parameter; smaller values produce slightly better performance. That is a fairly unusual pattern since a narrow kernel might lead to overfitting the distributions. For the feature selection step, a larger predictor set appears to be favored. However, the price is small for using the entire training set, depending on the smoothness value. We’ll revisit this again in <a href="#sec-cls-knn" class="quarto-xref"><span>Section 17.3</span></a> where the same recipes are used with a different model.</p>
 <p>Overall, these results are not as favorable as those from the logistic regression in the previous chapter. We’ll move on from here to the next discriminant model.</p>
-<p><a href="https://aml4td.org/chapters/cls-linear.html#sec-naive-bayes"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/cls-nonlinear.html#sec-naive-bayes"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section><section id="sec-fda" class="level3" data-number="17.2.2"><h3 data-number="17.2.2" class="anchored" data-anchor-id="sec-fda">
 <span class="header-section-number">17.2.2</span> Flexible Discriminants</h3>
 <p>FDA models are a generalization of linear discriminant analysis that enables us to fit our models using techniques more complex than simple linear regression. Almost any regression function can be used with FDA. Our focus will be on using the multivariate adaptive regression spline (MARS) model with FDA; however, other models can also be considered. See the documentation for <code><a href="https://rdrr.io/pkg/mda/man/fda.html">mda::fda()</a></code> for more information.</p>
@@ -613,7 +613,7 @@ window.Quarto = {
 </div>
 <p>The flat profiles indicate that the predictor was never used in the model.</p>
 <p>Keep in mind that the y-axis for these profiles is <em>relative</em> probability. Their actual values are linear combinations that can’t be displayed in the same visualization.</p>
-<p><a href="https://aml4td.org/chapters/cls-linear.html#sec-fda"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/cls-nonlinear.html#sec-fda"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section></section><section id="sec-cls-knn" class="level2" data-number="17.3"><h2 data-number="17.3" class="anchored" data-anchor-id="sec-cls-knn">
 <span class="header-section-number">17.3</span> K-Nearest Neighbors</h2>
 <p>The KNN model is fit using the <span class="pkg"><a href="https://cran.r-project.org/package=parsnip">parsnip</a></span> function <code><a href="https://parsnip.tidymodels.org/reference/nearest_neighbor.html">nearest_neighbor()</a></code>. It has a single engine (<code>kknn"</code>) with main parameters:</p>
@@ -678,7 +678,7 @@ window.Quarto = {
 </div>
 </div>
 </div>
-<p><a href="https://aml4td.org/chapters/cls-linear.html#sec-cls-knn"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/cls-nonlinear.html#sec-cls-knn"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section><section id="sec-cls-nnet" class="level2" data-number="17.4"><h2 data-number="17.4" class="anchored" data-anchor-id="sec-cls-nnet">
 <span class="header-section-number">17.4</span> Neural Networks via Multilayer Perceptrons</h2>
 <p>There are several engines in tidymodels for fitting basic, feed-forward neural networks for classification: <code>nnet</code>, <code>keras</code>, <code>brulee</code>, and <code>brulee_two_layer</code>. The first three assume a single hidden layer. The focus here will be on using the <code>brulee</code> engine, as it offers the most options.</p>
@@ -802,13 +802,13 @@ window.Quarto = {
 </div>
 </div>
 </div>
-<p><a href="https://aml4td.org/chapters/cls-linear.html#sec-cls-nnet"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/cls-nonlinear.html#sec-cls-nnet"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section><section id="sec-cls-tab-net" class="level2" data-number="17.5"><h2 data-number="17.5" class="anchored" data-anchor-id="sec-cls-tab-net">
 <span class="header-section-number">17.5</span> Special Tabular Network Models</h2>
-<p><a href="https://aml4td.org/chapters/cls-linear.html#sec-cls-tab-nnet"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/cls-nonlinear.html#sec-cls-tab-nnet"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section><section id="sec-cls-svm" class="level2" data-number="17.6"><h2 data-number="17.6" class="anchored" data-anchor-id="sec-cls-svm">
 <span class="header-section-number">17.6</span> Support Vector Machines</h2>
-<p><a href="https://aml4td.org/chapters/cls-linear.html#sec-cls-svm"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/cls-nonlinear.html#sec-cls-svm"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 
 
 </section></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">
