@@ -36,6 +36,7 @@ options(pillar.advice = FALSE, pillar.min_title_chars = Inf, pillar.sigfig = 4)
 plan(mirai_multisession)
 
 source("../R/_common.R")
+# fmt: skip
 req_pkg <- c("bestNormalize", "broom.mixed", "C50", "discrim", "embed", 
              "glmnet", "klaR", "lme4", "multcomp", "rstanarm", "rules", 
              "spatialsample", "splines2", "tidymodels", "tidyposterior")
@@ -51,6 +52,7 @@ This book's chapter involved taking models that have been fit or resampled and u
 #| label: comparing-models-installs
 #| eval: false
 #| echo: true
+# fmt: skip
 req_pkg <- c("bestNormalize", "broom.mixed", "C50", "discrim", "embed", 
              "glmnet", "klaR", "lme4", "multcomp", "rstanarm", "rules", 
              "spatialsample", "splines2", "tidymodels", "tidyposterior")

@@ -32,6 +32,7 @@ options(crayon.enabled = FALSE)
 options(pillar.advice = FALSE, pillar.min_title_chars = Inf, pillar.sigfig = 4)
 
 source("../R/_common.R")
+# fmt: skip
 req_pkg <- c("Cubist", "future.mirai", "parallelly", "probably", "rules", "spatialsample", 
              "tidymodels", "tidysdm")
 
@@ -47,6 +48,7 @@ We will use the `ames`, `concrete`, and `Chicago` data sets from the `r pkg(mode
 #| label: interactions-nonlinear-installs
 #| eval: false
 #| echo: true
+# fmt: skip
 req_pkg <- c("Cubist", "future.mirai", "parallelly", "probably", "rules", "spatialsample", 
              "tidymodels", "tidysdm")
 

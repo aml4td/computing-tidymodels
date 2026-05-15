@@ -30,6 +30,7 @@ options(crayon.enabled = FALSE)
 options(pillar.advice = FALSE, pillar.min_title_chars = Inf, pillar.sigfig = 4)
 
 source("../R/_common.R")
+# fmt: skip
 req_pkg <- c("bestNormalize", "dimRed", "embed", "fastICA", "igraph", 
              "mixOmics", "modeldatatoo", "patchwork", "RANN", "RSpectra", 
              "tidymodels", "uwot", "viridis")
@@ -47,6 +48,7 @@ You’ll need `r length(req_pkg)` packages (`r req_pkg_fmt`) for this chapter. T
 #| label: embeddings-installs
 #| eval: false
 #| echo: true
+# fmt: skip
 req_pkg <- c("bestNormalize", "dimRed", "embed", "fastICA", "igraph", 
              "mixOmics", "modeldatatoo", "patchwork", "RANN", "RSpectra", 
              "tidymodels", "uwot", "viridis")

@@ -30,6 +30,7 @@ options(crayon.enabled = FALSE)
 options(pillar.advice = FALSE, pillar.min_title_chars = Inf, pillar.sigfig = 4)
 
 source("../R/_common.R")
+# fmt: skip
 req_pkg <- c("bestNormalize", "important", "mirai", "janitor", "kernlab", "partykit", 
              "QSARdata", "ranger", "rpart", "tidymodels")
 ```
@@ -44,6 +45,7 @@ We will use the following package in this chapter: `r pkg_list(req_pkg)`. To ins
 #| label: feature-selection-installs
 #| eval: false
 #| echo: true
+# fmt: skip
 req_pkg <- c("bestNormalize", "important", "mirai", "janitor", "kernlab", "partykit", 
              "QSARdata", "ranger", "rpart", "tidymodels")
 
