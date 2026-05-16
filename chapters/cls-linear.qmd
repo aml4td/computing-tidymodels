@@ -152,6 +152,7 @@ num_unique <-
 Then we compute the percentiles for each using `dplyr::ntile()`:
 
 ```{r}
+#| label: percentiles-forest
 percentiles <-
   vert_forest |>
   full_join(num_unique, by = "Predictor") |>
