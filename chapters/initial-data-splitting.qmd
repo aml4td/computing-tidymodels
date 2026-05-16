@@ -15,17 +15,17 @@ We'll illustrate how to conduct an initial split of your data into different par
 #| include: false
 
 knitr::opts_chunk$set(
-    comment = "#>",
-    collapse = TRUE,
-    fig.align = 'center',
-    fig.width = 10,
-    fig.height = 6,
-    out.width = "95%",
-    dev = 'svg',
-    dev.args = list(bg = "transparent"),
-    tidy = FALSE,
-    echo = TRUE
-  )
+  comment = "#>",
+  collapse = TRUE,
+  fig.align = 'center',
+  fig.width = 10,
+  fig.height = 6,
+  out.width = "95%",
+  dev = 'svg',
+  dev.args = list(bg = "transparent"),
+  tidy = FALSE,
+  echo = TRUE
+)
 
 options(digits = 4, width = 84)
 options(dplyr.print_min = 6, dplyr.print_max = 6)
@@ -43,13 +43,14 @@ req_pkg <- c("caret", "spatialsample", "tidymodels", "tidysdm")
 #| label: initial-data-splitting-installs
 #| eval: false
 #| echo: true
+
 req_pkg <- c("caret", "spatialsample", "tidymodels", "tidysdm")
 
-# Check to see if they are installed: 
+# Check to see if they are installed:
 pkg_installed <- vapply(req_pkg, rlang::is_installed, logical(1))
 
-# Install missing packages: 
-if ( any(!pkg_installed) ) {
+# Install missing packages:
+if (any(!pkg_installed)) {
   install_list <- names(pkg_installed)[!pkg_installed]
   pak::pak(install_list)
 }
@@ -62,6 +63,7 @@ Let's load the meta package and manage some between-package function conflicts.
 #| results: hide
 #| message: false
 #| warning: false
+
 library(tidymodels)
 tidymodels_prefer()
 ```
@@ -74,15 +76,17 @@ These data are in the `r pkg(modeldata)` package, which is part of  `r pkg(tidym
 
 ```{r}
 #| label: setup-ames
+
 data(ames, package = "modeldata")
 
 ames <-
   ames |>
+  # fmt: skip
   select(Sale_Price, Bldg_Type, Neighborhood, Year_Built, Gr_Liv_Area, Full_Bath,
          Half_Bath, Year_Sold, Lot_Area, Central_Air, Longitude, Latitude) |>
   mutate(
     Sale_Price = log10(Sale_Price),
-    Baths = Full_Bath  + Half_Bath/2
+    Baths = Full_Bath + Half_Bath / 2
   ) |>
   select(-Half_Bath, -Full_Bath)
 
@@ -93,21 +97,22 @@ tidymodels requires that, for outcome data, any basic transformations should occ
 
 `r back("initial-data-splitting.html#sec-ames-intro")`
 
-## Simple Data Splitting  {#sec-basic-splitting}
+## Simple Data Splitting {#sec-basic-splitting}
 
 There are a few main functions for an initial split: 
 
- - `rsample::initial_split()`: completely random splits and stratified splits. 
- - `rsample::initial_time_split()`: non-random splits for times series; the most recent data are used for testing.
- - `rsample::initial_validation_split()` and `rsample::initial_validation_time_split()`: an initial split into three partitions. 
- - `rsample::group_initial_split()`: for situations with repeated measures or other important grouping factors. 
- 
+- `rsample::initial_split()`: completely random splits and stratified splits. 
+- `rsample::initial_time_split()`: non-random splits for times series; the most recent data are used for testing.
+- `rsample::initial_validation_split()` and `rsample::initial_validation_time_split()`: an initial split into three partitions. 
+- `rsample::group_initial_split()`: for situations with repeated measures or other important grouping factors. 
+
 Most of our applications will use the first function, where the default is to use 75% for training and 25% for testing. This is determined at random; there is no need to randomly sort the rows before splitting. By default, a simple random split is used. 
 
 Let's do that with the Ames data:
 
 ```{r}
 #| label: setup-split
+
 set.seed(3024)
 ames_split <- initial_split(ames)
 
@@ -118,8 +123,9 @@ The output shows the size of the resulting data sets. To get the two data sets, 
 
 ```{r}
 #| label: split-data-sets
+
 ames_train <- training(ames_split)
-ames_test  <- testing(ames_split)
+ames_test <- testing(ames_split)
 ```
 
 Consistent with the printed output, there are `r format(nrow(ames_train), big.mark = ",")` data points in the training set and `r nrow(ames_test)` reserved for testing. 
@@ -130,23 +136,24 @@ We won't touch on `initial_time_split()` here but only mention that it takes the
 
 `r back("initial-data-splitting.html#sec-basic-splitting")`
 
-## Using the Outcome  {#sec-split-with-outcome}
+## Using the Outcome {#sec-split-with-outcome}
 
 For the Ames data, we know that the distribution of sale prices has some outlying points. To deal with this, we can use a stratified split (on the outcome) using 5 quantiles of the data in `ames`: 
 
 ```{r}
 #| label: setup-strata-split
+
 set.seed(3024)
 ames_block_split <- initial_split(ames, strata = Sale_Price, breaks = 5)
 
 ames_block_split
 ```
-  
+
 Nothing else changes; the same functions can be used to access the training and testing data. 
 
 `r back("initial-data-splitting.html#sec-split-with-outcome")`
 
-## Using the Predictors  {#sec-split-with-predictors}
+## Using the Predictors {#sec-split-with-predictors}
 
 Instead of using the outcome to partition the data, other columns can be used when applicable. The text mentions using the `r pkg(twinning)` package ([CRAN page](https://cran.r-project.org/package=twinning)). The same authors have a second approach that can be found in the `r pkg(SPlit)` package ([CRAN](https://cran.r-project.org/package=SPlit)). Both are straightforward to use. 
 
@@ -159,16 +166,17 @@ Maximum dissimilarity sampling can be conducted using `caret::maxDissim()`. It s
 #| fig-align: center
 #| out-width: "50%"
 #| warning: false
-# Since we will be using distances in the calculations, create centered 
-# and scaled versions of the coordinates then add a row index column. 
+
+# Since we will be using distances in the calculations, create centered
+# and scaled versions of the coordinates then add a row index column.
 ames_scaled <-
   ames |>
   select(Longitude, Latitude) |>
   mutate(
-    scaled_lon = scale(Longitude)[,1], 
-    scaled_lat = scale(Latitude)[,1]
+    scaled_lon = scale(Longitude)[, 1],
+    scaled_lat = scale(Latitude)[, 1]
   ) |>
-  select(starts_with("scaled")) |> 
+  select(starts_with("scaled")) |>
   add_rowindex()
 
 # Select an initial data point closest to the middle
@@ -181,15 +189,15 @@ seed_row <-
   pluck(".row")
 
 # Partition the data
-ames_scaled_seed <- ames_scaled |> slice( seed_row)
+ames_scaled_seed <- ames_scaled |> slice(seed_row)
 ames_scaled_pool <- ames_scaled |> slice(-seed_row)
 
 # Conduct the selection process
-selection_path <- 
+selection_path <-
   caret::maxDissim(
     # Only give the function the predictor columns for each data set
-    ames_scaled_seed |> select(-.row), 
-    ames_scaled_pool |> select(-.row), 
+    ames_scaled_seed |> select(-.row),
+    ames_scaled_pool |> select(-.row),
     n = 24
   )
 
@@ -198,38 +206,47 @@ selected_rows <- c(seed_row, ames_scaled_pool$.row[selection_path])
 
 selected_data <- ames |> slice(selected_rows)
 
-# A non-map plot of the values: 
+# A non-map plot of the values:
 selected_data |>
   mutate(xend = lead(Longitude), yend = lead(Latitude)) |>
   ggplot(aes(Longitude, Latitude)) +
   geom_point() +
-  geom_segment(aes(xend = xend, yend = yend),
-               arrow = arrow(length = unit(0.1, "inches"), type = "closed"),
-               col = "blue", alpha = 1 / 5) +
+  geom_segment(
+    aes(xend = xend, yend = yend),
+    arrow = arrow(length = unit(0.1, "inches"), type = "closed"),
+    col = "blue",
+    alpha = 1 / 5
+  ) +
   theme_bw()
 ```
 
 `r back("initial-data-splitting.html#sec-split-with-predictors")`
 
-## Validation Sets  {#sec-three-way-split}
+## Validation Sets {#sec-three-way-split}
 
 To add a validation set at the outset, `initial_validation_split()` works the same as `initial_split()`. The `prop` argument requires _two values_ now: the first is the training set proportion, and the second is for the validation set. In this example below, we add 80% to training, 10% to validation, and the remaining 10% to the testing set: 
 
 ```{r}
 #| label: setup-val-split
+
 set.seed(4)
-ames_val_split <- initial_validation_split(ames, strata = Sale_Price, prop = c(0.8, 0.1))
+ames_val_split <- initial_validation_split(
+  ames,
+  strata = Sale_Price,
+  prop = c(0.8, 0.1)
+)
 
 ames_val_split
 ```
 
 Again, the acquisition of data is the same but has the additional use of the `validation()` function: 
- 
+
 ```{r}
 #| label: split-val-data-sets
+
 ames_train <- training(ames_val_split)
-ames_val   <- validation(ames_val_split)
-ames_test  <- testing(ames_val_split)
+ames_val <- validation(ames_val_split)
+ames_test <- testing(ames_val_split)
 ```
 
 `rsample::initial_validation_time_split()` does the same thing but based on the ordering of the data (as opposed to random selection). 
@@ -238,7 +255,7 @@ Suppose a data frame had 100 rows. Using `prop = c(0.8, 0.1)` would place the fi
 
 `r back("initial-data-splitting.html#sec-three-way-split")`
 
-## Multi-Level Data  {#sec-multilevel-splitting}
+## Multi-Level Data {#sec-multilevel-splitting}
 
 This section will focus on data with a rational grouping of data. For example, medical data might follow patient over time so that there are multiple rows per patient. The patient is the independent experimental unit (IEU), meaning that the data between patients are thought to be independent, and those within a patient are (statistically) related. We want to partition the data so that all of the data for each IEU end up in _either_ the training or test sets but not both. We want to sample the data by the group -- where the group in this example is the patient. 
 
@@ -267,12 +284,13 @@ From here, the code to get the resulting data sets is the same as previously sho
 
 ```{r}
 #| label: grouped-split-data-sets
-orth_tr <- training(orth_split)
-orth_te  <- testing(orth_split)
 
-# Is there any overlap in the subjects? 
+orth_tr <- training(orth_split)
+orth_te <- testing(orth_split)
+
+# Is there any overlap in the subjects?
 subjects_train <- unique(orth_tr$Subject)
-subjects_test  <- unique(orth_te$Subject)
+subjects_test <- unique(orth_te$Subject)
 
 intersect(subjects_train, subjects_test)
 ```
@@ -285,6 +303,7 @@ For spatial data, we need to convert longitude and latitude to a special type of
 
 ```{r}
 #| label: load-spatial-pkgs
+
 library(sf)
 library(spatialsample)
 library(tidysdm)
@@ -294,6 +313,7 @@ The function to make the conversion is `sf::st_as_sf()`:
 
 ```{r}
 #| label: cols-to-geom
+
 ames_sf <-
   ames |>
   st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
@@ -305,26 +325,28 @@ The `crs` argument specifies a [coordinate reference system](https://en.wikipedi
 
 Note that this is a _sticky_ column and can't be removed via normal means. There is a function to do this though: `sf::st_drop_geometry()`. 
 
-The `r pkg(tidysdm)` package can create an initial data split using the methods given in the `r pkg(spatialsample)` package. The function is `tidysdm::spatial_initial_split()`.  The main argument is `prop` for the amount of data in the _testing_ set. Let’s put 20% into testing using `prop = 0.2`. 
+The `r pkg(tidysdm)` package can create an initial data split using the methods given in the `r pkg(spatialsample)` package. The function is `tidysdm::spatial_initial_split()`.  The main argument is `prop` for the amount of data in the _testing_ set. Let's put 20% into testing using `prop = 0.2`. 
 
 After specifying this, we can set a blocking strategy using `r pkg(spatialsample)`, such as: 
- 
- - `spatial_block_cv()`: create a regular grid. 
- - `spatial_clustering_cv()`: use a clustering method to group the data. 
 
-For the blocking method, we need to specify the number of blocks (`n`), whether the block is square or hexagonal (`square`), and (optionally) the radius for a buffer (`buffer`). These options will define how to create blocks. There is another option that designates how the blocks are assigned to the training set: `method`. You should experiment with these for your data. We’ll use `method = "continuous"` in this example. 
+- `spatial_block_cv()`: create a regular grid. 
+- `spatial_clustering_cv()`: use a clustering method to group the data. 
+
+For the blocking method, we need to specify the number of blocks (`n`), whether the block is square or hexagonal (`square`), and (optionally) the radius for a buffer (`buffer`). These options will define how to create blocks. There is another option that designates how the blocks are assigned to the training set: `method`. You should experiment with these for your data. We'll use `method = "continuous"` in this example. 
 
 ```{r}
 #| label: ames-block-split
+
 set.seed(318)
 ames_block_split <-
   spatial_initial_split(
-    ames_sf, 
-    prop = 0.2, 
+    ames_sf,
+    prop = 0.2,
     strategy = spatial_block_cv,
     method = "continuous",
-    n = 25, 
-    square = FALSE)
+    n = 25,
+    square = FALSE
+  )
 ames_block_split
 ```
 
@@ -336,8 +358,9 @@ There is a handy `autoplot()` method to visually assess the results:
 #| fig-width: 6
 #| fig-align: center
 #| out-width: "70%"
-autoplot(ames_block_split, cex = 1 / 2) + 
-  ggtitle("Blocking, no buffer") + 
+
+autoplot(ames_block_split, cex = 1 / 2) +
+  ggtitle("Blocking, no buffer") +
   theme_bw()
 ```
 
@@ -345,16 +368,18 @@ Let's add a buffer around these blocks to stop adjacent data from being the trai
 
 ```{r}
 #| label: ames-block-buff-split
+
 set.seed(318)
 ames_block_buff_split <-
   spatial_initial_split(
-    ames_sf, 
-    prop = 0.2, 
+    ames_sf,
+    prop = 0.2,
     strategy = spatial_block_cv,
     method = "continuous",
-    n = 25, 
+    n = 25,
     square = FALSE,
-    buffer = 250)
+    buffer = 250
+  )
 ames_block_buff_split
 ```
 
@@ -366,12 +391,12 @@ The buffer points are on gray:
 #| fig-width: 6
 #| fig-align: center
 #| out-width: "70%"
-autoplot(ames_block_buff_split, cex = 1 / 2) + 
-  ggtitle("Blocking with a buffer") + 
+
+autoplot(ames_block_buff_split, cex = 1 / 2) +
+  ggtitle("Blocking with a buffer") +
   theme_bw()
 ```
 
 As with the previous methods, the `training()` and `testing()` functions are used to obtain those data sets. 
 
 `r back("initial-data-splitting.html#sec-spatial-splitting")`
-

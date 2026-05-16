@@ -15,17 +15,17 @@ This [chapter on the main website](https://aml4td.org/chapters/whole-game.html) 
 #| include: false
 
 knitr::opts_chunk$set(
-    comment = "#>",
-    collapse = TRUE,
-    fig.align = 'center',
-    fig.width = 10,
-    fig.height = 6,
-    out.width = "95%",
-    dev = 'svg',
-    dev.args = list(bg = "transparent"),
-    tidy = FALSE,
-    echo = TRUE
-  )
+  comment = "#>",
+  collapse = TRUE,
+  fig.align = 'center',
+  fig.width = 10,
+  fig.height = 6,
+  out.width = "95%",
+  dev = 'svg',
+  dev.args = list(bg = "transparent"),
+  tidy = FALSE,
+  echo = TRUE
+)
 
 options(digits = 4, width = 84)
 options(dplyr.print_min = 6, dplyr.print_max = 6)
@@ -34,7 +34,9 @@ options(crayon.enabled = FALSE)
 options(pillar.advice = FALSE, pillar.min_title_chars = Inf, pillar.sigfig = 4)
 
 source("../R/_common.R")
-req_pkg <- c("brulee", "Cubist", "future.mirai", "patchwork", "scales", "splines2", "probably", "rules", "tidymodels")
+# fmt: skip
+req_pkg <- c("brulee", "Cubist", "future.mirai", "patchwork", "scales", 
+             "splines2", "probably", "rules", "tidymodels")
 ```
 
 `r pkg_list(req_pkg)`
@@ -44,13 +46,15 @@ req_pkg <- c("brulee", "Cubist", "future.mirai", "patchwork", "scales", "splines
 #| eval: false
 #| echo: true
 
-req_pkg <- c("brulee", "Cubist", "future.mirai", "patchwork", "scales", "splines2", "probably", "rules", "tidymodels")
+# fmt: skip
+req_pkg <- c("brulee", "Cubist", "future.mirai", "patchwork", "scales", 
+             "splines2", "probably", "rules", "tidymodels")
 
-# Check to see if they are installed: 
+# Check to see if they are installed:
 pkg_installed <- vapply(req_pkg, rlang::is_installed, logical(1))
 
-# Install missing packages: 
-if ( any(!pkg_installed) ) {
+# Install missing packages:
+if (any(!pkg_installed)) {
   install_list <- names(pkg_installed)[!pkg_installed]
   pak::pak(install_list)
 }
@@ -75,7 +79,6 @@ tidymodels_prefer()
 Finally, this note:
 
 ::: {.callout-note}
-
 All of these notes will assume that you have an R session that is running from the root of the directory containing the GitHub repository files. In other words, if you were to execute `list.dirs(recursive = FALSE)`, the output would show entries such as `"./chapters"`, `"./RData"`, etc.
 
 If you are not in the right place, use `setwd()` to change the working directory to the correct location. 
@@ -119,19 +122,19 @@ To create the histograms of the delivery times, we used this code to create each
 ```{r}
 #| label: whole-game-hist-1
 
-# Setup some fancy code for the axes: 
+# Setup some fancy code for the axes:
 log_2_breaks <- scales::trans_breaks("log2", function(x) 2^x)
-log_2_labs   <- scales::trans_format("log2", scales::math_format(2^.x))
+log_2_labs <- scales::trans_format("log2", scales::math_format(2^.x))
 
-delivery_hist <- 
-  deliveries %>% 
+delivery_hist <-
+  deliveries %>%
   ggplot(aes(x = time_to_delivery)) +
   geom_histogram(bins = 30, col = "white") +
   geom_rug(alpha = 1 / 4) +
   labs(x = "Time Until Delivery (min)", title = "(a)")
 
-delivery_log_hist <- 
-  deliveries %>% 
+delivery_log_hist <-
+  deliveries %>%
   ggplot(aes(x = time_to_delivery)) +
   geom_histogram(bins = 30, col = "white") +
   geom_rug(alpha = 1 / 4) +
@@ -144,6 +147,7 @@ You don't need to assign the plots to objects; you can just print each. We did t
 ```{r}
 #| label: whole-game-hists
 #| fig-height: 4
+
 delivery_hist + delivery_log_hist
 ```
 
@@ -151,7 +155,7 @@ In the code above, we use an option called `"alpha"`. This is jargon for transpa
 
 `r back("whole-game.html#sec-delivery-times")`
 
-## Data Spending  {#sec-data-spending-whole-game}
+## Data Spending {#sec-data-spending-whole-game}
 
 tidymodels has a variety of ways to split the data at the outset of your modeling project. We will create a three-way split of the data using a function called `initial_validation_split()`.  
 
@@ -159,7 +163,7 @@ It uses random numbers so we will set the random number seed before using it.
 
 ::: {.callout-note}
 
-# What's a random number seed? 
+# What's a random number seed?
 
 We are using random numbers (actually [pseudo-random numbers](https://en.wikipedia.org/wiki/Pseudorandomness)). We want to get the same "random" values every time we run the same code for reproducibility. To do that, we use the `set.seed()` function and give it an integer value. The value itself doesn't matter. 
 
@@ -169,19 +173,24 @@ The random number stream is like a river. If you want to see the same things in 
 
 The code is below. 
 
- - The `prop` argument shows the fraction of the original data that should go into the training set (60%) and the validation set (20%). The remaining 20% are put in the test set. 
- 
- - The `strata` argument specifies that the splitting should consider the outcome column (`time_to_delivery `). This will be discussed in a future section. In short, the three-way splitting is done in different regions of the outcome data in a way that makes the distribution of the outcome as similar as possible across the three partitions. 
+- The `prop` argument shows the fraction of the original data that should go into the training set (60%) and the validation set (20%). The remaining 20% are put in the test set. 
+
+- The `strata` argument specifies that the splitting should consider the outcome column (`time_to_delivery `). This will be discussed in a future section. In short, the three-way splitting is done in different regions of the outcome data in a way that makes the distribution of the outcome as similar as possible across the three partitions. 
 
 We used a value of 991 to set the seed^[If you are wondering how we get the seed values, I use `sample.int(1000, 1)` to generate random seeds on the fly.]: 
 
 ```{r}
 #| label: whole-game-split
+
 set.seed(991)
 delivery_split <-
-  initial_validation_split(deliveries, prop = c(0.6, 0.2), strata = time_to_delivery)
+  initial_validation_split(
+    deliveries,
+    prop = c(0.6, 0.2),
+    strata = time_to_delivery
+  )
 
-# What is in it? 
+# What is in it?
 delivery_split
 ```
 
@@ -191,9 +200,10 @@ To get the data frames with the correct rows, use these three eponymous function
 
 ```{r}
 #| label: whole-game-split-data
+
 delivery_train <- training(delivery_split)
-delivery_test  <- testing(delivery_split)
-delivery_val   <- validation(delivery_split)
+delivery_test <- testing(delivery_split)
+delivery_val <- validation(delivery_split)
 ```
 
 We will mostly work with the training set of `r format(nrow(delivery_train), big.mark = ",")` deliveries. We'll use that to explore the data, fit models, and so on. 
@@ -208,38 +218,47 @@ We mostly used `r pkg(ggplot2)` and `r pkg(patchwork)` to create these graphics:
 #| label: delivery-predictors-code
 
 # Make specific colors for each day
+# fmt: skip
 day_cols <-  c("#000000FF", "#24FF24FF", "#009292FF",  "#B66DFFFF", 
                "#6DB6FFFF", "#920000FF", "#FFB6DBFF")
 
-delivery_dist <- 
-  delivery_train %>% 
+delivery_dist <-
+  delivery_train %>%
   ggplot(aes(x = distance, time_to_delivery)) +
   geom_point(alpha = 1 / 10, cex = 1) +
   labs(y = "Time Until Delivery (min)", x = "Distance (miles)", title = "(a)") +
   # This function creates the smooth trend line. The `se` option shuts off the
-  # confidence band around the line; too much information to put into one plot. 
+  # confidence band around the line; too much information to put into one plot.
   geom_smooth(se = FALSE, col = "red")
 
-delivery_day <- 
-  delivery_train %>% 
+delivery_day <-
+  delivery_train %>%
   ggplot(aes(x = day, time_to_delivery, col = day)) +
-  geom_boxplot(show.legend = FALSE)  +
+  geom_boxplot(show.legend = FALSE) +
   labs(y = "Time Until Delivery (min)", x = NULL, title = "(c)") +
   scale_color_manual(values = day_cols)
 
-delivery_time <- 
-  delivery_train %>% 
+delivery_time <-
+  delivery_train %>%
   ggplot(aes(x = hour, time_to_delivery)) +
-  labs(y = "Time Until Delivery (min)", x = "Order Time (decimal hours)", title = "(b)") +
-  geom_point(alpha = 1 / 10, cex = 1) + 
+  labs(
+    y = "Time Until Delivery (min)",
+    x = "Order Time (decimal hours)",
+    title = "(b)"
+  ) +
+  geom_point(alpha = 1 / 10, cex = 1) +
   geom_smooth(se = FALSE, col = "red")
 
-delivery_time_day <- 
-  delivery_train %>% 
+delivery_time_day <-
+  delivery_train %>%
   ggplot(aes(x = hour, time_to_delivery, col = day)) +
-  labs(y = "Time Until Delivery (min)", x = "Order Time (decimal hours)", title = "(d)") +
+  labs(
+    y = "Time Until Delivery (min)",
+    x = "Order Time (decimal hours)",
+    title = "(d)"
+  ) +
   # With `col = day`, the trends will be estimated separately for each value of 'day'.
-  geom_smooth(se = FALSE) + 
+  geom_smooth(se = FALSE) +
   scale_color_manual(values = day_cols)
 ```
 
@@ -253,11 +272,11 @@ delivery_time_day <-
 #| warning: false
 
 # Row 1
-( delivery_dist + delivery_time ) / 
+(delivery_dist + delivery_time) /
   # Row 2
-  ( delivery_day + delivery_time_day ) +
+  (delivery_day + delivery_time_day) +
   # Consolidate the legends
-  plot_layout(guides = 'collect')  & 
+  plot_layout(guides = 'collect') &
   # Place the legend at the bottom
   theme(legend.title = element_blank(), legend.position = "bottom")
 ```
@@ -270,6 +289,7 @@ First, we make a function that takes some data and [computes our statistics of i
 
 ```{r}
 #| label: delivery-time-ratios
+
 time_ratios <- function(x) {
   x %>%
     # The items are in columns; we'll stack these columns on one another.
@@ -278,17 +298,18 @@ time_ratios <- function(x) {
       names_to = "predictor",
       values_to = "count"
     ) %>%
-    # Collapse the counts into a "in order"/"not in order" variable. 
+    # Collapse the counts into a "in order"/"not in order" variable.
     mutate(ordered = ifelse(count > 0, "yes", "no")) %>%
-    # Compute, for each value of the 'predictor' and 'ordered' columns, 
-    # the mean delivery time. 
-    summarize(mean = mean(time_to_delivery),
-              .by = c(predictor, ordered)) %>%
-    # Move the means to columns for when they were in the order 
+    # Compute, for each value of the 'predictor' and 'ordered' columns,
+    # the mean delivery time.
+    summarize(mean = mean(time_to_delivery), .by = c(predictor, ordered)) %>%
+    # Move the means to columns for when they were in the order
     # and when they were not. The new column names are `yes` and `no`.
-    pivot_wider(id_cols = predictor,
-                names_from = ordered,
-                values_from = mean) %>%
+    pivot_wider(
+      id_cols = predictor,
+      names_from = ordered,
+      values_from = mean
+    ) %>%
     # Compute the ratio. This is a fold-difference in delivery times.
     mutate(ratio = yes / no) %>%
     select(term = predictor, estimate = ratio)
@@ -299,41 +320,43 @@ When run in the training set:
 
 ```{r}
 #| label: delivery-time-ratio-train
+
 time_ratios(delivery_train)
 ```
 
 A value of 1.07 means that there is a 7% increase in the delivery time when that item is in the order at least once. 
 
 A tidymodels function called `int_pctl()` can take a collection of bootstrap samples of a data set, compute their statistics, and use the results to produce confidence intervals (we'll use 90% intervals). To use it, we'll resample the training set using the `bootstraps()` function and then use a `mutate()` to compute the fold differences. 
- 
+
 We are using random numbers again, so let's reset the seed^[Why are we doing this again? Didn't we already "jump in the river?" Yes. If we were executing all of the code here in the exact order (with no typos or commands in between), we would have reproducible pseudo-random numbers. That's usually not how interactive data analysis goes, though. Therefore, we (re)set the seed each time we use randomness.]. 
- 
+
 ```{r}
 #| label: delivery-bootstraps
+
 set.seed(624)
-resampled_data <- 
-  delivery_train %>% 
-  select(time_to_delivery, starts_with("item")) %>% 
+resampled_data <-
+  delivery_train %>%
+  select(time_to_delivery, starts_with("item")) %>%
   # This takes a while to compute. The materials use 5000 bootstraps
   # but a smaller number is used here for demonstration.
-  bootstraps(times = 1001) 
+  bootstraps(times = 1001)
 
 resampled_data
 ```
- 
+
 The `splits` column contains the information on each bootstrap sample. To get a specific bootstrap sample, we can use the `analysis(split_object)` function on each element of the `splits` column. `purrr::map()` takes each split, extracts the bootstrap sample, then computes all of the ratios^[This `map()` call can be made much faster by using the `r pkg(furrr)` package. It has versions of the `purrr::map()` functions that can run in parallel.]. 
- 
+
 ```{r}
 #| label: delivery-bootstrap-ratios
 #| cache: true
 
-resampled_ratios <- 
-  resampled_data %>% 
+resampled_ratios <-
+  resampled_data %>%
   mutate(stats = map(splits, ~ time_ratios(analysis(.x))))
 
 resampled_ratios
 
-# An example: 
+# An example:
 resampled_ratios$stats[[1]]
 ```
 
@@ -342,9 +365,9 @@ resampled_ratios$stats[[1]]
 ```{r}
 #| label: delivery-bootstrap-intervals
 
-resampled_intervals <- 
-  resampled_ratios %>% 
-  int_pctl(stats, alpha = 0.1) 
+resampled_intervals <-
+  resampled_ratios %>%
+  int_pctl(stats, alpha = 0.1)
 
 resampled_intervals
 ```
@@ -356,7 +379,8 @@ Here's our plot:
 #| fig-width: 5
 #| fig-height: 7
 #| out-width: "50%"
-resampled_intervals %>% 
+
+resampled_intervals %>%
   # Convert the folds to percentages and make the item values
   # a little cleaner:
   mutate(
@@ -364,10 +388,10 @@ resampled_intervals %>%
     term = factor(gsub("_", " ", term)),
     term = reorder(term, .estimate),
     increase = .estimate - 1,
-  ) %>% 
-  ggplot(aes(increase, term)) + 
+  ) %>%
+  ggplot(aes(increase, term)) +
   geom_vline(xintercept = 0, col = "red", alpha = 1 / 3) +
-  geom_point() + 
+  geom_point() +
   geom_errorbar(aes(xmin = .lower - 1, xmax = .upper - 1), width = 1 / 2) +
   scale_x_continuous(labels = scales::percent) +
   labs(y = NULL, x = "Increase in Delivery Time When Ordered") +
@@ -396,9 +420,9 @@ The linear regression model is fairly simple to define and fit. Before we get to
 
 A recipe is a set of instructions defining a potential series of computations on the predictor variables to put them into a format the model (or data set) requires. For example, the day-of-the-week factor must be converted into a numeric format. We'll use the standard "Dummy variable" approach to do that. Additionally, our exploratory data analysis discovered that: 
 
-* There is a nonlinear relationship between the outcome and the time of the order. 
-* This nonlinear relationship is different for different days. This is an interaction effect between a qualitative predictor (`day`) and a nonlinear function of another (`hour`).
-* There also appeared to be an additional nonlinear effect for the order distance. 
+- There is a nonlinear relationship between the outcome and the time of the order. 
+- This nonlinear relationship is different for different days. This is an interaction effect between a qualitative predictor (`day`) and a nonlinear function of another (`hour`).
+- There also appeared to be an additional nonlinear effect for the order distance. 
 
 We can initialize a recipe using a simple formula method: 
 
@@ -410,17 +434,17 @@ spline_rec <- recipe(time_to_delivery ~ ., data = delivery_train)
 
 There are a few things that this function call does: 
 
-* The formula declares that the column `time_to_delivery` is the outcome (since it is on the left-hand side of the tilde). The dot on the right-hand side indicates that all of the columns in `delivery_train`, besides the outcome, should be treated as predictors. 
-* The recipe collects information on each column's _type_. For example, it understands that `day` is a factor and that the `item_*` columns are numeric. 
+- The formula declares that the column `time_to_delivery` is the outcome (since it is on the left-hand side of the tilde). The dot on the right-hand side indicates that all of the columns in `delivery_train`, besides the outcome, should be treated as predictors. 
+- The recipe collects information on each column's _type_. For example, it understands that `day` is a factor and that the `item_*` columns are numeric. 
 
 Let's add to the recipe by converting `day` to indicator columns. We do this by adding a step to the recipe via: 
 
 ```{r}
 #| label: recipe-dummy
 
-spline_rec <- 
-  recipe(time_to_delivery ~ ., data = delivery_train) %>% 
-  step_dummy(all_factor_predictors()) 
+spline_rec <-
+  recipe(time_to_delivery ~ ., data = delivery_train) %>%
+  step_dummy(all_factor_predictors())
 ```
 
 The first argument to step functions is the variables that should be affected by the function. We can use any `r pkg(dplyr)` [selector](https://dplyr.tidyverse.org/reference/select.html) such as `everything()` and/or the bare column names. Here, we want to change every factor column that was the role of "predictor". For this purpose, recipes have an [extended set of selector functions](https://recipes.tidymodels.org/reference/selections.html). 
@@ -434,10 +458,10 @@ The next recipe step is probably unnecessary for this data set but automatically
 ```{r}
 #| label: recipe-zv
 
-spline_rec <- 
-  recipe(time_to_delivery ~ ., data = delivery_train) %>% 
-  step_dummy(all_factor_predictors()) %>% 
-  step_zv(all_predictors()) 
+spline_rec <-
+  recipe(time_to_delivery ~ ., data = delivery_train) %>%
+  step_dummy(all_factor_predictors()) %>%
+  step_zv(all_predictors())
 ```
 
 Now, we can address the nonlinear effects. We'll use a spline basis expansion (described later on the main page) that creates additional columns from some numeric predictor. We'll use a _natural spline_ function and create ten new columns for both `hour` and `distance`: 
@@ -445,10 +469,10 @@ Now, we can address the nonlinear effects. We'll use a spline basis expansion (d
 ```{r}
 #| label: recipe-spline
 
-spline_rec <- 
-  recipe(time_to_delivery ~ ., data = delivery_train) %>% 
-  step_dummy(all_factor_predictors()) %>% 
-  step_zv(all_predictors()) %>% 
+spline_rec <-
+  recipe(time_to_delivery ~ ., data = delivery_train) %>%
+  step_dummy(all_factor_predictors()) %>%
+  step_zv(all_predictors()) %>%
   step_spline_natural(hour, distance, deg_free = 10)
 ```
 
@@ -461,11 +485,11 @@ Finally, we can create interactions. In base R, an interaction between variables
 ```{r}
 #| label: recipe-final
 
-spline_rec <- 
-  recipe(time_to_delivery ~ ., data = delivery_train) %>% 
-  step_dummy(all_factor_predictors()) %>% 
-  step_zv(all_predictors()) %>% 
-  step_spline_natural(hour, distance, deg_free = 10) %>% 
+spline_rec <-
+  recipe(time_to_delivery ~ ., data = delivery_train) %>%
+  step_dummy(all_factor_predictors()) %>%
+  step_zv(all_predictors()) %>%
+  step_spline_natural(hour, distance, deg_free = 10) %>%
   step_interact(~ starts_with("hour_"):starts_with("day_"))
 ```
 
@@ -474,13 +498,13 @@ spline_rec <-
 
 You can learn more about recipes later and there is material in the tidymodels book as well as `tidymodels.org`. 
 
- - [_Feature Engineering with recipes_](https://www.tmwr.org/recipes)
- - [_Dimensionality Reduction_](https://www.tmwr.org/dimensionality)
- - [_Encoding Categorical Data_](https://www.tmwr.org/categorical)
- - [_Get Started: Preprocess your data with recipes_](https://www.tidymodels.org/start/recipes/)
- - [Articles with recipes](https://www.tidymodels.org/learn/#category=recipes)
- - [A list of recipe steps on CRAN](https://www.tidymodels.org/find/recipes/)
- 
+- [_Feature Engineering with recipes_](https://www.tmwr.org/recipes)
+- [_Dimensionality Reduction_](https://www.tmwr.org/dimensionality)
+- [_Encoding Categorical Data_](https://www.tmwr.org/categorical)
+- [_Get Started: Preprocess your data with recipes_](https://www.tidymodels.org/start/recipes/)
+- [Articles with recipes](https://www.tidymodels.org/learn/#category=recipes)
+- [A list of recipe steps on CRAN](https://www.tidymodels.org/find/recipes/)
+
 :::
 
 To specify the linear regression model, we use one of the functions from the `r pkg(parsnip)` package called... `linear_reg()`. Since we are using ordinary least squares, this function defaults to `stats::lm().` 
@@ -488,7 +512,7 @@ To specify the linear regression model, we use one of the functions from the `r 
 ```{r}
 #| label: lm
 
-# This creates a model specification: 
+# This creates a model specification:
 lm_spec <- linear_reg()
 lm_spec
 ```
@@ -500,9 +524,9 @@ How do we combine the recipe and the model specifications? The best approach is 
 ```{r}
 #| label: lm-wflow
 
-lin_reg_wflow <- 
-  workflow() %>% 
-  add_model(lm_spec) %>% 
+lin_reg_wflow <-
+  workflow() %>%
+  add_model(lm_spec) %>%
   add_recipe(spline_rec)
 ```
 
@@ -549,7 +573,7 @@ What is our MAE? This is where we use our metric set `reg_metrics`. Note that th
 ```{r}
 #| label: lm-mae
 
-lm_reg_val_pred %>% 
+lm_reg_val_pred %>%
   reg_metrics(truth = time_to_delivery, estimate = .pred)
 ```
 
@@ -579,10 +603,12 @@ Since we are treating this as if it were resampling, we can use the `fit_resampl
 
 ctrl_rs <- control_resamples(save_pred = TRUE, save_workflow = TRUE)
 lin_reg_res <-
-  fit_resamples(lin_reg_wflow,
-                resamples = delivery_rs,
-                control = ctrl_rs,
-                metrics = reg_metrics)
+  fit_resamples(
+    lin_reg_wflow,
+    resamples = delivery_rs,
+    control = ctrl_rs,
+    metrics = reg_metrics
+  )
 ```
 
 The benefit here is that there are a lot of _helper_ functions to simplify your code. For example, to get the validation set MAE and predictions: 
@@ -602,7 +628,7 @@ The `r pkg(probably)` package also has a nice helper to check the calibration of
 #| fig-width: 6
 #| fig-height: 6
 #| out-width: "50%"
-#| 
+
 cal_plot_regression(lin_reg_res)
 ```
 
@@ -619,7 +645,7 @@ We'll create a model specification that has an enselmble size of 100:
 
 library(rules)
 
-# A model specification: 
+# A model specification:
 cb_spec <- cubist_rules(committees = 100)
 ```
 
@@ -628,9 +654,9 @@ One advantage of rule-based models is that very little preprocessing is required
 ```{r}
 #| label: rules-wflow
 
-cb_wflow <- 
-  workflow() %>% 
-  add_model(cb_spec) %>% 
+cb_wflow <-
+  workflow() %>%
+  add_model(cb_spec) %>%
   add_formula(time_to_delivery ~ .)
 ```
 
@@ -642,9 +668,9 @@ Let's go straight to `fit_resamples()`:
 
 cb_res <-
   fit_resamples(
-    cb_wflow, 
-    resamples = delivery_rs, 
-    control = ctrl_rs, 
+    cb_wflow,
+    resamples = delivery_rs,
+    control = ctrl_rs,
     metrics = reg_metrics
   )
 
@@ -681,14 +707,14 @@ The `tidy()` method is also helpful here. It contains all of the rules and corre
 
 rule_details <- tidy(cb_fit)
 
-rule_details %>% 
-  filter(committee == 4 & rule_num == 2) %>% 
+rule_details %>%
+  filter(committee == 4 & rule_num == 2) %>%
   pluck("rule")
 
-rule_details %>% 
-  filter(committee == 4 & rule_num == 2) %>% 
-  select(estimate) %>% 
-  pluck(1) %>% 
+rule_details %>%
+  filter(committee == 4 & rule_num == 2) %>%
+  select(estimate) %>%
+  pluck(1) %>%
   pluck(1)
 ```
 
@@ -709,7 +735,7 @@ We'll use the `r pkg(brulee)` package. This uses the `torch` software to fit the
 ```{r}
 #| label: mlp-spec
 
-nnet_spec <- 
+nnet_spec <-
   mlp(
     hidden_units = tune(),
     # Some specific argument values that we chose:
@@ -723,25 +749,25 @@ nnet_spec <-
 
 A few notes on this: 
 
-* The arguments to `mlp()` are called the _main arguments_ since they are used by several engines. 
-* The default engine uses the `r pkg(nnet)` package; `set_engine()` specifies that we want to use the `r pkg(brulee)` package instead. 
-* Two arguments (`stop_iter` and `rate_schedule`) are specific to our engine. We set them here (and can also pass a `tune()` value to them). 
-*  Neural networks can fit both classification and regression models. We must state what model type (called a "mode") to create. 
+- The arguments to `mlp()` are called the _main arguments_ since they are used by several engines. 
+- The default engine uses the `r pkg(nnet)` package; `set_engine()` specifies that we want to use the `r pkg(brulee)` package instead. 
+- Two arguments (`stop_iter` and `rate_schedule`) are specific to our engine. We set them here (and can also pass a `tune()` value to them). 
+- Neural networks can fit both classification and regression models. We must state what model type (called a "mode") to create. 
 
 This model requires the conversion to dummy variables but does not require features to handle nonlinear trends and interactions. One additional preprocessing step that is required is to put the predictors in the same units (e.g., not miles or hours). There are a few ways to do this. We will center and scale the predictors using `recipes::step_normalize()`: 
 
 ```{r}
 #| label: mlp-rec
 
-norm_rec <- 
-  recipe(time_to_delivery ~ ., data = delivery_train) %>% 
-  step_dummy(all_factor_predictors()) %>% 
-  step_zv(all_predictors()) %>% 
+norm_rec <-
+  recipe(time_to_delivery ~ ., data = delivery_train) %>%
+  step_dummy(all_factor_predictors()) %>%
+  step_zv(all_predictors()) %>%
   step_normalize(all_numeric_predictors())
 
-nnet_wflow <- 
-  workflow() %>% 
-  add_model(nnet_spec) %>% 
+nnet_wflow <-
+  workflow() %>%
+  add_model(nnet_spec) %>%
   add_recipe(norm_rec)
 ```
 
@@ -762,11 +788,13 @@ ctrl_grid <- control_grid(save_pred = TRUE, save_workflow = TRUE)
 # The model initializes the parameters with random numbers so set the seed:
 set.seed(388)
 nnet_res <-
-  tune_grid(nnet_wflow,
-            resamples = delivery_rs,
-            control = ctrl_grid,
-            grid = nnet_grid,
-            metrics = reg_metrics)
+  tune_grid(
+    nnet_wflow,
+    resamples = delivery_rs,
+    control = ctrl_grid,
+    grid = nnet_grid,
+    metrics = reg_metrics
+  )
 ```
 
 There are some additional helper functions for model tuning. For example, we can rank the models based on a metric: 
@@ -817,9 +845,9 @@ There are two options if we need a model fit on the training set. If the numeric
 #| warning: false
 
 set.seed(814)
-nnet_fit <- 
-  nnet_wflow %>% 
-  finalize_workflow(tibble(hidden_units = 10)) %>% 
+nnet_fit <-
+  nnet_wflow %>%
+  finalize_workflow(tibble(hidden_units = 10)) %>%
   fit(data = delivery_train)
 ```
 
@@ -850,14 +878,15 @@ We must estimate the trend with the validation set. If we use our object `lin_re
 
 ```{r}
 #| label: cal-linear-est
+
 lin_reg_cal <- cal_estimate_linear(lin_reg_res)
 lin_reg_cal
 ```
 
 As you'll see in a minute, the function `probably::cal_apply()` calibrates new predictions.  
- 
+
 `r back("whole-game.html#sec-calibration-whole-game")` 
- 
+
 ## Test Set Results {#sec-test-results-whole-game}
 
 As with `best_fit()`, there are two ways to predict the test set.
@@ -873,11 +902,11 @@ The more manual approach is to fit the model on the training set, use `predict()
 lin_reg_fit <- fit(lin_reg_wflow, delivery_train)
 lin_reg_test_pred <- augment(lin_reg_fit, delivery_test)
 
-lin_reg_test_pred %>% 
+lin_reg_test_pred %>%
   reg_metrics(time_to_delivery, .pred)
 
-# plot the uncalibrated results: 
-lin_reg_test_pred %>% 
+# plot the uncalibrated results:
+lin_reg_test_pred %>%
   cal_plot_regression(truth = time_to_delivery, estimate = .pred)
 ```
 
@@ -885,8 +914,9 @@ There is a shortcut for the first three commands. `tune::last_fit()` takes our i
 
 ```{r}
 #| label: last-fit
-lin_reg_test_res <- 
-  lin_reg_wflow %>% 
+
+lin_reg_test_res <-
+  lin_reg_wflow %>%
   last_fit(delivery_split, metrics = reg_metrics)
 ```
 
@@ -898,10 +928,10 @@ We can pull out the elements we need from this object using some `extract_*()` a
 # Test set metrics:
 collect_metrics(lin_reg_test_res)
 
-# Test set predictions: 
+# Test set predictions:
 collect_predictions(lin_reg_test_res)
 
-# Final model fit: 
+# Final model fit:
 lin_reg_fit <- extract_fit_parsnip(lin_reg_test_res)
 
 # cal_plot_regression(lin_reg_test_res)
@@ -916,15 +946,15 @@ Now let's calibrate and compute performance:
 #| out-width: "50%"
 
 # apply calibration
-lin_reg_test_pred_cal <- 
-  lin_reg_test_pred %>% 
+lin_reg_test_pred_cal <-
+  lin_reg_test_pred %>%
   cal_apply(lin_reg_cal)
 
-lin_reg_test_pred_cal %>% 
+lin_reg_test_pred_cal %>%
   reg_metrics(time_to_delivery, .pred)
 
-# plot the calibrated results: 
-lin_reg_test_pred_cal %>% 
+# plot the calibrated results:
+lin_reg_test_pred_cal %>%
   cal_plot_regression(truth = time_to_delivery, estimate = .pred)
 ```
 
@@ -932,4 +962,4 @@ lin_reg_test_pred_cal %>%
 
 ## Conclusion
 
-This has been an abbreviated, high-level introduction to using tidymodels. Future chapters will go into much more detail on these subjects and illustrate additional features and functions as needed. 
+This has been an abbreviated, high-level introduction to using tidymodels. Future chapters will go into much more detail on these subjects and illustrate additional features and functions as needed.

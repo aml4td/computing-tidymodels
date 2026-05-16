@@ -11,17 +11,17 @@ knitr:
 #| include: false
 
 knitr::opts_chunk$set(
-    comment = "#>",
-    collapse = TRUE,
-    fig.align = 'center',
-    fig.width = 10,
-    fig.height = 6,
-    out.width = "95%",
-    dev = 'svg',
-    dev.args = list(bg = "transparent"),
-    tidy = FALSE,
-    echo = TRUE
-  )
+  comment = "#>",
+  collapse = TRUE,
+  fig.align = 'center',
+  fig.width = 10,
+  fig.height = 6,
+  out.width = "95%",
+  dev = 'svg',
+  dev.args = list(bg = "transparent"),
+  tidy = FALSE,
+  echo = TRUE
+)
 
 options(digits = 4, width = 84)
 options(dplyr.print_min = 6, dplyr.print_max = 6)
@@ -30,6 +30,7 @@ options(crayon.enabled = FALSE)
 options(pillar.advice = FALSE, pillar.min_title_chars = Inf, pillar.sigfig = 4)
 
 source("../R/_common.R")
+# fmt: skip
 req_pkg <- c("bestNormalize", "dimRed", "embed", "fastICA", "igraph", 
              "mixOmics", "modeldatatoo", "patchwork", "RANN", "RSpectra", 
              "tidymodels", "uwot", "viridis")
@@ -41,31 +42,33 @@ The [corresponding chapter](http://aml4td/chapters/embeddings.html) on the main 
 
 ## Requirements
 
-You’ll need `r length(req_pkg)` packages (`r req_pkg_fmt`) for this chapter. The `r pkg(mixOmics)` is a Bioconductor package and is not on CRAN. For the others, we can install them as usual but we'll get `r pkg(mixOmics)` from GitHub:
+You'll need `r length(req_pkg)` packages (`r req_pkg_fmt`) for this chapter. The `r pkg(mixOmics)` is a Bioconductor package and is not on CRAN. For the others, we can install them as usual but we'll get `r pkg(mixOmics)` from GitHub:
 
 ```{r}
 #| label: embeddings-installs
 #| eval: false
 #| echo: true
+
+# fmt: skip
 req_pkg <- c("bestNormalize", "dimRed", "embed", "fastICA", "igraph", 
              "mixOmics", "modeldatatoo", "patchwork", "RANN", "RSpectra", 
              "tidymodels", "uwot", "viridis")
 
-# Check to see if they are installed: 
+# Check to see if they are installed:
 pkg_installed <- vapply(req_pkg, rlang::is_installed, logical(1))
 
-# Install missing packages: 
-if ( any(!pkg_installed) ) {
+# Install missing packages:
+if (any(!pkg_installed)) {
   install_list <- names(pkg_installed)[!pkg_installed]
-  
+
   # mixOmics is not on CRAN
   cran_install_list <- install_list[install_list != "mixOmics"]
-  if ( length(cran_install_list) > 0 ) {
+  if (length(cran_install_list) > 0) {
     pak::pak(cran_install_list)
   }
-  
+
   # Get mixOmics from github
-  if ( "mixOmics" %in% install_list ) {
+  if ("mixOmics" %in% install_list) {
     pak::pak("mixOmicsTeam/mixOmics")
   }
 }
@@ -78,6 +81,7 @@ Let's load the meta package and manage some between-package function conflicts.
 #| results: hide
 #| message: false
 #| warning: false
+
 library(tidymodels)
 library(viridis)
 library(embed) # for umap
@@ -87,13 +91,16 @@ tidymodels_prefer()
 theme_set(theme_bw())
 ```
 
-## Example: Predicting Barley Amounts  {#sec-barley}
+## Example: Predicting Barley Amounts {#sec-barley}
 
 The data are in the `r pkg(modeldatatoo)` package. Let's load the data, remove two outcome columns that will not be analyzed here, and conduct a three-way split of the data: 
 
 ```{r}
 #| label: barley-data-import
-source("https://raw.githubusercontent.com/aml4td/website/main/R/setup_chemometrics.R")
+
+source(
+  "https://raw.githubusercontent.com/aml4td/website/main/R/setup_chemometrics.R"
+)
 ```
 
 The column names for the predictors are `wvlgth_001` through `wvlgth_550`. 
@@ -114,23 +121,24 @@ barley_rec <-
 barley_rec
 ```
 
-If you use a recipe, most of the embedding methods can be computed with a common interface. The recipe step functions are mostly in the `r pkg(recipes)` package, although some live in "side packages," such as the `r pkg(embed)` package. We’ll be clear about which package is needed for each. 
+If you use a recipe, most of the embedding methods can be computed with a common interface. The recipe step functions are mostly in the `r pkg(recipes)` package, although some live in "side packages," such as the `r pkg(embed)` package. We'll be clear about which package is needed for each. 
 
 `r back("embeddings.html#sec-barley")`
 
-## Linear Transformations  {#sec-linear-embed}
+## Linear Transformations {#sec-linear-embed}
 
 We'll look at the three _linear_ methods described in the text. 
 
 ### Principal Component Analysis {#sec-pca}
 
-Unsurprisingly, the recipe step needed here is called `step_pca()`. We’ll add an `id` argument to more easily reference the step of interest. 
+Unsurprisingly, the recipe step needed here is called `step_pca()`. We'll add an `id` argument to more easily reference the step of interest. 
 
 ```{r}
 #| label: pca-prep
+
 barley_pca_rec <-
   barley_rec |>
-  step_pca(all_numeric_predictors(), num_comp = 2, id = "pca") |> 
+  step_pca(all_numeric_predictors(), num_comp = 2, id = "pca") |>
   prep()
 
 barley_pca_rec
@@ -140,6 +148,7 @@ To further investigate the results, the `tidy()` method can extract elements of 
 
 ```{r}
 #| label: pca-scree-data
+
 pca_scree <- tidy(barley_pca_rec, id = "pca", type = "variance")
 pca_scree
 
@@ -152,6 +161,7 @@ The default option for the `tidy()` method with PCA is to return the estimated l
 
 ```{r}
 #| label: pca-loadings
+
 pca_loadings <- tidy(barley_pca_rec, id = "pca")
 pca_loadings
 ```
@@ -162,7 +172,8 @@ To get the component values for new data, such as the validation set, the `bake(
 
 ```{r}
 #| label: pca-scores
-barley_pca_rec |> 
+
+barley_pca_rec |>
   bake(new_data = NULL, starts_with("PC"))
 ```
 
@@ -177,11 +188,11 @@ We can also pass new data in, such as the validation set:
 #| fig-align: "center"
 #| out-width: "60%"
 
-pca_score_plot <- 
-  barley_pca_rec |> 
-  bake(new_data = barley_val) |> 
-  ggplot(aes(PC1, PC2, col = barley)) + 
-  geom_point(alpha = 1 / 4) + 
+pca_score_plot <-
+  barley_pca_rec |>
+  bake(new_data = barley_val) |>
+  ggplot(aes(PC1, PC2, col = barley)) +
+  geom_point(alpha = 1 / 4) +
   scale_color_viridis(option = "viridis")
 
 pca_score_plot
@@ -215,10 +226,11 @@ An ICA recipe step can also be found in the `r pkg(recipes)` package. The syntax
 
 ```{r}
 #| label: ica-prep-barley
+
 set.seed(538)
 barley_ica_rec <-
-  recipe(barley ~ ., data = barley_train) |> 
-  step_ica(all_numeric_predictors(), num_comp = 2, id = "ica") |> 
+  recipe(barley ~ ., data = barley_train) |>
+  step_ica(all_numeric_predictors(), num_comp = 2, id = "ica") |>
   prep()
 ```
 
@@ -226,19 +238,21 @@ Similarly, the `tidy()` method returns the ICA loadings:
 
 ```{r}
 #| label: tidy-ica-barley
+
 tidy(barley_ica_rec, id = "ica")
 ```
 
-Most other dimension reduction techniques (but not PCA and PLS) depend on random numbers. We’ll set them when needed, but it is worth pointing out that you will likely get different results each time you run them. 
+Most other dimension reduction techniques (but not PCA and PLS) depend on random numbers. We'll set them when needed, but it is worth pointing out that you will likely get different results each time you run them. 
 
 For example, when two ICA components are used, the results are not the same but close when using a different random number seed. 
 
 ```{r}
 #| label: ica-redo
+
 set.seed(955)
-ica_redo <- 
-  recipe(barley ~ ., data = barley_train) |> 
-  step_ica(all_numeric_predictors(), num_comp = 2, id = "ica") |> 
+ica_redo <-
+  recipe(barley ~ ., data = barley_train) |>
+  step_ica(all_numeric_predictors(), num_comp = 2, id = "ica") |>
   prep()
 
 ica_redo |> tidy(id = "ica")
@@ -253,20 +267,20 @@ The individual loading values are different between runs, and components one and
 #| fig-align: "center"
 #| out-width: "100%"
 
-ica_1 <- 
-  barley_ica_rec |> 
-  bake(new_data = barley_val) |> 
-  ggplot(aes(IC1, IC2, col = barley)) + 
-  geom_point(alpha = 1 / 4, show.legend = FALSE) + 
+ica_1 <-
+  barley_ica_rec |>
+  bake(new_data = barley_val) |>
+  ggplot(aes(IC1, IC2, col = barley)) +
+  geom_point(alpha = 1 / 4, show.legend = FALSE) +
   scale_color_viridis(option = "viridis") +
   coord_obs_pred() +
   labs(title = "seed = 538")
 
-ica_2 <- 
-  ica_redo |> 
-  bake(new_data = barley_val) |> 
-  ggplot(aes(IC1, IC2, col = barley)) + 
-  geom_point(alpha = 1 / 4) + 
+ica_2 <-
+  ica_redo |>
+  bake(new_data = barley_val) |>
+  ggplot(aes(IC1, IC2, col = barley)) +
+  geom_point(alpha = 1 / 4) +
   scale_color_viridis(option = "viridis") +
   coord_obs_pred() +
   labs(title = "seed = 955")
@@ -284,13 +298,18 @@ The syntax for PLS is also very similar. However, it is a supervised method, so 
 
 ```{r}
 #| label: pls-prep
+
 barley_pls_rec <-
   barley_rec |>
-  step_pls(all_numeric_predictors(), outcome = vars(barley), num_comp = 2,
-           id = "pls") |> 
+  step_pls(
+    all_numeric_predictors(),
+    outcome = vars(barley),
+    num_comp = 2,
+    id = "pls"
+  ) |>
   prep()
 
-# Loadings: 
+# Loadings:
 tidy(barley_pls_rec, id = "pls")
 ```
 
@@ -300,7 +319,7 @@ tidy(barley_pls_rec, id = "pls")
 
 tidymodels contains recipe steps for Isomap and UMAP. The latter is accessible via the `r pkg(embed)` package. 
 
-### Isomap  {#sec-isomap}
+### Isomap {#sec-isomap}
 
 Again, the syntax is very similar to the previous unsupervised methods. The main two tuning parameters are `num_terms` and `neighbors `. We should also set the seed before execution. 
 
@@ -313,7 +332,7 @@ Again, the syntax is very similar to the previous unsupervised methods. The main
 set.seed(221)
 barley_isomap_rec <-
   barley_rec |>
-  step_isomap(all_numeric_predictors(), neighbors = 10, num_terms = 2) |> 
+  step_isomap(all_numeric_predictors(), neighbors = 10, num_terms = 2) |>
   prep()
 ```
 
@@ -326,10 +345,10 @@ We can project this preprocessing model onto new data:
 #| fig-align: "center"
 #| out-width: "60%"
 
-barley_isomap_rec |> 
-  bake(new_data = barley_val) |> 
-  ggplot(aes(Isomap1, Isomap2, col = barley)) + 
-  geom_point(alpha = 1 / 4) + 
+barley_isomap_rec |>
+  bake(new_data = barley_val) |>
+  ggplot(aes(Isomap1, Isomap2, col = barley)) +
+  geom_point(alpha = 1 / 4) +
   scale_color_viridis(option = "viridis") +
   coord_obs_pred()
 ```
@@ -344,10 +363,11 @@ For an unsupervised embedding:
 
 ```{r}
 #| label: umap-prep
+
 set.seed(724)
 barley_umap_rec <-
   barley_rec |>
-  step_umap(all_numeric_predictors(), neighbors = 10, num_comp = 2) |> 
+  step_umap(all_numeric_predictors(), neighbors = 10, num_comp = 2) |>
   prep()
 ```
 
@@ -360,10 +380,10 @@ Projection on new data has the same syntax:
 #| fig-align: "center"
 #| out-width: "60%"
 
-barley_umap_rec |> 
-  bake(new_data = barley_val) |> 
-  ggplot(aes(UMAP1, UMAP2, col = barley)) + 
-  geom_point(alpha = 1 / 4) + 
+barley_umap_rec |>
+  bake(new_data = barley_val) |>
+  ggplot(aes(UMAP1, UMAP2, col = barley)) +
+  geom_point(alpha = 1 / 4) +
   scale_color_viridis(option = "viridis") +
   coord_obs_pred()
 ```
@@ -372,13 +392,13 @@ For a _supervised_ embedding, the `target_weight` argument is used. A value of z
 
 `r back("embeddings.html#sec-umap")`
 
-## Centroid-Based Methods  {#sec-centroids}
+## Centroid-Based Methods {#sec-centroids}
 
 There are two steps in recipes for this: 
 
- - `step_classdist()`: basic "distance to centroid" calculations and,
- - `step_classdist_shrunken()`: nearest shrunken centroids
- 
+- `step_classdist()`: basic "distance to centroid" calculations and,
+- `step_classdist_shrunken()`: nearest shrunken centroids
+
 These steps are for classification data, so we'll use some example data from the `r pkg(modeldata)` package: 
 
 ```{r}
@@ -387,8 +407,9 @@ These steps are for classification data, so we'll use some example data from the
 #| fig-height: 4
 #| fig-align: "center"
 #| out-width: "60%"
-two_class_dat |> 
-  ggplot(aes(A, B, col = Class)) + 
+
+two_class_dat |>
+  ggplot(aes(A, B, col = Class)) +
   geom_point(alpha = 1 / 2) +
   coord_obs_pred()
 ```
@@ -397,9 +418,10 @@ Here's an example of creating a recipe with the basic class distance computation
 
 ```{r}
 #| label: basic-cent
+
 centroid_rec <-
   recipe(Class ~ ., data = two_class_dat) |>
-  step_classdist(all_numeric_predictors(), class = "Class") |> 
+  step_classdist(all_numeric_predictors(), class = "Class") |>
   prep()
 ```
 
@@ -409,6 +431,7 @@ The processed data has a default naming convention of `"classdist_{class level}"
 
 ```{r}
 #| label: basic-cent-pred
+
 bake(centroid_rec, new_data = NULL)
 ```
 
@@ -416,9 +439,14 @@ The shrunken version of this step has an additional argument that is the fractio
 
 ```{r}
 #| label: shrunk-cent
+
 centroid_shrunk_rec <-
   recipe(Class ~ ., data = two_class_dat) |>
-  step_classdist_shrunken(all_numeric_predictors(), threshold = 1 / 6, class = "Class") |> 
+  step_classdist_shrunken(
+    all_numeric_predictors(),
+    threshold = 1 / 6,
+    class = "Class"
+  ) |>
   prep()
 ```
 

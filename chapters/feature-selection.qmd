@@ -11,17 +11,17 @@ knitr:
 #| include: false
 
 knitr::opts_chunk$set(
-    comment = "#>",
-    collapse = TRUE,
-    fig.align = 'center',
-    fig.width = 10,
-    fig.height = 6,
-    out.width = "95%",
-    dev = 'svg',
-    dev.args = list(bg = "transparent"),
-    tidy = FALSE,
-    echo = TRUE
-  )
+  comment = "#>",
+  collapse = TRUE,
+  fig.align = 'center',
+  fig.width = 10,
+  fig.height = 6,
+  out.width = "95%",
+  dev = 'svg',
+  dev.args = list(bg = "transparent"),
+  tidy = FALSE,
+  echo = TRUE
+)
 
 options(digits = 4, width = 84)
 options(dplyr.print_min = 6, dplyr.print_max = 6)
@@ -30,11 +30,12 @@ options(crayon.enabled = FALSE)
 options(pillar.advice = FALSE, pillar.min_title_chars = Inf, pillar.sigfig = 4)
 
 source("../R/_common.R")
+# fmt: skip
 req_pkg <- c("bestNormalize", "important", "mirai", "janitor", "kernlab", "partykit", 
              "QSARdata", "ranger", "rpart", "tidymodels")
 ```
 
-The book’s [_Feature Selection_](https://aml4td.org/chapters/feature-selection.html) chapter focuses on different methods to reduce the number of predictors used by the model
+The book's [_Feature Selection_](https://aml4td.org/chapters/feature-selection.html) chapter focuses on different methods to reduce the number of predictors used by the model
 
 ## Requirements
 
@@ -44,14 +45,16 @@ We will use the following package in this chapter: `r pkg_list(req_pkg)`. To ins
 #| label: feature-selection-installs
 #| eval: false
 #| echo: true
+
+# fmt: skip
 req_pkg <- c("bestNormalize", "important", "mirai", "janitor", "kernlab", "partykit", 
              "QSARdata", "ranger", "rpart", "tidymodels")
 
-# Check to see if they are installed: 
+# Check to see if they are installed:
 pkg_installed <- vapply(req_pkg, rlang::is_installed, logical(1))
 
-# Install missing packages: 
-if ( any(!pkg_installed) ) {
+# Install missing packages:
+if (any(!pkg_installed)) {
   install_list <- names(pkg_installed)[!pkg_installed]
   pak::pak(install_list)
 }
@@ -62,6 +65,7 @@ if ( any(!pkg_installed) ) {
 #| include: false
 #| message: false
 #| warning: false
+
 library(partykit)
 library(tidymodels)
 library(important)
@@ -79,17 +83,19 @@ theme_set(theme_bw())
 
 data(PLD, package = "QSARdata")
 
-drug_data <- 
+drug_data <-
   # Merge the outcome data with a subset of possible predictors.
-  PLD_Outcome |> 
-  full_join(PLD_VolSurfPlus, by = "Molecule") |> 
-  full_join(PLD_PipelinePilot_FP |> select(1, contains("FCFP")), 
-            by = "Molecule") |> 
-  select(-Molecule) |> 
-  clean_names() |> 
-  as_tibble() |> 
+  PLD_Outcome |>
+  full_join(PLD_VolSurfPlus, by = "Molecule") |>
+  full_join(
+    PLD_PipelinePilot_FP |> select(1, contains("FCFP")),
+    by = "Molecule"
+  ) |>
+  select(-Molecule) |>
+  clean_names() |>
+  as_tibble() |>
   # Make shorter names:
-  rename_with(~ gsub("vol_surf_plus_", "", .x), everything()) |> 
+  rename_with(~ gsub("vol_surf_plus_", "", .x), everything()) |>
   rename_with(~ gsub("ppfp_fcfp_", "fp_", .x), everything())
 
 set.seed(106)
@@ -109,6 +115,7 @@ Let's load the meta package, manage some between-package function conflicts, and
 
 ```{r}
 #| label: start
+
 library(tidymodels)
 library(important)
 library(bestNormalize)
@@ -131,6 +138,7 @@ There is a class imbalance for these data:
 
 ```{r}
 #| label: data-dims
+
 dim(drug_train)
 drug_train |> count(class)
 ```
@@ -154,18 +162,19 @@ The `r pkg(textrecipes)` package also has a few unsupervised methods for screeni
 - `step_tokenfilter()`: filter tokens based on term frequency. 
 - `step_stopwords()`: Removes top words (e.g., "and", "or", etc.)
 - `step_pos_filter()`: Part of speech filtering of tokens.
- 
+
 It is suggested that these steps occur early in a recipe, perhaps after any imputation methods.
- 
+
 We suggest adding these to a recipe early, after any imputation methods. 
 
 For the drug toxicity data, we can visualize the amount of predictor correlations by first computing the correlation matrix: 
 
 ```{r}
 #| label: cor-mat
-cor_mat <- 
-  drug_train |> 
-  select(-class) |> 
+
+cor_mat <-
+  drug_train |>
+  select(-class) |>
   cor()
 ```
 
@@ -173,16 +182,18 @@ Note the warning: some columns have a single unique value. Let's look at this ac
 
 ```{r}
 #| label: num-unique
+
 num_unique <- map_int(drug_train |> select(-class), vctrs::vec_unique_count)
 names(num_unique)[num_unique == 1]
 ```
 
-We’ll start a recipe with the step that will eliminate these: 
+We'll start a recipe with the step that will eliminate these: 
 
 ```{r}
 #| label: drug-rec
-drug_rec <- 
-  recipe(class ~ ., data = drug_train) |> 
+
+drug_rec <-
+  recipe(class ~ ., data = drug_train) |>
   step_zv(all_predictors())
 ```
 
@@ -193,13 +204,14 @@ Returning to correlations, let's plot the distribution of pairwise correlation b
 #| fig-height: 3.75
 #| fig-width: 6
 #| out-width: 60%
+
 pairwise_cor <- cor_mat[upper.tri(cor_mat)]
 
 sum(abs(pairwise_cor) >= 3 / 4, na.rm = TRUE)
 
-tibble(correlation = pairwise_cor) |> 
-  filter(!is.na(correlation)) |> 
-  ggplot(aes(x = correlation)) + 
+tibble(correlation = pairwise_cor) |>
+  filter(!is.na(correlation)) |>
+  ggplot(aes(x = correlation)) +
   geom_histogram(binwidth = 0.1, col = "white")
 ```
 
@@ -207,7 +219,8 @@ This isn't too bad, but if we wanted to reduce the extreme pairwise correlations
 
 ```{r}
 #| label: low-cor
-drug_rec |> 
+
+drug_rec |>
   step_corr(all_predictors(), threshold = 0.75)
 ```
 
@@ -219,9 +232,9 @@ or search for an optimal cutoff using `threshold = tune()` (as we will below).
 
 The text mentioned that there are types of models that automatically select predictors. Tree-based models typically fall into this category. 
 
-To demonstrate, let’s fit a Classification and Regression Tree ([CART](https://www.nature.com/articles/nmeth.4370)) to the training set and see how many predictors are removed. 
+To demonstrate, let's fit a Classification and Regression Tree ([CART](https://www.nature.com/articles/nmeth.4370)) to the training set and see how many predictors are removed. 
 
-Before doing so, let’s _turn off_ a feature of this model. CART computes special alternate splits during training ("surrogate" and "competing" splits) to aid with things like missing value imputation. We’ll use the built-in feature importance measure to see how many predictors were used. Unfortunately, those measures will include splits not actually used by the model, so we prohibit these from being listed using `rpart.control()`. 
+Before doing so, let's _turn off_ a feature of this model. CART computes special alternate splits during training ("surrogate" and "competing" splits) to aid with things like missing value imputation. We'll use the built-in feature importance measure to see how many predictors were used. Unfortunately, those measures will include splits not actually used by the model, so we prohibit these from being listed using `rpart.control()`. 
 
 We can pass that to the model fit when we set the engine: 
 
@@ -230,18 +243,19 @@ We can pass that to the model fit when we set the engine:
 
 cart_ctrl <- rpart::rpart.control(maxcompete = 0, maxsurrogate = 0)
 
-cart_spec <- 
-  decision_tree(mode = "classification") |> 
+cart_spec <-
+  decision_tree(mode = "classification") |>
   set_engine("rpart", control = !!cart_ctrl)
 ```
 
 **Note** the use of `!!` ("bang-bang") when adding `cart_ctrl` as an engine option. If we had just used `control = cart_ctrl`, it tells R to look for a reference to object "`cart_ctrl`", which resides in the global environment. Ordinarily, that works fine. However, if we use parallel processing, that reference is not available to the worker processes, and an error will occur. 
 
 Using the bang-bang operator, we replace the _reference_ to "`cart_ctrl`" with the actual value of that object. It splices the actual data into the model specification so parallel workers can find it. 
-Here’s the model fit: 
+Here's the model fit: 
 
 ```{r}
 #| label: cart-fit
+
 cart_drug_fit <- cart_spec |> fit(class ~ ., data = drug_train)
 cart_drug_fit
 ```
@@ -253,54 +267,57 @@ Of the `r ncol(drug_train) - 1` predictors, only `r length(cart_drug_fit$fit$var
 #| fig-height: 6
 #| fig-width: 14
 #| out-width: 100%
+
 library(partykit)
 
-cart_drug_party <- 
-  cart_drug_fit |> 
-  extract_fit_engine() |> 
+cart_drug_party <-
+  cart_drug_fit |>
+  extract_fit_engine() |>
   as.party()
 plot(cart_drug_party)
 ```
 
-As previously mentioned, trees produced by the `r pkg(rpart)` package have an internal importance score. To return this, let’s write a small function to pull the `rpart` object out, extract the importance scores, and then return a data frame with that data: 
+As previously mentioned, trees produced by the `r pkg(rpart)` package have an internal importance score. To return this, let's write a small function to pull the `rpart` object out, extract the importance scores, and then return a data frame with that data: 
 
 ```{r}
 #| label: cart-imp
+
 get_active_features <- function(x) {
   require(tidymodels)
-  x |> 
-    extract_fit_engine() |> 
-    pluck("variable.importance") |> 
-    tibble::enframe() |> 
+  x |>
+    extract_fit_engine() |>
+    pluck("variable.importance") |>
+    tibble::enframe() |>
     setNames(c("predictor", "importance"))
 }
 
-get_active_features(cart_drug_fit) 
+get_active_features(cart_drug_fit)
 ```
 
 This shows us the `r length(cart_drug_fit$fit$variable.importance)` predictors used, along with their relative effect on the model. 
 
 These results show what happens with the training set, but would a predictor like ``r get_active_features(cart_drug_fit)$predictor[1]`` be consistently selected? 
 
-To determine this, we can resample the model and save the importance scores for each of the `r nrow(drug_rs)` analysis sets. Let’s take the `get_active_features()` function and add it to a different `control` function that will be executed during resampling: 
+To determine this, we can resample the model and save the importance scores for each of the `r nrow(drug_rs)` analysis sets. Let's take the `get_active_features()` function and add it to a different `control` function that will be executed during resampling: 
 
 ```{r}
 #| label: cart-resample
 
 ctrl <- control_resamples(extract = get_active_features)
-cart_drug_res <- 
-  cart_spec |> 
+cart_drug_res <-
+  cart_spec |>
   fit_resamples(
-    class ~ ., 
-    resamples = drug_rs, 
+    class ~ .,
+    resamples = drug_rs,
     control = ctrl
   )
 ```
 
-Our results will have an extra column called `.extract` that contains the results for the resample. Since we didn’t tune this model, `.extract` contains a simple tibble with the results: 
+Our results will have an extra column called `.extract` that contains the results for the resample. Since we didn't tune this model, `.extract` contains a simple tibble with the results: 
 
 ```{r}
 #| label: show-extract
+
 cart_drug_res$.extracts[[1]]
 
 cart_drug_res$.extracts[[1]]$.extracts
@@ -310,10 +327,11 @@ We can extract the results from all the resamples, unnest, and count the number 
 
 ```{r}
 #| label: all-extract
-resampled_selection <- 
-  cart_drug_res |> 
-  collect_extracts() |> 
-  unnest(.extracts) |> 
+
+resampled_selection <-
+  cart_drug_res |>
+  collect_extracts() |>
+  unnest(.extracts) |>
   count(predictor) |>
   arrange(desc(n))
 
@@ -328,7 +346,7 @@ A visualization illustrates that a small number of predictors were reliably sele
 #| fig-width: 6
 #| out-width: 70%
 
-resampled_selection |> 
+resampled_selection |>
   ggplot(aes(n)) +
   geom_histogram(binwidth = 2, col = "white") +
   labs(x = "# Times Selected (of 100)")
@@ -346,21 +364,21 @@ One additional note about using tree-based models to automatically select predic
 
 However, this also means that many tree ensembles will have prediction functions that include predictors that have no effect. If we take the same strategy as above, we will vastly overestimate the number of predictors that affect the model. 
 
-For this reason, we might consider setting `mtry` to use the complete predictor set during splitting _if we are trying to select predictors_. While this might slightly decrease the model’s performance, the false positive rate of finding "important predictors" will be significantly reduced. 
+For this reason, we might consider setting `mtry` to use the complete predictor set during splitting _if we are trying to select predictors_. While this might slightly decrease the model's performance, the false positive rate of finding "important predictors" will be significantly reduced. 
 
 `r back("feature-selection.html#sec-automatic-selection")`
 
-## Wrapper Methods  {#sec-wrappers}
+## Wrapper Methods {#sec-wrappers}
 
 tidymodels does not contain any wrapper methods, primarily due to their computational costs. 
 
 Several other packages do, most notably `r pkg(caret)`. For more information on what that package can do, see the feature selection chapters of the documentation: 
 
- - [_Feature Selection Overview_](https://topepo.github.io/caret/feature-selection-overview.html)
- - [_Feature Selection using Univariate Filters_](https://topepo.github.io/caret/feature-selection-using-univariate-filters.html)
- - [_Recursive Feature Elimination_](https://topepo.github.io/caret/recursive-feature-elimination.html)
- - [_Feature Selection using Genetic Algorithms_](https://topepo.github.io/caret/feature-selection-using-genetic-algorithms.html)
- - [_Feature Selection using Simulated Annealing_](https://topepo.github.io/caret/feature-selection-using-simulated-annealing.html)
+- [_Feature Selection Overview_](https://topepo.github.io/caret/feature-selection-overview.html)
+- [_Feature Selection using Univariate Filters_](https://topepo.github.io/caret/feature-selection-using-univariate-filters.html)
+- [_Recursive Feature Elimination_](https://topepo.github.io/caret/recursive-feature-elimination.html)
+- [_Feature Selection using Genetic Algorithms_](https://topepo.github.io/caret/feature-selection-using-genetic-algorithms.html)
+- [_Feature Selection using Simulated Annealing_](https://topepo.github.io/caret/feature-selection-using-simulated-annealing.html)
 
 R code from the Feature Engineering and Selection book can also be found at [`https://github.com/topepo/FES`](https://github.com/topepo/FES).
 
@@ -368,17 +386,17 @@ R code from the Feature Engineering and Selection book can also be found at [`ht
 
 ## Filter Methods {#sec-filters}
 
-The important package has three recipe steps for supervised feature selection. These tools can use one or more scores to determine which predictors to retain in the model. We’ll use it below, but see the documentation [here](https://important.tidymodels.org/) for more details. The `r pkg(colino)` package also has a variety of recipe feature filter steps that can be used (found on GitHub [here](https://github.com/stevenpawley/colino)). 
+The important package has three recipe steps for supervised feature selection. These tools can use one or more scores to determine which predictors to retain in the model. We'll use it below, but see the documentation [here](https://important.tidymodels.org/) for more details. The `r pkg(colino)` package also has a variety of recipe feature filter steps that can be used (found on GitHub [here](https://github.com/stevenpawley/colino)). 
 
-We’ll focus on using a basic random forest permutation importance as a scoring mechanism. We’ll still use the unsupervised correlation filters before the supervised analysis. `important::step_predictor_best()` requires a `score` argument to specify the ranking mechanism. Possible values are listed in the [manual page](https://important.tidymodels.org/reference/step_predictor_best.html#scoring-functions) for the function. For our instance, we’ll use `score = "imp_rf"`. You can also specify the _proportion_ of features to retain via the `prop_terms` argument. The default tuning range is [5%, 100%], which we’ll use. The code is: 
+We'll focus on using a basic random forest permutation importance as a scoring mechanism. We'll still use the unsupervised correlation filters before the supervised analysis. `important::step_predictor_best()` requires a `score` argument to specify the ranking mechanism. Possible values are listed in the [manual page](https://important.tidymodels.org/reference/step_predictor_best.html#scoring-functions) for the function. For our instance, we'll use `score = "imp_rf"`. You can also specify the _proportion_ of features to retain via the `prop_terms` argument. The default tuning range is [5%, 100%], which we'll use. The code is: 
 
 ```{r}
 #| label: vip-rec
 
-drug_rec <- 
-  recipe(class ~ ., data = drug_train) |> 
-  step_zv(all_predictors(), id = "zv") |> 
-  step_corr(all_numeric_predictors(), threshold = tune(), id = "cor")  |>
+drug_rec <-
+  recipe(class ~ ., data = drug_train) |>
+  step_zv(all_predictors(), id = "zv") |>
+  step_corr(all_numeric_predictors(), threshold = tune(), id = "cor") |>
   step_predictor_best(
     all_predictors(),
     score = "imp_rf",
@@ -390,35 +408,38 @@ drug_rec <-
 
 Note that we also add a correlation filter and optimize the exclusion threshold. This helps the random forest model since the inclusion of highly correlated predictors [can dilute the importance](https://bookdown.org/max/FES/recursive-feature-elimination.html#fig:greedy-rf-imp) of the set of related predictors. 
 
-We’ll fit a support vector machine model to these data, so the recipe concludes with a step that will normalize the features to have the same distribution (even the binary values). 
+We'll fit a support vector machine model to these data, so the recipe concludes with a step that will normalize the features to have the same distribution (even the binary values). 
 
 Now we can specify the supervised model, tag two parameters for optimization, and then add the model and recipe to a workflow: 
 
 ```{r}
 #| label: vip-wflow
-svm_spec <- 
-  svm_rbf(cost = tune(), rbf_sigma = tune()) |> 
+
+svm_spec <-
+  svm_rbf(cost = tune(), rbf_sigma = tune()) |>
   set_mode("classification")
 
 vip_svm_wflow <- workflow(drug_rec, svm_spec)
 ```
 
-Let’s adjust the range of the correlation filter to make it slightly more aggressively remove highly correlated predictors: 
+Let's adjust the range of the correlation filter to make it slightly more aggressively remove highly correlated predictors: 
 
 ```{r}
 #| label: vip-wflow-param
-vip_svm_param <- 
-  vip_svm_wflow |> 
-  extract_parameter_set_dials() |> 
+
+vip_svm_param <-
+  vip_svm_wflow |>
+  extract_parameter_set_dials() |>
   update(
-  threshold = threshold(c(0.25, 0.99))
+    threshold = threshold(c(0.25, 0.99))
   )
 ```
 
-_Finally_, let’s tune the model via Bayesian optimization and use the Brier score to guide the process to the best values of the tuning parameters. This is a long computation; lowering the value of `iter` will make it finish more quickly. 
+_Finally_, let's tune the model via Bayesian optimization and use the Brier score to guide the process to the best values of the tuning parameters. This is a long computation; lowering the value of `iter` will make it finish more quickly. 
 
 ```{r}
 #| label: vip-results
+
 ctrl <- control_bayes(parallel_over = "everything")
 
 set.seed(1487)
@@ -472,9 +493,9 @@ vip_svm_res |>
   rename(Brier = mean) |>
   ggplot(aes(threshold, prop_terms, size = Brier, col = Brier)) +
   geom_point(alpha = 2 / 4) +
-  coord_fixed(ratio = (0.99 - 0.25) / (0.99-0.05)) +
+  coord_fixed(ratio = (0.99 - 0.25) / (0.99 - 0.05)) +
   labs(
-    x = "Correlation Filter Threshold", 
+    x = "Correlation Filter Threshold",
     y = "Proportion of Predictors Kept"
   )
 ```
@@ -483,6 +504,7 @@ The numerically best results are:
 
 ```{r}
 #| label: vip-best
+
 show_best(vip_svm_res, metric = "brier_class")
 
 best_param <- select_best(vip_svm_res, metric = "brier_class")
@@ -492,10 +514,11 @@ Let's update our workflow with the best parameters, then fit the final model on 
 
 ```{r}
 #| label: best-fit
+
 set.seed(124)
-final_model <- 
-  vip_svm_wflow |> 
-  finalize_workflow(best_param) |> 
+final_model <-
+  vip_svm_wflow |>
+  finalize_workflow(best_param) |>
   fit(drug_train)
 final_model
 ```
@@ -504,6 +527,7 @@ How many predictors were removed, and how many made it to the final model? We ca
 
 ```{r}
 #| label: function-tidy
+
 get_filter_info <- function(x) {
   fit_rec <- extract_recipe(x)
   # The tidy methods show the predictors that were eliminated:
@@ -511,13 +535,13 @@ get_filter_info <- function(x) {
   zv_filter <- nrow(tidy(fit_rec, id = "zv"))
   vip_filter <- sum(tidy(fit_rec, id = "vip")$removed)
   original <- ncol(drug_train) - 1
-  
+
   # The mold has a 'predictors' element that describes the
-  # columns which are given to the model: 
-  retained <- 
-    x |> 
-    extract_mold() |> 
-    pluck("predictors") |> 
+  # columns which are given to the model:
+  retained <-
+    x |>
+    extract_mold() |>
+    pluck("predictors") |>
     ncol()
   # We'll save them as a tibble:
   tibble(original, zv_filter, corr_filter, vip_filter, retained)
@@ -532,6 +556,7 @@ How does the model work on the test set of `r nrow(drug_test)` molecules?
 
 ```{r}
 #| label: test-pred
+
 test_pred <- augment(final_model, drug_test)
 test_pred |> brier_class(class, .pred_inducer)
 test_pred |> roc_auc(class, .pred_inducer)
