@@ -11,17 +11,17 @@ knitr:
 #| include: false
 
 knitr::opts_chunk$set(
-    comment = "#>",
-    collapse = TRUE,
-    fig.align = 'center',
-    fig.width = 10,
-    fig.height = 6,
-    out.width = "95%",
-    dev = 'svg',
-    dev.args = list(bg = "transparent"),
-    tidy = FALSE,
-    echo = TRUE
-  )
+  comment = "#>",
+  collapse = TRUE,
+  fig.align = 'center',
+  fig.width = 10,
+  fig.height = 6,
+  out.width = "95%",
+  dev = 'svg',
+  dev.args = list(bg = "transparent"),
+  tidy = FALSE,
+  echo = TRUE
+)
 
 options(digits = 4, width = 84)
 options(dplyr.print_min = 6, dplyr.print_max = 6)
@@ -30,6 +30,7 @@ options(crayon.enabled = FALSE)
 options(pillar.advice = FALSE, pillar.min_title_chars = Inf, pillar.sigfig = 4)
 
 source("../R/_common.R")
+# fmt: skip
 req_pkg <- c("betacal", "discrim", "desirability2", "klaR", "mgcv", "patchwork", 
              "probably", "rpart", "tidymodels")
 
@@ -42,21 +43,22 @@ This chapter describes how to compute performance metrics using tidymodels and w
 
 ## Requirements
 
-You’ll need `r length(req_pkg)` packages (`r req_pkg_fmt`) for this chapter:
+You'll need `r length(req_pkg)` packages (`r req_pkg_fmt`) for this chapter:
 
 ```{r}
 #| label: cls-metrics-installs
 #| eval: false
 #| echo: true
-# skip: fmt
+
+# fmt: skip
 req_pkg <- c("betacal", "discrim", "desirability2", "klaR", "mgcv", "patchwork", 
              "probably", "rpart", "tidymodels")
 
-# Check to see if they are installed: 
+# Check to see if they are installed:
 pkg_installed <- vapply(req_pkg, rlang::is_installed, logical(1))
 
-# Install missing packages: 
-if ( any(!pkg_installed) ) {
+# Install missing packages:
+if (any(!pkg_installed)) {
   install_list <- names(pkg_installed)[!pkg_installed]
   pak::pak(install_list)
 }
@@ -69,7 +71,8 @@ Let's load the meta package and manage some between-package function conflicts.
 #| results: hide
 #| message: false
 #| warning: false
-library(tidymodels)  # <- includes yardstick
+
+library(tidymodels) # <- includes yardstick
 library(discrim)
 library(probably)
 library(desirability2)
@@ -79,28 +82,29 @@ tidymodels_prefer()
 theme_set(theme_bw())
 ```
 
-## Metric Functions  {#sec-cls-metrics}
+## Metric Functions {#sec-cls-metrics}
 
 For tidymodels, functions to compute performance metrics are largely in the `r pkg(yardstick)` package. For classification models, the functions come in two forms: "class" metrics (for hard class predictions) and "probability" metrics that take class probability estimates as inputs. For example: 
 
 ```{r}
 #| label: example-metrics
+
 accuracy
 roc_auc
 ```
 
 Class metrics take inputs: 
 
- - `data`: the data containing predictions placed first for compatibility with the pipe operator.
- - `truth`: a _factor_ column name (unquoted) in `data` that has the true class labels.
- - `estimate`: another factor column in `data` that has the same levels as `truth`. We usually name this argument when calling metric functions. 
+- `data`: the data containing predictions placed first for compatibility with the pipe operator.
+- `truth`: a _factor_ column name (unquoted) in `data` that has the true class labels.
+- `estimate`: another factor column in `data` that has the same levels as `truth`. We usually name this argument when calling metric functions. 
 
 For example, for the positive predictive value: 
 
 ```{r}
 #| label: class-metrics-usage
 
-# example data: 
+# example data:
 two_class_example |> str()
 
 two_class_example |> ppv(truth, estimate = predicted)
@@ -128,16 +132,16 @@ Metric functions are also "group-aware" so that you can get statistics for an ar
 ```{r}
 #| label: group-aware
 
-two_class_example |> 
-  mutate(group = rep(letters[1:4], each = 125)) |> 
-  group_by(group) |> 
+two_class_example |>
+  mutate(group = rep(letters[1:4], each = 125)) |>
+  group_by(group) |>
   pr_auc(truth, Class1)
 ```
 
 Finally, metric functions have an argument called `case_weights` that can be used to weight individual observations. Currently, tidymodels supports two types of case weights: 
 
- - [`importance_weights()`](https://hardhat.tidymodels.org/reference/importance_weights.html) are weights (in the form of a double precision number) that are used during preprocessing and model training but are *not* used when computing performance. 
- - [`frequency_weights()`](https://hardhat.tidymodels.org/reference/frequency_weights.html) are integer weights that indicate how many times each row appears in the data. They are used during model development as well as performance estimation. 
+- [`importance_weights()`](https://hardhat.tidymodels.org/reference/importance_weights.html) are weights (in the form of a double precision number) that are used during preprocessing and model training but are *not* used when computing performance. 
+- [`frequency_weights()`](https://hardhat.tidymodels.org/reference/frequency_weights.html) are integer weights that indicate how many times each row appears in the data. They are used during model development as well as performance estimation. 
 
 The `r pkg(yardstick)` functions accept these types of case weights but can also take basic numeric vectors. 
 
@@ -156,6 +160,7 @@ Since it contains _both_ types of classification metrics, we need to use the `es
 
 ```{r}
 #| label: metric-set-usage
+
 two_class_example |> cls_mtr(truth, estimate = predicted, Class1)
 ```
 
@@ -164,6 +169,7 @@ You can mix metric types within the same model mode. You can't mix between modes
 ```{r}
 #| label: mixed-mode
 #| error: true
+
 metric_set(rmse, accuracy)
 ```
 
@@ -184,10 +190,10 @@ It is worth discussing that, for these data, there is enough data to do a four-w
 # Make a three-way split into train/validation/"test" where "test" will have
 # rows for the calibration data and the actual test data
 
-# In the end, we want the proportions to be 70% for training and 10% for the 
-# others data sets. The initial split does 70% for training, 10% for validation, 
+# In the end, we want the proportions to be 70% for training and 10% for the
+# others data sets. The initial split does 70% for training, 10% for validation,
 # and 20% for testing. That 20% will be split below (evenly) to make 10% sized
-# training and calibration data sets. 
+# training and calibration data sets.
 set.seed(669)
 shroom_split <- initial_validation_split(mushroom_secondary, prop = c(.7, .1))
 shroom_train <- training(shroom_split)
@@ -196,7 +202,7 @@ shroom_rs <- validation_set(shroom_split)
 
 # Split into calibration and test:
 shroom_other <- testing(shroom_split)
-cal_test_split <- initial_split(shroom_other, prop = 1/2)
+cal_test_split <- initial_split(shroom_other, prop = 1 / 2)
 shroom_cal <- training(cal_test_split)
 shroom_test <- testing(cal_test_split)
 ```
@@ -205,8 +211,9 @@ Now let's load the finished products:
 
 ```{r}
 #| label: real-data-import
-"https://github.com/aml4td/website/raw/refs/heads/main/RData/mushrooms.RData" |> 
-  url() |> 
+
+"https://github.com/aml4td/website/raw/refs/heads/main/RData/mushrooms.RData" |>
+  url() |>
   load()
 
 ls(pattern = "^shroom_")
@@ -219,7 +226,7 @@ The text used a naive Bayes model. For the computations, we'll use the `klaR::Na
 #| warning: false
 #| cache: true
 
-# skip: fmt
+# fmt: skip
 cls_mtr <-
   metric_set(brier_class, mn_log_loss, pr_auc, roc_auc, accuracy)
 
@@ -240,6 +247,7 @@ We'll also generate the trained model using `fit_best()`:
 #| label: naive-bayes-fit
 #| warning: false
 #| cache: true
+
 nb_fit <- fit_best(nb_res)
 ```
 
@@ -253,6 +261,7 @@ As seen previously, we can extract the metrics estimates from the resampling obj
 
 ```{r}
 #| label: naive-bayes-metrics
+
 collect_metrics(nb_res)
 ```
 
@@ -262,6 +271,7 @@ Let's also extract the out-of-sample predictions:
 
 ```{r}
 #| label: naive-bayes-predictions
+
 val_pred <- collect_predictions(nb_res)
 val_pred
 ```
@@ -302,6 +312,7 @@ This object has an `autoplot()` method to produce a [mosaic plot](https://en.wik
 #| fig-height: 4.5
 #| fig-align: "center"
 #| out-width: "50%"
+
 autoplot(confusing)
 ```
 
@@ -313,11 +324,12 @@ or a heatmap:
 #| fig-height: 4.5
 #| fig-align: "center"
 #| out-width: "50%"
+
 autoplot(confusing, type = "heatmap")
 ```
 
 `r back("cls-metrics.html#sec-cls-hard-metrics")`
- 
+
 ## Metrics for Two Classes {#sec-cls-two-classes}
 
 First, we need to define which factor level corresponds to the event of interest. The metric functions have an `event_level` argument that can take values `"first"` or `"second"`. The default is `"first"`. Additionally, control functions such as `tune::control_grid()` have the same argument. 
@@ -336,7 +348,7 @@ As mentioned in the text, there are methods for computing metrics for binary out
 #| label: weighted-metrics
 
 hpc_mtr <- metric_set(sensitivity, specificity, pr_auc, roc_auc)
-modeldata::hpc_cv |> 
+modeldata::hpc_cv |>
   hpc_mtr(obs, estimate = pred, VF:L)
 ```
 
@@ -351,8 +363,8 @@ If you want to use one of the other weighting schemes, you can create a new metr
 sensitivity_macro_wt <- function(data, truth, estimate, na_rm = TRUE, ...) {
   sensitivity(
     data = data,
-    truth = !! rlang::enquo(truth),
-    estimate = !! rlang::enquo(estimate),
+    truth = !!rlang::enquo(truth),
+    estimate = !!rlang::enquo(estimate),
     estimator = "macro_weighted",
     na_rm = na_rm,
     ...
@@ -391,32 +403,32 @@ Here's an example:
 
 ```{r}
 #| label: class-costs
+
 lvls <- levels(val_pred$class)
 unique_vals <- factor(lvls, levels = lvls)
 
-custom_costs <- 
-  crossing(truth = unique_vals, estimate = unique_vals) |> 
+custom_costs <-
+  crossing(truth = unique_vals, estimate = unique_vals) |>
   mutate(
-    cost = 
-      case_when(
-        truth == estimate ~ 0.0,
-        # This is very bad:
-        truth == "poisonous" & estimate == "edible" ~ 5.0,
-        # False positives are not as much of a worry
-        TRUE ~ 1.0
-      )
+    cost = case_when(
+      truth == estimate ~ 0.0,
+      # This is very bad:
+      truth == "poisonous" & estimate == "edible" ~ 5.0,
+      # False positives are not as much of a worry
+      TRUE ~ 1.0
+    )
   )
 
-val_pred |> 
+val_pred |>
   classification_cost(class, .pred_poisonous, costs = custom_costs)
 ```
 
 There are several functions to produce curves: 
 
- - `yardstick::gain_curve()` 
- - `yardstick::lift_curve()`
- - `yardstick::pr_curve()`
- - `yardstick::roc_curve()`
+- `yardstick::gain_curve()` 
+- `yardstick::lift_curve()`
+- `yardstick::pr_curve()`
+- `yardstick::roc_curve()`
 
 Each has an `autoplot()` method and is group-aware. The first two plots show different aspects of the same analysis. The lift curve shows a ratio of probabilities that reflects how enriched the sampling is for the event class, while the gain curve shows the proportion of events selected:
 
@@ -427,17 +439,14 @@ Each has an `autoplot()` method and is group-aware. The first two plots show dif
 #| fig-align: "center"
 #| out-width: "90%"
 
-(
-  val_pred |> 
-  gain_curve(class, .pred_poisonous) |> 
-  autoplot() + 
-  ggtitle("Gain Curve")
-) + (
-  val_pred |> 
-  lift_curve(class, .pred_poisonous) |> 
-  autoplot() + 
-  ggtitle("Lift Curve")
-)
+(val_pred |>
+  gain_curve(class, .pred_poisonous) |>
+  autoplot() +
+  ggtitle("Gain Curve")) +
+  (val_pred |>
+    lift_curve(class, .pred_poisonous) |>
+    autoplot() +
+    ggtitle("Lift Curve"))
 ```
 
 `r back("cls-metrics.html#sec-cls-metrics-soft")`
@@ -456,7 +465,7 @@ The visualization functions that have names that match the pattern `cal_plot_*()
 #| out-width: "50%"
 
 # No spline terms:
-val_pred |> 
+val_pred |>
   cal_plot_logistic(truth = class, estimate = .pred_poisonous, smooth = FALSE)
 ```
 
@@ -469,7 +478,7 @@ The default is to use splines to get a more nuanced pattern:
 #| fig-align: "center"
 #| out-width: "50%"
 
-val_pred |> 
+val_pred |>
   cal_plot_logistic(truth = class, estimate = .pred_poisonous)
 ```
 
@@ -481,6 +490,7 @@ There are functions for the windowed/binned estimates of calibration. For exampl
 #| fig-height: 4.5
 #| fig-align: "center"
 #| out-width: "50%"
+
 val_pred |>
   cal_plot_windowed(
     truth = class,
@@ -496,7 +506,7 @@ The available calibration methods for classification are:
 - Logistic regression: A basic model is fit where the true class outcomes are the calibration model's outcomes, and the predicted probability column is the predictor. The probability predictions from this model should have improved calibration. We can estimate this with a single linear term or using spline basis functions.  
 - Isotonic regression: This technique estimates a monotonic relationship from the outcome values (in binary integer form) and the class probability estimates. 
 - Beta calibration: This model uses the Beta distribution to estimate an improved relationship between the true outcomes and the predicted probabilities. 
-        
+
 These tools have various adaptations for three or more classes. A multinomial regression model can be used instead of a logistic model. For the other methods, a 1-versus-all method can be used to do separate calibrations, and then the probabilities are normalized so that they add up to one.   
 
 One very important complication is what data are used to estimate the calibrator and which are used to assess its effectiveness. We have a lot of data in this example, so we'll use the calibration set to estimate models and the validation set to measure them. 
@@ -506,6 +516,7 @@ We'll demonstrate using the Beta calibration method of [Kull, Silva Filho, and F
 ```{r}
 #| label: beta-estimate
 #| warning: false
+
 cal_pred <- augment(nb_fit, new_data = shroom_cal)
 beta_cal <- cal_pred |> cal_estimate_beta(truth = class)
 
@@ -516,10 +527,11 @@ If we don't have a validation set, we can take the out-of-sample predictions, re
 
 ```{r}
 #| label: beta-validate
+
 set.seed(453)
-val_pred |> 
-  vfold_cv() |> 
-  cal_validate_beta(truth = class) |> 
+val_pred |>
+  vfold_cv() |>
+  cal_validate_beta(truth = class) |>
   collect_metrics()
 ```
 
@@ -527,8 +539,9 @@ This is probably a real improvement that has a very small effect on the results.
 
 ```{r}
 #| label: beta-apply
-val_recal_pred <- 
-  val_pred |> 
+
+val_recal_pred <-
+  val_pred |>
   cal_apply(beta_cal)
 val_recal_pred
 ```
@@ -541,8 +554,9 @@ R has a specialized factor class called `ordered()` that can be used to model or
 
 ```{r}
 #| label: load-wordle
-"https://github.com/aml4td/website/raw/refs/heads/main/RData/wordle_results.RData" |> 
-  url() |> 
+
+"https://github.com/aml4td/website/raw/refs/heads/main/RData/wordle_results.RData" |>
+  url() |>
   load()
 
 # Note the "<" in the printed output:
@@ -579,8 +593,8 @@ To demonstrate, let's tune a single CART tree over two tuning parameters using g
 
 cls_mtr <- metric_set(brier_class, mn_log_loss, pr_auc, roc_auc)
 
-cart_spec <- 
-  decision_tree(cost_complexity = tune(), min_n = tune()) |> 
+cart_spec <-
+  decision_tree(cost_complexity = tune(), min_n = tune()) |>
   set_mode("classification")
 
 cart_res <-
@@ -599,6 +613,7 @@ We'll select different candidates when we optimize for a single metric:
 
 ```{r}
 #| label: selections
+
 show_best(cart_res, metric = "brier_class")
 show_best(cart_res, metric = "pr_auc")
 ```
@@ -607,11 +622,12 @@ The additional ranking functions take an object produced by one of the tuning fu
 
 ```{r}
 #| label: select-desirability
-cart_desire <- 
+
+cart_desire <-
   show_best_desirability(
-    cart_res, 
+    cart_res,
     minimize(brier_class, scale = 2),
-    maximize(roc_auc), 
+    maximize(roc_auc),
     minimize(mn_log_loss)
   )
 ```
@@ -620,6 +636,7 @@ Here are the top five metric values:
 
 ```{r}
 #| label: cart-metrics
+
 cart_desire |> dplyr::select(-starts_with(".d_"))
 ```
 
@@ -627,6 +644,7 @@ and their corresponding desirability scores plus the overall desirability:
 
 ```{r}
 #| label: cart-desirability
+
 cart_desire |> dplyr::select(cost_complexity, min_n, starts_with(".d_"))
 ```
 

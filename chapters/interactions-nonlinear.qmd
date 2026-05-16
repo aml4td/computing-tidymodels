@@ -11,17 +11,17 @@ knitr:
 #| include: false
 
 knitr::opts_chunk$set(
-    comment = "#>",
-    collapse = TRUE,
-    fig.align = 'center',
-    fig.width = 10,
-    fig.height = 6,
-    out.width = "95%",
-    dev = 'svg',
-    dev.args = list(bg = "transparent"),
-    tidy = FALSE,
-    echo = TRUE
-  )
+  comment = "#>",
+  collapse = TRUE,
+  fig.align = 'center',
+  fig.width = 10,
+  fig.height = 6,
+  out.width = "95%",
+  dev = 'svg',
+  dev.args = list(bg = "transparent"),
+  tidy = FALSE,
+  echo = TRUE
+)
 
 options(digits = 4, width = 84)
 options(dplyr.print_min = 6, dplyr.print_max = 6)
@@ -43,13 +43,14 @@ This chapter is focused on how predictors can enter the model in a nonlinear fas
 #| label: interactions-nonlinear-installs
 #| eval: false
 #| echo: true
+
 req_pkg <- c("aorsf", "embed", "gt", "hstats", "tidymodels")
 
-# Check to see if they are installed: 
+# Check to see if they are installed:
 pkg_installed <- vapply(req_pkg, rlang::is_installed, logical(1))
 
-# Install missing packages: 
-if ( any(!pkg_installed) ) {
+# Install missing packages:
+if (any(!pkg_installed)) {
   install_list <- names(pkg_installed)[!pkg_installed]
   pak::pak(install_list)
 }
@@ -62,6 +63,7 @@ Let's load the meta package and manage some between-package function conflicts.
 #| results: hide
 #| message: false
 #| warning: false
+
 library(tidymodels)
 library(embed)
 tidymodels_prefer()
@@ -79,7 +81,7 @@ To get started, let's once again load the food delivery data and use the same sp
 #| file: https://raw.githubusercontent.com/aml4td/website/main/R/setup_deliveries.R
 ```
 
-We’ll consider two mechanisms to encode interaction columns: via the base R formula method and with recipes. 
+We'll consider two mechanisms to encode interaction columns: via the base R formula method and with recipes. 
 
 ### Interactions with Model Formulas {#sec-interactions-via-formula}
 
@@ -97,12 +99,13 @@ Let's make a small example to demonstrate:
 
 ```{r}
 #| label: interaction-examples
+
 library(gt)
 
-interaction_example <- 
-  delivery_test |> 
-  slice(1, .by = day) |> 
-  select(day, hour, distance) |> 
+interaction_example <-
+  delivery_test |>
+  slice(1, .by = day) |>
+  select(day, hour, distance) |>
   arrange(day)
 
 interaction_example |> gt()
@@ -112,9 +115,10 @@ For two numeric predictors:
 
 ```{r}
 #| label: quant-quant-int
-model.matrix(~ hour + distance + hour:distance, interaction_example) |> 
-  as_tibble() |> 
-  select(-`(Intercept)`) |> 
+
+model.matrix(~ hour + distance + hour:distance, interaction_example) |>
+  as_tibble() |>
+  select(-`(Intercept)`) |>
   gt()
 ```
 
@@ -122,10 +126,11 @@ One numeric and one factor predictor:
 
 ```{r}
 #| label: quant-qual-int
-model.matrix(~ day + distance + day:distance, interaction_example) |> 
-  as_tibble() |> 
-  select(-`(Intercept)`) |> 
-  gt() |> 
+
+model.matrix(~ day + distance + day:distance, interaction_example) |>
+  as_tibble() |>
+  select(-`(Intercept)`) |>
+  gt() |>
   tab_style_body(style = cell_text(color = "gray70"), values = 0)
 ```
 
@@ -148,17 +153,18 @@ The `r pkg(recipes)` has `step_interact()`. This step is very atypical since it 
 
 The formula passed to `step_interact()` also uses colons to declare interactions, but it has two special differences from base R formulas: 
 
- - you can use `r pkg(dplyr)` selectors to select the columns to interact with and
- - the resulting interaction columns use `_x_` as the default seperator in the names.  
+- you can use `r pkg(dplyr)` selectors to select the columns to interact with and
+- the resulting interaction columns use `_x_` as the default seperator in the names.  
 
 For continuous/continuous interactions: 
 
 ```{r}
 #| label: quant-quant-int-rec
-recipe(~ hour + distance, data = interaction_example) |> 
-  step_interact(~ hour:distance) |> 
-  prep() |> 
-  bake(new_data = NULL) |> 
+
+recipe(~ hour + distance, data = interaction_example) |>
+  step_interact(~ hour:distance) |>
+  prep() |>
+  bake(new_data = NULL) |>
   gt()
 ```
 
@@ -166,12 +172,13 @@ For categorical/continuous combinations, we use `step_dummy()` first and then a 
 
 ```{r}
 #| label: qual-quant-int-rec
-recipe(~ day + hour, data = interaction_example) |> 
-  step_dummy(all_factor_predictors()) |> 
-  step_interact(~ starts_with("day_"):hour) |> 
-  prep() |> 
-  bake(new_data = NULL) |> 
-  gt() |> 
+
+recipe(~ day + hour, data = interaction_example) |>
+  step_dummy(all_factor_predictors()) |>
+  step_interact(~ starts_with("day_"):hour) |>
+  prep() |>
+  bake(new_data = NULL) |>
+  gt() |>
   tab_style_body(style = cell_text(color = "gray70"), values = 0)
 ```
 
@@ -186,18 +193,24 @@ A few different packages can compute $H$-statistics (and similar quantities):
 - `r pkg(bartMachine)` has `interaction_investigator()`
 - `r pkg(aorsf)` has [`orsf_vint()`](https://docs.ropensci.org/aorsf/reference/orsf_vint.html)
 
-and so on. We’ll focus on the first since the other functions are tied to specific models. 
+and so on. We'll focus on the first since the other functions are tied to specific models. 
 
 For this chapter, we fit an oblique random forest model to compute the $H$-statistics. We'll defer the details of that model fit until a later chapter but the code was: 
 
 ```{r}
 #| label: orf-fit
+
 library(aorsf)
 
 p <- ncol(delivery_train) - 1
 
 set.seed(1)
-orf_fit <- orsf(time_to_delivery ~ ., data = delivery_train, mtry = p, n_tree = 50)
+orf_fit <- orsf(
+  time_to_delivery ~ .,
+  data = delivery_train,
+  mtry = p,
+  n_tree = 50
+)
 ```
 
 _Any_ ML model can be used with the `r pkg(hstats)` package. We'll use the validation set to compute the values; this lends more validity to the values (although we could have used the training set). There are a lot of computations here; this may take a bit to compute: 
@@ -210,17 +223,19 @@ library(hstats)
 
 set.seed(218)
 orf_hstats <-
-  hstats(orf_fit,
-         X = delivery_val |> dplyr::select(-time_to_delivery),
-         # Prioritize the top 10 individual predictors for computing potential
-         # pairwise interactions.
-         pairwise_m = 10,
-         # We can run a little faster by using quantiles to approximate the 
-         # predictor distributions. 
-         approx = TRUE,
-         # How many random data points are used for the computations.
-         n_max = 1000,
-         verbose = FALSE)
+  hstats(
+    orf_fit,
+    X = delivery_val |> dplyr::select(-time_to_delivery),
+    # Prioritize the top 10 individual predictors for computing potential
+    # pairwise interactions.
+    pairwise_m = 10,
+    # We can run a little faster by using quantiles to approximate the
+    # predictor distributions.
+    approx = TRUE,
+    # How many random data points are used for the computations.
+    n_max = 1000,
+    verbose = FALSE
+  )
 
 orf_two_way_int_obj <- h2_pairwise(orf_hstats, zero = TRUE)
 orf_two_way_int_obj
@@ -234,23 +249,24 @@ From these results, we could add more terms by adding another layer of `step_int
 
 There are two main functions that produce different types of orthogonal polynomials: 
 
- - `step_poly()` wrapping `stats::poly()`
- - `step_poly_bernstein()` wrapping `splines2::bernsteinPoly()`. 
- 
+- `step_poly()` wrapping `stats::poly()`
+- `step_poly_bernstein()` wrapping `splines2::bernsteinPoly()`. 
+
 We can pass the columns of interest to each step: 
 
 ```{r}
 #| label: poly-step
-recipe(time_to_delivery ~ ., data = delivery_train) |> 
-  step_poly(hour, degree = 4) |> 
-  prep() |> 
+
+recipe(time_to_delivery ~ ., data = delivery_train) |>
+  step_poly(hour, degree = 4) |>
+  prep() |>
   bake(new_data = NULL, starts_with("hour"))
 
 # or
 
-recipe(time_to_delivery ~ ., data = delivery_train) |> 
-  step_poly_bernstein(hour, degree = 4) |> 
-  prep() |> 
+recipe(time_to_delivery ~ ., data = delivery_train) |>
+  step_poly_bernstein(hour, degree = 4) |>
+  prep() |>
   bake(new_data = NULL, starts_with("hour"))
 ```
 
@@ -264,6 +280,7 @@ If we would like different polynomial degrees for different columns, we would ca
 
 ```{r}
 #| label: list-splines
+
 apropos("step_spline")
 ```
 
@@ -271,9 +288,10 @@ The syntax is almost identical to the polynomial steps. For example, for natural
 
 ```{r}
 #| label: natural-spline-step
-recipe(time_to_delivery ~ ., data = delivery_train) |> 
-  step_spline_natural(hour, deg_free = 4) |> 
-  prep() |> 
+
+recipe(time_to_delivery ~ ., data = delivery_train) |>
+  step_spline_natural(hour, deg_free = 4) |>
+  prep() |>
   bake(new_data = NULL, starts_with("hour"))
 ```
 
@@ -290,9 +308,9 @@ For unsupervised binning:
 ```{r}
 #| label: unsuper-bin
 
-basic_binning <- 
-  recipe(time_to_delivery ~ ., data = delivery_train) |> 
-  step_discretize(hour, num_breaks = 4) |> 
+basic_binning <-
+  recipe(time_to_delivery ~ ., data = delivery_train) |>
+  step_discretize(hour, num_breaks = 4) |>
   prep()
 
 bake(basic_binning, new_data = NULL, hour)
@@ -304,9 +322,10 @@ To understand where the breakpoints reside, the `tidy()` method will show them:
 
 ```{r}
 #| label: unsuper-bin-tidy
+
 tidy(basic_binning, number = 1)
 
-# note: 
+# note:
 quantile(delivery_train$hour, probs = (0:4) / 4)
 ```
 
@@ -324,9 +343,11 @@ The format of the results is very similar though:
 library(embed)
 cart_binning <-
   recipe(time_to_delivery ~ ., data = delivery_train) |>
-  step_discretize_cart(hour,
-                       outcome = vars(time_to_delivery),
-                       cost_complexity = 0.001) |>
+  step_discretize_cart(
+    hour,
+    outcome = vars(time_to_delivery),
+    cost_complexity = 0.001
+  ) |>
   prep()
 
 bake(cart_binning, new_data = NULL, hour)
