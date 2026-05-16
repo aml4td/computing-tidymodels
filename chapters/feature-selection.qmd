@@ -121,10 +121,11 @@ library(important)
 library(bestNormalize)
 library(mirai)
 library(janitor)
+library(mirai)
 
 tidymodels_prefer()
 theme_set(theme_bw())
-mirai::daemons(parallel::detectCores())
+daemons(parallel::detectCores())
 ```
 
 There are a few different data frames for these data. We'll merge two and clean up and shorten the variable names, use a 4:1 split of the data, and then initialize multiple repeats of 10-fold cross-validation:

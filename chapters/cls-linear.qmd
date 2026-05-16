@@ -82,11 +82,12 @@ library(probably)
 library(patchwork)
 library(car)
 library(DALEXtra)
+library(mirai)
 
 tidymodels_prefer()
 theme_set(theme_bw())
 # We'll use parallel processing too:
-mirai::daemons(parallel::detectCores())
+daemons(parallel::detectCores())
 ```
 
 ## Exploring Forestation Data {#sec-forestation-eda}

@@ -1,0 +1,108 @@
+---
+knitr:
+  opts_chunk:
+    cache.path: "../_cache/cls-trees/"
+---
+
+# Classification using Trees and Rules {#sec-cls-trees}
+
+```{r}
+#| label: cls-trees-setup
+#| include: false
+
+```
+
+
+
+## Creating Splits {#sec-cls-tree-split}
+
+
+
+### General Splitting Criteria {#sec-tree-splitting}
+
+
+
+### Quantitative Predictors {#sec-tree-splits-quantitative}
+
+
+### Qualitative Predictors {#sec-tree-splits-qualitative}
+
+
+
+### Oblique Splits {#sec-oblique-splits}
+
+
+
+## Understanding Bias in Splitting {#sec-tree-bias}
+
+
+
+## Missing Data Handling {#sec-cls-missing-data}
+
+
+
+### Binning Missing Values {#sec-missing-bins}
+
+
+
+### Surrogate Splits {#sec-surrogate-splits}
+
+
+
+### Fractional Accounting {#sec-missing-propagation}
+
+
+
+### Comparison of Approaches {#sec-tree-missing-comparison}
+
+
+
+### Practical Considerations for Missing Data {#sec-tree-missing-considerations}
+
+
+
+## Growing Trees {#sec-cls-tree-grow}
+
+
+## Reducing Tree Complexity {#sec-cls-tree-prune}
+
+
+#### Cost-Complexity Pruning {#sec-cost-complexity}
+
+
+#### Pessimistic Pruning {#sec-pessimistic-pruning}
+
+
+## Terminal Node Estimates {#sec-tree-estimates}
+
+
+## Specific Tree-Based Models {#sec-cls-tree-models}
+
+### CART {#sec-cls-cart}
+
+### C4.5 and C5.0 {#sec-cls-c50}
+
+
+
+### Conditional Inference Trees {#sec-cls-cit}
+
+
+
+### Globally Estimated Trees {#sec-cls-tree-global}
+
+
+
+### Oblique Trees {#sec-cls-oblique}
+
+
+
+
+## Rule-Based Models {#sec-cls-rules}
+
+
+
+## The Instability of Trees {#sec-cls-tree-unstable}
+
+
+
+## Comparisons to Previous Models {#sec-cls-tree-compare}

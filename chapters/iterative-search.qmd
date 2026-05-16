@@ -31,7 +31,7 @@ options(pillar.advice = FALSE, pillar.min_title_chars = Inf, pillar.sigfig = 4)
 
 source("../R/_common.R")
 # fmt: skip
-req_pkg <- c("finetune", "future.mirai", "GA", "probably", "tidymodels", "xgboost")
+req_pkg <- c("finetune", "mirai", "GA", "probably", "tidymodels", "xgboost")
 
 req_pkg_fmt <- purrr::map_chr(req_pkg, ~ pkg_chr(.x))
 ```
@@ -66,7 +66,7 @@ if (any(!pkg_installed)) {
 library(GA)
 library(tidymodels)
 library(finetune)
-library(future.mirai)
+library(mirai)
 library(probably)
 ```
 
@@ -79,11 +79,11 @@ library(GA)
 library(tidymodels)
 library(finetune)
 library(probably)
-library(future.mirai)
+library(mirai)
 
 tidymodels_prefer()
 theme_set(theme_bw())
-plan(mirai_multisession)
+daemons(parallel::detectCores())
 ```
 
 To reduce the complexity of the example, we'll use a simulated classification data set containing numeric predictors. We'll simulate 1,000 samples using a simulation system, the details of which can be found in the [`r pkg(modeldata)` documentation](https://modeldata.tidymodels.org/reference/sim_classification.html#details). The data set has linear, nonlinear, and interacting features, and the classes are fairly balanced. We'll use a 3:1 split for training and testing as well as 10-fold cross-validation:
@@ -354,12 +354,8 @@ Now, let's initialize the search using a space-filling design (with 10 candidate
 #| label: ga-initial-pop
 
 pop_size <- 10
+# `original = FALSE` means that the parameters are in a transformed units
 grid_ga <- grid_space_filling(bst_param, size = pop_size, original = FALSE)
-
-# We apply the GA operators on the transformed scale of the parameters (if any).
-# For this example, two use a log-transform:
-grid_ga$learn_rate <- log10(grid_ga$learn_rate)
-grid_ga$loss_reduction <- log10(grid_ga$loss_reduction)
 ```
 
 Now we can run `GA::ga()` to begin the process: 

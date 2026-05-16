@@ -35,7 +35,7 @@ options(pillar.advice = FALSE, pillar.min_title_chars = Inf, pillar.sigfig = 4)
 
 source("../R/_common.R")
 # fmt: skip
-req_pkg <- c("brulee", "Cubist", "future.mirai", "patchwork", "scales", 
+req_pkg <- c("brulee", "Cubist", "mirai", "patchwork", "scales", 
              "splines2", "probably", "rules", "tidymodels")
 ```
 
@@ -47,7 +47,7 @@ req_pkg <- c("brulee", "Cubist", "future.mirai", "patchwork", "scales",
 #| echo: true
 
 # fmt: skip
-req_pkg <- c("brulee", "Cubist", "future.mirai", "patchwork", "scales", 
+req_pkg <- c("brulee", "Cubist", "mirai", "patchwork", "scales", 
              "splines2", "probably", "rules", "tidymodels")
 
 # Check to see if they are installed:
@@ -864,8 +864,8 @@ To do so, tidymodels requires you to specify a _parallel backend_. There are sev
 #| eval: false
 
 cores <- parallel::detectCores(logical = FALSE)
-library(future.mirai)
-plan(mirai_multisession, workers = cores)
+library(mirai)
+daemons(cores)
 ```
 
 There can be significant speed-ups when running in parallel. See the [section in the tidymodels book](https://www.tmwr.org/grid-search#parallel-processing) for more details. 

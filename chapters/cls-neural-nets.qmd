@@ -79,10 +79,11 @@ library(bestNormalize)
 library(discrim)
 library(important)
 library(probably)
+library(mirai)
 
 tidymodels_prefer()
 theme_set(theme_bw() + theme(legend.position = "top"))
-mirai::daemons(parallel::detectCores())
+daemons(parallel::detectCores())
 
 # Some general settings for tuning classification models:
 cls_mtr <- metric_set(brier_class, roc_auc, pr_auc, mn_log_loss)
