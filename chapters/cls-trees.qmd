@@ -7,78 +7,119 @@ knitr:
 # Classification using Trees and Rules {#sec-cls-trees}
 
 ```{r}
-#| label: cls-trees-setup
+#| label: cls-tree-knitr-setup
 #| include: false
 
+knitr::opts_chunk$set(
+  comment = "#>",
+  collapse = TRUE,
+  fig.align = 'center',
+  fig.width = 10,
+  fig.height = 6,
+  out.width = "95%",
+  dev = 'svg',
+  dev.args = list(bg = "transparent"),
+  tidy = FALSE,
+  echo = TRUE
+)
+
+options(digits = 4, width = 84)
+options(dplyr.print_min = 6, dplyr.print_max = 6)
+options(cli.width = 85)
+options(crayon.enabled = FALSE)
+options(pillar.advice = FALSE, pillar.min_title_chars = Inf, pillar.sigfig = 4)
+
+source("../R/_common.R")
+# fmt: skip
+req_pkg <- 
+  c("aorsf", "bonsai", "evtree", "partykit", "probably", "rpart", 
+    "rules", "spatialsample", "tidymodels")
+
+req_pkg_fmt <- purrr::map_chr(req_pkg, ~ pkg_chr(.x))
 ```
 
+This chapter describes how to use neural networks. 
 
+## Requirements
 
-## Creating Splits {#sec-cls-tree-split}
+You'll need `r length(req_pkg)` packages (`r req_pkg_fmt`) for this chapter:
 
+```{r}
+#| label: cls-trees-installs
+#| eval: false
+#| echo: true
 
+# fmt: skip
+req_pkg <- 
+  c("aorsf", "bonsai", "evtree", "partykit", "probably", "rpart",   "rules",
+    "spatialsample", "tidymodels")
 
-### General Splitting Criteria {#sec-tree-splitting}
+# Check to see if they are installed:
+pkg_installed <- vapply(req_pkg, rlang::is_installed, logical(1))
 
+# Install missing packages:
+if (any(!pkg_installed)) {
+  install_list <- names(pkg_installed)[!pkg_installed]
+  pak::pak(install_list)
+}
+```
 
+Let's load the meta package and manage some between-package function conflicts. 
 
-### Quantitative Predictors {#sec-tree-splits-quantitative}
+```{r}
+#| label: start-tidymodels
+#| results: hide
+#| message: false
+#| warning: false
 
+library(tidymodels)
+library(spatialsample)
+library(bonsai)
+library(rules)
+library(probably)
+library(mirai)
 
-### Qualitative Predictors {#sec-tree-splits-qualitative}
+tidymodels_prefer()
+theme_set(theme_bw() + theme(legend.position = "top"))
+daemons(parallel::detectCores())
 
+# Some general settings for tuning classification models:
+cls_mtr <- metric_set(brier_class, roc_auc, pr_auc, mn_log_loss)
+ctrl_grid <-
+  control_grid(
+    save_pred = TRUE,
+    save_workflow = TRUE,
+    parallel_over = "everything"
+  )
+```
 
+As before, we'll load the objects that were already computed for the forestation data: 
 
-### Oblique Splits {#sec-oblique-splits}
+```{r}
+#| label: data-load
 
-
-
-## Understanding Bias in Splitting {#sec-tree-bias}
-
-
-
-## Missing Data Handling {#sec-cls-missing-data}
-
-
-
-### Binning Missing Values {#sec-missing-bins}
-
-
-
-### Surrogate Splits {#sec-surrogate-splits}
-
-
-
-### Fractional Accounting {#sec-missing-propagation}
-
-
-
-### Comparison of Approaches {#sec-tree-missing-comparison}
-
-
-
-### Practical Considerations for Missing Data {#sec-tree-missing-considerations}
-
-
-
-## Growing Trees {#sec-cls-tree-grow}
-
-
-## Reducing Tree Complexity {#sec-cls-tree-prune}
-
-
-#### Cost-Complexity Pruning {#sec-cost-complexity}
-
-
-#### Pessimistic Pruning {#sec-pessimistic-pruning}
-
-
-## Terminal Node Estimates {#sec-tree-estimates}
+"https://raw.githubusercontent.com/aml4td/website/main/RData/forested_data.RData" |>
+  url() |>
+  load()
+```
 
 
 ## Specific Tree-Based Models {#sec-cls-tree-models}
 
 ### CART {#sec-cls-cart}
+
+
+```{r}
+#| label: rpart-fit
+library(rpart)
+cart_fit <- rpart(class ~ county + elevation, data = forested_train)
+```
+
+
+```{r}
+#| label: rpart-rule
+path.rpart(cart_fit, 11)
+```
 
 ### C4.5 and C5.0 {#sec-cls-c50}
 
