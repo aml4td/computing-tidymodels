@@ -11,7 +11,6 @@ This chapter outlines how to work with missing data when building prediction mod
 ```{r}
 #| label: missing-data-knitr-setup
 #| include: false
-
 knitr::opts_chunk$set(
   comment = "#>",
   collapse = TRUE,
@@ -47,7 +46,6 @@ The data will be taken from [_A morphometric modeling approach to distinguishing
 #| label: interactions-nonlinear-installs
 #| eval: false
 #| echo: true
-
 req_pkg <- c("naniar", "ranger", "tidymodels")
 
 # Check to see if they are installed:
@@ -67,7 +65,6 @@ Let's load the meta package and manage some between-package function conflicts.
 #| results: hide
 #| message: false
 #| warning: false
-
 library(tidymodels)
 tidymodels_prefer()
 theme_set(theme_bw())
@@ -77,7 +74,6 @@ The data are automatically attached when the `r pkg(tidymodels)` package is load
 
 ```{r}
 #| label: poop
-
 set.seed(383)
 scat_split <- initial_split(scat, strata = Species)
 scat_tr <- training(scat_split)
@@ -92,7 +88,6 @@ Here is the breakdown of the species per data partition:
 
 ```{r}
 #| label: species
-
 scat_tr |> count(Species)
 scat_te |> count(Species)
 ```
@@ -105,7 +100,6 @@ The `r pkg(naniar)` package is an excellent tool for missing data. Let's load it
 
 ```{r}
 #| label: summary
-
 library(naniar)
 
 miss_var_summary(scat_tr_preds) |> print(n = Inf)
@@ -117,7 +111,6 @@ For convenience, let's make character vectors of column names for predictors wit
 
 ```{r}
 #| label: chr-vecs
-
 # fmt: skip
 miss_cols <- c("Taper", "TI", "Diameter", "Mass", "d13C", "d15N", "CN")
 # fmt: skip
@@ -129,7 +122,6 @@ We can make an _upset plot_, which visualizes frequently occurring subsets in th
 
 ```{r}
 #| label: upset
-
 library(naniar)
 gg_miss_upset(scat_tr_preds, nsets = 10)
 ```
@@ -148,7 +140,6 @@ The initialization consists of a call to `recipe::recipe()`. The most common int
 
 ```{r}
 #| label: recipe-start
-
 scat_rec <- recipe(Species ~ ., data = scat_tr)
 ```
 
@@ -162,7 +153,6 @@ Let's add `step_naomit()` to the recipe and declare the `r pkg(dplyr)` selector 
 
 ```{r}
 #| label: remove-rows
-
 na_omit_rec <-
   scat_rec |>
   step_naomit(everything())
@@ -172,7 +162,6 @@ To estimate the recipe (manually), we can use `recipes::prep()` to process the t
 
 ```{r}
 #| label: remove-row-prep
-
 na_omit_rec <-
   scat_rec |>
   step_naomit(everything()) |>
@@ -187,7 +176,6 @@ The results is that we loose `r sum(!complete.cases(scat_tr))` scat samples due 
 
 ```{r}
 #| label: remove-row-bake-1
-
 all_complete <- bake(na_omit_rec, new_data = NULL)
 
 nrow(all_complete)
@@ -199,7 +187,6 @@ If we were to apply the recipe to the test set, it would _not_ exclude the missi
 
 ```{r}
 #| label: remove-row-bake-2
-
 bake(na_omit_rec, new_data = scat_te) |> nrow()
 
 nrow(scat_te)
@@ -218,7 +205,6 @@ Here's an example where we determine that more than 10% missingness is too much.
 
 ```{r}
 #| label: filter-predictors
-
 filter_features_rec <-
   scat_rec |>
   step_filter_missing(everything(), threshold = 0.10) |>
@@ -238,7 +224,6 @@ tidy(filter_features_rec, number = 1)
 ```{r}
 #| label: step-names
 #| include: false
-
 steps <- ls(pattern = "^step_impute_", envir = asNamespace("recipes"))
 steps <- steps[!grepl("new", steps)]
 steps <- paste0("recipes::", steps)
@@ -257,7 +242,6 @@ If we were to predictor `Taper` as a function of `Age`, `Length`, `Number`, and 
 
 ```{r}
 #| label: impute-lm
-
 lin_impute_rec <-
   scat_rec |>
   step_impute_linear(
@@ -276,7 +260,6 @@ The `tidy()` methods can extract the model object. We'll use `tidyr::enframe()` 
 
 ```{r}
 #| label: impute-lm-coef
-
 lm_res <- tidy(lin_impute_rec, number = 1)
 lm_res
 
@@ -287,7 +270,6 @@ We might also want to impute the predictor based on its mean value but would lik
 
 ```{r}
 #| label: impute-by-group
-
 group_impute_rec <-
   scat_rec |>
   step_mutate(Taper_missing = is.na(Taper)) |>
@@ -310,7 +292,6 @@ The number of neighbors defaults to five. We can change that using the `neighbor
 
 ```{r}
 #| label: impute-knn
-
 knn_impute_rec <-
   scat_rec |>
   step_impute_knn(
@@ -344,7 +325,6 @@ To do this, we give the `neighbors` argument of `step_impute_knn()` a value of `
 ```{r}
 #| label: impute-knn-tuned
 #| cache: true
-
 knn_impute_rec <-
   scat_rec |>
   step_impute_knn(
@@ -375,7 +355,6 @@ Looking at the results below, we can see that the number of neighbors does not s
 #| fig-height: 3
 #| fig-align: "center"
 #| out-width: "50%"
-
 show_best(knn_rf_res, metric = "brier_class")
 
 autoplot(knn_rf_res, metric = "brier_class")

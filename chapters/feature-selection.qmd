@@ -9,7 +9,6 @@ knitr:
 ```{r}
 #| label: feature-selection-knitr-setup
 #| include: false
-
 knitr::opts_chunk$set(
   comment = "#>",
   collapse = TRUE,
@@ -45,7 +44,6 @@ We will use the following package in this chapter: `r pkg_list(req_pkg)`. To ins
 #| label: feature-selection-installs
 #| eval: false
 #| echo: true
-
 # fmt: skip
 req_pkg <- c("bestNormalize", "important", "mirai", "janitor", "kernlab", "partykit", 
              "QSARdata", "ranger", "rpart", "tidymodels")
@@ -65,7 +63,6 @@ if (any(!pkg_installed)) {
 #| include: false
 #| message: false
 #| warning: false
-
 library(partykit)
 library(tidymodels)
 library(important)
@@ -80,7 +77,6 @@ theme_set(theme_bw())
 ```{r}
 #| label: data-import
 #| echo: false
-
 data(PLD, package = "QSARdata")
 
 drug_data <-
@@ -115,16 +111,16 @@ Let's load the meta package, manage some between-package function conflicts, and
 
 ```{r}
 #| label: start
-
 library(tidymodels)
 library(important)
 library(bestNormalize)
 library(mirai)
 library(janitor)
+library(mirai)
 
 tidymodels_prefer()
 theme_set(theme_bw())
-mirai::daemons(parallel::detectCores())
+daemons(parallel::detectCores())
 ```
 
 There are a few different data frames for these data. We'll merge two and clean up and shorten the variable names, use a 4:1 split of the data, and then initialize multiple repeats of 10-fold cross-validation:
@@ -138,7 +134,6 @@ There is a class imbalance for these data:
 
 ```{r}
 #| label: data-dims
-
 dim(drug_train)
 drug_train |> count(class)
 ```
@@ -171,7 +166,6 @@ For the drug toxicity data, we can visualize the amount of predictor correlation
 
 ```{r}
 #| label: cor-mat
-
 cor_mat <-
   drug_train |>
   select(-class) |>
@@ -182,7 +176,6 @@ Note the warning: some columns have a single unique value. Let's look at this ac
 
 ```{r}
 #| label: num-unique
-
 num_unique <- map_int(drug_train |> select(-class), vctrs::vec_unique_count)
 names(num_unique)[num_unique == 1]
 ```
@@ -191,7 +184,6 @@ We'll start a recipe with the step that will eliminate these:
 
 ```{r}
 #| label: drug-rec
-
 drug_rec <-
   recipe(class ~ ., data = drug_train) |>
   step_zv(all_predictors())
@@ -204,7 +196,6 @@ Returning to correlations, let's plot the distribution of pairwise correlation b
 #| fig-height: 3.75
 #| fig-width: 6
 #| out-width: 60%
-
 pairwise_cor <- cor_mat[upper.tri(cor_mat)]
 
 sum(abs(pairwise_cor) >= 3 / 4, na.rm = TRUE)
@@ -219,7 +210,6 @@ This isn't too bad, but if we wanted to reduce the extreme pairwise correlations
 
 ```{r}
 #| label: low-cor
-
 drug_rec |>
   step_corr(all_predictors(), threshold = 0.75)
 ```
@@ -240,7 +230,6 @@ We can pass that to the model fit when we set the engine:
 
 ```{r}
 #| label: cart-spec
-
 cart_ctrl <- rpart::rpart.control(maxcompete = 0, maxsurrogate = 0)
 
 cart_spec <-
@@ -255,7 +244,6 @@ Here's the model fit:
 
 ```{r}
 #| label: cart-fit
-
 cart_drug_fit <- cart_spec |> fit(class ~ ., data = drug_train)
 cart_drug_fit
 ```
@@ -267,7 +255,6 @@ Of the `r ncol(drug_train) - 1` predictors, only `r length(cart_drug_fit$fit$var
 #| fig-height: 6
 #| fig-width: 14
 #| out-width: 100%
-
 library(partykit)
 
 cart_drug_party <-
@@ -281,7 +268,6 @@ As previously mentioned, trees produced by the `r pkg(rpart)` package have an in
 
 ```{r}
 #| label: cart-imp
-
 get_active_features <- function(x) {
   require(tidymodels)
   x |>
@@ -302,7 +288,6 @@ To determine this, we can resample the model and save the importance scores for 
 
 ```{r}
 #| label: cart-resample
-
 ctrl <- control_resamples(extract = get_active_features)
 cart_drug_res <-
   cart_spec |>
@@ -317,7 +302,6 @@ Our results will have an extra column called `.extract` that contains the result
 
 ```{r}
 #| label: show-extract
-
 cart_drug_res$.extracts[[1]]
 
 cart_drug_res$.extracts[[1]]$.extracts
@@ -327,7 +311,6 @@ We can extract the results from all the resamples, unnest, and count the number 
 
 ```{r}
 #| label: all-extract
-
 resampled_selection <-
   cart_drug_res |>
   collect_extracts() |>
@@ -345,7 +328,6 @@ A visualization illustrates that a small number of predictors were reliably sele
 #| fig-height: 3.75
 #| fig-width: 6
 #| out-width: 70%
-
 resampled_selection |>
   ggplot(aes(n)) +
   geom_histogram(binwidth = 2, col = "white") +
@@ -356,7 +338,6 @@ We can also see the model's performance characteristics:
 
 ```{r}
 #| label: cart-perf
-
 collect_metrics(cart_drug_res)
 ```
 
@@ -392,7 +373,6 @@ We'll focus on using a basic random forest permutation importance as a scoring m
 
 ```{r}
 #| label: vip-rec
-
 drug_rec <-
   recipe(class ~ ., data = drug_train) |>
   step_zv(all_predictors(), id = "zv") |>
@@ -414,7 +394,6 @@ Now we can specify the supervised model, tag two parameters for optimization, an
 
 ```{r}
 #| label: vip-wflow
-
 svm_spec <-
   svm_rbf(cost = tune(), rbf_sigma = tune()) |>
   set_mode("classification")
@@ -426,7 +405,6 @@ Let's adjust the range of the correlation filter to make it slightly more aggres
 
 ```{r}
 #| label: vip-wflow-param
-
 vip_svm_param <-
   vip_svm_wflow |>
   extract_parameter_set_dials() |>
@@ -439,7 +417,6 @@ _Finally_, let's tune the model via Bayesian optimization and use the Brier scor
 
 ```{r}
 #| label: vip-results
-
 ctrl <- control_bayes(parallel_over = "everything")
 
 set.seed(1487)
@@ -464,7 +441,6 @@ A visualization of the process shows that the search does reduce the Brier score
 #| fig-height: 3.5
 #| fig-width: 7
 #| out-width: 80%
-
 autoplot(vip_svm_res, metric = "brier_class", type = "performance")
 ```
 
@@ -475,7 +451,6 @@ We can plot the parameter choices over iterations:
 #| fig-height: 4
 #| fig-width: 8
 #| out-width: 80%
-
 autoplot(vip_svm_res, type = "parameters")
 ```
 
@@ -486,7 +461,6 @@ A plot of the filtering parameter values versus the Brier score tells a similar 
 #| fig-height: 6
 #| fig-width: 6.1
 #| out-width: 60%
-
 vip_svm_res |>
   collect_metrics() |>
   filter(.metric == "brier_class") |>
@@ -504,7 +478,6 @@ The numerically best results are:
 
 ```{r}
 #| label: vip-best
-
 show_best(vip_svm_res, metric = "brier_class")
 
 best_param <- select_best(vip_svm_res, metric = "brier_class")
@@ -514,7 +487,6 @@ Let's update our workflow with the best parameters, then fit the final model on 
 
 ```{r}
 #| label: best-fit
-
 set.seed(124)
 final_model <-
   vip_svm_wflow |>
@@ -527,7 +499,6 @@ How many predictors were removed, and how many made it to the final model? We ca
 
 ```{r}
 #| label: function-tidy
-
 get_filter_info <- function(x) {
   fit_rec <- extract_recipe(x)
   # The tidy methods show the predictors that were eliminated:
@@ -556,7 +527,6 @@ How does the model work on the test set of `r nrow(drug_test)` molecules?
 
 ```{r}
 #| label: test-pred
-
 test_pred <- augment(final_model, drug_test)
 test_pred |> brier_class(class, .pred_inducer)
 test_pred |> roc_auc(class, .pred_inducer)

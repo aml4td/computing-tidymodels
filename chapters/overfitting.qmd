@@ -9,7 +9,6 @@ knitr:
 ```{r}
 #| label: overfitting-predictors-knitr-setup
 #| include: false
-
 knitr::opts_chunk$set(
   comment = "#>",
   collapse = TRUE,
@@ -43,7 +42,6 @@ Since overfitting is often caused by poor values of tuning parameters, we'll foc
 #| label: overfitting-transformations-installs
 #| eval: false
 #| echo: true
-
 req_pkg <- c("bestNormalize", "tidymodels")
 
 # Check to see if they are installed:
@@ -63,7 +61,6 @@ Let's load the meta package and manage some between-package function conflicts.
 #| results: hide
 #| message: false
 #| warning: false
-
 library(tidymodels)
 library(bestNormalize)
 tidymodels_prefer()
@@ -96,7 +93,6 @@ Let's look at an example. In the [embeddings chapter](https://aml4td.org/chapter
 ```{r}
 #| label: pls-nnet
 #| echo: true
-
 pls_rec <-
   recipe(barley ~ ., data = barley_train) |>
   step_zv(all_predictors()) |>
@@ -127,7 +123,6 @@ To tune these parameters, we can give them a value of the function `tune()`. Thi
 ```{r}
 #| label: pls-nnet-tune
 #| echo: true
-
 pls_rec <-
   recipe(barley ~ ., data = barley_train) |>
   step_zv(all_predictors()) |>
@@ -159,7 +154,6 @@ Optionally, we can give a label as an argument to the function:
 ```{r}
 #| label: tune-arg
 #| echo: true
-
 str(tune("#PCA components"))
 ```
 
@@ -170,7 +164,6 @@ Engine arguments are set by `set_engine()`. For example:
 ```{r}
 #| label: pls-nnet-tune-engine
 #| echo: true
-
 nnet_spec <-
   mlp(
     hidden_units = tune(),
@@ -194,7 +187,6 @@ For example, the function for the `penalty` argument is:
 ```{r}
 #| label: tune-penalty
 #| echo: true
-
 penalty()
 ```
 
@@ -205,7 +197,6 @@ We can change these defaults via arguments:
 ```{r}
 #| label: tune-penalty-alt
 #| echo: true
-
 penalty(range = c(0, 1), trans = scales::transform_identity())
 ```
 
@@ -214,7 +205,6 @@ In some cases, we can't know the range _a priori_. Parameters like the number of
 ```{r}
 #| label: tune-unknown
 #| echo: true
-
 mtry()
 ```
 
@@ -225,7 +215,6 @@ In a few situations, the argument name to a recipe step or model function will u
 ```{r}
 #| label: real-degree
 #| echo: true
-
 degree()
 
 # Data type:
@@ -237,7 +226,6 @@ but for the spline recipe steps we need an integer value:
 ```{r}
 #| label: int-degree
 #| echo: true
-
 # Data type:
 spline_degree()$type
 ```
@@ -249,7 +237,6 @@ There are also functions to manipulate individual parameters:
 ```{r}
 #| label: value-functions
 #| echo: true
-
 # Function list:
 apropos("^value_")
 
@@ -263,7 +250,6 @@ For our pipeline `pls_nnet_wflow`, we can extract a _parameter set_ that collect
 ```{r}
 #| label: extract-param
 #| echo: true
-
 pls_nnet_param <- extract_parameter_set_dials(pls_nnet_wflow)
 
 class(pls_nnet_param)
@@ -282,7 +268,6 @@ Let's look at the information for the learning rate parameter by viewing the par
 ```{r}
 #| label: learn-rate
 #| echo: true
-
 pls_nnet_param |>
   filter(id == "learn_rate") |>
   pluck("object")
@@ -298,7 +283,6 @@ Suppose we want to change the range to be even more narrow. We can use the `upda
 ```{r}
 #| label: learn-rate-alt
 #| echo: true
-
 new_rate <-
   pls_nnet_param |>
   update(learn_rate = learn_rate(c(-2, -1 / 2)))
@@ -315,7 +299,6 @@ The parameter set is sometimes passed as an argument to grid creation functions 
 ```{r}
 #| label: random-design
 #| echo: true
-
 set.seed(220)
 grid_random(pls_nnet_param, size = 4)
 ```

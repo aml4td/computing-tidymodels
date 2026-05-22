@@ -11,7 +11,6 @@ The previous chapters have discussed how to estimate performance using resamplin
 ```{r}
 #| label: grid-knitr-setup
 #| include: false
-
 knitr::opts_chunk$set(
   comment = "#>",
   collapse = TRUE,
@@ -32,14 +31,12 @@ options(crayon.enabled = FALSE)
 options(pillar.advice = FALSE, pillar.min_title_chars = Inf, pillar.sigfig = 4)
 
 source("../R/_common.R")
-req_pkg <- c("Cubist", "finetune", "future.mirai", "rules", "tidymodels")
+req_pkg <- c("Cubist", "finetune", "mirai", "rules", "tidymodels")
 ```
 ```{r}
 #| label: parallel
 #| include: false
-
-library(future.mirai)
-plan(mirai_multisession)
+library(mirai)
 ```
 
 ## Requirements
@@ -52,8 +49,7 @@ As with the previous chapter, we will use the `concrete` data set from the `r pk
 #| label: interactions-nonlinear-installs
 #| eval: false
 #| echo: true
-
-req_pkg <- c("Cubist", "finetune", "future.mirai", "rules", "tidymodels")
+req_pkg <- c("Cubist", "finetune", "mirai", "rules", "tidymodels")
 
 # Check to see if they are installed:
 pkg_installed <- vapply(req_pkg, rlang::is_installed, logical(1))
@@ -72,7 +68,6 @@ Let's load the meta package and manage some between-package function conflicts.
 #| results: hide
 #| message: false
 #| warning: false
-
 library(tidymodels)
 tidymodels_prefer()
 theme_set(theme_bw())
@@ -97,7 +92,6 @@ We need to load the `r pkg(rules)` package to enable access to the model, mark t
 
 ```{r}
 #| label: basic-cubist
-
 library(rules)
 
 cubist_spec <- cubist_rules(committees = tune(), neighbors = tune())
@@ -116,7 +110,6 @@ Let's make a uniform space-filling design with 25 candidate models:
 #| fig-width: 4
 #| fig-height: 4
 #| out-width: 40%
-
 cubist_grid <- grid_space_filling(cubist_param, size = 25)
 
 cubist_grid |>
@@ -135,7 +128,6 @@ Note that:
 
 ```{r}
 #| label: max-size
-
 # Default range is 0L to 9L:
 cubist_rules(neighbors = tune("K")) |>
   extract_parameter_set_dials() |>
@@ -147,7 +139,6 @@ You can also make grid manually as long as they are in a data frame and the colu
 
 ```{r}
 #| label: manual-grid
-
 crossing(committees = c(1, 8, 100), neighbors = c(0, 9))
 ```
 
@@ -170,7 +161,6 @@ To get started, let's recreate the objects for the concrete data that match thos
 
 ```{r}
 #| label: conc-setup
-
 set.seed(426)
 concrete_split <- initial_split(concrete, prop = 3 / 4)
 concrete_tr <- training(concrete_split)
@@ -185,7 +175,6 @@ Let's do basic grid search:
 ```{r}
 #| label: basic-cubist-grid
 #| cache: true
-
 cubist_res <-
   cubist_spec |>
   tune_grid(
@@ -202,7 +191,6 @@ This object is similar to the one produced by fit_resamples except that the `.me
 
 ```{r}
 #| label: tune-helpers
-
 collect_metrics(cubist_res)
 collect_predictions(cubist_res)
 ```
@@ -214,7 +202,6 @@ There are a few additional methods that we can apply here. First, we can visuali
 #| fig-width: 7
 #| fig-height: 4
 #| out-width: 75%
-
 autoplot(cubist_res)
 ```
 
@@ -226,7 +213,6 @@ There are also `show_best()` and `select_*()` functions to select the best resul
 
 ```{r}
 #| label: cubist-select
-
 show_best(cubist_res, metric = "rmse")
 
 show_best(cubist_res, metric = "rsq", n = 3)
@@ -236,7 +222,6 @@ To return the candidate with the smallest RMSE:
 
 ```{r}
 #| label: cubist-best-candidate
-
 cubist_best <- select_best(cubist_res, metric = "rmse")
 cubist_best
 ```
@@ -245,7 +230,6 @@ There are a few things that we can do with this candidate value. We can use it t
 
 ```{r}
 #| label: cubist-best-augment
-
 cubist_res |>
   collect_predictions() |>
   nrow()
@@ -269,7 +253,6 @@ We can also give these values for the calibration plot produced by `r pkg(probab
 #| fig-height: 5
 #| out-width: 50%
 #| warning: false
-
 library(probably)
 cal_plot_regression(cubist_res, parameters = cubist_best)
 ```
@@ -278,7 +261,6 @@ If these candidate points appear to be optimal, we can also update our model spe
 
 ```{r}
 #| label: cubist-finalize
-
 finalize_model(cubist_spec, cubist_best)
 ```
 
@@ -286,7 +268,6 @@ If we used the `save_workflow = TRUE` control option, we could get fit on the en
 
 ```{r}
 #| label: cubist-fit-best
-
 fit_best(cubist_res)
 ```
 
@@ -306,7 +287,6 @@ Let's run the same Cubist grid using the ANOVA method:
 
 ```{r}
 #| label: cubist-race
-
 library(finetune)
 
 # Since resamples are randomized, set the seed:
@@ -325,7 +305,6 @@ It is important to note that the helpful functions for racing results mostly fil
 
 ```{r}
 #| label: best-race
-
 show_best(cubist_race_res, metric = "rmse", n = 10)
 ```
 
@@ -336,7 +315,6 @@ To visualize the results, there is also a `plot_race()` function:
 #| fig-width: 6
 #| fig-height: 4
 #| out-width: 60%
-
 plot_race(cubist_race_res)
 ```
 

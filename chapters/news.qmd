@@ -2,9 +2,26 @@
 
 ## Changelog {.unlisted .unnumbered}
 
+## 2026-05-22
+
+The main chapter on classification trees (@sec-cls-trees) was added. 
+
+The sections on neural networks were relocated to be in their own chapter (@sec-cls-neural-nets). 
+
+## 2026-01-26
+
+New sections on
+
+- @sec-logistic-reg
+- @sec-nonlinear-da, such as 
+  - @sec-naive-bayes
+  - @sec-fda
+- @sec-cls-knn
+- @sec-cls-nnet
+
 ## 2025-07-25
 
-Part 4 has begun with (@sec-cls-metrics). 
+Part 4 has begun with @sec-cls-metrics.
 
 ## 2025-06-24
 

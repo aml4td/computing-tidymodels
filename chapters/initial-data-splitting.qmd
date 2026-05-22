@@ -13,7 +13,6 @@ We'll illustrate how to conduct an initial split of your data into different par
 ```{r}
 #| label: initial-data-splitting-knitr-setup
 #| include: false
-
 knitr::opts_chunk$set(
   comment = "#>",
   collapse = TRUE,
@@ -43,7 +42,6 @@ req_pkg <- c("caret", "spatialsample", "tidymodels", "tidysdm")
 #| label: initial-data-splitting-installs
 #| eval: false
 #| echo: true
-
 req_pkg <- c("caret", "spatialsample", "tidymodels", "tidysdm")
 
 # Check to see if they are installed:
@@ -63,7 +61,6 @@ Let's load the meta package and manage some between-package function conflicts.
 #| results: hide
 #| message: false
 #| warning: false
-
 library(tidymodels)
 tidymodels_prefer()
 ```
@@ -76,7 +73,6 @@ These data are in the `r pkg(modeldata)` package, which is part of  `r pkg(tidym
 
 ```{r}
 #| label: setup-ames
-
 data(ames, package = "modeldata")
 
 ames <-
@@ -112,7 +108,6 @@ Let's do that with the Ames data:
 
 ```{r}
 #| label: setup-split
-
 set.seed(3024)
 ames_split <- initial_split(ames)
 
@@ -123,7 +118,6 @@ The output shows the size of the resulting data sets. To get the two data sets, 
 
 ```{r}
 #| label: split-data-sets
-
 ames_train <- training(ames_split)
 ames_test <- testing(ames_split)
 ```
@@ -142,7 +136,6 @@ For the Ames data, we know that the distribution of sale prices has some outlyin
 
 ```{r}
 #| label: setup-strata-split
-
 set.seed(3024)
 ames_block_split <- initial_split(ames, strata = Sale_Price, breaks = 5)
 
@@ -166,7 +159,6 @@ Maximum dissimilarity sampling can be conducted using `caret::maxDissim()`. It s
 #| fig-align: center
 #| out-width: "50%"
 #| warning: false
-
 # Since we will be using distances in the calculations, create centered
 # and scaled versions of the coordinates then add a row index column.
 ames_scaled <-
@@ -228,7 +220,6 @@ To add a validation set at the outset, `initial_validation_split()` works the sa
 
 ```{r}
 #| label: setup-val-split
-
 set.seed(4)
 ames_val_split <- initial_validation_split(
   ames,
@@ -243,7 +234,6 @@ Again, the acquisition of data is the same but has the additional use of the `va
 
 ```{r}
 #| label: split-val-data-sets
-
 ames_train <- training(ames_val_split)
 ames_val <- validation(ames_val_split)
 ames_test <- testing(ames_val_split)
@@ -263,7 +253,6 @@ There are other applications of grouped data but the example data that we'll use
 
 ```{r}
 #| label: grouped-data
-
 data(Orthodont, package = "nlme")
 glimpse(Orthodont)
 ```
@@ -272,7 +261,6 @@ To use `rsample::group_initial_split()`, we must supply a `group` argument that 
 
 ```{r}
 #| label: grouped-data-split
-
 set.seed(93)
 orth_split <- group_initial_split(Orthodont, group = Subject, prop = 2 / 3)
 
@@ -284,7 +272,6 @@ From here, the code to get the resulting data sets is the same as previously sho
 
 ```{r}
 #| label: grouped-split-data-sets
-
 orth_tr <- training(orth_split)
 orth_te <- testing(orth_split)
 
@@ -303,7 +290,6 @@ For spatial data, we need to convert longitude and latitude to a special type of
 
 ```{r}
 #| label: load-spatial-pkgs
-
 library(sf)
 library(spatialsample)
 library(tidysdm)
@@ -313,7 +299,6 @@ The function to make the conversion is `sf::st_as_sf()`:
 
 ```{r}
 #| label: cols-to-geom
-
 ames_sf <-
   ames |>
   st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326)
@@ -336,7 +321,6 @@ For the blocking method, we need to specify the number of blocks (`n`), whether 
 
 ```{r}
 #| label: ames-block-split
-
 set.seed(318)
 ames_block_split <-
   spatial_initial_split(
@@ -358,7 +342,6 @@ There is a handy `autoplot()` method to visually assess the results:
 #| fig-width: 6
 #| fig-align: center
 #| out-width: "70%"
-
 autoplot(ames_block_split, cex = 1 / 2) +
   ggtitle("Blocking, no buffer") +
   theme_bw()
@@ -368,7 +351,6 @@ Let's add a buffer around these blocks to stop adjacent data from being the trai
 
 ```{r}
 #| label: ames-block-buff-split
-
 set.seed(318)
 ames_block_buff_split <-
   spatial_initial_split(
@@ -391,7 +373,6 @@ The buffer points are on gray:
 #| fig-width: 6
 #| fig-align: center
 #| out-width: "70%"
-
 autoplot(ames_block_buff_split, cex = 1 / 2) +
   ggtitle("Blocking with a buffer") +
   theme_bw()
