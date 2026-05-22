@@ -243,10 +243,27 @@ forest_mlp_res |>
 
 `r back("cls-neural-nets.html#sec-cls-nnet")`
 
-## More Advanced Network Models {#sec-cls-tab-net}
+## Special Tabular Network Models  {#sec-cls-tab-net}
 
-`r back("cls-neural-nets.html#sec-cls-tab-nnet")`
+### Batch Normalization {#sec-cls-batchnorm}
 
-## Foundational Models {#sec-cls-foundational}
+### Residual Networks {#sec-cls-resnet}
+
+`r back("cls-neural-nets.html#sec-cls-resnet")`
+
+### Attention Mechanisms {#sec-cls-attention}
+
+`r back("cls-neural-nets.html#sec-cls-attention")`
+
+### Multifocal Attention {#sec-cls-multi-attention}
+
+`r back("cls-neural-nets.html#sec-cls-multi-attention")`
+
+### Masking Mechanisms {#sec-cls-masking}
+
+`r back("cls-neural-nets.html#sec-cls-masking")`
+
+## Foundational Models  {#sec-cls-foundational}
 
 `r back("cls-neural-nets.html#sec-cls-foundational")`
+
