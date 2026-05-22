@@ -219,7 +219,7 @@ For example:
 
 ```{r}
 #| label: c5-tune
-#| out-width: 50%
+#| out-width: 70%
 #| fig-width: 6.25
 #| fig-height: 4
 
@@ -368,7 +368,7 @@ obl_tree |>
   print(n = 16)
 ```
 
-There are several other packages on CRAN to fit similar models, `r pkg(LDATree)`, `r pkg(ODRF)`,  and `r pkg(PPforest),` as well as the archived package `r pkg(nodeHarvest)`.
+There are several other packages on CRAN to fit similar models, `r pkg(LDATree)`, `r pkg(ODRF)`,  and `r pkg(PPforest)`, as well as the archived package `r pkg(nodeHarvest)`.
 
 `r back("cls-trees.html#sec-cls-oblique")`
 
