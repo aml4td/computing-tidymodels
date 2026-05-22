@@ -32,13 +32,15 @@ options(pillar.advice = FALSE, pillar.min_title_chars = Inf, pillar.sigfig = 4)
 source("../R/_common.R")
 # fmt: skip
 req_pkg <- 
-  c("aorsf", "bonsai", "evtree", "partykit", "probably", "rpart", 
-    "rules", "spatialsample", "tidymodels")
+  c("aorsf", "bonsai", "evtree", "partykit", "rpart", "rules",
+    "spatialsample", "tidymodels")
 
 req_pkg_fmt <- purrr::map_chr(req_pkg, ~ pkg_chr(.x))
 ```
 
-This chapter describes how to use neural networks. 
+In this chapter, we'll describe the R packages for fitting different types of classification trees, along with their tidymodels interfaces. 
+
+We'll skip several sections of the main text and go straight to the section on specific models. Many of the interfaces for low-level details, such as pruning or handling missing data, are internal to the R functions used to fit the models. 
 
 ## Requirements
 
@@ -51,7 +53,7 @@ You'll need `r length(req_pkg)` packages (`r req_pkg_fmt`) for this chapter:
 
 # fmt: skip
 req_pkg <- 
-  c("aorsf", "bonsai", "evtree", "partykit", "probably", "rpart",   "rules",
+  c("aorsf", "bonsai", "evtree", "partykit", "rpart", "rules",
     "spatialsample", "tidymodels")
 
 # Check to see if they are installed:
@@ -106,44 +108,282 @@ As before, we'll load the objects that were already computed for the forestation
 
 ## Specific Tree-Based Models {#sec-cls-tree-models}
 
+Let's look at how to fit the four main types of decision trees described in the text. 
+
 ### CART {#sec-cls-cart}
 
+The CART model is accessible using the `r pkg(rpart)` package. By default, it uses cost-complexity pruning, surrogate splits, and a one-standard error rule. There are arguments to supersede the defaults. 
+
+If you use the package directly, `rpart::rpart()` has only a formula method and does not automatically convert categorical predictors to indicator columns.  For example: 
 
 ```{r}
 #| label: rpart-fit
 library(rpart)
 cart_fit <- rpart(class ~ county + elevation, data = forested_train)
+cart_fit
 ```
 
+The terminal nodes show up in the output where the right-hand side has an asterisk. For example, this output: 
+
+```
+        718  138 Yes (0.80780 0.19220) *
+```
+
+for a terminal node where the first level of the factor ("Yes" in this case) had 718 data points, and the other level had 138. The relative proportions of those frequencies are in parentheses. 
+
+The package has a number of S3 methods that are helpful. Along with the standard `print()` and `predict()` methods, there is also a `plot()` method that visualizes the splits. However, the `r pkg(partykit)` package has a better plotting mechanism. To use it, first use `partykit::as.party()` to convert the object's format, then use `plot()`. 
+
+Another function that is helpful that can extract the rule to a terminal node is: 
 
 ```{r}
 #| label: rpart-rule
 path.rpart(cart_fit, 11)
 ```
 
+The `rpart.control()` function specifies how the model is trained. Any arguments that are passed to this function could also have been passed directly to `rpart()` itself. For example, we can control how many (or any) surrogate splits are determined when training. For example, to avoid surrogate splits (and use the whole predictor set): 
+
+```{r}
+#| label: no-surr-fit
+no_surrogate_fit <- rpart(
+  class ~ .,
+  data = forested_train,
+  usesurrogate = 0,
+  maxsurrogate = 0
+)
+no_surrogate_fit
+```
+
+Note that this did not affect the true splits. 
+
+The model has an internal variable importance score. Let's 
+
+```{r}
+#| label: rpart-imps
+no_surrogate_fit$variable.importance
+```
+
+A few points about this: 
+
+- This does not list the entire predictor set, only those that had at least one split. 
+- _By default_, the importance scores will include the effects of surrogate or competing splits. These may be at odds with what you would have seen with other types of splits. 
+
+Using tidymodels, `r pkg(partykit)` is the default engine for `decision_tree()`. Since it can fit both classification and regression models, we will need to set the model mode. For example:
+
+```{r}
+#| label: rpart-tm-fit
+library(tidymodels)
+cart_fit <- 
+  decision_tree(cost_complexity = 0.001, min_n = 50) |> 
+  set_mode("classification") |> 
+  fit(class ~ ., data = forested_train)
+cart_fit
+```
+
+There `predict()` and `augment()` methods have predictable results: 
+
+```{r}
+#| label: rpart-tm-pred
+predict(cart_fit, head(forested_test))
+augment(cart_fit, head(forested_test))
+```
+
+`r back("cls-trees.html#sec-cls-cart")`
+
 ### C4.5 and C5.0 {#sec-cls-c50}
 
+There is no native R reference implementation for C4.5, although a Java-based implementation is available via `RWeka::J48()`. 
 
+C5.0 trees and rules are available in the `r pkg(C50)` package. There are x/y interfaces as well as one that takes a formula. There is also a `C5.0Control()` function that controls details related to growing and pruning trees. 
+
+An example usage is: 
+
+```{r}
+#| label: c5-fit
+library(C50)
+c5_fit <- C5.0(class ~ ., data = forested_train)
+c5_fit
+```
+
+If you want to see the actual tree, use the `summary()` method: 
+
+```{r}
+#| label: c5-tree
+summary(c5_fit)
+```
+
+The `predict()` and `augment()` methods work in the same way as `rpart()`. 
+
+To fit (or tune) the tree using tidymodels, we can again use `decision_tree()` but specify that the `"C5.0"` engine. While there are no arguments for the cost-complexity or tree depth, `min_n` is the primary tuning parameter. There is a `CF` argument in the control function, but this parameter rarely has a significant effect on the fit. 
+
+For example: 
+
+```{r}
+#| label: c5-tune
+#| out-width: 50%
+#| fig-width: 6.25
+#| fig-height: 4
+
+c5_res <- 
+  decision_tree(engine = "C5.0", min_n = tune()) |> 
+  set_mode("classification") |> 
+  tune_grid(
+    class ~ ., 
+    resamples = forested_rs, 
+    grid = tibble(min_n = 2:20)
+  )
+
+autoplot(c5_res)
+```
+
+For this example, it prefers the deepest tree. 
+
+`r back("cls-trees.html#sec-cls-c50")`
 
 ### Conditional Inference Trees {#sec-cls-cit}
 
+These models can be accessed with the `r pkg(partykit)` package. The `ctree()` and possibly the  `ctree_control()` functions are used to fit the model. The former takes a formula to fit the model. Important options in the control function are `testtype` (to specify the aspects of the test, such as using a Bonferroni correction), `alpha` (the significance method), `minsplit` (the minimum number of samples to contribute to splitting), and so on. Like `rpart()`, you can pass control options directly to `ctree()`. 
 
+There is one limitation for this model: 
+
+```{r}
+#| label: cit-fit-fail
+#| error: true
+
+length(levels(forested_train$county))
+
+library(partykit)
+cit_fit <- ctree(class ~ ., data = forested_train)
+```
+
+We can use a recipe step to limit the number of counties given to the model (see below). 
+
+To use this method via `r pkg(tidymodels)`, install and load the `r pkg(bonsai)` package. Let's make a recipe that uses `step_other()` to consolidate infrequently occurring counties. We'll combine this with the model object within a workflow: 
+
+```{r}
+#| label: cit-fit
+library(bonsai)
+
+ctree_rec <- 
+  recipe(class ~ ., data = forested_train) |> 
+  step_other(county, threshold = 0.025) #<- determined by trying a few values
+
+ctree_fit <- 
+  workflow(
+    ctree_rec,
+    # Let's deliberately make a very shallow tree
+    decision_tree(mode = "classification", engine = "partykit", min_n = 1500)
+  ) |> 
+  fit(forested_train)
+ctree_fit
+```
+
+The `r pkg(partykit)` package has an excellent visualization tool
+
+
+```{r}
+#| label: ctree-plot
+#| out-width: 100%
+#| fig-width: 12
+#| fig-height: 6
+
+ctree_fit |> 
+  extract_fit_engine() |> 
+  # Use an option to vertically offset the labels so that they 
+  # do not overlap
+  plot(ep_args = list(justmin = 15))
+```
+
+There is an `as.party()` method that can work with `rpart` and `C5.0` model objects. After converting those models to the party format, you can use the plot function for them. 
 
 ### Globally Estimated Trees {#sec-cls-tree-global}
 
+The `r pkg(evtree)` package, based on `r pkg(partykit)`, can use genetic algorithms to train decision trees. It has a formula methods an includes arguments for: 
 
+- `minsplit`:	"the minimum sum of weights in a node in order to be considered for splitting."
+
+- `maxdepth`: "maximum depth of the tree. Note, that the memory requirements increase by the square of the maximum tree depth."
+
+- `niterations`:	"in case the run does not converge, it terminates after a specified number of iterations defined by niterations."
+
+- `ntrees`: "the number of trees in the population.
+
+- `alpha`: regulates the complexity part of the cost function. Increasing values of alpha encourage decreasing tree sizes."
+
+There are also parameters for the genetic algorithm operators (e.g., mutation rate, etc.). 
+
+Here's an example where we deliberately limit the tree size (in order to show a plot): 
+
+```{r}
+#| label: evtree-fit
+#| cache: true
+library(evtree)
+
+set.seed(8375)
+ga_tree <- evtree(class ~ ., data = forested_train, maxdepth = 2)
+ga_tree
+```
+
+Visually: 
+
+```{r}
+#| label: evree-plot
+#| out-width: 100%
+#| fig-width: 12
+#| fig-height: 6
+
+plot(ga_tree, ep_args = list(justmin = 15))
+```
+
+Currently, there is no tidymodels interface for this model. 
+
+`r back("cls-trees.html#sec-cls-cit")`
 
 ### Oblique Trees {#sec-cls-oblique}
 
+Oblique trees can be fit using a package intended for random forest models called `r pkg(aorsf)`. To fit a single decision tree: 
 
+```{r}
+#| label: obl-tree
+library(aorsf)
 
+# Directly:
+set.seed(82)
+obl_tree <- orsf(class ~ ., data = forested_train, n_tree = 1)
+
+# Via Tidymodels, also requires the bonsai package:
+set.seed(82)
+obl_tm_tree <- 
+  rand_forest(mode = "classification", engine = "aorsf", trees = 1) |> 
+  fit(class ~ ., data = forested_train)
+obl_tree
+```
+
+There is no interface for printing or plotting a single tree, although we can check its variable importance: 
+
+```{r}
+#| label: obl-imp
+obl_tree |> 
+  orsf_vi() |> 
+  tibble::enframe() |> 
+  print(n = 16)
+```
+
+There are several other packages on CRAN to fit similar models, `r pkg(LDATree)`, `r pkg(ODRF)`,  and `r pkg(PPforest),` as well as the archived package `r pkg(nodeHarvest)`.
+
+`r back("cls-trees.html#sec-cls-oblique")`
 
 ## Rule-Based Models {#sec-cls-rules}
 
+C5.0 rules can also be fit using the `r pkg(C50)` package, using the `rules = TRUE` option. As an example: 
 
+```{r}
+#| label: c5-rules-fit
+library(C50)
+c5_rules_fit <- C5.0(class ~ ., rules = TRUE, data = forested_train)
+c5_rules_fit
+summary(c5_rules_fit)
+```
 
-## The Instability of Trees {#sec-cls-tree-unstable}
+The `r pkg(rules)` package contains a `r pkg(parsnip)` model function called `C5_rules()`. 
 
-
-
-## Comparisons to Previous Models {#sec-cls-tree-compare}
+`r back("cls-trees.html#sec-cls-rules")`
