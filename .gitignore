@@ -20,3 +20,4 @@ index.toc
 .Renviron
 
 **/*.quarto_ipynb
+.positai
