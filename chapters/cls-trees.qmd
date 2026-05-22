@@ -326,7 +326,7 @@ plot(ga_tree, ep_args = list(justmin = 15))
 
 Currently, there is no tidymodels interface for this model. 
 
-`r back("cls-trees.html#sec-cls-cit")`
+`r back("cls-trees.html#sec-cls-global")`
 
 ### Oblique Trees {#sec-cls-oblique}
 
