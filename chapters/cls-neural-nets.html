@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="generator" content="quarto-1.9.36">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-<title>17&nbsp; Complex Nonlinear Boundaries – Tidymodels Computing Supplement</title>
+<title>18&nbsp; Neural Network Classifiers – Tidymodels Computing Supplement</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -64,8 +64,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../">
-<link href="../chapters/cls-neural-nets.html" rel="next">
-<link href="../chapters/cls-linear.html" rel="prev">
+<link href="../chapters/cls-trees.html" rel="next">
+<link href="../chapters/cls-nonlinear.html" rel="prev">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
@@ -103,32 +103,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-submit-button-title": "Submit",
     "search-label": "Search"
   }
-}</script><script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script><script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script><script type="text/javascript">
-const typesetMath = (el) => {
-  if (window.MathJax) {
-    // MathJax Typeset
-    window.MathJax.typeset([el]);
-  } else if (window.katex) {
-    // KaTeX Render
-    var mathElements = el.getElementsByClassName("math");
-    var macros = [];
-    for (var i = 0; i < mathElements.length; i++) {
-      var texText = mathElements[i].firstChild;
-      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
-        window.katex.render(texText.data, mathElements[i], {
-          displayMode: mathElements[i].classList.contains('display'),
-          throwOnError: false,
-          macros: macros,
-          fleqn: false
-        });
-      }
-    }
-  }
-}
-window.Quarto = {
-  typesetMath
-};
-</script>
+}</script>
 </head>
 <body class="nav-sidebar docked quarto-light">
 
@@ -138,7 +113,7 @@ window.Quarto = {
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
         <a class="flex-grow-1 no-decor" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
-          <h1 class="quarto-secondary-nav-title"><span id="sec-cls-nonlinear" class="quarto-section-identifier"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Complex Nonlinear Boundaries</span></span></h1>
+          <h1 class="quarto-secondary-nav-title"><span id="sec-cls-neural-nets" class="quarto-section-identifier"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Neural Network Classifiers</span></span></h1>
         </a>     
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
         <i class="bi bi-search"></i>
@@ -347,13 +322,13 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../chapters/cls-nonlinear.html" class="sidebar-item-text sidebar-link active">
+  <a href="../chapters/cls-nonlinear.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Complex Nonlinear Boundaries</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../chapters/cls-neural-nets.html" class="sidebar-item-text sidebar-link">
+  <a href="../chapters/cls-neural-nets.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Neural Network Classifiers</span></span></a>
   </div>
 </li>
@@ -385,21 +360,24 @@ window.Quarto = {
         <nav id="TOC" role="doc-toc" class="toc-active"><h2 id="toc-title">Table of contents</h2>
    
   <ul>
-<li><a href="#requirements" id="toc-requirements" class="nav-link active" data-scroll-target="#requirements"><span class="header-section-number">17.1</span> Requirements</a></li>
+<li><a href="#requirements" id="toc-requirements" class="nav-link active" data-scroll-target="#requirements"><span class="header-section-number">18.1</span> Requirements</a></li>
+  <li><a href="#sec-cls-nnet" id="toc-sec-cls-nnet" class="nav-link" data-scroll-target="#sec-cls-nnet"><span class="header-section-number">18.2</span> Neural Networks via Multilayer Perceptrons</a></li>
   <li>
-<a href="#sec-nonlinear-da" id="toc-sec-nonlinear-da" class="nav-link" data-scroll-target="#sec-nonlinear-da"><span class="header-section-number">17.2</span> Nonlinear Discriminants</a>
+<a href="#sec-cls-tab-net" id="toc-sec-cls-tab-net" class="nav-link" data-scroll-target="#sec-cls-tab-net"><span class="header-section-number">18.3</span> Special Tabular Network Models</a>
   <ul class="collapse">
-<li><a href="#sec-naive-bayes" id="toc-sec-naive-bayes" class="nav-link" data-scroll-target="#sec-naive-bayes"><span class="header-section-number">17.2.1</span> Naive Bayes</a></li>
-  <li><a href="#sec-fda" id="toc-sec-fda" class="nav-link" data-scroll-target="#sec-fda"><span class="header-section-number">17.2.2</span> Flexible Discriminants</a></li>
+<li><a href="#sec-cls-batchnorm" id="toc-sec-cls-batchnorm" class="nav-link" data-scroll-target="#sec-cls-batchnorm"><span class="header-section-number">18.3.1</span> Batch Normalization</a></li>
+  <li><a href="#sec-cls-resnet" id="toc-sec-cls-resnet" class="nav-link" data-scroll-target="#sec-cls-resnet"><span class="header-section-number">18.3.2</span> Residual Networks</a></li>
+  <li><a href="#sec-cls-attention" id="toc-sec-cls-attention" class="nav-link" data-scroll-target="#sec-cls-attention"><span class="header-section-number">18.3.3</span> Attention Mechanisms</a></li>
+  <li><a href="#sec-cls-multi-attention" id="toc-sec-cls-multi-attention" class="nav-link" data-scroll-target="#sec-cls-multi-attention"><span class="header-section-number">18.3.4</span> Multifocal Attention</a></li>
+  <li><a href="#sec-cls-masking" id="toc-sec-cls-masking" class="nav-link" data-scroll-target="#sec-cls-masking"><span class="header-section-number">18.3.5</span> Masking Mechanisms</a></li>
   </ul>
 </li>
-  <li><a href="#sec-cls-knn" id="toc-sec-cls-knn" class="nav-link" data-scroll-target="#sec-cls-knn"><span class="header-section-number">17.3</span> K-Nearest Neighbors</a></li>
-  <li><a href="#sec-cls-svm" id="toc-sec-cls-svm" class="nav-link" data-scroll-target="#sec-cls-svm"><span class="header-section-number">17.4</span> Support Vector Machines</a></li>
+  <li><a href="#sec-cls-foundational" id="toc-sec-cls-foundational" class="nav-link" data-scroll-target="#sec-cls-foundational"><span class="header-section-number">18.4</span> Foundational Models</a></li>
   </ul></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block default"><div class="quarto-title">
-<h1 class="title d-none d-lg-block"><span id="sec-cls-nonlinear" class="quarto-section-identifier"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Complex Nonlinear Boundaries</span></span></h1>
+<h1 class="title d-none d-lg-block"><span id="sec-cls-neural-nets" class="quarto-section-identifier"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Neural Network Classifiers</span></span></h1>
 </div>
 
 
@@ -413,16 +391,15 @@ window.Quarto = {
   
 
 
-</header><p>This chapter describes how to use inherently nonlinear models (excluding trees), such as K-nearest neighbors, naive Bayes, and others.</p>
-<section id="requirements" class="level2" data-number="17.1"><h2 data-number="17.1" class="anchored" data-anchor-id="requirements">
-<span class="header-section-number">17.1</span> Requirements</h2>
-<p>You’ll need 12 packages (<span class="pkg"><a href="https://cran.r-project.org/package=bestNormalize">bestNormalize</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=discrim">discrim</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=earth">earth</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=embed">embed</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=important">important</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=kknn">kknn</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=klaR">klaR</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=mda">mda</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=mirai">mirai</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=probably">probably</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=spatialsample">spatialsample</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=tidymodels">tidymodels</a></span>) for this chapter:</p>
+</header><p>This chapter describes how to use neural networks.</p>
+<section id="requirements" class="level2" data-number="18.1"><h2 data-number="18.1" class="anchored" data-anchor-id="requirements">
+<span class="header-section-number">18.1</span> Requirements</h2>
+<p>You’ll need 8 packages (<span class="pkg"><a href="https://cran.r-project.org/package=bestNormalize">bestNormalize</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=brulee">brulee</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=embed">embed</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=mirai">mirai</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=nnet">nnet</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=probably">probably</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=spatialsample">spatialsample</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=tidymodels">tidymodels</a></span>) for this chapter:</p>
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># fmt: skip</span></span>
 <span><span class="va">req_pkg</span> <span class="op">&lt;-</span> </span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"bestNormalize"</span>, <span class="st">"discrim"</span>, <span class="st">"earth"</span>, <span class="st">"embed"</span>, <span class="st">"important"</span>, </span>
-<span>    <span class="st">"kknn"</span>, <span class="st">"klaR"</span>, <span class="st">"mda"</span>, <span class="st">"mirai"</span>, <span class="st">"probably"</span>, <span class="st">"spatialsample"</span>, </span>
-<span>    <span class="st">"tidymodels"</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"bestNormalize"</span>, <span class="st">"brulee"</span>, <span class="st">"embed"</span>, <span class="st">"mirai"</span>, <span class="st">"nnet"</span>, <span class="st">"probably"</span>,</span>
+<span>    <span class="st">"spatialsample"</span>, <span class="st">"tidymodels"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Check to see if they are installed:</span></span>
 <span><span class="va">pkg_installed</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">vapply</a></span><span class="op">(</span><span class="va">req_pkg</span>, <span class="fu">rlang</span><span class="fu">::</span><span class="va"><a href="https://rlang.r-lib.org/reference/is_installed.html">is_installed</a></span>, <span class="fu"><a href="https://rdrr.io/r/base/logical.html">logical</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
@@ -464,239 +441,149 @@ window.Quarto = {
 <span><span class="co">#   load()</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/load.html">load</a></span><span class="op">(</span><span class="st">"~/content/website/RData/forested_data.RData"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-</section><section id="sec-nonlinear-da" class="level2" data-number="17.2"><h2 data-number="17.2" class="anchored" data-anchor-id="sec-nonlinear-da">
-<span class="header-section-number">17.2</span> Nonlinear Discriminants</h2>
-<p>The tidymodels functions required to use discriminant analysis models are contained in the <span class="pkg"><a href="https://cran.r-project.org/package=discrim">discrim</a></span> package. We’ll look at two models from that package.</p>
-<section id="sec-naive-bayes" class="level3" data-number="17.2.1"><h3 data-number="17.2.1" class="anchored" data-anchor-id="sec-naive-bayes">
-<span class="header-section-number">17.2.1</span> Naive Bayes</h3>
-<p>There are 2 engines for the <code><a href="https://parsnip.tidymodels.org/reference/naive_Bayes.html">naive_Bayes()</a></code> function in <span class="pkg"><a href="https://cran.r-project.org/package=discrim">discrim</a></span>: <code>klaR</code> and <code>naivebayes</code>. We’ll focus on the first (which is the default engine).</p>
-<p>The main text mentioned that removing potentially irrelevant predictors can benefit naive Bayes models. To do this, we’ll use a random forest importance filter to do so. This is accomplished using a recipe with a step from the <span class="pkg"><a href="https://cran.r-project.org/package=important">important</a></span> package:</p>
+</section><section id="sec-cls-nnet" class="level2" data-number="18.2"><h2 data-number="18.2" class="anchored" data-anchor-id="sec-cls-nnet">
+<span class="header-section-number">18.2</span> Neural Networks via Multilayer Perceptrons</h2>
+<p>There are several engines in tidymodels for fitting basic, feed-forward neural networks for classification: <code>nnet</code>, <code>keras</code>, <code>brulee</code>, and <code>brulee_two_layer</code>. The first three assume a single hidden layer. The focus here will be on using the <code>brulee</code> engine, as it offers the most options.</p>
+<p>The <span class="pkg"><a href="https://cran.r-project.org/package=parsnip">parsnip</a></span> package function for this model is <code><a href="https://parsnip.tidymodels.org/reference/mlp.html">mlp()</a></code> and has main arguments:</p>
+<ul>
+<li>
+<code>hidden_units</code>: the number of hidden units in the model.</li>
+<li>
+<code>activation</code>: the activation function (e.g., <code>"relu"</code>).</li>
+<li>
+<code>penalty</code>: the amount of penalization.</li>
+<li>
+<code>dropout</code>: the proportion of model coefficients (i.e., weights) to set to zero during optimization.</li>
+<li>
+<code>epochs</code>: the number of full passes through the training set.</li>
+<li>
+<code>learn_rate</code>: the learning rate.</li>
+</ul>
+<p>Please note that not all engines support all of these parameters. For example, the <code>"net"</code> engine cannot use <code>epoch</code>, <code>dropout</code>, <code>learn_rate</code>, or <code>activation</code>.</p>
+<p>For <code>brulee</code>, there are a few helpful engine-specific arguments:</p>
+<ul>
+<li>
+<code>momentum</code>: the number used to specify historical gradient information during optimization.</li>
+<li>
+<code>batch_size</code>: an integer for the number of training set points in each batch.</li>
+<li>
+<code>class_weights</code>: numeric class weights. See <code><a href="https://brulee.tidymodels.org/reference/brulee_mlp.html">brulee::brulee_mlp()</a></code> for more details.</li>
+<li>
+<code>stop_iter</code>: a non-negative integer for how many iterations with no improvement before stopping. (default: 5L).</li>
+<li>
+<code>rate_schedule</code>: A function to change the learning rate over epochs. See <code><a href="https://brulee.tidymodels.org/reference/schedule_decay_time.html">brulee::schedule_decay_time()</a></code> for details. Possible values include: <code>"decay_time"</code>, <code>"decay_expo"</code>, <code>"none"</code>, <code>"cyclic"</code>, and <code>"step"</code>.</li>
+<li>
+<code>optimizer</code>: the optimization method. Some example values are: <code>"SGD"</code>, <code>"ADAMw"</code>, <code>"Adadelta"</code>, <code>"Adagrad"</code>, and <code>"RMSprop"</code>.</li>
+</ul>
+<p>To demonstrate, we’ll train our model using the AdamW variant of stochastic gradient descent for a maximum of 25 epochs, but may stop early after five consecutive poor iterations.</p>
+<p>Before fitting the model, some preprocessing is necessary. We will need to convert <code>county</code> into one or more numeric columns. We can use binary indicators; however, for demonstration purposes, a supervised effect encoding model is employed to generate a single column of values. After this, we use the orderNorm technique to transform our predictors to have the same standard normal distribution.</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">filter_rec</span> <span class="op">&lt;-</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">encode_rec</span> <span class="op">&lt;-</span></span>
 <span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span><span class="va">class</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">forested_train</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://important.tidymodels.org/reference/step_predictor_best.html">step_predictor_best</a></span><span class="op">(</span><span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html">all_predictors</a></span><span class="op">(</span><span class="op">)</span>, score <span class="op">=</span> <span class="st">"imp_rf"</span>, prop_terms <span class="op">=</span> <span class="fu"><a href="https://hardhat.tidymodels.org/reference/tune.html">tune</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span>  <span class="fu"><a href="https://embed.tidymodels.org/reference/step_lencode_mixed.html">step_lencode_mixed</a></span><span class="op">(</span><span class="va">county</span>, outcome <span class="op">=</span> <span class="st">"class"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://petersonr.github.io/bestNormalize/reference/step_orderNorm.html">step_orderNorm</a></span><span class="op">(</span><span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html">all_numeric_predictors</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>We tune over the proportion of predictors retained using candidate values of 20%, 40%, …, 100%. We’ll also tune the kernel width adjustment parameter, with a value of 1.0 corresponding to the default estimated width. Smaller values result in more distribution peaks, while larger values widen the width, allowing more data to be used to compute the density at each point. We’ll make a regular grid from these two:</p>
+<p>Our model specification will tune numrous parameters:</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">nb_wflow</span> <span class="op">&lt;-</span> <span class="fu">workflow</span><span class="op">(</span><span class="va">filter_rec</span>, <span class="fu"><a href="https://parsnip.tidymodels.org/reference/naive_Bayes.html">naive_Bayes</a></span><span class="op">(</span>smoothness <span class="op">=</span> <span class="fu"><a href="https://hardhat.tidymodels.org/reference/tune.html">tune</a></span><span class="op">(</span><span class="op">)</span>, Laplace <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">nb_grid</span> <span class="op">&lt;-</span> <span class="fu">crossing</span><span class="op">(</span></span>
-<span>  smoothness <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">1.5</span>, by <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span>,</span>
-<span>  prop_terms <span class="op">=</span> <span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span> <span class="op">/</span> <span class="fl">5</span><span class="op">)</span></span>
-<span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
-<p>After this, we’ll resample our models and compute performance for each candidate:</p>
-<div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">872</span><span class="op">)</span></span>
-<span><span class="va">forest_nb_res</span> <span class="op">&lt;-</span></span>
-<span>  <span class="va">nb_wflow</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu">tune_grid</span><span class="op">(</span></span>
-<span>    resamples <span class="op">=</span> <span class="va">forested_rs</span>,</span>
-<span>    grid <span class="op">=</span> <span class="va">nb_grid</span>,</span>
-<span>    metrics <span class="op">=</span> <span class="va">cls_mtr</span>,</span>
-<span>    control <span class="op">=</span> <span class="va">ctrl_grid</span></span>
-<span>  <span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
-<p>We can use the <code><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot()</a></code> method to get a quick assessment of the patterns of performance for the two tuning parameters:</p>
-<div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot</a></span><span class="op">(</span><span class="va">forest_nb_res</span>, metric <span class="op">=</span> <span class="st">"brier_class"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output-display">
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure"><p><img src="cls-nonlinear_files/figure-html/naive-bayes-tune-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%"></p>
-</figure>
-</div>
-</div>
-</div>
-<p>There was some merit in tuning the kernel smoothness parameter; smaller values produce slightly better performance. That is a fairly unusual pattern since a narrow kernel might lead to overfitting the distributions. For the feature selection step, a larger predictor set appears to be favored. However, the price is small for using the entire training set, depending on the smoothness value. We’ll revisit this again in <a href="#sec-cls-knn" class="quarto-xref"><span>Section 17.3</span></a> where the same recipes are used with a different model.</p>
-<p>Overall, these results are not as favorable as those from the logistic regression in the previous chapter. We’ll move on from here to the next discriminant model.</p>
-<p><a href="https://aml4td.org/chapters/cls-nonlinear.html#sec-naive-bayes"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
-</section><section id="sec-fda" class="level3" data-number="17.2.2"><h3 data-number="17.2.2" class="anchored" data-anchor-id="sec-fda">
-<span class="header-section-number">17.2.2</span> Flexible Discriminants</h3>
-<p>FDA models are a generalization of linear discriminant analysis that enables us to fit our models using techniques more complex than simple linear regression. Almost any regression function can be used with FDA. Our focus will be on using the multivariate adaptive regression spline (MARS) model with FDA; however, other models can also be considered. See the documentation for <code><a href="https://rdrr.io/pkg/mda/man/fda.html">mda::fda()</a></code> for more information.</p>
-<p>The best implementation of the MARS model is available in the <span class="pkg"><a href="https://cran.r-project.org/package=earth">earth</a></span> package, which is the default in tidymodels. The <span class="pkg"><a href="https://cran.r-project.org/package=discrim">discrim</a></span> package contains <code><a href="https://parsnip.tidymodels.org/reference/discrim_flexible.html">discrim_flexible()</a></code> for training these models.</p>
-<p>The main function parameters are:</p>
-<ul>
-<li>
-<code>num_terms</code>: the number of MARS terms (including the intercept) to keep during training.</li>
-<li>
-<code>prod_degree</code>: values of 1 or 2 to indicate if interaction pairs should be considered (<code>prod_degree = 2</code>) or if an additive model (<code>prod_degree = 1</code>) will be used.</li>
-<li>
-<code>prune_method</code>: How should terms be removed? Possible values are: <code>"backward"</code>, <code>"none"</code>, <code>"exhaustive"</code>, <code>"forward"</code>, <code>"seqrep"</code>, or <code>"cv"</code>.</li>
-</ul>
-<p>One helpful engine-specific parameter is <code>nk</code>. This is the number of initial MARS terms to generate before pruning. By default, this is limited to <span class="math inline">\(min(200, max(2p))+1\)</span> where <span class="math inline">\(p\)</span> is the number of predictors. For our data, this default is 34 terms. However, when the training set has “many” rows, we might want to increase this value to encourage the model to <em>potentially</em> produce more complex models. We could tune this parameter to experiment a little more. However, for demonstration, a static value of <code>nk = 201</code> was set. Here is the code for that specification:</p>
-<div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">fda_spec</span> <span class="op">&lt;-</span></span>
-<span>  <span class="fu"><a href="https://parsnip.tidymodels.org/reference/discrim_flexible.html">discrim_flexible</a></span><span class="op">(</span></span>
-<span>    num_terms <span class="op">=</span> <span class="fu"><a href="https://hardhat.tidymodels.org/reference/tune.html">tune</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>    prod_degree <span class="op">=</span> <span class="fu"><a href="https://hardhat.tidymodels.org/reference/tune.html">tune</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>    prune_method <span class="op">=</span> <span class="fu"><a href="https://hardhat.tidymodels.org/reference/tune.html">tune</a></span><span class="op">(</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">mlp_spec</span> <span class="op">&lt;-</span></span>
+<span>  <span class="fu"><a href="https://parsnip.tidymodels.org/reference/mlp.html">mlp</a></span><span class="op">(</span></span>
+<span>    hidden_units <span class="op">=</span> <span class="fu"><a href="https://hardhat.tidymodels.org/reference/tune.html">tune</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>    penalty <span class="op">=</span> <span class="fu"><a href="https://hardhat.tidymodels.org/reference/tune.html">tune</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>    learn_rate <span class="op">=</span> <span class="fu"><a href="https://hardhat.tidymodels.org/reference/tune.html">tune</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>    epochs <span class="op">=</span> <span class="fl">25</span>,</span>
+<span>    activation <span class="op">=</span> <span class="fu"><a href="https://hardhat.tidymodels.org/reference/tune.html">tune</a></span><span class="op">(</span><span class="op">)</span></span>
 <span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://parsnip.tidymodels.org/reference/set_engine.html">set_engine</a></span><span class="op">(</span><span class="st">"earth"</span>, nk <span class="op">=</span> <span class="fl">201</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">fda_wflow</span> <span class="op">&lt;-</span> <span class="fu">workflow</span><span class="op">(</span><span class="va">class</span> <span class="op">~</span> <span class="va">.</span>, <span class="va">fda_spec</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
-<p>For the grid, another regular grid was used that crossed all three parameters. We limit the number of retained terms to 50 and consider forward and backward pruning. The tuning code is otherwise unremarkable:</p>
-<div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">shears</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"backward"</span>, <span class="st">"forward"</span><span class="op">)</span></span>
-<span><span class="va">fda_grid</span> <span class="op">&lt;-</span> <span class="fu">crossing</span><span class="op">(</span>num_terms <span class="op">=</span> <span class="fl">2</span><span class="op">:</span><span class="fl">50</span>, prod_degree <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">2</span>, prune_method <span class="op">=</span> <span class="va">shears</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">872</span><span class="op">)</span></span>
-<span><span class="va">forest_fda_res</span> <span class="op">&lt;-</span></span>
-<span>  <span class="va">fda_wflow</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu">tune_grid</span><span class="op">(</span></span>
-<span>    resamples <span class="op">=</span> <span class="va">forested_rs</span>,</span>
-<span>    grid <span class="op">=</span> <span class="va">fda_grid</span>,</span>
-<span>    metrics <span class="op">=</span> <span class="va">cls_mtr</span>,</span>
-<span>    control <span class="op">=</span> <span class="va">ctrl_grid</span></span>
-<span>  <span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
-<p>Another quick visualization tells us what happened:</p>
-<div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot</a></span><span class="op">(</span><span class="va">forest_fda_res</span>, metric <span class="op">=</span> <span class="st">"brier_class"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output-display">
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure"><p><img src="cls-nonlinear_files/figure-html/fda-tune-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%"></p>
-</figure>
-</div>
-</div>
-</div>
-<p>There was a slight benefit to using interaction models. The difference between panels is difficult to see. For interaction models, about 30 terms should be retained (and around 40 for additive models). We can see that the pruning methods yielded very similar Brier scores, but forward selection might be less noisy.</p>
-<p>To demonstrate how to visualize predictive profiles for additive models, let’s fit that model to the training set:</p>
-<div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">fda_fit</span> <span class="op">&lt;-</span></span>
-<span>  <span class="va">fda_wflow</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu">finalize_workflow</span><span class="op">(</span></span>
-<span>    <span class="fu">tibble</span><span class="op">(</span></span>
-<span>      num_terms <span class="op">=</span> <span class="fl">40</span>,</span>
-<span>      prod_degree <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>      prune_method <span class="op">=</span> <span class="st">"forward"</span></span>
-<span>    <span class="op">)</span></span>
-<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://generics.r-lib.org/reference/fit.html">fit</a></span><span class="op">(</span><span class="va">forested_train</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
-<p>For each predictor, we want to vary its value while holding the others constant. Since the models are additive, the constant could be anything, so we use the median for numeric predictors and the first <code>county</code> value.</p>
-<p>We’ll create a vector of names for the numeric predictors and get their constant values (plus the country value):</p>
-<div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">numeric_pred_nms</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sets.html">setdiff</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">forested_train</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"class"</span>, <span class="st">"county"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">numeric_pred</span> <span class="op">&lt;-</span></span>
-<span>  <span class="va">forested_train</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu">select</span><span class="op">(</span><span class="fu">all_of</span><span class="op">(</span><span class="va">numeric_pred_nms</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">median_vals</span> <span class="op">&lt;-</span></span>
-<span>  <span class="va">numeric_pred</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu">map_dbl</span><span class="op">(</span><span class="va">median</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html">as_tibble_row</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu">mutate</span><span class="op">(</span>county <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/levels.html">levels</a></span><span class="op">(</span><span class="va">forested_train</span><span class="op">$</span><span class="va">county</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
-<p>We also create a representative grid for each predictor using quantiles (with a maximum grid size of 101):</p>
-<div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">col_seqs</span> <span class="op">&lt;-</span> <span class="fu">map</span><span class="op">(</span><span class="va">numeric_pred</span>, <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/quantile.html">quantile</a></span><span class="op">(</span><span class="va">.x</span>, probs <span class="op">=</span> <span class="op">(</span><span class="fl">0</span><span class="op">:</span><span class="fl">100</span><span class="op">)</span> <span class="op">/</span> <span class="fl">100</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
-<p>We create a placeholder object, <code>profiles</code>, to contain all of the results, then loop over the numeric predictor columns to make the prediction set, compute estimated probabilities, and then bind them to the placeholder:</p>
-<div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">profiles</span> <span class="op">&lt;-</span> <span class="cn">NULL</span></span>
-<span></span>
-<span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_along</a></span><span class="op">(</span><span class="va">numeric_pred_nms</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">pred_nm</span> <span class="op">&lt;-</span> <span class="va">numeric_pred_nms</span><span class="op">[</span><span class="va">i</span><span class="op">]</span></span>
-<span>  <span class="va">static</span> <span class="op">&lt;-</span> <span class="va">median_vals</span> <span class="op">|&gt;</span> <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="fu">all_of</span><span class="op">(</span><span class="va">pred_nm</span><span class="op">)</span><span class="op">)</span></span>
-<span>  <span class="va">var_seq</span> <span class="op">&lt;-</span> <span class="va">col_seqs</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span></span>
-<span>  <span class="va">var_grid</span> <span class="op">&lt;-</span> <span class="fu">crossing</span><span class="op">(</span><span class="op">!</span><span class="op">!</span><span class="va">pred_nm</span> <span class="op">:=</span> <span class="va">var_seq</span>, <span class="va">static</span><span class="op">)</span></span>
-<span></span>
-<span>  <span class="va">grid</span> <span class="op">&lt;-</span></span>
-<span>    <span class="fu"><a href="https://generics.r-lib.org/reference/augment.html">augment</a></span><span class="op">(</span><span class="va">fda_fit</span>, new_data <span class="op">=</span> <span class="va">var_grid</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu">select</span><span class="op">(</span><span class="va">.pred_Yes</span>, <span class="fu">all_of</span><span class="op">(</span><span class="va">pred_nm</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu">set_names</span><span class="op">(</span><span class="st">"Probability"</span>, <span class="st">"Value"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu">mutate</span><span class="op">(</span>Predictor <span class="op">=</span> <span class="va">pred_nm</span><span class="op">)</span></span>
-<span></span>
-<span>  <span class="va">profiles</span> <span class="op">&lt;-</span> <span class="fu">bind_rows</span><span class="op">(</span><span class="va">profiles</span>, <span class="va">grid</span><span class="op">)</span></span>
-<span><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
-<p>Now we can create a plot of profiles:</p>
-<div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">profiles</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu">ggplot</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span><span class="va">Value</span>, <span class="va">Probability</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">geom_line</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">facet_wrap</span><span class="op">(</span><span class="op">~</span><span class="va">Predictor</span>, scale <span class="op">=</span> <span class="st">"free"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="co"># Since the y-axis values are meaningless for this visualization, we remove it:</span></span>
-<span>  <span class="fu">theme</span><span class="op">(</span>axis.text.y <span class="op">=</span> <span class="fu">element_blank</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output-display">
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure"><p><img src="cls-nonlinear_files/figure-html/fda-profile-plot-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%"></p>
-</figure>
-</div>
-</div>
-</div>
-<p>The flat profiles indicate that the predictor was never used in the model.</p>
-<p>Keep in mind that the y-axis for these profiles is <em>relative</em> probability. Their actual values are linear combinations that can’t be displayed in the same visualization.</p>
-<p><a href="https://aml4td.org/chapters/cls-nonlinear.html#sec-fda"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
-</section></section><section id="sec-cls-knn" class="level2" data-number="17.3"><h2 data-number="17.3" class="anchored" data-anchor-id="sec-cls-knn">
-<span class="header-section-number">17.3</span> K-Nearest Neighbors</h2>
-<p>The KNN model is fit using the <span class="pkg"><a href="https://cran.r-project.org/package=parsnip">parsnip</a></span> function <code><a href="https://parsnip.tidymodels.org/reference/nearest_neighbor.html">nearest_neighbor()</a></code>. It has a single engine (<code>kknn"</code>) with main parameters:</p>
-<ul>
-<li>
-<code>neighbors()</code>: an integer for the number of nearest neighbors.</li>
-<li>
-<code>weight_func()</code>: a character value for the kernel functions to apply to distances (e.g., <code>"rectangular"</code>). Possible values are contained in the vector <code><a href="https://dials.tidymodels.org/reference/weight_func.html">dials::values_weight_func</a></code>.</li>
-<li>
-<code>dist_power()</code>: a numeric value for the exponent in the Minkowski distance.</li>
-</ul>
-<p>For preprocessing, the predictions should all be numeric and have the same scale/units. Removing irrelevant predictors is also a good idea, as evidenced by FIGURE.</p>
-<p>We’ll recycle the recipes from <a href="#sec-naive-bayes" class="quarto-xref"><span>Section 17.2.1</span></a> that used a random forest importance filter to screen the predictor set and add an orderNorm transformation to put the predictors on the same symmetric scale. From there, we’ll write a model specification and tag all three parameters for tuning:</p>
-<div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">knn_spec</span> <span class="op">&lt;-</span></span>
-<span>  <span class="fu"><a href="https://parsnip.tidymodels.org/reference/nearest_neighbor.html">nearest_neighbor</a></span><span class="op">(</span></span>
-<span>    neighbors <span class="op">=</span> <span class="fu"><a href="https://hardhat.tidymodels.org/reference/tune.html">tune</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>    dist_power <span class="op">=</span> <span class="fu"><a href="https://hardhat.tidymodels.org/reference/tune.html">tune</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>    weight_func <span class="op">=</span> <span class="fu"><a href="https://hardhat.tidymodels.org/reference/tune.html">tune</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://parsnip.tidymodels.org/reference/set_engine.html">set_engine</a></span><span class="op">(</span></span>
+<span>    <span class="st">"brulee"</span>,</span>
+<span>    stop_iter <span class="op">=</span> <span class="fl">5</span>,</span>
+<span>    optimizer <span class="op">=</span> <span class="st">"ADAMw"</span>,</span>
+<span>    rate_schedule <span class="op">=</span> <span class="fu"><a href="https://hardhat.tidymodels.org/reference/tune.html">tune</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>    batch_size <span class="op">=</span> <span class="fu"><a href="https://hardhat.tidymodels.org/reference/tune.html">tune</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>    momentum <span class="op">=</span> <span class="fu"><a href="https://hardhat.tidymodels.org/reference/tune.html">tune</a></span><span class="op">(</span><span class="op">)</span></span>
 <span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://parsnip.tidymodels.org/reference/set_args.html">set_mode</a></span><span class="op">(</span><span class="st">"classification"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">encode_and_filter_rec</span> <span class="op">&lt;-</span></span>
-<span>  <span class="va">filter_rec</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://embed.tidymodels.org/reference/step_lencode_mixed.html">step_lencode_mixed</a></span><span class="op">(</span><span class="va">county</span>, outcome <span class="op">=</span> <span class="st">"class"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://petersonr.github.io/bestNormalize/reference/step_orderNorm.html">step_orderNorm</a></span><span class="op">(</span><span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html">all_numeric_predictors</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">knn_wflow</span> <span class="op">&lt;-</span> <span class="fu">workflow</span><span class="op">(</span><span class="va">encode_and_filter_rec</span>, <span class="va">knn_spec</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span><span class="va">mlp_flow</span> <span class="op">&lt;-</span> <span class="fu">workflow</span><span class="op">(</span><span class="va">encode_rec</span>, <span class="va">mlp_spec</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>For a grid, we’ll set the range of neighbors to 50 locations, and use five different kernel weighting functions:</p>
+<p>tidymodels is well-versed in each of these parameters and can default to sensible ranges for each. However, we will adjust a few parameter ranges and reduce the number of possible values for the learning rate scheduler and the activation function (for demonstration purposes).</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">kern_vals</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"rectangular"</span>, <span class="st">"triangular"</span>, <span class="st">"cos"</span>, <span class="st">"gaussian"</span>, <span class="st">"inv"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">knn_param</span> <span class="op">&lt;-</span></span>
-<span>  <span class="va">knn_wflow</span> <span class="op">|&gt;</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">mlp_param</span> <span class="op">&lt;-</span></span>
+<span>  <span class="va">mlp_flow</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://hardhat.tidymodels.org/reference/hardhat-extract.html">extract_parameter_set_dials</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/stats/update.html">update</a></span><span class="op">(</span></span>
-<span>    neighbors <span class="op">=</span> <span class="fu">neighbors</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">50</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>    weight_func <span class="op">=</span> <span class="fu">weight_func</span><span class="op">(</span><span class="va">kern_vals</span><span class="op">)</span></span>
+<span>    momentum <span class="op">=</span> <span class="fu">momentum</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.8</span>, <span class="fl">0.99</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    penalty <span class="op">=</span> <span class="fu">penalty</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">10</span>, <span class="op">-</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    learn_rate <span class="op">=</span> <span class="fu">learn_rate</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">4</span>, <span class="op">-</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    activation <span class="op">=</span> <span class="fu">activation</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"elu"</span>, <span class="st">"relu"</span>, <span class="st">"tanh"</span>, <span class="st">"tanhshrink"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    rate_schedule <span class="op">=</span> <span class="fu">rate_schedule</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"cyclic"</span>, <span class="st">"decay_time"</span>, <span class="st">"none"</span><span class="op">)</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>Now we tune the model with the familiar syntax:</p>
+<p>From here, we can use <code>tune_grid()</code> to run the computations. In the main text, several preprocessors were used with the same model specification. There, we used a workflow set similar to what was shown in the previous chapter for logistic regression.</p>
+<p>A note about <code>brulee</code>: it uses the <code>torch</code> ecosystem for computations natively in R (no Python required). We can run in parallel across CPU cores and/or, if your hardware allows, increase computational efficiency by utilizing a GPU.</p>
+<p>Note that it can be very difficult to write producible code with deep learning infrastructures like <code>torch</code> or <code>tensorflow</code>. When a GPU is used, it may be impossible to get exactly the same numbers from run to run.</p>
+<p>A space-filling design is used to tune:</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">872</span><span class="op">)</span></span>
-<span><span class="va">forest_knn_res</span> <span class="op">&lt;-</span></span>
-<span>  <span class="va">knn_wflow</span> <span class="op">|&gt;</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">872</span><span class="op">)</span></span>
+<span><span class="va">forest_mlp_res</span> <span class="op">&lt;-</span></span>
+<span>  <span class="va">mlp_flow</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">tune_grid</span><span class="op">(</span></span>
 <span>    resamples <span class="op">=</span> <span class="va">forested_rs</span>,</span>
-<span>    grid <span class="op">=</span> <span class="fl">50</span>,</span>
-<span>    param_info <span class="op">=</span> <span class="va">knn_param</span>,</span>
+<span>    grid <span class="op">=</span> <span class="fl">25</span>,</span>
+<span>    param_info <span class="op">=</span> <span class="va">mlp_param</span>,</span>
 <span>    metrics <span class="op">=</span> <span class="va">cls_mtr</span>,</span>
 <span>    control <span class="op">=</span> <span class="va">ctrl_grid</span></span>
 <span>  <span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>Once again, <code><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot()</a></code> is used to discover how each parameter affects model performance:</p>
+<p>For previous models, we use the <code><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot()</a></code> methods to quickly assess how well the model performed, identify which parameters were most important, and determine whether our grid search was searching the correct space. There is a constraint on <code><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot()</a></code> that prevents it from running with more than one qualitative parameter. Here we have two (<code>activation</code> and <code>rate_schedule</code>).</p>
+<p>We can write some custom code to approximate what we would get from <code><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot()</a></code>:</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot</a></span><span class="op">(</span><span class="va">forest_knn_res</span>, metric <span class="op">=</span> <span class="st">"brier_class"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">forest_mlp_res</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://tune.tidymodels.org/reference/collect_predictions.html">collect_metrics</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">.metric</span> <span class="op">==</span> <span class="st">"brier_class"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">n</span>, <span class="op">-</span><span class="va">std_err</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">mutate</span><span class="op">(</span></span>
+<span>    log_penalty <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">log10</a></span><span class="op">(</span><span class="va">penalty</span><span class="op">)</span>,</span>
+<span>    log_learn_rate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">log10</a></span><span class="op">(</span><span class="va">learn_rate</span><span class="op">)</span>,</span>
+<span>    log_batch_size <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">log2</a></span><span class="op">(</span><span class="va">batch_size</span><span class="op">)</span>,</span>
+<span>    .keep <span class="op">=</span> <span class="st">"unused"</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">pivot_longer</span><span class="op">(</span></span>
+<span>    cols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">hidden_units</span>, <span class="fu">starts_with</span><span class="op">(</span><span class="st">"log_"</span><span class="op">)</span>, <span class="va">momentum</span><span class="op">)</span>,</span>
+<span>    names_to <span class="op">=</span> <span class="st">"Parameter"</span>,</span>
+<span>    values_to <span class="op">=</span> <span class="st">"Value"</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">ggplot</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">Value</span>, y <span class="op">=</span> <span class="va">mean</span>, col <span class="op">=</span> <span class="va">activation</span>, pch <span class="op">=</span> <span class="va">rate_schedule</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">geom_point</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">facet_wrap</span><span class="op">(</span><span class="op">~</span><span class="va">Parameter</span>, scales <span class="op">=</span> <span class="st">"free_x"</span>, nrow <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme</span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"top"</span>, legend.box <span class="op">=</span> <span class="st">"vertical"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">labs</span><span class="op">(</span>y <span class="op">=</span> <span class="st">"Brier Score"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
-<figure class="figure"><p><img src="cls-nonlinear_files/figure-html/knn-tune-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%"></p>
+<figure class="figure"><p><img src="cls-neural-nets_files/figure-html/mlp-autoplot-ish-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%"></p>
 </figure>
 </div>
 </div>
 </div>
-<p><a href="https://aml4td.org/chapters/cls-nonlinear.html#sec-cls-knn"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
-</section><section id="sec-cls-svm" class="level2" data-number="17.4"><h2 data-number="17.4" class="anchored" data-anchor-id="sec-cls-svm">
-<span class="header-section-number">17.4</span> Support Vector Machines</h2>
-<p><a href="https://aml4td.org/chapters/cls-nonlinear.html#sec-cls-svm"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+<p><a href="https://aml4td.org/chapters/cls-neural-nets.html#sec-cls-nnet"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+</section><section id="sec-cls-tab-net" class="level2" data-number="18.3"><h2 data-number="18.3" class="anchored" data-anchor-id="sec-cls-tab-net">
+<span class="header-section-number">18.3</span> Special Tabular Network Models</h2>
+<section id="sec-cls-batchnorm" class="level3" data-number="18.3.1"><h3 data-number="18.3.1" class="anchored" data-anchor-id="sec-cls-batchnorm">
+<span class="header-section-number">18.3.1</span> Batch Normalization</h3>
+</section><section id="sec-cls-resnet" class="level3" data-number="18.3.2"><h3 data-number="18.3.2" class="anchored" data-anchor-id="sec-cls-resnet">
+<span class="header-section-number">18.3.2</span> Residual Networks</h3>
+<p><a href="https://aml4td.org/chapters/cls-neural-nets.html#sec-cls-resnet"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+</section><section id="sec-cls-attention" class="level3" data-number="18.3.3"><h3 data-number="18.3.3" class="anchored" data-anchor-id="sec-cls-attention">
+<span class="header-section-number">18.3.3</span> Attention Mechanisms</h3>
+<p><a href="https://aml4td.org/chapters/cls-neural-nets.html#sec-cls-attention"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+</section><section id="sec-cls-multi-attention" class="level3" data-number="18.3.4"><h3 data-number="18.3.4" class="anchored" data-anchor-id="sec-cls-multi-attention">
+<span class="header-section-number">18.3.4</span> Multifocal Attention</h3>
+<p><a href="https://aml4td.org/chapters/cls-neural-nets.html#sec-cls-multi-attention"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+</section><section id="sec-cls-masking" class="level3" data-number="18.3.5"><h3 data-number="18.3.5" class="anchored" data-anchor-id="sec-cls-masking">
+<span class="header-section-number">18.3.5</span> Masking Mechanisms</h3>
+<p><a href="https://aml4td.org/chapters/cls-neural-nets.html#sec-cls-masking"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
+</section></section><section id="sec-cls-foundational" class="level2" data-number="18.4"><h2 data-number="18.4" class="anchored" data-anchor-id="sec-cls-foundational">
+<span class="header-section-number">18.4</span> Foundational Models</h2>
+<p><a href="https://aml4td.org/chapters/cls-neural-nets.html#sec-cls-foundational"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 
 
 </section></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">
@@ -1099,13 +986,13 @@ window.Quarto = {
     }
   });
   </script><nav class="page-navigation"><div class="nav-page nav-page-previous">
-      <a href="../chapters/cls-linear.html" class="pagination-link" aria-label="Generalized Linear and Additive Classifiers">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Generalized Linear and Additive Classifiers</span></span>
+      <a href="../chapters/cls-nonlinear.html" class="pagination-link" aria-label="Complex Nonlinear Boundaries">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Complex Nonlinear Boundaries</span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="../chapters/cls-neural-nets.html" class="pagination-link" aria-label="Neural Network Classifiers">
-        <span class="nav-page-text"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Neural Network Classifiers</span></span> <i class="bi bi-arrow-right-short"></i>
+      <a href="../chapters/cls-trees.html" class="pagination-link" aria-label="Classification using Trees and Rules">
+        <span class="nav-page-text"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">Classification using Trees and Rules</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

@@ -2,10 +2,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.8.26">
+<meta name="generator" content="quarto-1.9.36">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <title>11&nbsp; Grid Search – Tidymodels Computing Supplement</title>
 <style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -65,15 +68,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../chapters/resampling.html" rel="prev">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-845c23b38eaddc0f92fda52bfe77a8c8.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-7c647e586662db48eb79d76466712003.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-cca14224007e87b3f770119fd179b404.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <link href="../site_libs/quarto-contrib/fontawesome6-1.2.0/all.min.css" rel="stylesheet">
 <link href="../site_libs/quarto-contrib/fontawesome6-1.2.0/latex-fontsize.css" rel="stylesheet"><script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
@@ -324,6 +326,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Complex Nonlinear Boundaries</span></span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/cls-neural-nets.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Neural Network Classifiers</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/cls-trees.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">Classification using Trees and Rules</span></span></a>
+  </div>
+</li>
       </ul>
 </li>
         <li class="sidebar-item sidebar-item-section">
@@ -373,15 +387,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="requirements" class="level2" data-number="11.1"><h2 data-number="11.1" class="anchored" data-anchor-id="requirements">
 <span class="header-section-number">11.1</span> Requirements</h2>
 <p>As with the previous chapter, we will use the <code>concrete</code> data set from the <span class="pkg"><a href="https://cran.r-project.org/package=modeldata">modeldata</a></span> package (which is automatically loaded below) to illustrate some of the methods.</p>
-<p>You’ll need 5 packages (<span class="pkg"><a href="https://cran.r-project.org/package=Cubist">Cubist</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=finetune">finetune</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=future.mirai">future.mirai</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=rules">rules</a></span>, and <span class="pkg"><a href="https://cran.r-project.org/package=tidymodels">tidymodels</a></span>) for this chapter. You can install them via:</p>
+<p>You’ll need 5 packages (<span class="pkg"><a href="https://cran.r-project.org/package=Cubist">Cubist</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=finetune">finetune</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=mirai">mirai</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=rules">rules</a></span>, and <span class="pkg"><a href="https://cran.r-project.org/package=tidymodels">tidymodels</a></span>) for this chapter. You can install them via:</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">req_pkg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Cubist"</span>, <span class="st">"finetune"</span>, <span class="st">"future.mirai"</span>, <span class="st">"rules"</span>, <span class="st">"tidymodels"</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">req_pkg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Cubist"</span>, <span class="st">"finetune"</span>, <span class="st">"mirai"</span>, <span class="st">"rules"</span>, <span class="st">"tidymodels"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Check to see if they are installed: </span></span>
+<span><span class="co"># Check to see if they are installed:</span></span>
 <span><span class="va">pkg_installed</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">vapply</a></span><span class="op">(</span><span class="va">req_pkg</span>, <span class="fu">rlang</span><span class="fu">::</span><span class="va"><a href="https://rlang.r-lib.org/reference/is_installed.html">is_installed</a></span>, <span class="fu"><a href="https://rdrr.io/r/base/logical.html">logical</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Install missing packages: </span></span>
-<span><span class="kw">if</span> <span class="op">(</span> <span class="fu"><a href="https://rdrr.io/r/base/any.html">any</a></span><span class="op">(</span><span class="op">!</span><span class="va">pkg_installed</span><span class="op">)</span> <span class="op">)</span> <span class="op">{</span></span>
+<span><span class="co"># Install missing packages:</span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/any.html">any</a></span><span class="op">(</span><span class="op">!</span><span class="va">pkg_installed</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">install_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">pkg_installed</span><span class="op">)</span><span class="op">[</span><span class="op">!</span><span class="va">pkg_installed</span><span class="op">]</span></span>
 <span>  <span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html">pak</a></span><span class="op">(</span><span class="va">install_list</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -415,8 +429,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span></span>
 <span><span class="va">cubist_spec</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://parsnip.tidymodels.org/reference/cubist_rules.html">cubist_rules</a></span><span class="op">(</span>committees <span class="op">=</span> <span class="fu"><a href="https://hardhat.tidymodels.org/reference/tune.html">tune</a></span><span class="op">(</span><span class="op">)</span>, neighbors <span class="op">=</span> <span class="fu"><a href="https://hardhat.tidymodels.org/reference/tune.html">tune</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">cubist_param</span> <span class="op">&lt;-</span> </span>
-<span>  <span class="va">cubist_spec</span> <span class="op">|&gt;</span> </span>
+<span><span class="va">cubist_param</span> <span class="op">&lt;-</span></span>
+<span>  <span class="va">cubist_spec</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://hardhat.tidymodels.org/reference/hardhat-extract.html">extract_parameter_set_dials</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">cubist_param</span></span>
@@ -429,11 +443,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>Let’s make a uniform space-filling design with 25 candidate models:</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cubist_grid</span> <span class="op">&lt;-</span> <span class="fu">grid_space_filling</span><span class="op">(</span><span class="va">cubist_param</span>, size <span class="op">=</span> <span class="fl">25</span><span class="op">)</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cubist_grid</span> <span class="op">&lt;-</span> <span class="fu">grid_space_filling</span><span class="op">(</span><span class="va">cubist_param</span>, size <span class="op">=</span> <span class="fl">25</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">cubist_grid</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu">ggplot</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span><span class="va">committees</span>, <span class="va">neighbors</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> </span>
-<span>  <span class="fu">geom_point</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> </span>
+<span><span class="va">cubist_grid</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">ggplot</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span><span class="va">committees</span>, <span class="va">neighbors</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">geom_point</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">coord_fixed</span><span class="op">(</span>ratio <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
@@ -451,9 +465,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ul>
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># Default range is 0L to 9L:</span></span>
-<span><span class="fu"><a href="https://parsnip.tidymodels.org/reference/cubist_rules.html">cubist_rules</a></span><span class="op">(</span>neighbors <span class="op">=</span> <span class="fu"><a href="https://hardhat.tidymodels.org/reference/tune.html">tune</a></span><span class="op">(</span><span class="st">"K"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span><span class="fu"><a href="https://parsnip.tidymodels.org/reference/cubist_rules.html">cubist_rules</a></span><span class="op">(</span>neighbors <span class="op">=</span> <span class="fu"><a href="https://hardhat.tidymodels.org/reference/tune.html">tune</a></span><span class="op">(</span><span class="st">"K"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://hardhat.tidymodels.org/reference/hardhat-extract.html">extract_parameter_set_dials</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu">grid_space_filling</span><span class="op">(</span>size <span class="op">=</span> <span class="fl">50</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu">grid_space_filling</span><span class="op">(</span>size <span class="op">=</span> <span class="fl">50</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">arrange</span><span class="op">(</span><span class="va">K</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 10 × 1</span></span>
 <span><span class="co">#&gt;       K</span></span>
@@ -503,8 +517,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>We will reuse the <code>cubist_spec</code> and <code>cubist_grid</code> objects created above.</p>
 <p>Let’s do basic grid search:</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cubist_res</span> <span class="op">&lt;-</span> </span>
-<span>  <span class="va">cubist_spec</span> <span class="op">|&gt;</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cubist_res</span> <span class="op">&lt;-</span></span>
+<span>  <span class="va">cubist_spec</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">tune_grid</span><span class="op">(</span></span>
 <span>    <span class="va">compressive_strength</span> <span class="op">~</span> <span class="va">.</span>,</span>
 <span>    resamples <span class="op">=</span> <span class="va">concrete_rs</span>,</span>
@@ -519,12 +533,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="co">#&gt; # A tibble: 50 × 8</span></span>
 <span><span class="co">#&gt;   committees neighbors .metric .estimator   mean     n  std_err .config         </span></span>
 <span><span class="co">#&gt;        &lt;int&gt;     &lt;int&gt; &lt;chr&gt;   &lt;chr&gt;       &lt;dbl&gt; &lt;int&gt;    &lt;dbl&gt; &lt;chr&gt;           </span></span>
-<span><span class="co">#&gt; 1          1         4 rmse    standard   5.788     10 0.2353   pre0_mod01_post0</span></span>
-<span><span class="co">#&gt; 2          1         4 rsq     standard   0.8828    10 0.01022  pre0_mod01_post0</span></span>
-<span><span class="co">#&gt; 3          5         2 rmse    standard   4.996     10 0.2672   pre0_mod02_post0</span></span>
-<span><span class="co">#&gt; 4          5         2 rsq     standard   0.9105    10 0.009536 pre0_mod02_post0</span></span>
-<span><span class="co">#&gt; 5          9         7 rmse    standard   5.003     10 0.2043   pre0_mod03_post0</span></span>
-<span><span class="co">#&gt; 6          9         7 rsq     standard   0.9107    10 0.007676 pre0_mod03_post0</span></span>
+<span><span class="co">#&gt; 1          1         4 rmse    standard   5.785     10 0.2373   pre0_mod01_post0</span></span>
+<span><span class="co">#&gt; 2          1         4 rsq     standard   0.8828    10 0.01024  pre0_mod01_post0</span></span>
+<span><span class="co">#&gt; 3          5         2 rmse    standard   5.004     10 0.2625   pre0_mod02_post0</span></span>
+<span><span class="co">#&gt; 4          5         2 rsq     standard   0.9103    10 0.009437 pre0_mod02_post0</span></span>
+<span><span class="co">#&gt; 5          9         7 rmse    standard   5.011     10 0.1992   pre0_mod03_post0</span></span>
+<span><span class="co">#&gt; 6          9         7 rsq     standard   0.9105    10 0.007576 pre0_mod03_post0</span></span>
 <span><span class="co">#&gt; # ℹ 44 more rows</span></span>
 <span><span class="fu">collect_predictions</span><span class="op">(</span><span class="va">cubist_res</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 19,300 × 7</span></span>
@@ -556,19 +570,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="co">#&gt; # A tibble: 5 × 8</span></span>
 <span><span class="co">#&gt;   committees neighbors .metric .estimator  mean     n std_err .config         </span></span>
 <span><span class="co">#&gt;        &lt;int&gt;     &lt;int&gt; &lt;chr&gt;   &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;           </span></span>
-<span><span class="co">#&gt; 1         95         2 rmse    standard   4.596    10  0.2131 pre0_mod24_post0</span></span>
-<span><span class="co">#&gt; 2         75         3 rmse    standard   4.619    10  0.1998 pre0_mod19_post0</span></span>
-<span><span class="co">#&gt; 3         54         3 rmse    standard   4.623    10  0.1897 pre0_mod14_post0</span></span>
-<span><span class="co">#&gt; 4         91         4 rmse    standard   4.624    10  0.1916 pre0_mod23_post0</span></span>
-<span><span class="co">#&gt; 5         29         2 rmse    standard   4.626    10  0.2189 pre0_mod08_post0</span></span>
+<span><span class="co">#&gt; 1         95         2 rmse    standard   4.592    10  0.2151 pre0_mod24_post0</span></span>
+<span><span class="co">#&gt; 2         75         3 rmse    standard   4.610    10  0.2004 pre0_mod19_post0</span></span>
+<span><span class="co">#&gt; 3         29         2 rmse    standard   4.617    10  0.2122 pre0_mod08_post0</span></span>
+<span><span class="co">#&gt; 4         91         4 rmse    standard   4.619    10  0.1932 pre0_mod23_post0</span></span>
+<span><span class="co">#&gt; 5         54         3 rmse    standard   4.620    10  0.1908 pre0_mod14_post0</span></span>
 <span></span>
 <span><span class="fu">show_best</span><span class="op">(</span><span class="va">cubist_res</span>, metric <span class="op">=</span> <span class="st">"rsq"</span>, n <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 3 × 8</span></span>
 <span><span class="co">#&gt;   committees neighbors .metric .estimator   mean     n  std_err .config         </span></span>
 <span><span class="co">#&gt;        &lt;int&gt;     &lt;int&gt; &lt;chr&gt;   &lt;chr&gt;       &lt;dbl&gt; &lt;int&gt;    &lt;dbl&gt; &lt;chr&gt;           </span></span>
-<span><span class="co">#&gt; 1         95         2 rsq     standard   0.9242    10 0.007671 pre0_mod24_post0</span></span>
-<span><span class="co">#&gt; 2         54         3 rsq     standard   0.9238    10 0.006694 pre0_mod14_post0</span></span>
-<span><span class="co">#&gt; 3         75         3 rsq     standard   0.9237    10 0.006971 pre0_mod19_post0</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span><span class="co">#&gt; 1         95         2 rsq     standard   0.9244    10 0.007672 pre0_mod24_post0</span></span>
+<span><span class="co">#&gt; 2         75         3 rsq     standard   0.9241    10 0.006887 pre0_mod19_post0</span></span>
+<span><span class="co">#&gt; 3         54         3 rsq     standard   0.9239    10 0.006690 pre0_mod14_post0</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>To return the candidate with the smallest RMSE:</p>
 <div class="cell" data-layout-align="center">
@@ -581,20 +595,20 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>There are a few things that we can do with this candidate value. We can use it to subset other results. For example, we can get the out-of-sample predictions <em>for just this model</em> via:</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cubist_res</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu">collect_predictions</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cubist_res</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">collect_predictions</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 19300</span></span>
 <span></span>
 <span><span class="co"># Just for the best:</span></span>
-<span><span class="va">cubist_res</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu">collect_predictions</span><span class="op">(</span>parameters <span class="op">=</span> <span class="va">cubist_best</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span><span class="va">cubist_res</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">collect_predictions</span><span class="op">(</span>parameters <span class="op">=</span> <span class="va">cubist_best</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 772</span></span>
 <span></span>
-<span><span class="co"># augment() returns the numerically best by default: </span></span>
-<span><span class="va">cubist_res</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu"><a href="https://generics.r-lib.org/reference/augment.html">augment</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span><span class="co"># augment() returns the numerically best by default:</span></span>
+<span><span class="va">cubist_res</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://generics.r-lib.org/reference/augment.html">augment</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 772</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
@@ -663,8 +677,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span></span>
 <span><span class="co"># Since resamples are randomized, set the seed:</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">11</span><span class="op">)</span></span>
-<span><span class="va">cubist_race_res</span> <span class="op">&lt;-</span> </span>
-<span>  <span class="va">cubist_spec</span> <span class="op">|&gt;</span> </span>
+<span><span class="va">cubist_race_res</span> <span class="op">&lt;-</span></span>
+<span>  <span class="va">cubist_spec</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://finetune.tidymodels.org/reference/tune_race_anova.html">tune_race_anova</a></span><span class="op">(</span></span>
 <span>    <span class="va">compressive_strength</span> <span class="op">~</span> <span class="va">.</span>,</span>
 <span>    resamples <span class="op">=</span> <span class="va">concrete_rs</span>,</span>
@@ -674,28 +688,30 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="co">#&gt; ℹ Evaluating against the initial 3 burn-in resamples.</span></span>
 <span><span class="co">#&gt; ℹ Racing will minimize the rmse metric.</span></span>
 <span><span class="co">#&gt; ℹ Resamples are analyzed in a random order.</span></span>
-<span><span class="co">#&gt; ℹ Fold05: 13 eliminated; 12 candidates remain.</span></span>
+<span><span class="co">#&gt; ℹ Fold05: 12 eliminated; 13 candidates remain.</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; ℹ Fold07: 7 eliminated; 5 candidates remain.</span></span>
+<span><span class="co">#&gt; ℹ Fold07: 8 eliminated; 5 candidates remain.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ℹ Fold10: 1 eliminated; 4 candidates remain.</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; ℹ Fold01: 2 eliminated; 2 candidates remain.</span></span>
+<span><span class="co">#&gt; ℹ Fold01: 0 eliminated; 4 candidates remain.</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; ℹ Fold08: 0 eliminated; 2 candidates remain.</span></span>
+<span><span class="co">#&gt; ℹ Fold08: 0 eliminated; 4 candidates remain.</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; ℹ Fold03: 0 eliminated; 2 candidates remain.</span></span>
+<span><span class="co">#&gt; ℹ Fold03: 0 eliminated; 4 candidates remain.</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; ℹ Fold09: 0 eliminated; 2 candidates remain.</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span><span class="co">#&gt; ℹ Fold09: 0 eliminated; 4 candidates remain.</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>It is important to note that the helpful functions for racing results mostly filter their output to disregard candidates who did not finish the race. For example, if we ask <code><a href="https://tune.tidymodels.org/reference/show_best.html">show_best()</a></code> to provide results for more candidate than those that finished, it will curtail its output:</p>
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://tune.tidymodels.org/reference/show_best.html">show_best</a></span><span class="op">(</span><span class="va">cubist_race_res</span>, metric <span class="op">=</span> <span class="st">"rmse"</span>, n <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # A tibble: 2 × 8</span></span>
+<span><span class="co">#&gt; # A tibble: 4 × 8</span></span>
 <span><span class="co">#&gt;   committees neighbors .metric .estimator  mean     n std_err .config         </span></span>
 <span><span class="co">#&gt;        &lt;int&gt;     &lt;int&gt; &lt;chr&gt;   &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;           </span></span>
-<span><span class="co">#&gt; 1         95         2 rmse    standard   4.596    10  0.2131 pre0_mod24_post0</span></span>
-<span><span class="co">#&gt; 2         29         2 rmse    standard   4.626    10  0.2189 pre0_mod08_post0</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span><span class="co">#&gt; 1         95         2 rmse    standard   4.592    10  0.2151 pre0_mod24_post0</span></span>
+<span><span class="co">#&gt; 2         75         3 rmse    standard   4.610    10  0.2004 pre0_mod19_post0</span></span>
+<span><span class="co">#&gt; 3         29         2 rmse    standard   4.617    10  0.2122 pre0_mod08_post0</span></span>
+<span><span class="co">#&gt; 4         54         3 rmse    standard   4.620    10  0.1908 pre0_mod14_post0</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>To visualize the results, there is also a <code><a href="https://finetune.tidymodels.org/reference/plot_race.html">plot_race()</a></code> function:</p>
 <div class="cell" data-layout-align="center">

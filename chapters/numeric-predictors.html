@@ -2,10 +2,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.8.26">
+<meta name="generator" content="quarto-1.9.36">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <title>5&nbsp; Transforming Numeric Predictors – Tidymodels Computing Supplement</title>
 <style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -65,15 +68,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../chapters/missing-data.html" rel="prev">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-845c23b38eaddc0f92fda52bfe77a8c8.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-7c647e586662db48eb79d76466712003.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-cca14224007e87b3f770119fd179b404.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <link href="../site_libs/quarto-contrib/fontawesome6-1.2.0/all.min.css" rel="stylesheet">
 <link href="../site_libs/quarto-contrib/fontawesome6-1.2.0/latex-fontsize.css" rel="stylesheet"><script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
@@ -101,7 +103,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-submit-button-title": "Submit",
     "search-label": "Search"
   }
-}</script><script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script><script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script><script type="text/javascript">
+}</script><script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script><script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script><script type="text/javascript">
 const typesetMath = (el) => {
   if (window.MathJax) {
     // MathJax Typeset
@@ -349,6 +351,18 @@ window.Quarto = {
  <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Complex Nonlinear Boundaries</span></span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/cls-neural-nets.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Neural Network Classifiers</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/cls-trees.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">Classification using Trees and Rules</span></span></a>
+  </div>
+</li>
       </ul>
 </li>
         <li class="sidebar-item sidebar-item-section">
@@ -413,11 +427,11 @@ window.Quarto = {
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">req_pkg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"bestNormalize"</span>, <span class="st">"embed"</span>, <span class="st">"tidymodels"</span>, <span class="st">"splines2"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Check to see if they are installed: </span></span>
+<span><span class="co"># Check to see if they are installed:</span></span>
 <span><span class="va">pkg_installed</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">vapply</a></span><span class="op">(</span><span class="va">req_pkg</span>, <span class="fu">rlang</span><span class="fu">::</span><span class="va"><a href="https://rlang.r-lib.org/reference/is_installed.html">is_installed</a></span>, <span class="fu"><a href="https://rdrr.io/r/base/logical.html">logical</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Install missing packages: </span></span>
-<span><span class="kw">if</span> <span class="op">(</span> <span class="fu"><a href="https://rdrr.io/r/base/any.html">any</a></span><span class="op">(</span><span class="op">!</span><span class="va">pkg_installed</span><span class="op">)</span> <span class="op">)</span> <span class="op">{</span></span>
+<span><span class="co"># Install missing packages:</span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/any.html">any</a></span><span class="op">(</span><span class="op">!</span><span class="va">pkg_installed</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">install_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">pkg_installed</span><span class="op">)</span><span class="op">[</span><span class="op">!</span><span class="va">pkg_installed</span><span class="op">]</span></span>
 <span>  <span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html">pak</a></span><span class="op">(</span><span class="va">install_list</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -437,18 +451,19 @@ window.Quarto = {
 <span></span>
 <span><span class="va">ames</span> <span class="op">&lt;-</span></span>
 <span>  <span class="va">ames</span> <span class="op">|&gt;</span></span>
+<span>  <span class="co"># fmt: skip</span></span>
 <span>  <span class="fu">select</span><span class="op">(</span><span class="va">Sale_Price</span>, <span class="va">Bldg_Type</span>, <span class="va">Neighborhood</span>, <span class="va">Year_Built</span>, <span class="va">Gr_Liv_Area</span>, <span class="va">Full_Bath</span>,</span>
 <span>         <span class="va">Half_Bath</span>, <span class="va">Year_Sold</span>, <span class="va">Lot_Area</span>, <span class="va">Central_Air</span>, <span class="va">Longitude</span>, <span class="va">Latitude</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">mutate</span><span class="op">(</span></span>
 <span>    Sale_Price <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">log10</a></span><span class="op">(</span><span class="va">Sale_Price</span><span class="op">)</span>,</span>
-<span>    Baths <span class="op">=</span> <span class="va">Full_Bath</span>  <span class="op">+</span> <span class="va">Half_Bath</span><span class="op">/</span><span class="fl">2</span></span>
+<span>    Baths <span class="op">=</span> <span class="va">Full_Bath</span> <span class="op">+</span> <span class="va">Half_Bath</span> <span class="op">/</span> <span class="fl">2</span></span>
 <span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">Half_Bath</span>, <span class="op">-</span><span class="va">Full_Bath</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">3024</span><span class="op">)</span></span>
 <span><span class="va">ames_split</span> <span class="op">&lt;-</span> <span class="fu">initial_split</span><span class="op">(</span><span class="va">ames</span>, strata <span class="op">=</span> <span class="va">Sale_Price</span>, breaks <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
 <span><span class="va">ames_train</span> <span class="op">&lt;-</span> <span class="fu">training</span><span class="op">(</span><span class="va">ames_split</span><span class="op">)</span></span>
-<span><span class="va">ames_test</span>  <span class="op">&lt;-</span> <span class="fu">testing</span><span class="op">(</span><span class="va">ames_split</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span><span class="va">ames_test</span> <span class="op">&lt;-</span> <span class="fu">testing</span><span class="op">(</span><span class="va">ames_split</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>We’ll work with <code>ames_train</code> almost exclusively here.</p>
 </section><section id="sec-r-formulas" class="level2" data-number="5.3"><h2 data-number="5.3" class="anchored" data-anchor-id="sec-r-formulas">
@@ -466,14 +481,14 @@ window.Quarto = {
 <p>There is further syntax described below.</p>
 <p>Here’s an example of a basic formula that creates two predictor columns by specifying a symbolic formula comprised of two numeric predictors.</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">f_01</span> <span class="op">&lt;-</span> <span class="va">Sale_Price</span> <span class="op">~</span>  <span class="va">Baths</span> <span class="op">+</span> <span class="va">Year_Built</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">f_01</span> <span class="op">&lt;-</span> <span class="va">Sale_Price</span> <span class="op">~</span> <span class="va">Baths</span> <span class="op">+</span> <span class="va">Year_Built</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Here’s a short function to show basic results:</p>
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">show_columns</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">f</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/stats/model.matrix.html">model.matrix</a></span><span class="op">(</span><span class="va">f</span>, data <span class="op">=</span> <span class="va">ames_train</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html">as_tibble</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html">slice</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">3</span>, <span class="fl">9</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/stats/model.matrix.html">model.matrix</a></span><span class="op">(</span><span class="va">f</span>, data <span class="op">=</span> <span class="va">ames_train</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html">as_tibble</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html">slice</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">3</span>, <span class="fl">9</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span><span class="fu">show_columns</span><span class="op">(</span><span class="va">f_01</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 3 × 3</span></span>
@@ -486,19 +501,19 @@ window.Quarto = {
 <p>It does not use row-wise arithmetic additions of the two columns. To do that, you can use the identify function:</p>
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># One slope term, not two</span></span>
-<span><span class="va">f_02</span> <span class="op">&lt;-</span> <span class="va">Sale_Price</span> <span class="op">~</span>  <span class="fu"><a href="https://rdrr.io/r/base/AsIs.html">I</a></span><span class="op">(</span><span class="va">Full_Bath</span> <span class="op">+</span> <span class="va">Half_Bath</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span><span class="va">f_02</span> <span class="op">&lt;-</span> <span class="va">Sale_Price</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/AsIs.html">I</a></span><span class="op">(</span><span class="va">Full_Bath</span> <span class="op">+</span> <span class="va">Half_Bath</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Symbolic addition creates separate columns of the data set. In chapter TODO, we’ll discuss <em>main effects</em> and <em>interactions</em>. The main effects are features composed of a single predictor (as in <code>f_01</code> above). Interaction effects are one or more model terms that combine the information of all the predictors in a multiplicative way. There are a few ways to specify them. Here are three methods for specifying two-factor interactions between predictors:</p>
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># `:` is used for specific interactions</span></span>
-<span><span class="va">f_03</span> <span class="op">&lt;-</span> <span class="va">Sale_Price</span> <span class="op">~</span>  <span class="va">Baths</span> <span class="op">+</span> <span class="va">Year_Built</span> <span class="op">+</span> <span class="va">Baths</span><span class="op">:</span><span class="va">Year_Built</span></span>
+<span><span class="va">f_03</span> <span class="op">&lt;-</span> <span class="va">Sale_Price</span> <span class="op">~</span> <span class="va">Baths</span> <span class="op">+</span> <span class="va">Year_Built</span> <span class="op">+</span> <span class="va">Baths</span><span class="op">:</span><span class="va">Year_Built</span></span>
 <span></span>
 <span><span class="co"># `*` is used to make all interactions of two or more terms</span></span>
-<span><span class="va">f_04</span> <span class="op">&lt;-</span> <span class="va">Sale_Price</span> <span class="op">~</span>  <span class="va">Baths</span> <span class="op">*</span> <span class="va">Year_Built</span></span>
+<span><span class="va">f_04</span> <span class="op">&lt;-</span> <span class="va">Sale_Price</span> <span class="op">~</span> <span class="va">Baths</span> <span class="op">*</span> <span class="va">Year_Built</span></span>
 <span></span>
 <span><span class="co"># `()^D` makes interactions up to order D of all of the columns</span></span>
 <span><span class="co"># within the parenthesis</span></span>
-<span><span class="va">f_05</span> <span class="op">&lt;-</span> <span class="va">Sale_Price</span> <span class="op">~</span>  <span class="op">(</span><span class="va">Baths</span> <span class="op">+</span> <span class="va">Year_Built</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span></span>
+<span><span class="va">f_05</span> <span class="op">&lt;-</span> <span class="va">Sale_Price</span> <span class="op">~</span> <span class="op">(</span><span class="va">Baths</span> <span class="op">+</span> <span class="va">Year_Built</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span></span>
 <span></span>
 <span><span class="fu">show_columns</span><span class="op">(</span><span class="va">f_05</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 3 × 4</span></span>
@@ -512,8 +527,8 @@ window.Quarto = {
 <p>Since <code>Baths</code> and <code>Year_Built</code> are both numeric, their interactions are created by simply multiplying their values, i.e., <code>I(Baths * Year_Built)</code>.</p>
 <p>By default, the model formula creates an intercept column where the value of each row is 1.0. To prevent the intercept from being added, there are two syntaxes:</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">f_06</span> <span class="op">&lt;-</span> <span class="va">Sale_Price</span> <span class="op">~</span>  <span class="va">Baths</span> <span class="op">-</span> <span class="fl">1</span> </span>
-<span><span class="va">f_07</span> <span class="op">&lt;-</span> <span class="va">Sale_Price</span> <span class="op">~</span>  <span class="va">Baths</span> <span class="op">+</span> <span class="fl">0</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">f_06</span> <span class="op">&lt;-</span> <span class="va">Sale_Price</span> <span class="op">~</span> <span class="va">Baths</span> <span class="op">-</span> <span class="fl">1</span></span>
+<span><span class="va">f_07</span> <span class="op">&lt;-</span> <span class="va">Sale_Price</span> <span class="op">~</span> <span class="va">Baths</span> <span class="op">+</span> <span class="fl">0</span></span>
 <span></span>
 <span><span class="fu">show_columns</span><span class="op">(</span><span class="va">f_07</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 3 × 1</span></span>
@@ -525,12 +540,12 @@ window.Quarto = {
 </div>
 <p>What happens with factor predictors? Their specification is the same:</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">f_08</span> <span class="op">&lt;-</span> <span class="va">Sale_Price</span> <span class="op">~</span>  <span class="va">Bldg_Type</span> </span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">f_08</span> <span class="op">&lt;-</span> <span class="va">Sale_Price</span> <span class="op">~</span> <span class="va">Bldg_Type</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>However, <em>most of the time</em><a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>, the formula method creates columns of binary 0/1 to replace the original factor column. Since there are 5 possible values of <code>Bldg_Type</code>, the formula creates 4 columns of indicator variables, each corresponding to a specific level. The first factor level is excluded by default. This is discussed more in <a href="https://aml4td.org/chapters/categorical-predictors.html#sec-indicators"><em>Working with Categorical Predictors</em></a>.</p>
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># Note that the resulting column names smash the original column</span></span>
-<span><span class="co"># name an its factor level together with no delimiter. </span></span>
+<span><span class="co"># name an its factor level together with no delimiter.</span></span>
 <span><span class="fu">show_columns</span><span class="op">(</span><span class="va">f_08</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 3 × 5</span></span>
 <span><span class="co">#&gt;   `(Intercept)` Bldg_TypeTwoFmCon Bldg_TypeDuplex Bldg_TypeTwnhs Bldg_TypeTwnhsE</span></span>
@@ -541,7 +556,7 @@ window.Quarto = {
 </div>
 <p>For interaction terms, the syntax is the same as the one shown above. In the case of categorical predictors, all combinations of the predictors are created. In the following case, <code>Central_Air</code> has two levels. A two-way interaction of these two predictors creates 4 <span class="math inline">\(\times\)</span> 1 = 4 interaction columns.</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">f_09</span> <span class="op">&lt;-</span> <span class="va">Sale_Price</span> <span class="op">~</span>  <span class="op">(</span><span class="va">Bldg_Type</span> <span class="op">+</span> <span class="va">Central_Air</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">f_09</span> <span class="op">&lt;-</span> <span class="va">Sale_Price</span> <span class="op">~</span> <span class="op">(</span><span class="va">Bldg_Type</span> <span class="op">+</span> <span class="va">Central_Air</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span></span>
 <span></span>
 <span><span class="fu">show_columns</span><span class="op">(</span><span class="va">f_09</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 3 × 10</span></span>
@@ -556,7 +571,7 @@ window.Quarto = {
 </div>
 <p>What happens when you exclude the intercept? All factor levels receive a binary indicator column for a single categorical predictor.</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">f_10</span> <span class="op">&lt;-</span> <span class="va">Sale_Price</span> <span class="op">~</span>  <span class="va">Bldg_Type</span> <span class="op">+</span> <span class="fl">0</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">f_10</span> <span class="op">&lt;-</span> <span class="va">Sale_Price</span> <span class="op">~</span> <span class="va">Bldg_Type</span> <span class="op">+</span> <span class="fl">0</span></span>
 <span></span>
 <span><span class="fu">show_columns</span><span class="op">(</span><span class="va">f_10</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 3 × 5</span></span>
@@ -582,7 +597,9 @@ window.Quarto = {
 <p>You can use in-line functions within a recipe. For example:</p>
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://wwenjie.org/splines2">splines2</a></span><span class="op">)</span></span>
-<span><span class="va">f_13</span> <span class="op">&lt;-</span> <span class="va">Sale_Price</span> <span class="op">~</span>  <span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span><span class="op">(</span><span class="va">Gr_Liv_Area</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/scale.html">scale</a></span><span class="op">(</span><span class="va">Lot_Area</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://wwenjie.org/splines2/reference/naturalSpline.html">naturalSpline</a></span><span class="op">(</span><span class="va">Latitude</span>, df <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="va">f_13</span> <span class="op">&lt;-</span> <span class="va">Sale_Price</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span><span class="op">(</span><span class="va">Gr_Liv_Area</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/scale.html">scale</a></span><span class="op">(</span><span class="va">Lot_Area</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://wwenjie.org/splines2/reference/naturalSpline.html">naturalSpline</a></span><span class="op">(</span><span class="va">Latitude</span>, df <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">show_columns</span><span class="op">(</span><span class="va">f_13</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 3 × 6</span></span>
@@ -633,8 +650,8 @@ window.Quarto = {
 <span class="header-section-number">5.5</span> Resolving Asymmetry and Skewness</h2>
 <p>The main text mentions that the distribution of the <code>Lot_Area</code> variable is skewed. Let’s see what that looks like.</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">ames_train</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu">ggplot</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span><span class="va">Lot_Area</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">ames_train</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">ggplot</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span><span class="va">Lot_Area</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">geom_histogram</span><span class="op">(</span>bins <span class="op">=</span> <span class="fl">30</span>, col <span class="op">=</span> <span class="st">"white"</span>, fill <span class="op">=</span> <span class="st">"#8E195C"</span>, alpha <span class="op">=</span> <span class="fl">1</span> <span class="op">/</span> <span class="fl">2</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">geom_rug</span><span class="op">(</span>alpha <span class="op">=</span> <span class="fl">1</span> <span class="op">/</span> <span class="fl">2</span>, length <span class="op">=</span> <span class="fu">unit</span><span class="op">(</span><span class="fl">0.03</span>, <span class="st">"npc"</span><span class="op">)</span>, linewidth <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">labs</span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Lot Area"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -653,13 +670,13 @@ window.Quarto = {
 <p>Regarding the <code>data</code> argument: <em>any</em> data set with the appropriate columns could be used. The initial recipe work is just cataloging the columns. You could even use a “zero row slice” such as <code>ames_train[0,]</code> and get the same results. You might want to do something like this if you have a very large training set (to reduce the in-memory footprint). The main advantage of using <code>ames_train</code> is convenience (as we’ll see later).</p>
 <p>We’ll add different recipe step functions from this initial object to declare what we want to do. Let’s say we will transform the lot area column using the Yeo-Johnsom transformation. To do this:</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">unskew_rec</span> <span class="op">&lt;-</span> </span>
-<span>  <span class="fu">recipe</span><span class="op">(</span><span class="va">Sale_Price</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">ames_train</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">unskew_rec</span> <span class="op">&lt;-</span></span>
+<span>  <span class="fu">recipe</span><span class="op">(</span><span class="va">Sale_Price</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">ames_train</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">step_YeoJohnson</span><span class="op">(</span><span class="va">Lot_Area</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># or use a dplyr selector:</span></span>
-<span><span class="va">unskew_rec</span> <span class="op">&lt;-</span> </span>
-<span>  <span class="fu">recipe</span><span class="op">(</span><span class="va">Sale_Price</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">ames_train</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span><span class="va">unskew_rec</span> <span class="op">&lt;-</span></span>
+<span>  <span class="fu">recipe</span><span class="op">(</span><span class="va">Sale_Price</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">ames_train</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">step_YeoJohnson</span><span class="op">(</span><span class="fu">any_of</span><span class="op">(</span><span class="st">"Lot_Area"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">unskew_rec</span></span>
@@ -679,7 +696,7 @@ window.Quarto = {
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">unskew_rec</span> <span class="op">&lt;-</span> <span class="fu">prep</span><span class="op">(</span><span class="va">unskew_rec</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># or, to use a different data set: </span></span>
+<span><span class="co"># or, to use a different data set:</span></span>
 <span><span class="va">unskew_rec</span> <span class="op">&lt;-</span> <span class="fu">prep</span><span class="op">(</span><span class="va">unskew_rec</span>, training <span class="op">=</span> <span class="va">ames_train</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Warning in prep(unskew_rec, training = ames_train): ! The previous data will be used by `prep()`.</span></span>
 <span><span class="co">#&gt; ℹ The data passed using `training` will be ignored.</span></span>
@@ -701,14 +718,14 @@ window.Quarto = {
 <p>Note that the printed recipe shows that <code>Lot_Area</code> was resolved from the original request for <code>any_of("Lot_Area")</code>.</p>
 <p>What was the estimate of the transformation parameter? The <code>tidy()</code> method can tell us:</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb22"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># Get the list of steps: </span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb22"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># Get the list of steps:</span></span>
 <span><span class="fu">tidy</span><span class="op">(</span><span class="va">unskew_rec</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 1 × 6</span></span>
 <span><span class="co">#&gt;   number operation type       trained skip  id              </span></span>
 <span><span class="co">#&gt;    &lt;int&gt; &lt;chr&gt;     &lt;chr&gt;      &lt;lgl&gt;   &lt;lgl&gt; &lt;chr&gt;           </span></span>
 <span><span class="co">#&gt; 1      1 step      YeoJohnson TRUE    FALSE YeoJohnson_VL1H3</span></span>
 <span></span>
-<span><span class="co"># Get information about the first step: </span></span>
+<span><span class="co"># Get information about the first step:</span></span>
 <span><span class="fu">tidy</span><span class="op">(</span><span class="va">unskew_rec</span>, number <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 1 × 3</span></span>
 <span><span class="co">#&gt;   terms     value id              </span></span>
@@ -717,7 +734,7 @@ window.Quarto = {
 </div>
 <p>Now that we have a trained recipe, we can use it via <code>bake()</code>:</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb23"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># Get the list of steps: </span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb23"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># Get the list of steps:</span></span>
 <span><span class="fu">bake</span><span class="op">(</span><span class="va">unskew_rec</span>, new_data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">ames_train</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 6 × 11</span></span>
 <span><span class="co">#&gt;   Bldg_Type Neighborhood    Year_Built Gr_Liv_Area Year_Sold Lot_Area Central_Air</span></span>
@@ -733,10 +750,10 @@ window.Quarto = {
 </div>
 <p>Did it work? Let’s look at the whole training set:</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb24"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">unskew_rec</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu">bake</span><span class="op">(</span>new_data <span class="op">=</span> <span class="va">ames_train</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb24"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">unskew_rec</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">bake</span><span class="op">(</span>new_data <span class="op">=</span> <span class="va">ames_train</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">ggplot</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span><span class="va">Lot_Area</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">geom_rug</span><span class="op">(</span>alpha <span class="op">=</span> <span class="fl">1</span> <span class="op">/</span> <span class="fl">2</span>, length <span class="op">=</span> <span class="fu">unit</span><span class="op">(</span><span class="fl">0.03</span>, <span class="st">"npc"</span><span class="op">)</span>, linewidth <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>  <span class="fu">geom_rug</span><span class="op">(</span>alpha <span class="op">=</span> <span class="fl">1</span> <span class="op">/</span> <span class="fl">2</span>, length <span class="op">=</span> <span class="fu">unit</span><span class="op">(</span><span class="fl">0.03</span>, <span class="st">"npc"</span><span class="op">)</span>, linewidth <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">geom_histogram</span><span class="op">(</span>bins <span class="op">=</span> <span class="fl">30</span>, col <span class="op">=</span> <span class="st">"white"</span>, fill <span class="op">=</span> <span class="st">"#8E195C"</span>, alpha <span class="op">=</span> <span class="fl">1</span> <span class="op">/</span> <span class="fl">2</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">labs</span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Lot Area"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
@@ -747,7 +764,7 @@ window.Quarto = {
 </div>
 </div>
 <p>One shortcut we can take: the recipe has to apply each step to the training data after it estimates the step. By default, the recipe object saves the processed version of the data set. This can be turned off using the <code>retain = FALSE</code> option to <code>prep()</code>. Since the training set is already in the recipe, we can get it with no additional computations using</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb25"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">bake</span><span class="op">(</span><span class="va">unskew_rec</span>, new_data <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> </span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb25"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">bake</span><span class="op">(</span><span class="va">unskew_rec</span>, new_data <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>The main site mentions a few other methods that could be used besides Yeo-Johnson:</p>
 <ul>
 <li>Box-Cox: <code>step_BoxCox()</code>
@@ -759,7 +776,7 @@ window.Quarto = {
 </ul>
 <p>Note that the last method has its step function in the <span class="pkg"><a href="https://cran.r-project.org/package=bestNormalize">bestNormalize</a></span> package; various recipe extension packages can be used. A <a href="https://www.tidymodels.org/find/recipes/"><strong>full set of recipe steps</strong></a> for CRAN packages is available on <code>tidymodels.org</code>.</p>
 <p>There is also a general step for <em>simple</em> computations that do not need to be estimated. If we were to log transform the data, we would use:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb26"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">recipe</span><span class="op">(</span><span class="va">Sale_Price</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">ames_train</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb26"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">recipe</span><span class="op">(</span><span class="va">Sale_Price</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">ames_train</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">step_mutate</span><span class="op">(</span>Lot_Area <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">log10</a></span><span class="op">(</span><span class="va">Lot_Area</span><span class="op">)</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Other single variable transformations can be found in the following R packages: <span class="pkg"><a href="https://cran.r-project.org/package=car">car</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=trafo">trafo</a></span>, and <span class="pkg"><a href="https://cran.r-project.org/package=Transform">Transform</a></span>.</p>
 <p><a href="https://aml4td.org/chapters/numeric-predictors.html#sec-skewness"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
@@ -785,9 +802,9 @@ window.Quarto = {
 <span class="header-section-number">5.7</span> Standardizing to a Common Scale</h2>
 <p>The two main steps for standardizing columns to have the same units are <code>step_normalize()</code> and <code>step_range()</code>. A common pattern for the former is:</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">norm_rec</span> <span class="op">&lt;-</span> </span>
-<span>  <span class="va">unskew_rec</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu">step_zv</span><span class="op">(</span><span class="fu">all_predictors</span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">norm_rec</span> <span class="op">&lt;-</span></span>
+<span>  <span class="va">unskew_rec</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">step_zv</span><span class="op">(</span><span class="fu">all_predictors</span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">step_normalize</span><span class="op">(</span><span class="fu">all_numeric_predictors</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">norm_rec</span></span>
@@ -821,12 +838,12 @@ window.Quarto = {
 <span><span class="co">#&gt;   method                 from    </span></span>
 <span><span class="co">#&gt;   as.character.dev_topic generics</span></span>
 <span></span>
-<span><span class="va">sp_sign_rec</span> <span class="op">&lt;-</span> </span>
-<span>  <span class="fu">recipe</span><span class="op">(</span><span class="va">Sale_Price</span> <span class="op">~</span> <span class="va">Lot_Area</span> <span class="op">+</span> <span class="va">Gr_Liv_Area</span>, data <span class="op">=</span> <span class="va">ames_train</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu">step_YeoJohnson</span><span class="op">(</span><span class="fu">any_of</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Lot_Area"</span>, <span class="st">"Gr_Liv_Area"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu">step_zv</span><span class="op">(</span><span class="fu">all_predictors</span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu"><a href="https://petersonr.github.io/bestNormalize/reference/step_orderNorm.html">step_orderNorm</a></span><span class="op">(</span><span class="fu">all_numeric_predictors</span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu">step_spatialsign</span><span class="op">(</span><span class="fu">all_numeric_predictors</span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span><span class="va">sp_sign_rec</span> <span class="op">&lt;-</span></span>
+<span>  <span class="fu">recipe</span><span class="op">(</span><span class="va">Sale_Price</span> <span class="op">~</span> <span class="va">Lot_Area</span> <span class="op">+</span> <span class="va">Gr_Liv_Area</span>, data <span class="op">=</span> <span class="va">ames_train</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">step_YeoJohnson</span><span class="op">(</span><span class="fu">any_of</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Lot_Area"</span>, <span class="st">"Gr_Liv_Area"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">step_zv</span><span class="op">(</span><span class="fu">all_predictors</span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://petersonr.github.io/bestNormalize/reference/step_orderNorm.html">step_orderNorm</a></span><span class="op">(</span><span class="fu">all_numeric_predictors</span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">step_spatialsign</span><span class="op">(</span><span class="fu">all_numeric_predictors</span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">prep</span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">sp_sign_data</span> <span class="op">&lt;-</span> <span class="fu">bake</span><span class="op">(</span><span class="va">sp_sign_rec</span>, new_data <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
@@ -843,10 +860,10 @@ window.Quarto = {
 <span><span class="co">#&gt; # ℹ 2,190 more rows</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb29"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">sp_sign_data</span> <span class="op">|&gt;</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb29"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">sp_sign_data</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">ggplot</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span><span class="va">Lot_Area</span>, <span class="va">Gr_Liv_Area</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">geom_point</span><span class="op">(</span>cex <span class="op">=</span>  <span class="fl">2</span>, alpha <span class="op">=</span> <span class="fl">1</span> <span class="op">/</span> <span class="fl">10</span>, pch <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">coord_equal</span><span class="op">(</span><span class="op">)</span> </span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span>  <span class="fu">geom_point</span><span class="op">(</span>cex <span class="op">=</span> <span class="fl">2</span>, alpha <span class="op">=</span> <span class="fl">1</span> <span class="op">/</span> <span class="fl">10</span>, pch <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">coord_equal</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure"><p><img src="numeric-predictors_files/figure-html/sp-sign-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:40.0%"></p>

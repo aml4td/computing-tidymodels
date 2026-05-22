@@ -2,10 +2,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.8.26">
+<meta name="generator" content="quarto-1.9.36">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <title>13&nbsp; Feature Selection – Tidymodels Computing Supplement</title>
 <style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -65,15 +68,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../chapters/iterative-search.html" rel="prev">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-845c23b38eaddc0f92fda52bfe77a8c8.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-7c647e586662db48eb79d76466712003.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-cca14224007e87b3f770119fd179b404.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <link href="../site_libs/quarto-contrib/fontawesome6-1.2.0/all.min.css" rel="stylesheet">
 <link href="../site_libs/quarto-contrib/fontawesome6-1.2.0/latex-fontsize.css" rel="stylesheet"><script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
@@ -324,6 +326,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Complex Nonlinear Boundaries</span></span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/cls-neural-nets.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Neural Network Classifiers</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/cls-trees.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">Classification using Trees and Rules</span></span></a>
+  </div>
+</li>
       </ul>
 </li>
         <li class="sidebar-item sidebar-item-section">
@@ -374,14 +388,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span class="header-section-number">13.1</span> Requirements</h2>
 <p>We will use the following package in this chapter: You’ll need 10 packages (<span class="pkg"><a href="https://cran.r-project.org/package=bestNormalize">bestNormalize</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=important">important</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=janitor">janitor</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=kernlab">kernlab</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=mirai">mirai</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=partykit">partykit</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=QSARdata">QSARdata</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=ranger">ranger</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=rpart">rpart</a></span>, and <span class="pkg"><a href="https://cran.r-project.org/package=tidymodels">tidymodels</a></span>) for this chapter. You can install them via:. To install them:</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">req_pkg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"bestNormalize"</span>, <span class="st">"important"</span>, <span class="st">"mirai"</span>, <span class="st">"janitor"</span>, <span class="st">"kernlab"</span>, <span class="st">"partykit"</span>, </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># fmt: skip</span></span>
+<span><span class="va">req_pkg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"bestNormalize"</span>, <span class="st">"important"</span>, <span class="st">"mirai"</span>, <span class="st">"janitor"</span>, <span class="st">"kernlab"</span>, <span class="st">"partykit"</span>, </span>
 <span>             <span class="st">"QSARdata"</span>, <span class="st">"ranger"</span>, <span class="st">"rpart"</span>, <span class="st">"tidymodels"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Check to see if they are installed: </span></span>
+<span><span class="co"># Check to see if they are installed:</span></span>
 <span><span class="va">pkg_installed</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">vapply</a></span><span class="op">(</span><span class="va">req_pkg</span>, <span class="fu">rlang</span><span class="fu">::</span><span class="va"><a href="https://rlang.r-lib.org/reference/is_installed.html">is_installed</a></span>, <span class="fu"><a href="https://rdrr.io/r/base/logical.html">logical</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Install missing packages: </span></span>
-<span><span class="kw">if</span> <span class="op">(</span> <span class="fu"><a href="https://rdrr.io/r/base/any.html">any</a></span><span class="op">(</span><span class="op">!</span><span class="va">pkg_installed</span><span class="op">)</span> <span class="op">)</span> <span class="op">{</span></span>
+<span><span class="co"># Install missing packages:</span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/any.html">any</a></span><span class="op">(</span><span class="op">!</span><span class="va">pkg_installed</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">install_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">pkg_installed</span><span class="op">)</span><span class="op">[</span><span class="op">!</span><span class="va">pkg_installed</span><span class="op">]</span></span>
 <span>  <span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html">pak</a></span><span class="op">(</span><span class="va">install_list</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -396,26 +411,29 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://petersonr.github.io/bestNormalize/">bestNormalize</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://mirai.r-lib.org">mirai</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/sfirke/janitor">janitor</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://mirai.r-lib.org">mirai</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://tidymodels.tidymodels.org/reference/tidymodels_prefer.html">tidymodels_prefer</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu">theme_set</span><span class="op">(</span><span class="fu">theme_bw</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu">mirai</span><span class="fu">::</span><span class="fu"><a href="https://mirai.r-lib.org/reference/daemons.html">daemons</a></span><span class="op">(</span><span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html">detectCores</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span><span class="fu"><a href="https://mirai.r-lib.org/reference/daemons.html">daemons</a></span><span class="op">(</span><span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html">detectCores</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>There are a few different data frames for these data. We’ll merge two and clean up and shorten the variable names, use a 4:1 split of the data, and then initialize multiple repeats of 10-fold cross-validation:</p>
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">PLD</span>, package <span class="op">=</span> <span class="st">"QSARdata"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">drug_data</span> <span class="op">&lt;-</span> </span>
+<span><span class="va">drug_data</span> <span class="op">&lt;-</span></span>
 <span>  <span class="co"># Merge the outcome data with a subset of possible predictors.</span></span>
-<span>  <span class="va">PLD_Outcome</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu">full_join</span><span class="op">(</span><span class="va">PLD_VolSurfPlus</span>, by <span class="op">=</span> <span class="st">"Molecule"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu">full_join</span><span class="op">(</span><span class="va">PLD_PipelinePilot_FP</span> <span class="op">|&gt;</span> <span class="fu">select</span><span class="op">(</span><span class="fl">1</span>, <span class="fu">contains</span><span class="op">(</span><span class="st">"FCFP"</span><span class="op">)</span><span class="op">)</span>, </span>
-<span>            by <span class="op">=</span> <span class="st">"Molecule"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">Molecule</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu"><a href="https://sfirke.github.io/janitor/reference/clean_names.html">clean_names</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu">as_tibble</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="va">PLD_Outcome</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">full_join</span><span class="op">(</span><span class="va">PLD_VolSurfPlus</span>, by <span class="op">=</span> <span class="st">"Molecule"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">full_join</span><span class="op">(</span></span>
+<span>    <span class="va">PLD_PipelinePilot_FP</span> <span class="op">|&gt;</span> <span class="fu">select</span><span class="op">(</span><span class="fl">1</span>, <span class="fu">contains</span><span class="op">(</span><span class="st">"FCFP"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    by <span class="op">=</span> <span class="st">"Molecule"</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">Molecule</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://sfirke.github.io/janitor/reference/clean_names.html">clean_names</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">as_tibble</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="co"># Make shorter names:</span></span>
-<span>  <span class="fu">rename_with</span><span class="op">(</span><span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html">gsub</a></span><span class="op">(</span><span class="st">"vol_surf_plus_"</span>, <span class="st">""</span>, <span class="va">.x</span><span class="op">)</span>, <span class="fu">everything</span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu">rename_with</span><span class="op">(</span><span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html">gsub</a></span><span class="op">(</span><span class="st">"vol_surf_plus_"</span>, <span class="st">""</span>, <span class="va">.x</span><span class="op">)</span>, <span class="fu">everything</span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">rename_with</span><span class="op">(</span><span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html">gsub</a></span><span class="op">(</span><span class="st">"ppfp_fcfp_"</span>, <span class="st">"fp_"</span>, <span class="va">.x</span><span class="op">)</span>, <span class="fu">everything</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">106</span><span class="op">)</span></span>
@@ -465,9 +483,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>We suggest adding these to a recipe early, after any imputation methods.</p>
 <p>For the drug toxicity data, we can visualize the amount of predictor correlations by first computing the correlation matrix:</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cor_mat</span> <span class="op">&lt;-</span> </span>
-<span>  <span class="va">drug_train</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">class</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cor_mat</span> <span class="op">&lt;-</span></span>
+<span>  <span class="va">drug_train</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">class</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/stats/cor.html">cor</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Warning in cor(select(drug_train, -class)): the standard deviation is zero</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
@@ -480,8 +498,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>We’ll start a recipe with the step that will eliminate these:</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">drug_rec</span> <span class="op">&lt;-</span> </span>
-<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span><span class="va">class</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">drug_train</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">drug_rec</span> <span class="op">&lt;-</span></span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span><span class="va">class</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">drug_train</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_zv.html">step_zv</a></span><span class="op">(</span><span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html">all_predictors</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Returning to correlations, let’s plot the distribution of pairwise correlation between predictors:</p>
@@ -491,9 +509,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">abs</a></span><span class="op">(</span><span class="va">pairwise_cor</span><span class="op">)</span> <span class="op">&gt;=</span> <span class="fl">3</span> <span class="op">/</span> <span class="fl">4</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 3922</span></span>
 <span></span>
-<span><span class="fu">tibble</span><span class="op">(</span>correlation <span class="op">=</span> <span class="va">pairwise_cor</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span><span class="va">correlation</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu">ggplot</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">correlation</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> </span>
+<span><span class="fu">tibble</span><span class="op">(</span>correlation <span class="op">=</span> <span class="va">pairwise_cor</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span><span class="va">correlation</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">ggplot</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">correlation</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">geom_histogram</span><span class="op">(</span>binwidth <span class="op">=</span> <span class="fl">0.1</span>, col <span class="op">=</span> <span class="st">"white"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
@@ -504,7 +522,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>This isn’t too bad, but if we wanted to reduce the extreme pairwise correlations, we could use:</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">drug_rec</span> <span class="op">|&gt;</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">drug_rec</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_corr.html">step_corr</a></span><span class="op">(</span><span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html">all_predictors</a></span><span class="op">(</span><span class="op">)</span>, threshold <span class="op">=</span> <span class="fl">0.75</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Recipe ───────────────────────────────────────────────────────────────────────────</span></span>
@@ -529,8 +547,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cart_ctrl</span> <span class="op">&lt;-</span> <span class="fu">rpart</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/rpart/man/rpart.control.html">rpart.control</a></span><span class="op">(</span>maxcompete <span class="op">=</span> <span class="fl">0</span>, maxsurrogate <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">cart_spec</span> <span class="op">&lt;-</span> </span>
-<span>  <span class="fu">decision_tree</span><span class="op">(</span>mode <span class="op">=</span> <span class="st">"classification"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span><span class="va">cart_spec</span> <span class="op">&lt;-</span></span>
+<span>  <span class="fu">decision_tree</span><span class="op">(</span>mode <span class="op">=</span> <span class="st">"classification"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">set_engine</span><span class="op">(</span><span class="st">"rpart"</span>, control <span class="op">=</span> <span class="op">!</span><span class="op">!</span><span class="va">cart_ctrl</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p><strong>Note</strong> the use of <code>!!</code> (“bang-bang”) when adding <code>cart_ctrl</code> as an engine option. If we had just used <code>control = cart_ctrl</code>, it tells R to look for a reference to object “<code>cart_ctrl</code>”, which resides in the global environment. Ordinarily, that works fine. However, if we use parallel processing, that reference is not available to the worker processes, and an error will occur.</p>
@@ -567,9 +585,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="http://partykit.r-forge.r-project.org/partykit/">partykit</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">cart_drug_party</span> <span class="op">&lt;-</span> </span>
-<span>  <span class="va">cart_drug_fit</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu">extract_fit_engine</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span><span class="va">cart_drug_party</span> <span class="op">&lt;-</span></span>
+<span>  <span class="va">cart_drug_fit</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">extract_fit_engine</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/partykit/man/party-coercion.html">as.party</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">cart_drug_party</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
@@ -583,14 +601,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">get_active_features</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="kw"><a href="https://rdrr.io/r/base/library.html">require</a></span><span class="op">(</span><span class="va"><a href="https://tidymodels.tidymodels.org">tidymodels</a></span><span class="op">)</span></span>
-<span>  <span class="va">x</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu">extract_fit_engine</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu">pluck</span><span class="op">(</span><span class="st">"variable.importance"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/enframe.html">enframe</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="va">x</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu">extract_fit_engine</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu">pluck</span><span class="op">(</span><span class="st">"variable.importance"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/enframe.html">enframe</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/stats/setNames.html">setNames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"predictor"</span>, <span class="st">"importance"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span></span>
-<span><span class="fu">get_active_features</span><span class="op">(</span><span class="va">cart_drug_fit</span><span class="op">)</span> </span>
+<span><span class="fu">get_active_features</span><span class="op">(</span><span class="va">cart_drug_fit</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 7 × 2</span></span>
 <span><span class="co">#&gt;   predictor  importance</span></span>
 <span><span class="co">#&gt;   &lt;chr&gt;           &lt;dbl&gt;</span></span>
@@ -607,11 +625,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>To determine this, we can resample the model and save the importance scores for each of the 100 analysis sets. Let’s take the <code>get_active_features()</code> function and add it to a different <code>control</code> function that will be executed during resampling:</p>
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">ctrl</span> <span class="op">&lt;-</span> <span class="fu">control_resamples</span><span class="op">(</span>extract <span class="op">=</span> <span class="va">get_active_features</span><span class="op">)</span></span>
-<span><span class="va">cart_drug_res</span> <span class="op">&lt;-</span> </span>
-<span>  <span class="va">cart_spec</span> <span class="op">|&gt;</span> </span>
+<span><span class="va">cart_drug_res</span> <span class="op">&lt;-</span></span>
+<span>  <span class="va">cart_spec</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">fit_resamples</span><span class="op">(</span></span>
-<span>    <span class="va">class</span> <span class="op">~</span> <span class="va">.</span>, </span>
-<span>    resamples <span class="op">=</span> <span class="va">drug_rs</span>, </span>
+<span>    <span class="va">class</span> <span class="op">~</span> <span class="va">.</span>,</span>
+<span>    resamples <span class="op">=</span> <span class="va">drug_rs</span>,</span>
 <span>    control <span class="op">=</span> <span class="va">ctrl</span></span>
 <span>  <span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
@@ -638,10 +656,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>We can extract the results from all the resamples, unnest, and count the number of times each predictor was selected:</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">resampled_selection</span> <span class="op">&lt;-</span> </span>
-<span>  <span class="va">cart_drug_res</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu">collect_extracts</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu">unnest</span><span class="op">(</span><span class="va">.extracts</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">resampled_selection</span> <span class="op">&lt;-</span></span>
+<span>  <span class="va">cart_drug_res</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">collect_extracts</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">unnest</span><span class="op">(</span><span class="va">.extracts</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">count</span><span class="op">(</span><span class="va">predictor</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">arrange</span><span class="op">(</span><span class="fu">desc</span><span class="op">(</span><span class="va">n</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
@@ -657,7 +675,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>A visualization illustrates that a small number of predictors were reliably selected:</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">resampled_selection</span> <span class="op">|&gt;</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">resampled_selection</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">ggplot</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span><span class="va">n</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">geom_histogram</span><span class="op">(</span>binwidth <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">"white"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">labs</span><span class="op">(</span>x <span class="op">=</span> <span class="st">"# Times Selected (of 100)"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -700,10 +718,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>The important package has three recipe steps for supervised feature selection. These tools can use one or more scores to determine which predictors to retain in the model. We’ll use it below, but see the documentation <a href="https://important.tidymodels.org/">here</a> for more details. The <span class="pkg"><a href="https://cran.r-project.org/package=colino">colino</a></span> package also has a variety of recipe feature filter steps that can be used (found on GitHub <a href="https://github.com/stevenpawley/colino">here</a>).</p>
 <p>We’ll focus on using a basic random forest permutation importance as a scoring mechanism. We’ll still use the unsupervised correlation filters before the supervised analysis. <code><a href="https://important.tidymodels.org/reference/step_predictor_best.html">important::step_predictor_best()</a></code> requires a <code>score</code> argument to specify the ranking mechanism. Possible values are listed in the <a href="https://important.tidymodels.org/reference/step_predictor_best.html#scoring-functions">manual page</a> for the function. For our instance, we’ll use <code>score = "imp_rf"</code>. You can also specify the <em>proportion</em> of features to retain via the <code>prop_terms</code> argument. The default tuning range is [5%, 100%], which we’ll use. The code is:</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">drug_rec</span> <span class="op">&lt;-</span> </span>
-<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span><span class="va">class</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">drug_train</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_zv.html">step_zv</a></span><span class="op">(</span><span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html">all_predictors</a></span><span class="op">(</span><span class="op">)</span>, id <span class="op">=</span> <span class="st">"zv"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_corr.html">step_corr</a></span><span class="op">(</span><span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html">all_numeric_predictors</a></span><span class="op">(</span><span class="op">)</span>, threshold <span class="op">=</span> <span class="fu">tune</span><span class="op">(</span><span class="op">)</span>, id <span class="op">=</span> <span class="st">"cor"</span><span class="op">)</span>  <span class="op">|&gt;</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">drug_rec</span> <span class="op">&lt;-</span></span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/recipe.html">recipe</a></span><span class="op">(</span><span class="va">class</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">drug_train</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_zv.html">step_zv</a></span><span class="op">(</span><span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html">all_predictors</a></span><span class="op">(</span><span class="op">)</span>, id <span class="op">=</span> <span class="st">"zv"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://recipes.tidymodels.org/reference/step_corr.html">step_corr</a></span><span class="op">(</span><span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html">all_numeric_predictors</a></span><span class="op">(</span><span class="op">)</span>, threshold <span class="op">=</span> <span class="fu">tune</span><span class="op">(</span><span class="op">)</span>, id <span class="op">=</span> <span class="st">"cor"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://important.tidymodels.org/reference/step_predictor_best.html">step_predictor_best</a></span><span class="op">(</span></span>
 <span>    <span class="fu"><a href="https://recipes.tidymodels.org/reference/has_role.html">all_predictors</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>    score <span class="op">=</span> <span class="st">"imp_rf"</span>,</span>
@@ -716,19 +734,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>We’ll fit a support vector machine model to these data, so the recipe concludes with a step that will normalize the features to have the same distribution (even the binary values).</p>
 <p>Now we can specify the supervised model, tag two parameters for optimization, and then add the model and recipe to a workflow:</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">svm_spec</span> <span class="op">&lt;-</span> </span>
-<span>  <span class="fu">svm_rbf</span><span class="op">(</span>cost <span class="op">=</span> <span class="fu">tune</span><span class="op">(</span><span class="op">)</span>, rbf_sigma <span class="op">=</span> <span class="fu">tune</span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">svm_spec</span> <span class="op">&lt;-</span></span>
+<span>  <span class="fu">svm_rbf</span><span class="op">(</span>cost <span class="op">=</span> <span class="fu">tune</span><span class="op">(</span><span class="op">)</span>, rbf_sigma <span class="op">=</span> <span class="fu">tune</span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">set_mode</span><span class="op">(</span><span class="st">"classification"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">vip_svm_wflow</span> <span class="op">&lt;-</span> <span class="fu">workflow</span><span class="op">(</span><span class="va">drug_rec</span>, <span class="va">svm_spec</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Let’s adjust the range of the correlation filter to make it slightly more aggressively remove highly correlated predictors:</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">vip_svm_param</span> <span class="op">&lt;-</span> </span>
-<span>  <span class="va">vip_svm_wflow</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu"><a href="https://hardhat.tidymodels.org/reference/hardhat-extract.html">extract_parameter_set_dials</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">vip_svm_param</span> <span class="op">&lt;-</span></span>
+<span>  <span class="va">vip_svm_wflow</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://hardhat.tidymodels.org/reference/hardhat-extract.html">extract_parameter_set_dials</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/stats/update.html">update</a></span><span class="op">(</span></span>
-<span>  threshold <span class="op">=</span> <span class="fu">threshold</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.25</span>, <span class="fl">0.99</span><span class="op">)</span><span class="op">)</span></span>
+<span>    threshold <span class="op">=</span> <span class="fu">threshold</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.25</span>, <span class="fl">0.99</span><span class="op">)</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p><em>Finally</em>, let’s tune the model via Bayesian optimization and use the Brier score to guide the process to the best values of the tuning parameters. This is a long computation; lowering the value of <code>iter</code> will make it finish more quickly.</p>
@@ -747,12 +765,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span>    param_info <span class="op">=</span> <span class="va">vip_svm_param</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="co">#&gt; ! There are 4 tuning parameters and 4 grid points were requested.</span></span>
-<span><span class="co">#&gt; • There are as many tuning parameters as there are initial points. This is likely to</span></span>
-<span><span class="co">#&gt;   cause numerical issues in the first few search iterations.</span></span>
-<span><span class="co">#&gt; ! The Gaussian process model is being fit using 4 features but only has 4 data</span></span>
-<span><span class="co">#&gt;   points to do so. This may cause errors or a poor model fit.</span></span>
-<span><span class="co">#&gt; ! The Gaussian process model is being fit using 4 features but only has 5 data</span></span>
-<span><span class="co">#&gt;   points to do so. This may cause errors or a poor model fit.</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span><span class="co">#&gt; • This is likely to cause numerical issues in the first few search iterations.</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Keep in mind that the <span class="pkg"><a href="https://cran.r-project.org/package=kernlab">kernlab</a></span> implementation of SVMs for classification uses its own random number generator and not the one in base R. This will probably yield different results when run again.</p>
 <p>A visualization of the process shows that the search does reduce the Brier score during the search:</p>
@@ -765,7 +778,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 </div>
-<p>When we plot the parameter choices over iterations, we see that the two filtering tuning parameter converges to specific ranges.</p>
+<p>We can plot the parameter choices over iterations:</p>
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb24"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot</a></span><span class="op">(</span><span class="va">vip_svm_res</span>, type <span class="op">=</span> <span class="st">"parameters"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
@@ -775,7 +788,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 </div>
-<p>A plot of the parameter values versus the Brier score tells a similar story:</p>
+<p>A plot of the filtering parameter values versus the Brier score tells a similar story:</p>
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb25"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">vip_svm_res</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">collect_metrics</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -783,9 +796,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span>  <span class="fu">rename</span><span class="op">(</span>Brier <span class="op">=</span> <span class="va">mean</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">ggplot</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span><span class="va">threshold</span>, <span class="va">prop_terms</span>, size <span class="op">=</span> <span class="va">Brier</span>, col <span class="op">=</span> <span class="va">Brier</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">geom_point</span><span class="op">(</span>alpha <span class="op">=</span> <span class="fl">2</span> <span class="op">/</span> <span class="fl">4</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">coord_fixed</span><span class="op">(</span>ratio <span class="op">=</span> <span class="op">(</span><span class="fl">0.99</span> <span class="op">-</span> <span class="fl">0.25</span><span class="op">)</span> <span class="op">/</span> <span class="op">(</span><span class="fl">0.99</span><span class="op">-</span><span class="fl">0.05</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">coord_fixed</span><span class="op">(</span>ratio <span class="op">=</span> <span class="op">(</span><span class="fl">0.99</span> <span class="op">-</span> <span class="fl">0.25</span><span class="op">)</span> <span class="op">/</span> <span class="op">(</span><span class="fl">0.99</span> <span class="op">-</span> <span class="fl">0.05</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">labs</span><span class="op">(</span></span>
-<span>    x <span class="op">=</span> <span class="st">"Correlation Filter Threshold"</span>, </span>
+<span>    x <span class="op">=</span> <span class="st">"Correlation Filter Threshold"</span>,</span>
 <span>    y <span class="op">=</span> <span class="st">"Proportion of Predictors Kept"</span></span>
 <span>  <span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
@@ -799,13 +812,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb26"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">show_best</span><span class="op">(</span><span class="va">vip_svm_res</span>, metric <span class="op">=</span> <span class="st">"brier_class"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 5 × 11</span></span>
-<span><span class="co">#&gt;       cost   rbf_sigma threshold prop_terms .metric .estimator   mean     n  std_err</span></span>
-<span><span class="co">#&gt;      &lt;dbl&gt;       &lt;dbl&gt;     &lt;dbl&gt;      &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt;       &lt;dbl&gt; &lt;int&gt;    &lt;dbl&gt;</span></span>
-<span><span class="co">#&gt; 1 18.61       1.857e-5    0.9685     0.5912 brier_… binary     0.1443   100 0.004190</span></span>
-<span><span class="co">#&gt; 2 17.48       6.827e-5    0.9759     0.6781 brier_… binary     0.1509   100 0.004144</span></span>
-<span><span class="co">#&gt; 3  0.05550    4.032e-5    0.9879     0.9600 brier_… binary     0.1574   100 0.004334</span></span>
-<span><span class="co">#&gt; 4 32          2.154e-7    0.99       0.6833 brier_… binary     0.1622   100 0.004651</span></span>
-<span><span class="co">#&gt; 5 27.35       1.129e-6    0.9321     0.6640 brier_… binary     0.1634   100 0.004773</span></span>
+<span><span class="co">#&gt;       cost  rbf_sigma threshold prop_terms .metric  .estimator   mean     n  std_err</span></span>
+<span><span class="co">#&gt;      &lt;dbl&gt;      &lt;dbl&gt;     &lt;dbl&gt;      &lt;dbl&gt; &lt;chr&gt;    &lt;chr&gt;       &lt;dbl&gt; &lt;int&gt;    &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1 0.07978  0.0004459     0.9860     0.9775 brier_c… binary     0.1548   100 0.004108</span></span>
+<span><span class="co">#&gt; 2 0.05979  0.00008177    0.9829     0.9946 brier_c… binary     0.1556   100 0.004265</span></span>
+<span><span class="co">#&gt; 3 0.06166  0.00001228    0.9741     0.9599 brier_c… binary     0.1557   100 0.004347</span></span>
+<span><span class="co">#&gt; 4 0.002546 0.0004536     0.8746     0.9721 brier_c… binary     0.1562   100 0.004031</span></span>
+<span><span class="co">#&gt; 5 0.001949 0.001809      0.9769     0.9969 brier_c… binary     0.1571   100 0.003550</span></span>
 <span><span class="co">#&gt; # ℹ 2 more variables: .config &lt;chr&gt;, .iter &lt;int&gt;</span></span>
 <span></span>
 <span><span class="va">best_param</span> <span class="op">&lt;-</span> <span class="fu">select_best</span><span class="op">(</span><span class="va">vip_svm_res</span>, metric <span class="op">=</span> <span class="st">"brier_class"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -813,9 +826,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Let’s update our workflow with the best parameters, then fit the final model on the entire training set:</p>
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">124</span><span class="op">)</span></span>
-<span><span class="va">final_model</span> <span class="op">&lt;-</span> </span>
-<span>  <span class="va">vip_svm_wflow</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu">finalize_workflow</span><span class="op">(</span><span class="va">best_param</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span><span class="va">final_model</span> <span class="op">&lt;-</span></span>
+<span>  <span class="va">vip_svm_wflow</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">finalize_workflow</span><span class="op">(</span><span class="va">best_param</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">fit</span><span class="op">(</span><span class="va">drug_train</span><span class="op">)</span></span>
 <span><span class="va">final_model</span></span>
 <span><span class="co">#&gt; ══ Workflow [trained] ═══════════════════════════════════════════════════════════════</span></span>
@@ -834,15 +847,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="co">#&gt; Support Vector Machine object of class "ksvm" </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; SV type: C-svc  (classification) </span></span>
-<span><span class="co">#&gt;  parameter : cost C = 18.6076391978097 </span></span>
+<span><span class="co">#&gt;  parameter : cost C = 0.0797839123868838 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Gaussian Radial Basis kernel function. </span></span>
-<span><span class="co">#&gt;  Hyperparameter : sigma =  1.85709977524207e-05 </span></span>
+<span><span class="co">#&gt;  Hyperparameter : sigma =  0.000445862578095906 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Number of Support Vectors : 192 </span></span>
+<span><span class="co">#&gt; Number of Support Vectors : 220 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Objective Function Value : -2458 </span></span>
-<span><span class="co">#&gt; Training error : 0.100386 </span></span>
+<span><span class="co">#&gt; Objective Function Value : -15.3 </span></span>
+<span><span class="co">#&gt; Training error : 0.382239 </span></span>
 <span><span class="co">#&gt; Probability model included.</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>How many predictors were removed, and how many made it to the final model? We can write a function to use the <code><a href="https://generics.r-lib.org/reference/tidy.html">tidy()</a></code> method on the recipe steps to assess what was eliminated. The “mold” for the workflow can also tell us how many predictors were passed to the SVM model:</p>
@@ -854,13 +867,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span>  <span class="va">zv_filter</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html">tidy</a></span><span class="op">(</span><span class="va">fit_rec</span>, id <span class="op">=</span> <span class="st">"zv"</span><span class="op">)</span><span class="op">)</span></span>
 <span>  <span class="va">vip_filter</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html">tidy</a></span><span class="op">(</span><span class="va">fit_rec</span>, id <span class="op">=</span> <span class="st">"vip"</span><span class="op">)</span><span class="op">$</span><span class="va">removed</span><span class="op">)</span></span>
 <span>  <span class="va">original</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">ncol</a></span><span class="op">(</span><span class="va">drug_train</span><span class="op">)</span> <span class="op">-</span> <span class="fl">1</span></span>
-<span>  </span>
+<span></span>
 <span>  <span class="co"># The mold has a 'predictors' element that describes the</span></span>
-<span>  <span class="co"># columns which are given to the model: </span></span>
-<span>  <span class="va">retained</span> <span class="op">&lt;-</span> </span>
-<span>    <span class="va">x</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu">extract_mold</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu">pluck</span><span class="op">(</span><span class="st">"predictors"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="co"># columns which are given to the model:</span></span>
+<span>  <span class="va">retained</span> <span class="op">&lt;-</span></span>
+<span>    <span class="va">x</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu">extract_mold</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu">pluck</span><span class="op">(</span><span class="st">"predictors"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">ncol</a></span><span class="op">(</span><span class="op">)</span></span>
 <span>  <span class="co"># We'll save them as a tibble:</span></span>
 <span>  <span class="fu">tibble</span><span class="op">(</span><span class="va">original</span>, <span class="va">zv_filter</span>, <span class="va">corr_filter</span>, <span class="va">vip_filter</span>, <span class="va">retained</span><span class="op">)</span></span>
@@ -870,7 +883,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="co">#&gt; # A tibble: 1 × 5</span></span>
 <span><span class="co">#&gt;   original zv_filter corr_filter vip_filter retained</span></span>
 <span><span class="co">#&gt;      &lt;dbl&gt;     &lt;int&gt;       &lt;int&gt;      &lt;int&gt;    &lt;int&gt;</span></span>
-<span><span class="co">#&gt; 1     1345        16         680        155      494</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span><span class="co">#&gt; 1     1345        16         659         16      654</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The correlation filter removes a large number of predictors, which is not surprising for this type of data set.</p>
 <p>How does the model work on the test set of 65 molecules?</p>
@@ -880,12 +893,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="co">#&gt; # A tibble: 1 × 3</span></span>
 <span><span class="co">#&gt;   .metric     .estimator .estimate</span></span>
 <span><span class="co">#&gt;   &lt;chr&gt;       &lt;chr&gt;          &lt;dbl&gt;</span></span>
-<span><span class="co">#&gt; 1 brier_class binary        0.1135</span></span>
+<span><span class="co">#&gt; 1 brier_class binary        0.1368</span></span>
 <span><span class="va">test_pred</span> <span class="op">|&gt;</span> <span class="fu">roc_auc</span><span class="op">(</span><span class="va">class</span>, <span class="va">.pred_inducer</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 1 × 3</span></span>
 <span><span class="co">#&gt;   .metric .estimator .estimate</span></span>
 <span><span class="co">#&gt;   &lt;chr&gt;   &lt;chr&gt;          &lt;dbl&gt;</span></span>
-<span><span class="co">#&gt; 1 roc_auc binary         0.918</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span><span class="co">#&gt; 1 roc_auc binary         0.908</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p><a href="https://aml4td.org/chapters/feature-selection.html#sec-filters"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 

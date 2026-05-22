@@ -2,10 +2,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.8.26">
+<meta name="generator" content="quarto-1.9.36">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <title>15&nbsp; Characterizing Classification Models – Tidymodels Computing Supplement</title>
 <style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -65,15 +68,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../chapters/comparing-models.html" rel="prev">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-845c23b38eaddc0f92fda52bfe77a8c8.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-7c647e586662db48eb79d76466712003.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-cca14224007e87b3f770119fd179b404.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <link href="../site_libs/quarto-contrib/fontawesome6-1.2.0/all.min.css" rel="stylesheet">
 <link href="../site_libs/quarto-contrib/fontawesome6-1.2.0/latex-fontsize.css" rel="stylesheet"><script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
@@ -324,6 +326,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Complex Nonlinear Boundaries</span></span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/cls-neural-nets.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Neural Network Classifiers</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/cls-trees.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">Classification using Trees and Rules</span></span></a>
+  </div>
+</li>
       </ul>
 </li>
         <li class="sidebar-item sidebar-item-section">
@@ -380,22 +394,22 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span class="header-section-number">15.1</span> Requirements</h2>
 <p>You’ll need 9 packages (<span class="pkg"><a href="https://cran.r-project.org/package=betacal">betacal</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=discrim">discrim</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=desirability2">desirability2</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=klaR">klaR</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=mgcv">mgcv</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=patchwork">patchwork</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=probably">probably</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=rpart">rpart</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=tidymodels">tidymodels</a></span>) for this chapter:</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># skip: fmt</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># fmt: skip</span></span>
 <span><span class="va">req_pkg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"betacal"</span>, <span class="st">"discrim"</span>, <span class="st">"desirability2"</span>, <span class="st">"klaR"</span>, <span class="st">"mgcv"</span>, <span class="st">"patchwork"</span>, </span>
 <span>             <span class="st">"probably"</span>, <span class="st">"rpart"</span>, <span class="st">"tidymodels"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Check to see if they are installed: </span></span>
+<span><span class="co"># Check to see if they are installed:</span></span>
 <span><span class="va">pkg_installed</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">vapply</a></span><span class="op">(</span><span class="va">req_pkg</span>, <span class="fu">rlang</span><span class="fu">::</span><span class="va"><a href="https://rlang.r-lib.org/reference/is_installed.html">is_installed</a></span>, <span class="fu"><a href="https://rdrr.io/r/base/logical.html">logical</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Install missing packages: </span></span>
-<span><span class="kw">if</span> <span class="op">(</span> <span class="fu"><a href="https://rdrr.io/r/base/any.html">any</a></span><span class="op">(</span><span class="op">!</span><span class="va">pkg_installed</span><span class="op">)</span> <span class="op">)</span> <span class="op">{</span></span>
+<span><span class="co"># Install missing packages:</span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/any.html">any</a></span><span class="op">(</span><span class="op">!</span><span class="va">pkg_installed</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">install_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">pkg_installed</span><span class="op">)</span><span class="op">[</span><span class="op">!</span><span class="va">pkg_installed</span><span class="op">]</span></span>
 <span>  <span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html">pak</a></span><span class="op">(</span><span class="va">install_list</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Let’s load the meta package and manage some between-package function conflicts.</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidymodels.tidymodels.org">tidymodels</a></span><span class="op">)</span>  <span class="co"># &lt;- includes yardstick</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidymodels.tidymodels.org">tidymodels</a></span><span class="op">)</span> <span class="co"># &lt;- includes yardstick</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tidymodels/discrim">discrim</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tidymodels/probably">probably</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://desirability2.tidymodels.org">desirability2</a></span><span class="op">)</span></span>
@@ -424,7 +438,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ul>
 <p>For example, for the positive predictive value:</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># example data: </span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># example data:</span></span>
 <span><span class="va">two_class_example</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/str.html">str</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; 'data.frame':    500 obs. of  4 variables:</span></span>
 <span><span class="co">#&gt;  $ truth    : Factor w/ 2 levels "Class1","Class2": 2 1 2 1 2 1 1 1 2 2 ...</span></span>
@@ -454,9 +468,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>For metrics associated with <em>curves</em> (e.g., ROC), there are also functions that end in <code>_curve</code> that you can use to get the entire curve.</p>
 <p>Metric functions are also “group-aware” so that you can get statistics for an arbitrary number of subgroups:</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">two_class_example</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu">mutate</span><span class="op">(</span>group <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="va">letters</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span>, each <span class="op">=</span> <span class="fl">125</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu">group_by</span><span class="op">(</span><span class="va">group</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">two_class_example</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">mutate</span><span class="op">(</span>group <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="va">letters</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span>, each <span class="op">=</span> <span class="fl">125</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">group_by</span><span class="op">(</span><span class="va">group</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">pr_auc</span><span class="op">(</span><span class="va">truth</span>, <span class="va">Class1</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 4 × 4</span></span>
 <span><span class="co">#&gt;   group .metric .estimator .estimate</span></span>
@@ -519,10 +533,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># Make a three-way split into train/validation/"test" where "test" will have</span></span>
 <span><span class="co"># rows for the calibration data and the actual test data</span></span>
 <span></span>
-<span><span class="co"># In the end, we want the proportions to be 70% for training and 10% for the </span></span>
-<span><span class="co"># others data sets. The initial split does 70% for training, 10% for validation, </span></span>
+<span><span class="co"># In the end, we want the proportions to be 70% for training and 10% for the</span></span>
+<span><span class="co"># others data sets. The initial split does 70% for training, 10% for validation,</span></span>
 <span><span class="co"># and 20% for testing. That 20% will be split below (evenly) to make 10% sized</span></span>
-<span><span class="co"># training and calibration data sets. </span></span>
+<span><span class="co"># training and calibration data sets.</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">669</span><span class="op">)</span></span>
 <span><span class="va">shroom_split</span> <span class="op">&lt;-</span> <span class="fu">initial_validation_split</span><span class="op">(</span><span class="va">mushroom_secondary</span>, prop <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">.7</span>, <span class="fl">.1</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">shroom_train</span> <span class="op">&lt;-</span> <span class="fu">training</span><span class="op">(</span><span class="va">shroom_split</span><span class="op">)</span></span>
@@ -531,14 +545,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span></span>
 <span><span class="co"># Split into calibration and test:</span></span>
 <span><span class="va">shroom_other</span> <span class="op">&lt;-</span> <span class="fu">testing</span><span class="op">(</span><span class="va">shroom_split</span><span class="op">)</span></span>
-<span><span class="va">cal_test_split</span> <span class="op">&lt;-</span> <span class="fu">initial_split</span><span class="op">(</span><span class="va">shroom_other</span>, prop <span class="op">=</span> <span class="fl">1</span><span class="op">/</span><span class="fl">2</span><span class="op">)</span></span>
+<span><span class="va">cal_test_split</span> <span class="op">&lt;-</span> <span class="fu">initial_split</span><span class="op">(</span><span class="va">shroom_other</span>, prop <span class="op">=</span> <span class="fl">1</span> <span class="op">/</span> <span class="fl">2</span><span class="op">)</span></span>
 <span><span class="va">shroom_cal</span> <span class="op">&lt;-</span> <span class="fu">training</span><span class="op">(</span><span class="va">cal_test_split</span><span class="op">)</span></span>
 <span><span class="va">shroom_test</span> <span class="op">&lt;-</span> <span class="fu">testing</span><span class="op">(</span><span class="va">cal_test_split</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Now let’s load the finished products:</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="st">"https://github.com/aml4td/website/raw/refs/heads/main/RData/mushrooms.RData"</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/connections.html">url</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="st">"https://github.com/aml4td/website/raw/refs/heads/main/RData/mushrooms.RData"</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/connections.html">url</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/load.html">load</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/ls.html">ls</a></span><span class="op">(</span>pattern <span class="op">=</span> <span class="st">"^shroom_"</span><span class="op">)</span></span>
@@ -546,7 +560,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>The text used a naive Bayes model. For the computations, we’ll use the <code><a href="https://rdrr.io/pkg/klaR/man/NaiveBayes.html">klaR::NaiveBayes()</a></code> function. To access a <span class="pkg"><a href="https://cran.r-project.org/package=parsnip">parsnip</a></span> model definition, we needed to load the <span class="pkg"><a href="https://cran.r-project.org/package=discrim">discrim</a></span> package. Let’s make a small metric set, resample the model, and save the validation set.</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># skip: fmt</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># fmt: skip</span></span>
 <span><span class="va">cls_mtr</span> <span class="op">&lt;-</span></span>
 <span>  <span class="fu">metric_set</span><span class="op">(</span><span class="va">brier_class</span>, <span class="va">mn_log_loss</span>, <span class="va">pr_auc</span>, <span class="va">roc_auc</span>, <span class="va">accuracy</span><span class="op">)</span></span>
 <span></span>
@@ -658,7 +672,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>As mentioned in the text, there are methods for computing metrics for binary outcomes with more than three classes via weighting. The default weighting scheme in yardstick is “macro” but all three can be used. Here is example:</p>
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">hpc_mtr</span> <span class="op">&lt;-</span> <span class="fu">metric_set</span><span class="op">(</span><span class="va">sensitivity</span>, <span class="va">specificity</span>, <span class="va">pr_auc</span>, <span class="va">roc_auc</span><span class="op">)</span></span>
-<span><span class="fu">modeldata</span><span class="fu">::</span><span class="va"><a href="https://modeldata.tidymodels.org/reference/hpc_cv.html">hpc_cv</a></span> <span class="op">|&gt;</span> </span>
+<span><span class="fu">modeldata</span><span class="fu">::</span><span class="va"><a href="https://modeldata.tidymodels.org/reference/hpc_cv.html">hpc_cv</a></span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">hpc_mtr</span><span class="op">(</span><span class="va">obs</span>, estimate <span class="op">=</span> <span class="va">pred</span>, <span class="va">VF</span><span class="op">:</span><span class="va">L</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 4 × 3</span></span>
 <span><span class="co">#&gt;   .metric     .estimator .estimate</span></span>
@@ -675,8 +689,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="va">sensitivity_macro_wt</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">data</span>, <span class="va">truth</span>, <span class="va">estimate</span>, <span class="va">na_rm</span> <span class="op">=</span> <span class="cn">TRUE</span>, <span class="va">...</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu">sensitivity</span><span class="op">(</span></span>
 <span>    data <span class="op">=</span> <span class="va">data</span>,</span>
-<span>    truth <span class="op">=</span> <span class="op">!</span><span class="op">!</span> <span class="fu">rlang</span><span class="fu">::</span><span class="fu"><a href="https://rlang.r-lib.org/reference/enquo.html">enquo</a></span><span class="op">(</span><span class="va">truth</span><span class="op">)</span>,</span>
-<span>    estimate <span class="op">=</span> <span class="op">!</span><span class="op">!</span> <span class="fu">rlang</span><span class="fu">::</span><span class="fu"><a href="https://rlang.r-lib.org/reference/enquo.html">enquo</a></span><span class="op">(</span><span class="va">estimate</span><span class="op">)</span>,</span>
+<span>    truth <span class="op">=</span> <span class="op">!</span><span class="op">!</span><span class="fu">rlang</span><span class="fu">::</span><span class="fu"><a href="https://rlang.r-lib.org/reference/enquo.html">enquo</a></span><span class="op">(</span><span class="va">truth</span><span class="op">)</span>,</span>
+<span>    estimate <span class="op">=</span> <span class="op">!</span><span class="op">!</span><span class="fu">rlang</span><span class="fu">::</span><span class="fu"><a href="https://rlang.r-lib.org/reference/enquo.html">enquo</a></span><span class="op">(</span><span class="va">estimate</span><span class="op">)</span>,</span>
 <span>    estimator <span class="op">=</span> <span class="st">"macro_weighted"</span>,</span>
 <span>    na_rm <span class="op">=</span> <span class="va">na_rm</span>,</span>
 <span>    <span class="va">...</span></span>
@@ -715,20 +729,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb23"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">lvls</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/levels.html">levels</a></span><span class="op">(</span><span class="va">val_pred</span><span class="op">$</span><span class="va">class</span><span class="op">)</span></span>
 <span><span class="va">unique_vals</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">lvls</span>, levels <span class="op">=</span> <span class="va">lvls</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">custom_costs</span> <span class="op">&lt;-</span> </span>
-<span>  <span class="fu">crossing</span><span class="op">(</span>truth <span class="op">=</span> <span class="va">unique_vals</span>, estimate <span class="op">=</span> <span class="va">unique_vals</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span><span class="va">custom_costs</span> <span class="op">&lt;-</span></span>
+<span>  <span class="fu">crossing</span><span class="op">(</span>truth <span class="op">=</span> <span class="va">unique_vals</span>, estimate <span class="op">=</span> <span class="va">unique_vals</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">mutate</span><span class="op">(</span></span>
-<span>    cost <span class="op">=</span> </span>
-<span>      <span class="fu">case_when</span><span class="op">(</span></span>
-<span>        <span class="va">truth</span> <span class="op">==</span> <span class="va">estimate</span> <span class="op">~</span> <span class="fl">0.0</span>,</span>
-<span>        <span class="co"># This is very bad:</span></span>
-<span>        <span class="va">truth</span> <span class="op">==</span> <span class="st">"poisonous"</span> <span class="op">&amp;</span> <span class="va">estimate</span> <span class="op">==</span> <span class="st">"edible"</span> <span class="op">~</span> <span class="fl">5.0</span>,</span>
-<span>        <span class="co"># False positives are not as much of a worry</span></span>
-<span>        <span class="cn">TRUE</span> <span class="op">~</span> <span class="fl">1.0</span></span>
-<span>      <span class="op">)</span></span>
+<span>    cost <span class="op">=</span> <span class="fu">case_when</span><span class="op">(</span></span>
+<span>      <span class="va">truth</span> <span class="op">==</span> <span class="va">estimate</span> <span class="op">~</span> <span class="fl">0.0</span>,</span>
+<span>      <span class="co"># This is very bad:</span></span>
+<span>      <span class="va">truth</span> <span class="op">==</span> <span class="st">"poisonous"</span> <span class="op">&amp;</span> <span class="va">estimate</span> <span class="op">==</span> <span class="st">"edible"</span> <span class="op">~</span> <span class="fl">5.0</span>,</span>
+<span>      <span class="co"># False positives are not as much of a worry</span></span>
+<span>      <span class="cn">TRUE</span> <span class="op">~</span> <span class="fl">1.0</span></span>
+<span>    <span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span></span>
-<span><span class="va">val_pred</span> <span class="op">|&gt;</span> </span>
+<span><span class="va">val_pred</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">classification_cost</span><span class="op">(</span><span class="va">class</span>, <span class="va">.pred_poisonous</span>, costs <span class="op">=</span> <span class="va">custom_costs</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 1 × 3</span></span>
 <span><span class="co">#&gt;   .metric             .estimator .estimate</span></span>
@@ -744,17 +757,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ul>
 <p>Each has an <code><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot()</a></code> method and is group-aware. The first two plots show different aspects of the same analysis. The lift curve shows a ratio of probabilities that reflects how enriched the sampling is for the event class, while the gain curve shows the proportion of events selected:</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb24"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="op">(</span></span>
-<span>  <span class="va">val_pred</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu">gain_curve</span><span class="op">(</span><span class="va">class</span>, <span class="va">.pred_poisonous</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> </span>
-<span>  <span class="fu">ggtitle</span><span class="op">(</span><span class="st">"Gain Curve"</span><span class="op">)</span></span>
-<span><span class="op">)</span> <span class="op">+</span> <span class="op">(</span></span>
-<span>  <span class="va">val_pred</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu">lift_curve</span><span class="op">(</span><span class="va">class</span>, <span class="va">.pred_poisonous</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> </span>
-<span>  <span class="fu">ggtitle</span><span class="op">(</span><span class="st">"Lift Curve"</span><span class="op">)</span></span>
-<span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb24"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="op">(</span><span class="va">val_pred</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">gain_curve</span><span class="op">(</span><span class="va">class</span>, <span class="va">.pred_poisonous</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">ggtitle</span><span class="op">(</span><span class="st">"Gain Curve"</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="op">(</span><span class="va">val_pred</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu">lift_curve</span><span class="op">(</span><span class="va">class</span>, <span class="va">.pred_poisonous</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html">autoplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu">ggtitle</span><span class="op">(</span><span class="st">"Lift Curve"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure"><p><img src="cls-metrics_files/figure-html/gain-left-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:90.0%"></p>
@@ -769,7 +779,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>The visualization functions that have names that match the pattern <code>cal_plot_*()</code>. To use a simple logistic model to assess calibration in the validation set:</p>
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb25"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># No spline terms:</span></span>
-<span><span class="va">val_pred</span> <span class="op">|&gt;</span> </span>
+<span><span class="va">val_pred</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://probably.tidymodels.org/reference/cal_plot_logistic.html">cal_plot_logistic</a></span><span class="op">(</span>truth <span class="op">=</span> <span class="va">class</span>, estimate <span class="op">=</span> <span class="va">.pred_poisonous</span>, smooth <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
@@ -780,7 +790,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>The default is to use splines to get a more nuanced pattern:</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb26"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">val_pred</span> <span class="op">|&gt;</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb26"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">val_pred</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://probably.tidymodels.org/reference/cal_plot_logistic.html">cal_plot_logistic</a></span><span class="op">(</span>truth <span class="op">=</span> <span class="va">class</span>, estimate <span class="op">=</span> <span class="va">.pred_poisonous</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
@@ -825,9 +835,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>If we don’t have a validation set, we can take the out-of-sample predictions, resampling them (again), and compute metrics before and after calibration:</p>
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb29"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">453</span><span class="op">)</span></span>
-<span><span class="va">val_pred</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu">vfold_cv</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu"><a href="https://probably.tidymodels.org/reference/cal_validate_beta.html">cal_validate_beta</a></span><span class="op">(</span>truth <span class="op">=</span> <span class="va">class</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span><span class="va">val_pred</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">vfold_cv</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://probably.tidymodels.org/reference/cal_validate_beta.html">cal_validate_beta</a></span><span class="op">(</span>truth <span class="op">=</span> <span class="va">class</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://tune.tidymodels.org/reference/collect_predictions.html">collect_metrics</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 2 × 7</span></span>
 <span><span class="co">#&gt;   .metric     .type        .estimator   mean     n  std_err .config</span></span>
@@ -837,8 +847,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>This is probably a real improvement that has a very small effect on the results.</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb30"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">val_recal_pred</span> <span class="op">&lt;-</span> </span>
-<span>  <span class="va">val_pred</span> <span class="op">|&gt;</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb30"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">val_recal_pred</span> <span class="op">&lt;-</span></span>
+<span>  <span class="va">val_pred</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://probably.tidymodels.org/reference/cal_apply.html">cal_apply</a></span><span class="op">(</span><span class="va">beta_cal</span><span class="op">)</span></span>
 <span><span class="va">val_recal_pred</span></span>
 <span><span class="co">#&gt; # A tibble: 6,107 × 7</span></span>
@@ -857,8 +867,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span class="header-section-number">15.10</span> Ordered Categories</h2>
 <p>R has a specialized factor class called <code><a href="https://rdrr.io/r/base/factor.html">ordered()</a></code> that can be used to model ordered categories. To demonstrate, let’s load the Wordle predictions from the main text that we produced by a RuleFit model:</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb31"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="st">"https://github.com/aml4td/website/raw/refs/heads/main/RData/wordle_results.RData"</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/connections.html">url</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb31"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="st">"https://github.com/aml4td/website/raw/refs/heads/main/RData/wordle_results.RData"</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/connections.html">url</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/load.html">load</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Note the "&lt;" in the printed output:</span></span>
@@ -878,7 +888,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="co">#&gt; 6 3     4           0.04769   0.1140 0.7410  0.07764 0.01267  0.007019</span></span>
 <span><span class="co">#&gt; # ℹ 343 more rows</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>The current development version of the <span class="pkg"><a href="https://cran.r-project.org/package=yardstick">yardstick</a></span> package has a function for ranked-probability scores called <code>yardstick::ranked_prob_score()</code>.</p>
+<p>The current development version of the <span class="pkg"><a href="https://cran.r-project.org/package=yardstick">yardstick</a></span> package has a function for ranked-probability scores called <code><a href="https://yardstick.tidymodels.org/reference/ranked_prob_score.html">yardstick::ranked_prob_score()</a></code>.</p>
 <p>For weighted Kappa estimates, there is an option to <code><a href="https://yardstick.tidymodels.org/reference/kap.html">yardstick::kap()</a></code> called <code>weighting</code> that takes values <code>"none"</code>, <code>"linear"</code>, and <code>"quadratic"</code>:</p>
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb32"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">bind_rows</span><span class="op">(</span></span>
@@ -901,8 +911,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb33"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cls_mtr</span> <span class="op">&lt;-</span> <span class="fu">metric_set</span><span class="op">(</span><span class="va">brier_class</span>, <span class="va">mn_log_loss</span>, <span class="va">pr_auc</span>, <span class="va">roc_auc</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">cart_spec</span> <span class="op">&lt;-</span> </span>
-<span>  <span class="fu"><a href="https://parsnip.tidymodels.org/reference/decision_tree.html">decision_tree</a></span><span class="op">(</span>cost_complexity <span class="op">=</span> <span class="fu"><a href="https://hardhat.tidymodels.org/reference/tune.html">tune</a></span><span class="op">(</span><span class="op">)</span>, min_n <span class="op">=</span> <span class="fu"><a href="https://hardhat.tidymodels.org/reference/tune.html">tune</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span><span class="va">cart_spec</span> <span class="op">&lt;-</span></span>
+<span>  <span class="fu"><a href="https://parsnip.tidymodels.org/reference/decision_tree.html">decision_tree</a></span><span class="op">(</span>cost_complexity <span class="op">=</span> <span class="fu"><a href="https://hardhat.tidymodels.org/reference/tune.html">tune</a></span><span class="op">(</span><span class="op">)</span>, min_n <span class="op">=</span> <span class="fu"><a href="https://hardhat.tidymodels.org/reference/tune.html">tune</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://parsnip.tidymodels.org/reference/set_args.html">set_mode</a></span><span class="op">(</span><span class="st">"classification"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">cart_res</span> <span class="op">&lt;-</span></span>
@@ -949,11 +959,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>The additional ranking functions take an object produced by one of the tuning functions (e.g., <code>tune_grid()</code>) as well as directives for hop to optimize each metric that was measured. For example, if we want to focus on minimizing the Brier score but also maximize the area under the ROC curve and minimize cross-entropy, we could use:</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb35"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cart_desire</span> <span class="op">&lt;-</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb35"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cart_desire</span> <span class="op">&lt;-</span></span>
 <span>  <span class="fu"><a href="https://desirability2.tidymodels.org/reference/show_best_desirability.html">show_best_desirability</a></span><span class="op">(</span></span>
-<span>    <span class="va">cart_res</span>, </span>
+<span>    <span class="va">cart_res</span>,</span>
 <span>    <span class="fu"><a href="https://desirability2.tidymodels.org/reference/aliases.html">minimize</a></span><span class="op">(</span><span class="va">brier_class</span>, scale <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span>
-<span>    <span class="fu"><a href="https://desirability2.tidymodels.org/reference/aliases.html">maximize</a></span><span class="op">(</span><span class="va">roc_auc</span><span class="op">)</span>, </span>
+<span>    <span class="fu"><a href="https://desirability2.tidymodels.org/reference/aliases.html">maximize</a></span><span class="op">(</span><span class="va">roc_auc</span><span class="op">)</span>,</span>
 <span>    <span class="fu"><a href="https://desirability2.tidymodels.org/reference/aliases.html">minimize</a></span><span class="op">(</span><span class="va">mn_log_loss</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>

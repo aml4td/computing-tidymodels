@@ -2,10 +2,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.8.26">
+<meta name="generator" content="quarto-1.9.36">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <title>12&nbsp; Iterative Search – Tidymodels Computing Supplement</title>
 <style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -65,15 +68,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../chapters/grid.html" rel="prev">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-845c23b38eaddc0f92fda52bfe77a8c8.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-7c647e586662db48eb79d76466712003.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-cca14224007e87b3f770119fd179b404.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <link href="../site_libs/quarto-contrib/fontawesome6-1.2.0/all.min.css" rel="stylesheet">
 <link href="../site_libs/quarto-contrib/fontawesome6-1.2.0/latex-fontsize.css" rel="stylesheet"><script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
@@ -324,6 +326,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Complex Nonlinear Boundaries</span></span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/cls-neural-nets.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Neural Network Classifiers</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/cls-trees.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">Classification using Trees and Rules</span></span></a>
+  </div>
+</li>
       </ul>
 </li>
         <li class="sidebar-item sidebar-item-section">
@@ -371,15 +385,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header><p>This <a href="https://tidymodels.aml4td.org/chapters/iterative-search.html">book chapter</a> discusses several search procedures for finding optimal (or at least acceptable) tuning parameter values.</p>
 <section id="requirements" class="level2" data-number="12.1"><h2 data-number="12.1" class="anchored" data-anchor-id="requirements">
 <span class="header-section-number">12.1</span> Requirements</h2>
-<p>This chapter requires 6 packages (<span class="pkg"><a href="https://cran.r-project.org/package=finetune">finetune</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=future.mirai">future.mirai</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=GA">GA</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=probably">probably</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=tidymodels">tidymodels</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=xgboost">xgboost</a></span>). To install:</p>
+<p>This chapter requires 6 packages (<span class="pkg"><a href="https://cran.r-project.org/package=finetune">finetune</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=mirai">mirai</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=GA">GA</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=probably">probably</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=tidymodels">tidymodels</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=xgboost">xgboost</a></span>). To install:</p>
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">req_pkg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"finetune"</span>, <span class="st">"GA"</span>, <span class="st">"probably"</span>, <span class="st">"tidymodels"</span>, <span class="st">"xgboost"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Check to see if they are installed: </span></span>
+<span><span class="co"># Check to see if they are installed:</span></span>
 <span><span class="va">pkg_installed</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">vapply</a></span><span class="op">(</span><span class="va">req_pkg</span>, <span class="fu">rlang</span><span class="fu">::</span><span class="va"><a href="https://rlang.r-lib.org/reference/is_installed.html">is_installed</a></span>, <span class="fu"><a href="https://rdrr.io/r/base/logical.html">logical</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Install missing packages: </span></span>
-<span><span class="kw">if</span> <span class="op">(</span> <span class="fu"><a href="https://rdrr.io/r/base/any.html">any</a></span><span class="op">(</span><span class="op">!</span><span class="va">pkg_installed</span><span class="op">)</span> <span class="op">)</span> <span class="op">{</span></span>
+<span><span class="co"># Install missing packages:</span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/any.html">any</a></span><span class="op">(</span><span class="op">!</span><span class="va">pkg_installed</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">install_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">pkg_installed</span><span class="op">)</span><span class="op">[</span><span class="op">!</span><span class="va">pkg_installed</span><span class="op">]</span></span>
 <span>  <span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html">pak</a></span><span class="op">(</span><span class="va">install_list</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -390,11 +404,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidymodels.tidymodels.org">tidymodels</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tidymodels/finetune">finetune</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tidymodels/probably">probably</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://future.mirai.futureverse.org">future.mirai</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://mirai.r-lib.org">mirai</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://tidymodels.tidymodels.org/reference/tidymodels_prefer.html">tidymodels_prefer</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu">theme_set</span><span class="op">(</span><span class="fu">theme_bw</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://future.futureverse.org/reference/plan.html">plan</a></span><span class="op">(</span><span class="va">mirai_multisession</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span><span class="fu"><a href="https://mirai.r-lib.org/reference/daemons.html">daemons</a></span><span class="op">(</span><span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html">detectCores</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>To reduce the complexity of the example, we’ll use a simulated classification data set containing numeric predictors. We’ll simulate 1,000 samples using a simulation system, the details of which can be found in the <a href="https://modeldata.tidymodels.org/reference/sim_classification.html#details"><span class="pkg"></span></a><a href="https://cran.r-project.org/package=modeldata">modeldata</a> documentation. The data set has linear, nonlinear, and interacting features, and the classes are fairly balanced. We’ll use a 3:1 split for training and testing as well as 10-fold cross-validation:</p>
 <div class="cell" data-layout-align="center">
@@ -454,8 +468,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>From these six candidates, the smallest Brier score was 0.101, a mediocre value:</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://tune.tidymodels.org/reference/show_best.html">show_best</a></span><span class="op">(</span><span class="va">initial_res</span>, metric <span class="op">=</span> <span class="st">"brier_class"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">.estimator</span>, <span class="op">-</span><span class="va">.config</span>, <span class="op">-</span><span class="va">.metric</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://tune.tidymodels.org/reference/show_best.html">show_best</a></span><span class="op">(</span><span class="va">initial_res</span>, metric <span class="op">=</span> <span class="st">"brier_class"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">.estimator</span>, <span class="op">-</span><span class="va">.config</span>, <span class="op">-</span><span class="va">.metric</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">relocate</span><span class="op">(</span><span class="va">mean</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 5 × 10</span></span>
 <span><span class="co">#&gt;     mean  mtry trees min_n tree_depth learn_rate loss_reduction sample_size     n  std_err</span></span>
@@ -495,8 +509,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span>    <span class="co"># Additional options:</span></span>
 <span>    initial <span class="op">=</span> <span class="va">initial_res</span>,</span>
 <span>    iter <span class="op">=</span> <span class="fl">50</span>,</span>
-<span>    <span class="co"># Prevent early stopping, save out-of-sample predictions, </span></span>
-<span>    <span class="co"># and log the process to the console: </span></span>
+<span>    <span class="co"># Prevent early stopping, save out-of-sample predictions,</span></span>
+<span>    <span class="co"># and log the process to the console:</span></span>
 <span>    control <span class="op">=</span> <span class="fu"><a href="https://finetune.tidymodels.org/reference/control_sim_anneal.html">control_sim_anneal</a></span><span class="op">(</span></span>
 <span>      no_improve <span class="op">=</span> <span class="cn">Inf</span>,</span>
 <span>      verbose_iter <span class="op">=</span> <span class="cn">TRUE</span>,</span>
@@ -558,8 +572,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>The Brier score has been reduced from the initial value of 0.101 to a new best of 0.079. We’ll estimate:</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://tune.tidymodels.org/reference/show_best.html">show_best</a></span><span class="op">(</span><span class="va">sa_res</span>, metric <span class="op">=</span> <span class="st">"brier_class"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">.estimator</span>, <span class="op">-</span><span class="va">.config</span>, <span class="op">-</span><span class="va">.metric</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://tune.tidymodels.org/reference/show_best.html">show_best</a></span><span class="op">(</span><span class="va">sa_res</span>, metric <span class="op">=</span> <span class="st">"brier_class"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">.estimator</span>, <span class="op">-</span><span class="va">.config</span>, <span class="op">-</span><span class="va">.metric</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">relocate</span><span class="op">(</span><span class="va">mean</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 5 × 11</span></span>
 <span><span class="co">#&gt;      mean  mtry trees min_n tree_depth learn_rate loss_reduction sample_size     n</span></span>
@@ -658,7 +672,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span>  <span class="co"># We could run _populations_ within a generation in parallel. If we do,</span></span>
 <span>  <span class="co"># let's make sure to turn off parallelization of resamples here:</span></span>
 <span>  <span class="co"># ctrl &lt;- control_grid(allow_par = FALSE)</span></span>
-<span>  </span>
+<span></span>
 <span>  <span class="va">ctrl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tune.tidymodels.org/reference/control_grid.html">control_grid</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span>  <span class="co"># Resample / validate metrics</span></span>
@@ -684,12 +698,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Now, let’s initialize the search using a space-filling design (with 10 candidates per population):</p>
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">pop_size</span> <span class="op">&lt;-</span> <span class="fl">10</span></span>
-<span><span class="va">grid_ga</span> <span class="op">&lt;-</span> <span class="fu">grid_space_filling</span><span class="op">(</span><span class="va">bst_param</span>, size <span class="op">=</span> <span class="va">pop_size</span>, original <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># We apply the GA operators on the transformed scale of the parameters (if any).</span></span>
-<span><span class="co"># For this example, two use a log-transform: </span></span>
-<span><span class="va">grid_ga</span><span class="op">$</span><span class="va">learn_rate</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">log10</a></span><span class="op">(</span><span class="va">grid_ga</span><span class="op">$</span><span class="va">learn_rate</span><span class="op">)</span></span>
-<span><span class="va">grid_ga</span><span class="op">$</span><span class="va">loss_reduction</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">log10</a></span><span class="op">(</span><span class="va">grid_ga</span><span class="op">$</span><span class="va">loss_reduction</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span><span class="co"># `original = FALSE` means that the parameters are in a transformed units</span></span>
+<span><span class="va">grid_ga</span> <span class="op">&lt;-</span> <span class="fu">grid_space_filling</span><span class="op">(</span><span class="va">bst_param</span>, size <span class="op">=</span> <span class="va">pop_size</span>, original <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Now we can run <code><a href="https://github.com/luca-scr/GA/reference/ga.html">GA::ga()</a></code> to begin the process:</p>
 <div class="cell" data-layout-align="center">
@@ -719,13 +729,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Here is a plot of the best results per population and the mean result (both are Brier scores):</p>
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># Negate the fitness value since the Brier score should be minimized.</span></span>
-<span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/attr.html">attr</a></span><span class="op">(</span><span class="va">ga_res</span>,<span class="st">"summary"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu">as_tibble</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu">mutate</span><span class="op">(</span>generation <span class="op">=</span> <span class="fu">row_number</span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu">select</span><span class="op">(</span>best <span class="op">=</span> <span class="va">max</span>, mean <span class="op">=</span> <span class="va">mean</span>, <span class="va">generation</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu">pivot_longer</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">best</span>, <span class="va">mean</span><span class="op">)</span>, names_to <span class="op">=</span> <span class="st">"summary"</span>, values_to <span class="op">=</span> <span class="st">"fitness"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu">ggplot</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span><span class="va">generation</span>, <span class="va">fitness</span>, col <span class="op">=</span> <span class="va">summary</span>, pch <span class="op">=</span> <span class="va">summary</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> </span>
-<span>  <span class="fu">geom_point</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> </span>
+<span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/attr.html">attr</a></span><span class="op">(</span><span class="va">ga_res</span>, <span class="st">"summary"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">as_tibble</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">mutate</span><span class="op">(</span>generation <span class="op">=</span> <span class="fu">row_number</span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">select</span><span class="op">(</span>best <span class="op">=</span> <span class="va">max</span>, mean <span class="op">=</span> <span class="va">mean</span>, <span class="va">generation</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">pivot_longer</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">best</span>, <span class="va">mean</span><span class="op">)</span>, names_to <span class="op">=</span> <span class="st">"summary"</span>, values_to <span class="op">=</span> <span class="st">"fitness"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">ggplot</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span><span class="va">generation</span>, <span class="va">fitness</span>, col <span class="op">=</span> <span class="va">summary</span>, pch <span class="op">=</span> <span class="va">summary</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">geom_point</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">labs</span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Generation"</span>, y <span class="op">=</span> <span class="st">"Brier Score (CV)"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
@@ -736,13 +746,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>The best results are in a slot called <code>solution</code>. Let’s remap that to the original parameter values:</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">ga_best</span> <span class="op">&lt;-</span> </span>
-<span>  <span class="co"># There could be multiple solutions for the same fitness; we take the first. </span></span>
-<span>  <span class="va">ga_res</span><span class="op">@</span><span class="va">solution</span><span class="op">[</span><span class="fl">1</span>,<span class="op">]</span> <span class="op">|&gt;</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">ga_best</span> <span class="op">&lt;-</span></span>
+<span>  <span class="co"># There could be multiple solutions for the same fitness; we take the first.</span></span>
+<span>  <span class="va">ga_res</span><span class="op">@</span><span class="va">solution</span><span class="op">[</span><span class="fl">1</span>, <span class="op">]</span> <span class="op">|&gt;</span></span>
 <span>  <span class="co"># Back-transform</span></span>
-<span>  <span class="fu">map2</span><span class="op">(</span><span class="va">bst_param</span><span class="op">$</span><span class="va">object</span>, <span class="op">~</span> <span class="fu">value_inverse</span><span class="op">(</span><span class="va">.y</span>, <span class="va">.x</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu">as_tibble</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu">set_names</span><span class="op">(</span><span class="va">bst_param</span><span class="op">$</span><span class="va">id</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu">map2</span><span class="op">(</span><span class="va">bst_param</span><span class="op">$</span><span class="va">object</span>, <span class="op">~</span> <span class="fu">value_inverse</span><span class="op">(</span><span class="va">.y</span>, <span class="va">.x</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">as_tibble</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">set_names</span><span class="op">(</span><span class="va">bst_param</span><span class="op">$</span><span class="va">id</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="co"># Attach fitness and coerce to integer if needed.</span></span>
 <span>  <span class="fu">mutate</span><span class="op">(</span></span>
 <span>    mtry <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">floor</a></span><span class="op">(</span><span class="va">mtry</span><span class="op">)</span>,</span>
@@ -750,14 +760,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span>    min_n <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">floor</a></span><span class="op">(</span><span class="va">min_n</span><span class="op">)</span>,</span>
 <span>    tree_depth <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">floor</a></span><span class="op">(</span><span class="va">tree_depth</span><span class="op">)</span>,</span>
 <span>    brier <span class="op">=</span> <span class="op">-</span><span class="va">ga_res</span><span class="op">@</span><span class="va">fitnessValue</span></span>
-<span>  <span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">relocate</span><span class="op">(</span><span class="va">brier</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">ga_best</span></span>
 <span><span class="co">#&gt; # A tibble: 1 × 8</span></span>
 <span><span class="co">#&gt;     brier  mtry trees min_n tree_depth learn_rate loss_reduction sample_size</span></span>
 <span><span class="co">#&gt;     &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;          &lt;dbl&gt;       &lt;dbl&gt;</span></span>
-<span><span class="co">#&gt; 1 0.07844     9   300     3         12    0.02788   0.0000003304      0.6719</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span><span class="co">#&gt; 1 0.07847     9   294     3         12    0.02753   0.0000004610      0.7825</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p><a href="https://aml4td.org/chapters/iterative-search.html#sec-genetic-algo"><i class="fa-solid fa-rotate-left fa-small" aria-label="rotate-left"></i></a></p>
 </section><section id="sec-bayes-opt" class="level2" data-number="12.4"><h2 data-number="12.4" class="anchored" data-anchor-id="sec-bayes-opt">
@@ -781,7 +791,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span>    resamples <span class="op">=</span> <span class="va">sim_rs</span>,</span>
 <span>    param_info <span class="op">=</span> <span class="va">bst_param</span>,</span>
 <span>    metrics <span class="op">=</span> <span class="va">cls_mtr</span>,</span>
-<span>    <span class="co"># These options work as before: </span></span>
+<span>    <span class="co"># These options work as before:</span></span>
 <span>    initial <span class="op">=</span> <span class="va">initial_res</span>,</span>
 <span>    iter <span class="op">=</span> <span class="fl">50</span>,</span>
 <span>    control <span class="op">=</span> <span class="fu"><a href="https://tune.tidymodels.org/reference/control_bayes.html">control_bayes</a></span><span class="op">(</span></span>
@@ -791,18 +801,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span>    <span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="co">#&gt; ! There are 7 tuning parameters and 6 grid points were requested.</span></span>
-<span><span class="co">#&gt; • There are as many tuning parameters as there are initial points. This is likely to</span></span>
-<span><span class="co">#&gt;   cause numerical issues in the first few search iterations.</span></span>
+<span><span class="co">#&gt; • This is likely to cause numerical issues in the first few search iterations.</span></span>
 <span><span class="co">#&gt; Optimizing brier_class using the expected improvement</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Iteration 1 ──────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; i Current best:      brier_class=0.1005 (@iter 0)</span></span>
-<span><span class="co">#&gt; i Gaussian process model</span></span>
 <span><span class="co">#&gt; ! The Gaussian process model is being fit using 7 features but only has 6 data points</span></span>
 <span><span class="co">#&gt;   to do so. This may cause errors or a poor model fit.</span></span>
-<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
-<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; ✔ Gaussian process model (LOO R²: 94.4%)</span></span>
+<span><span class="co">#&gt; ℹ Generating 5000 candidates.</span></span>
 <span><span class="co">#&gt; i mtry=6, trees=488, min_n=5, tree_depth=13, learn_rate=0.301, loss_reduction=2.64e-06,</span></span>
 <span><span class="co">#&gt;   sample_size=0.81</span></span>
 <span><span class="co">#&gt; i Estimating performance</span></span>
@@ -812,11 +820,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="co">#&gt; ── Iteration 2 ──────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; i Current best:      brier_class=0.1005 (@iter 0)</span></span>
-<span><span class="co">#&gt; i Gaussian process model</span></span>
 <span><span class="co">#&gt; ! The Gaussian process model is being fit using 7 features but only has 7 data points</span></span>
 <span><span class="co">#&gt;   to do so. This may cause errors or a poor model fit.</span></span>
-<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
-<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; ✔ Gaussian process model (LOO R²: 88.5%)</span></span>
+<span><span class="co">#&gt; ℹ Generating 5000 candidates.</span></span>
 <span><span class="co">#&gt; i mtry=3, trees=370, min_n=11, tree_depth=15, learn_rate=0.175,</span></span>
 <span><span class="co">#&gt;   loss_reduction=1.05e-10, sample_size=0.742</span></span>
 <span><span class="co">#&gt; i Estimating performance</span></span>
@@ -826,228 +833,206 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="co">#&gt; ── Iteration 3 ──────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; i Current best:      brier_class=0.09521 (@iter 2)</span></span>
-<span><span class="co">#&gt; i Gaussian process model</span></span>
-<span><span class="co">#&gt; ! The Gaussian process model is being fit using 7 features but only has 8 data points</span></span>
-<span><span class="co">#&gt;   to do so. This may cause errors or a poor model fit.</span></span>
-<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
-<span><span class="co">#&gt; i Predicted candidates</span></span>
-<span><span class="co">#&gt; i mtry=3, trees=433, min_n=5, tree_depth=12, learn_rate=0.00167,</span></span>
-<span><span class="co">#&gt;   loss_reduction=1.19e-10, sample_size=0.759</span></span>
+<span><span class="co">#&gt; ✔ Gaussian process model (LOO R²: 89.9%)</span></span>
+<span><span class="co">#&gt; ℹ Generating 5000 candidates.</span></span>
+<span><span class="co">#&gt; i mtry=3, trees=481, min_n=21, tree_depth=5, learn_rate=0.00787,</span></span>
+<span><span class="co">#&gt;   loss_reduction=1.3e-10, sample_size=0.818</span></span>
 <span><span class="co">#&gt; i Estimating performance</span></span>
 <span><span class="co">#&gt; ✓ Estimating performance</span></span>
-<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.1742 (+/-0.00262)</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.1264 (+/-0.00388)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Iteration 4 ──────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; i Current best:      brier_class=0.09521 (@iter 2)</span></span>
-<span><span class="co">#&gt; i Gaussian process model</span></span>
-<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
-<span><span class="co">#&gt; i Predicted candidates</span></span>
-<span><span class="co">#&gt; i mtry=5, trees=458, min_n=11, tree_depth=14, learn_rate=0.0589, loss_reduction=0.473,</span></span>
-<span><span class="co">#&gt;   sample_size=0.506</span></span>
+<span><span class="co">#&gt; ✔ Gaussian process model (LOO R²: 84%)</span></span>
+<span><span class="co">#&gt; ℹ Generating 5000 candidates.</span></span>
+<span><span class="co">#&gt; i mtry=5, trees=356, min_n=6, tree_depth=11, learn_rate=0.261, loss_reduction=5.17e-09,</span></span>
+<span><span class="co">#&gt;   sample_size=0.592</span></span>
 <span><span class="co">#&gt; i Estimating performance</span></span>
 <span><span class="co">#&gt; ✓ Estimating performance</span></span>
-<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.09736 (+/-0.0061)</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.09995 (+/-0.00681)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Iteration 5 ──────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; i Current best:      brier_class=0.09521 (@iter 2)</span></span>
-<span><span class="co">#&gt; i Gaussian process model</span></span>
-<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
-<span><span class="co">#&gt; i Predicted candidates</span></span>
-<span><span class="co">#&gt; i mtry=14, trees=451, min_n=2, tree_depth=9, learn_rate=0.161, loss_reduction=1.99e-10,</span></span>
-<span><span class="co">#&gt;   sample_size=0.557</span></span>
+<span><span class="co">#&gt; ✔ Gaussian process model (LOO R²: 83.4%)</span></span>
+<span><span class="co">#&gt; ℹ Generating 5000 candidates.</span></span>
+<span><span class="co">#&gt; i mtry=15, trees=402, min_n=16, tree_depth=5, learn_rate=0.315,</span></span>
+<span><span class="co">#&gt;   loss_reduction=1.07e-10, sample_size=0.948</span></span>
 <span><span class="co">#&gt; i Estimating performance</span></span>
 <span><span class="co">#&gt; ✓ Estimating performance</span></span>
-<span><span class="co">#&gt; ♥ Newest results:    brier_class=0.08993 (+/-0.00713)</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.1004 (+/-0.00695)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Iteration 6 ──────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; i Current best:      brier_class=0.08993 (@iter 5)</span></span>
-<span><span class="co">#&gt; i Gaussian process model</span></span>
-<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
-<span><span class="co">#&gt; i Predicted candidates</span></span>
-<span><span class="co">#&gt; i mtry=9, trees=412, min_n=10, tree_depth=14, learn_rate=0.312, loss_reduction=1.8e-09,</span></span>
-<span><span class="co">#&gt;   sample_size=0.546</span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.09521 (@iter 2)</span></span>
+<span><span class="co">#&gt; ✔ Gaussian process model (LOO R²: 76%)</span></span>
+<span><span class="co">#&gt; ℹ Generating 5000 candidates.</span></span>
+<span><span class="co">#&gt; i mtry=6, trees=422, min_n=24, tree_depth=4, learn_rate=0.00169,</span></span>
+<span><span class="co">#&gt;   loss_reduction=9.86e-06, sample_size=0.524</span></span>
 <span><span class="co">#&gt; i Estimating performance</span></span>
 <span><span class="co">#&gt; ✓ Estimating performance</span></span>
-<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.1061 (+/-0.00784)</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.1998 (+/-0.00227)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Iteration 7 ──────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; i Current best:      brier_class=0.08993 (@iter 5)</span></span>
-<span><span class="co">#&gt; i Gaussian process model</span></span>
-<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
-<span><span class="co">#&gt; i Predicted candidates</span></span>
-<span><span class="co">#&gt; i mtry=14, trees=493, min_n=26, tree_depth=13, learn_rate=0.0825,</span></span>
-<span><span class="co">#&gt;   loss_reduction=5.82e-10, sample_size=0.598</span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.09521 (@iter 2)</span></span>
+<span><span class="co">#&gt; ✔ Gaussian process model (LOO R²: 84.8%)</span></span>
+<span><span class="co">#&gt; ℹ Generating 5000 candidates.</span></span>
+<span><span class="co">#&gt; i mtry=14, trees=485, min_n=3, tree_depth=9, learn_rate=0.042, loss_reduction=1.6e-05,</span></span>
+<span><span class="co">#&gt;   sample_size=0.913</span></span>
 <span><span class="co">#&gt; i Estimating performance</span></span>
 <span><span class="co">#&gt; ✓ Estimating performance</span></span>
-<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.1288 (+/-0.00455)</span></span>
+<span><span class="co">#&gt; ♥ Newest results:    brier_class=0.08505 (+/-0.00694)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Iteration 8 ──────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; i Current best:      brier_class=0.08993 (@iter 5)</span></span>
-<span><span class="co">#&gt; i Gaussian process model</span></span>
-<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
-<span><span class="co">#&gt; i Predicted candidates</span></span>
-<span><span class="co">#&gt; i mtry=10, trees=392, min_n=4, tree_depth=3, learn_rate=0.0985,</span></span>
-<span><span class="co">#&gt;   loss_reduction=1.92e-06, sample_size=0.667</span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.08505 (@iter 7)</span></span>
+<span><span class="co">#&gt; ✔ Gaussian process model (LOO R²: 89.6%)</span></span>
+<span><span class="co">#&gt; ℹ Generating 5000 candidates.</span></span>
+<span><span class="co">#&gt; i mtry=12, trees=491, min_n=3, tree_depth=9, learn_rate=0.0156,</span></span>
+<span><span class="co">#&gt;   loss_reduction=1.34e-07, sample_size=0.55</span></span>
 <span><span class="co">#&gt; i Estimating performance</span></span>
 <span><span class="co">#&gt; ✓ Estimating performance</span></span>
-<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.09192 (+/-0.0063)</span></span>
+<span><span class="co">#&gt; ♥ Newest results:    brier_class=0.07958 (+/-0.00617)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Iteration 9 ──────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; i Current best:      brier_class=0.08993 (@iter 5)</span></span>
-<span><span class="co">#&gt; i Gaussian process model</span></span>
-<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
-<span><span class="co">#&gt; i Predicted candidates</span></span>
-<span><span class="co">#&gt; i mtry=3, trees=469, min_n=3, tree_depth=2, learn_rate=0.0474, loss_reduction=0.00018,</span></span>
-<span><span class="co">#&gt;   sample_size=0.507</span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07958 (@iter 8)</span></span>
+<span><span class="co">#&gt; ✔ Gaussian process model (LOO R²: 94%)</span></span>
+<span><span class="co">#&gt; ℹ Generating 5000 candidates.</span></span>
+<span><span class="co">#&gt; i mtry=8, trees=469, min_n=2, tree_depth=3, learn_rate=0.0209, loss_reduction=17.2,</span></span>
+<span><span class="co">#&gt;   sample_size=0.542</span></span>
 <span><span class="co">#&gt; i Estimating performance</span></span>
 <span><span class="co">#&gt; ✓ Estimating performance</span></span>
-<span><span class="co">#&gt; ♥ Newest results:    brier_class=0.08755 (+/-0.0052)</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.116 (+/-0.0042)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Iteration 10 ─────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; i Current best:      brier_class=0.08755 (@iter 9)</span></span>
-<span><span class="co">#&gt; i Gaussian process model</span></span>
-<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
-<span><span class="co">#&gt; i Predicted candidates</span></span>
-<span><span class="co">#&gt; i mtry=6, trees=40, min_n=2, tree_depth=7, learn_rate=0.0746, loss_reduction=3.06e-06,</span></span>
-<span><span class="co">#&gt;   sample_size=0.507</span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07958 (@iter 8)</span></span>
+<span><span class="co">#&gt; ✔ Gaussian process model (LOO R²: 95.6%)</span></span>
+<span><span class="co">#&gt; ℹ Generating 5000 candidates.</span></span>
+<span><span class="co">#&gt; i mtry=12, trees=496, min_n=8, tree_depth=13, learn_rate=0.0218,</span></span>
+<span><span class="co">#&gt;   loss_reduction=8.94e-10, sample_size=0.638</span></span>
 <span><span class="co">#&gt; i Estimating performance</span></span>
 <span><span class="co">#&gt; ✓ Estimating performance</span></span>
-<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.09201 (+/-0.00487)</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08403 (+/-0.00533)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Iteration 11 ─────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; i Current best:      brier_class=0.08755 (@iter 9)</span></span>
-<span><span class="co">#&gt; i Gaussian process model</span></span>
-<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
-<span><span class="co">#&gt; i Predicted candidates</span></span>
-<span><span class="co">#&gt; i mtry=5, trees=497, min_n=3, tree_depth=6, learn_rate=0.0558, loss_reduction=0.00128,</span></span>
-<span><span class="co">#&gt;   sample_size=0.569</span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07958 (@iter 8)</span></span>
+<span><span class="co">#&gt; ✔ Gaussian process model (LOO R²: 93.7%)</span></span>
+<span><span class="co">#&gt; ℹ Generating 5000 candidates.</span></span>
+<span><span class="co">#&gt; i mtry=4, trees=490, min_n=3, tree_depth=7, learn_rate=0.0276, loss_reduction=3.05e-10,</span></span>
+<span><span class="co">#&gt;   sample_size=0.801</span></span>
 <span><span class="co">#&gt; i Estimating performance</span></span>
 <span><span class="co">#&gt; ✓ Estimating performance</span></span>
-<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08755 (+/-0.00649)</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08351 (+/-0.00608)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Iteration 12 ─────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; i Current best:      brier_class=0.08755 (@iter 9)</span></span>
-<span><span class="co">#&gt; i Gaussian process model</span></span>
-<span><span class="co">#&gt; → A | warning: did not converge in 10 iterations</span></span>
-<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
-<span><span class="co">#&gt; i Predicted candidates</span></span>
-<span><span class="co">#&gt; i mtry=11, trees=499, min_n=6, tree_depth=4, learn_rate=0.0859,</span></span>
-<span><span class="co">#&gt;   loss_reduction=2.99e-08, sample_size=0.628</span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07958 (@iter 8)</span></span>
+<span><span class="co">#&gt; ✔ Gaussian process model (LOO R²: 94.2%)</span></span>
+<span><span class="co">#&gt; ℹ Generating 5000 candidates.</span></span>
+<span><span class="co">#&gt; i mtry=4, trees=492, min_n=2, tree_depth=14, learn_rate=0.047, loss_reduction=0.0692,</span></span>
+<span><span class="co">#&gt;   sample_size=0.672</span></span>
 <span><span class="co">#&gt; i Estimating performance</span></span>
 <span><span class="co">#&gt; ✓ Estimating performance</span></span>
-<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.09168 (+/-0.006)</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08384 (+/-0.00641)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Iteration 13 ─────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; i Current best:      brier_class=0.08755 (@iter 9)</span></span>
-<span><span class="co">#&gt; i Gaussian process model</span></span>
-<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
-<span><span class="co">#&gt; i Predicted candidates</span></span>
-<span><span class="co">#&gt; i mtry=13, trees=457, min_n=3, tree_depth=10, learn_rate=0.0359,</span></span>
-<span><span class="co">#&gt;   loss_reduction=1.58e-08, sample_size=0.535</span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07958 (@iter 8)</span></span>
+<span><span class="co">#&gt; ✔ Gaussian process model (LOO R²: 94.3%)</span></span>
+<span><span class="co">#&gt; ℹ Generating 5000 candidates.</span></span>
+<span><span class="co">#&gt; i mtry=13, trees=495, min_n=3, tree_depth=15, learn_rate=0.0149, loss_reduction=0.0297,</span></span>
+<span><span class="co">#&gt;   sample_size=0.735</span></span>
 <span><span class="co">#&gt; i Estimating performance</span></span>
 <span><span class="co">#&gt; ✓ Estimating performance</span></span>
-<span><span class="co">#&gt; ♥ Newest results:    brier_class=0.08353 (+/-0.00644)</span></span>
+<span><span class="co">#&gt; ♥ Newest results:    brier_class=0.07954 (+/-0.00617)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Iteration 14 ─────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; i Current best:      brier_class=0.08353 (@iter 13)</span></span>
-<span><span class="co">#&gt; i Gaussian process model</span></span>
-<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
-<span><span class="co">#&gt; i Predicted candidates</span></span>
-<span><span class="co">#&gt; i mtry=12, trees=355, min_n=2, tree_depth=9, learn_rate=0.0171, loss_reduction=0.00103,</span></span>
-<span><span class="co">#&gt;   sample_size=0.503</span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07954 (@iter 13)</span></span>
+<span><span class="co">#&gt; ✔ Gaussian process model (LOO R²: 95.1%)</span></span>
+<span><span class="co">#&gt; ℹ Generating 5000 candidates.</span></span>
+<span><span class="co">#&gt; i mtry=15, trees=495, min_n=2, tree_depth=11, learn_rate=0.0171,</span></span>
+<span><span class="co">#&gt;   loss_reduction=8.66e-10, sample_size=0.6</span></span>
 <span><span class="co">#&gt; i Estimating performance</span></span>
 <span><span class="co">#&gt; ✓ Estimating performance</span></span>
-<span><span class="co">#&gt; ♥ Newest results:    brier_class=0.07782 (+/-0.00581)</span></span>
+<span><span class="co">#&gt; ♥ Newest results:    brier_class=0.07915 (+/-0.00635)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Iteration 15 ─────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; i Current best:      brier_class=0.07782 (@iter 14)</span></span>
-<span><span class="co">#&gt; i Gaussian process model</span></span>
-<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
-<span><span class="co">#&gt; i Predicted candidates</span></span>
-<span><span class="co">#&gt; i mtry=3, trees=402, min_n=3, tree_depth=3, learn_rate=0.0179, loss_reduction=4.77e-06,</span></span>
-<span><span class="co">#&gt;   sample_size=0.504</span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07915 (@iter 14)</span></span>
+<span><span class="co">#&gt; ✔ Gaussian process model (LOO R²: 96.2%)</span></span>
+<span><span class="co">#&gt; ℹ Generating 5000 candidates.</span></span>
+<span><span class="co">#&gt; i mtry=9, trees=498, min_n=3, tree_depth=10, learn_rate=0.0242,</span></span>
+<span><span class="co">#&gt;   loss_reduction=9.22e-08, sample_size=0.696</span></span>
 <span><span class="co">#&gt; i Estimating performance</span></span>
 <span><span class="co">#&gt; ✓ Estimating performance</span></span>
-<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.09768 (+/-0.00459)</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08245 (+/-0.00639)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Iteration 16 ─────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; i Current best:      brier_class=0.07782 (@iter 14)</span></span>
-<span><span class="co">#&gt; i Gaussian process model</span></span>
-<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
-<span><span class="co">#&gt; i Predicted candidates</span></span>
-<span><span class="co">#&gt; i mtry=13, trees=279, min_n=3, tree_depth=12, learn_rate=0.0477, loss_reduction=30.8,</span></span>
-<span><span class="co">#&gt;   sample_size=0.501</span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07915 (@iter 14)</span></span>
+<span><span class="co">#&gt; ✔ Gaussian process model (LOO R²: 96%)</span></span>
+<span><span class="co">#&gt; ℹ Generating 5000 candidates.</span></span>
+<span><span class="co">#&gt; i mtry=7, trees=457, min_n=2, tree_depth=14, learn_rate=0.0454, loss_reduction=4.6e-10,</span></span>
+<span><span class="co">#&gt;   sample_size=0.964</span></span>
 <span><span class="co">#&gt; i Estimating performance</span></span>
 <span><span class="co">#&gt; ✓ Estimating performance</span></span>
-<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.1389 (+/-0.00345)</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08352 (+/-0.00647)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Iteration 17 ─────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; i Current best:      brier_class=0.07782 (@iter 14)</span></span>
-<span><span class="co">#&gt; i Gaussian process model</span></span>
-<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
-<span><span class="co">#&gt; i Predicted candidates</span></span>
-<span><span class="co">#&gt; i mtry=10, trees=354, min_n=13, tree_depth=2, learn_rate=0.0496,</span></span>
-<span><span class="co">#&gt;   loss_reduction=0.000889, sample_size=0.507</span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07915 (@iter 14)</span></span>
+<span><span class="co">#&gt; ✔ Gaussian process model (LOO R²: 96.3%)</span></span>
+<span><span class="co">#&gt; ℹ Generating 5000 candidates.</span></span>
+<span><span class="co">#&gt; i mtry=7, trees=490, min_n=4, tree_depth=15, learn_rate=0.00868,</span></span>
+<span><span class="co">#&gt;   loss_reduction=1.38e-08, sample_size=0.558</span></span>
 <span><span class="co">#&gt; i Estimating performance</span></span>
 <span><span class="co">#&gt; ✓ Estimating performance</span></span>
-<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.09991 (+/-0.00523)</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08314 (+/-0.00495)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Iteration 18 ─────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; i Current best:      brier_class=0.07782 (@iter 14)</span></span>
-<span><span class="co">#&gt; i Gaussian process model</span></span>
-<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
-<span><span class="co">#&gt; i Predicted candidates</span></span>
-<span><span class="co">#&gt; i mtry=8, trees=14, min_n=8, tree_depth=5, learn_rate=0.313, loss_reduction=3.53e-08,</span></span>
-<span><span class="co">#&gt;   sample_size=0.972</span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07915 (@iter 14)</span></span>
+<span><span class="co">#&gt; ✔ Gaussian process model (LOO R²: 96.5%)</span></span>
+<span><span class="co">#&gt; ℹ Generating 5000 candidates.</span></span>
+<span><span class="co">#&gt; i mtry=12, trees=493, min_n=4, tree_depth=12, learn_rate=0.015,</span></span>
+<span><span class="co">#&gt;   loss_reduction=9.56e-06, sample_size=0.753</span></span>
 <span><span class="co">#&gt; i Estimating performance</span></span>
 <span><span class="co">#&gt; ✓ Estimating performance</span></span>
-<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08465 (+/-0.00643)</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08025 (+/-0.00635)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Iteration 19 ─────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; i Current best:      brier_class=0.07782 (@iter 14)</span></span>
-<span><span class="co">#&gt; i Gaussian process model</span></span>
-<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
-<span><span class="co">#&gt; i Predicted candidates</span></span>
-<span><span class="co">#&gt; i mtry=7, trees=26, min_n=4, tree_depth=11, learn_rate=0.166, loss_reduction=1.09e-10,</span></span>
-<span><span class="co">#&gt;   sample_size=0.642</span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07915 (@iter 14)</span></span>
+<span><span class="co">#&gt; ✔ Gaussian process model (LOO R²: 96.6%)</span></span>
+<span><span class="co">#&gt; ℹ Generating 5000 candidates.</span></span>
+<span><span class="co">#&gt; i mtry=9, trees=429, min_n=3, tree_depth=13, learn_rate=0.0253,</span></span>
+<span><span class="co">#&gt;   loss_reduction=9.34e-06, sample_size=0.879</span></span>
 <span><span class="co">#&gt; i Estimating performance</span></span>
 <span><span class="co">#&gt; ✓ Estimating performance</span></span>
-<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.0867 (+/-0.00608)</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08042 (+/-0.00638)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Iteration 20 ─────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; i Current best:      brier_class=0.07782 (@iter 14)</span></span>
-<span><span class="co">#&gt; i Gaussian process model</span></span>
-<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
-<span><span class="co">#&gt; i Predicted candidates</span></span>
-<span><span class="co">#&gt; i mtry=13, trees=452, min_n=4, tree_depth=7, learn_rate=0.0131, loss_reduction=0.0218,</span></span>
-<span><span class="co">#&gt;   sample_size=0.882</span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07915 (@iter 14)</span></span>
+<span><span class="co">#&gt; ✔ Gaussian process model (LOO R²: 96.5%)</span></span>
+<span><span class="co">#&gt; ℹ Generating 5000 candidates.</span></span>
+<span><span class="co">#&gt; i mtry=14, trees=435, min_n=2, tree_depth=14, learn_rate=0.0112,</span></span>
+<span><span class="co">#&gt;   loss_reduction=1.07e-09, sample_size=0.618</span></span>
 <span><span class="co">#&gt; i Estimating performance</span></span>
 <span><span class="co">#&gt; ✓ Estimating performance</span></span>
-<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.07926 (+/-0.00657)</span></span>
+<span><span class="co">#&gt; ♥ Newest results:    brier_class=0.07691 (+/-0.00604)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Iteration 21 ─────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; i Current best:      brier_class=0.07782 (@iter 14)</span></span>
-<span><span class="co">#&gt; i Gaussian process model</span></span>
-<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
-<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07691 (@iter 20)</span></span>
+<span><span class="co">#&gt; ✔ Gaussian process model (LOO R²: 96.1%)</span></span>
+<span><span class="co">#&gt; ℹ Generating 5000 candidates.</span></span>
 <span><span class="co">#&gt; i mtry=13, trees=356, min_n=2, tree_depth=15, learn_rate=0.0235,</span></span>
 <span><span class="co">#&gt;   loss_reduction=2.62e-09, sample_size=0.594</span></span>
 <span><span class="co">#&gt; i Estimating performance</span></span>
@@ -1056,106 +1041,97 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Iteration 22 ─────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; i Current best:      brier_class=0.07782 (@iter 14)</span></span>
-<span><span class="co">#&gt; i Gaussian process model</span></span>
-<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
-<span><span class="co">#&gt; i Predicted candidates</span></span>
-<span><span class="co">#&gt; i mtry=13, trees=386, min_n=3, tree_depth=4, learn_rate=0.00743, loss_reduction=3.12,</span></span>
-<span><span class="co">#&gt;   sample_size=0.593</span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07691 (@iter 20)</span></span>
+<span><span class="co">#&gt; ✔ Gaussian process model (LOO R²: 95.9%)</span></span>
+<span><span class="co">#&gt; ℹ Generating 5000 candidates.</span></span>
+<span><span class="co">#&gt; i mtry=8, trees=413, min_n=3, tree_depth=12, learn_rate=0.015, loss_reduction=4.16e-08,</span></span>
+<span><span class="co">#&gt;   sample_size=0.657</span></span>
 <span><span class="co">#&gt; i Estimating performance</span></span>
 <span><span class="co">#&gt; ✓ Estimating performance</span></span>
-<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08429 (+/-0.00484)</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.07927 (+/-0.0057)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Iteration 23 ─────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; i Current best:      brier_class=0.07782 (@iter 14)</span></span>
-<span><span class="co">#&gt; i Gaussian process model</span></span>
-<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
-<span><span class="co">#&gt; i Predicted candidates</span></span>
-<span><span class="co">#&gt; i mtry=14, trees=397, min_n=2, tree_depth=3, learn_rate=0.0118, loss_reduction=0.0129,</span></span>
-<span><span class="co">#&gt;   sample_size=0.783</span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07691 (@iter 20)</span></span>
+<span><span class="co">#&gt; ✔ Gaussian process model (LOO R²: 96%)</span></span>
+<span><span class="co">#&gt; ℹ Generating 5000 candidates.</span></span>
+<span><span class="co">#&gt; i mtry=5, trees=455, min_n=3, tree_depth=14, learn_rate=0.017, loss_reduction=1.04e-09,</span></span>
+<span><span class="co">#&gt;   sample_size=0.638</span></span>
 <span><span class="co">#&gt; i Estimating performance</span></span>
 <span><span class="co">#&gt; ✓ Estimating performance</span></span>
-<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08154 (+/-0.00478)</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08192 (+/-0.00567)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Iteration 24 ─────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; i Current best:      brier_class=0.07782 (@iter 14)</span></span>
-<span><span class="co">#&gt; i Gaussian process model</span></span>
-<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
-<span><span class="co">#&gt; i Predicted candidates</span></span>
-<span><span class="co">#&gt; i mtry=8, trees=15, min_n=3, tree_depth=8, learn_rate=0.212, loss_reduction=0.0409,</span></span>
-<span><span class="co">#&gt;   sample_size=0.716</span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07691 (@iter 20)</span></span>
+<span><span class="co">#&gt; ✔ Gaussian process model (LOO R²: 95.4%)</span></span>
+<span><span class="co">#&gt; ℹ Generating 5000 candidates.</span></span>
+<span><span class="co">#&gt; i mtry=15, trees=439, min_n=3, tree_depth=14, learn_rate=0.0114,</span></span>
+<span><span class="co">#&gt;   loss_reduction=6.96e-05, sample_size=0.623</span></span>
 <span><span class="co">#&gt; i Estimating performance</span></span>
 <span><span class="co">#&gt; ✓ Estimating performance</span></span>
-<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08063 (+/-0.00516)</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.07824 (+/-0.00601)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Iteration 25 ─────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; i Current best:      brier_class=0.07782 (@iter 14)</span></span>
-<span><span class="co">#&gt; i Gaussian process model</span></span>
-<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
-<span><span class="co">#&gt; i Predicted candidates</span></span>
-<span><span class="co">#&gt; i mtry=4, trees=24, min_n=29, tree_depth=15, learn_rate=0.243, loss_reduction=10.9,</span></span>
-<span><span class="co">#&gt;   sample_size=0.802</span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07691 (@iter 20)</span></span>
+<span><span class="co">#&gt; ✔ Gaussian process model (LOO R²: 95.3%)</span></span>
+<span><span class="co">#&gt; ℹ Generating 5000 candidates.</span></span>
+<span><span class="co">#&gt; i mtry=11, trees=498, min_n=29, tree_depth=14, learn_rate=0.121,</span></span>
+<span><span class="co">#&gt;   loss_reduction=1.84e-10, sample_size=0.711</span></span>
 <span><span class="co">#&gt; i Estimating performance</span></span>
 <span><span class="co">#&gt; ✓ Estimating performance</span></span>
-<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.1349 (+/-0.0037)</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.1274 (+/-0.00462)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Iteration 26 ─────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; i Current best:      brier_class=0.07782 (@iter 14)</span></span>
-<span><span class="co">#&gt; i Gaussian process model</span></span>
-<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
-<span><span class="co">#&gt; i Predicted candidates</span></span>
-<span><span class="co">#&gt; i mtry=14, trees=463, min_n=4, tree_depth=6, learn_rate=0.021, loss_reduction=0.633,</span></span>
-<span><span class="co">#&gt;   sample_size=0.987</span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07691 (@iter 20)</span></span>
+<span><span class="co">#&gt; ✔ Gaussian process model (LOO R²: 93.2%)</span></span>
+<span><span class="co">#&gt; ℹ Generating 5000 candidates.</span></span>
+<span><span class="co">#&gt; i mtry=14, trees=436, min_n=4, tree_depth=13, learn_rate=0.0164,</span></span>
+<span><span class="co">#&gt;   loss_reduction=1.52e-07, sample_size=0.818</span></span>
 <span><span class="co">#&gt; i Estimating performance</span></span>
 <span><span class="co">#&gt; ✓ Estimating performance</span></span>
-<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.07975 (+/-0.00627)</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.0801 (+/-0.00661)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Iteration 27 ─────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; i Current best:      brier_class=0.07782 (@iter 14)</span></span>
-<span><span class="co">#&gt; i Gaussian process model</span></span>
-<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
-<span><span class="co">#&gt; i Predicted candidates</span></span>
-<span><span class="co">#&gt; i mtry=14, trees=496, min_n=5, tree_depth=8, learn_rate=0.0163,</span></span>
-<span><span class="co">#&gt;   loss_reduction=6.54e-09, sample_size=0.967</span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07691 (@iter 20)</span></span>
+<span><span class="co">#&gt; ✔ Gaussian process model (LOO R²: 92.7%)</span></span>
+<span><span class="co">#&gt; ℹ Generating 5000 candidates.</span></span>
+<span><span class="co">#&gt; i mtry=13, trees=455, min_n=2, tree_depth=13, learn_rate=0.0109,</span></span>
+<span><span class="co">#&gt;   loss_reduction=6.86e-06, sample_size=0.685</span></span>
 <span><span class="co">#&gt; i Estimating performance</span></span>
 <span><span class="co">#&gt; ✓ Estimating performance</span></span>
-<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08188 (+/-0.00652)</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.07816 (+/-0.00623)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Iteration 28 ─────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; i Current best:      brier_class=0.07782 (@iter 14)</span></span>
-<span><span class="co">#&gt; i Gaussian process model</span></span>
-<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
-<span><span class="co">#&gt; i Predicted candidates</span></span>
-<span><span class="co">#&gt; i mtry=14, trees=16, min_n=3, tree_depth=8, learn_rate=0.224, loss_reduction=1.36e-07,</span></span>
-<span><span class="co">#&gt;   sample_size=0.824</span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07691 (@iter 20)</span></span>
+<span><span class="co">#&gt; ✔ Gaussian process model (LOO R²: 93.1%)</span></span>
+<span><span class="co">#&gt; ℹ Generating 5000 candidates.</span></span>
+<span><span class="co">#&gt; i mtry=13, trees=410, min_n=4, tree_depth=15, learn_rate=0.0271, loss_reduction=0.0223,</span></span>
+<span><span class="co">#&gt;   sample_size=0.623</span></span>
 <span><span class="co">#&gt; i Estimating performance</span></span>
 <span><span class="co">#&gt; ✓ Estimating performance</span></span>
-<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08093 (+/-0.00725)</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08174 (+/-0.00612)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Iteration 29 ─────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; i Current best:      brier_class=0.07782 (@iter 14)</span></span>
-<span><span class="co">#&gt; i Gaussian process model</span></span>
-<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
-<span><span class="co">#&gt; i Predicted candidates</span></span>
-<span><span class="co">#&gt; i mtry=12, trees=349, min_n=2, tree_depth=6, learn_rate=0.0118,</span></span>
-<span><span class="co">#&gt;   loss_reduction=2.74e-06, sample_size=0.743</span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07691 (@iter 20)</span></span>
+<span><span class="co">#&gt; ✔ Gaussian process model (LOO R²: 93.1%)</span></span>
+<span><span class="co">#&gt; ℹ Generating 5000 candidates.</span></span>
+<span><span class="co">#&gt; i mtry=13, trees=403, min_n=3, tree_depth=10, learn_rate=0.0252,</span></span>
+<span><span class="co">#&gt;   loss_reduction=1.02e-09, sample_size=0.796</span></span>
 <span><span class="co">#&gt; i Estimating performance</span></span>
 <span><span class="co">#&gt; ✓ Estimating performance</span></span>
-<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.07827 (+/-0.00604)</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08138 (+/-0.00644)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Iteration 30 ─────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; i Current best:      brier_class=0.07782 (@iter 14)</span></span>
-<span><span class="co">#&gt; i Gaussian process model</span></span>
-<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
-<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07691 (@iter 20)</span></span>
+<span><span class="co">#&gt; ✔ Gaussian process model (LOO R²: 93.2%)</span></span>
+<span><span class="co">#&gt; ℹ Generating 5000 candidates.</span></span>
 <span><span class="co">#&gt; i mtry=4, trees=118, min_n=2, tree_depth=15, learn_rate=0.274, loss_reduction=6.29e-09,</span></span>
 <span><span class="co">#&gt;   sample_size=0.782</span></span>
 <span><span class="co">#&gt; i Estimating performance</span></span>
@@ -1164,58 +1140,53 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Iteration 31 ─────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; i Current best:      brier_class=0.07782 (@iter 14)</span></span>
-<span><span class="co">#&gt; i Gaussian process model</span></span>
-<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
-<span><span class="co">#&gt; i Predicted candidates</span></span>
-<span><span class="co">#&gt; i mtry=15, trees=379, min_n=4, tree_depth=3, learn_rate=0.0138, loss_reduction=5.18,</span></span>
-<span><span class="co">#&gt;   sample_size=0.682</span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07691 (@iter 20)</span></span>
+<span><span class="co">#&gt; ✔ Gaussian process model (LOO R²: 91.8%)</span></span>
+<span><span class="co">#&gt; ℹ Generating 5000 candidates.</span></span>
+<span><span class="co">#&gt; i mtry=13, trees=481, min_n=33, tree_depth=1, learn_rate=0.27, loss_reduction=2.2e-07,</span></span>
+<span><span class="co">#&gt;   sample_size=0.765</span></span>
 <span><span class="co">#&gt; i Estimating performance</span></span>
 <span><span class="co">#&gt; ✓ Estimating performance</span></span>
-<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08574 (+/-0.00487)</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.1329 (+/-0.00574)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Iteration 32 ─────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; i Current best:      brier_class=0.07782 (@iter 14)</span></span>
-<span><span class="co">#&gt; i Gaussian process model</span></span>
-<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
-<span><span class="co">#&gt; i Predicted candidates</span></span>
-<span><span class="co">#&gt; i mtry=11, trees=60, min_n=5, tree_depth=5, learn_rate=0.294, loss_reduction=10.3,</span></span>
-<span><span class="co">#&gt;   sample_size=0.634</span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07691 (@iter 20)</span></span>
+<span><span class="co">#&gt; ✔ Gaussian process model (LOO R²: 93.1%)</span></span>
+<span><span class="co">#&gt; ℹ Generating 5000 candidates.</span></span>
+<span><span class="co">#&gt; i mtry=14, trees=150, min_n=10, tree_depth=15, learn_rate=0.0799,</span></span>
+<span><span class="co">#&gt;   loss_reduction=1.56e-10, sample_size=0.985</span></span>
 <span><span class="co">#&gt; i Estimating performance</span></span>
 <span><span class="co">#&gt; ✓ Estimating performance</span></span>
-<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.09625 (+/-0.00391)</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08369 (+/-0.00566)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Iteration 33 ─────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; i Current best:      brier_class=0.07782 (@iter 14)</span></span>
-<span><span class="co">#&gt; i Gaussian process model</span></span>
-<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
-<span><span class="co">#&gt; i Predicted candidates</span></span>
-<span><span class="co">#&gt; i mtry=11, trees=357, min_n=9, tree_depth=15, learn_rate=0.00807,</span></span>
-<span><span class="co">#&gt;   loss_reduction=1.1e-09, sample_size=0.967</span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07691 (@iter 20)</span></span>
+<span><span class="co">#&gt; ✔ Gaussian process model (LOO R²: 93.1%)</span></span>
+<span><span class="co">#&gt; ℹ Generating 5000 candidates.</span></span>
+<span><span class="co">#&gt; i mtry=12, trees=235, min_n=2, tree_depth=15, learn_rate=0.0188,</span></span>
+<span><span class="co">#&gt;   loss_reduction=4.52e-07, sample_size=0.724</span></span>
 <span><span class="co">#&gt; i Estimating performance</span></span>
 <span><span class="co">#&gt; ✓ Estimating performance</span></span>
-<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08401 (+/-0.00518)</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.07836 (+/-0.00599)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Iteration 34 ─────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; i Current best:      brier_class=0.07782 (@iter 14)</span></span>
-<span><span class="co">#&gt; i Gaussian process model</span></span>
-<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
-<span><span class="co">#&gt; i Predicted candidates</span></span>
-<span><span class="co">#&gt; i mtry=15, trees=485, min_n=3, tree_depth=6, learn_rate=0.00906,</span></span>
-<span><span class="co">#&gt;   loss_reduction=3.09e-10, sample_size=0.6</span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07691 (@iter 20)</span></span>
+<span><span class="co">#&gt; ✔ Gaussian process model (LOO R²: 90.2%)</span></span>
+<span><span class="co">#&gt; ℹ Generating 5000 candidates.</span></span>
+<span><span class="co">#&gt; i mtry=14, trees=79, min_n=4, tree_depth=15, learn_rate=0.0299, loss_reduction=3.98,</span></span>
+<span><span class="co">#&gt;   sample_size=0.852</span></span>
 <span><span class="co">#&gt; i Estimating performance</span></span>
 <span><span class="co">#&gt; ✓ Estimating performance</span></span>
-<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.07842 (+/-0.00578)</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08415 (+/-0.0053)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Iteration 35 ─────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; i Current best:      brier_class=0.07782 (@iter 14)</span></span>
-<span><span class="co">#&gt; i Gaussian process model</span></span>
-<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
-<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07691 (@iter 20)</span></span>
+<span><span class="co">#&gt; ✔ Gaussian process model (LOO R²: 90.5%)</span></span>
+<span><span class="co">#&gt; ℹ Generating 5000 candidates.</span></span>
 <span><span class="co">#&gt; i mtry=11, trees=353, min_n=2, tree_depth=14, learn_rate=0.0126, loss_reduction=0.0452,</span></span>
 <span><span class="co">#&gt;   sample_size=0.607</span></span>
 <span><span class="co">#&gt; i Estimating performance</span></span>
@@ -1224,118 +1195,108 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Iteration 36 ─────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; i Current best:      brier_class=0.07782 (@iter 14)</span></span>
-<span><span class="co">#&gt; i Gaussian process model</span></span>
-<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
-<span><span class="co">#&gt; i Predicted candidates</span></span>
-<span><span class="co">#&gt; i mtry=14, trees=480, min_n=2, tree_depth=12, learn_rate=0.0176, loss_reduction=2e-09,</span></span>
-<span><span class="co">#&gt;   sample_size=0.646</span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07691 (@iter 20)</span></span>
+<span><span class="co">#&gt; ✔ Gaussian process model (LOO R²: 90.7%)</span></span>
+<span><span class="co">#&gt; ℹ Generating 5000 candidates.</span></span>
+<span><span class="co">#&gt; i mtry=5, trees=428, min_n=2, tree_depth=1, learn_rate=0.3, loss_reduction=3.83e-10,</span></span>
+<span><span class="co">#&gt;   sample_size=0.566</span></span>
 <span><span class="co">#&gt; i Estimating performance</span></span>
 <span><span class="co">#&gt; ✓ Estimating performance</span></span>
-<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.07935 (+/-0.00649)</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.09891 (+/-0.00808)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Iteration 37 ─────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; i Current best:      brier_class=0.07782 (@iter 14)</span></span>
-<span><span class="co">#&gt; i Gaussian process model</span></span>
-<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
-<span><span class="co">#&gt; i Predicted candidates</span></span>
-<span><span class="co">#&gt; i mtry=11, trees=459, min_n=3, tree_depth=4, learn_rate=0.0222,</span></span>
-<span><span class="co">#&gt;   loss_reduction=1.46e-06, sample_size=0.734</span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07691 (@iter 20)</span></span>
+<span><span class="co">#&gt; ✔ Gaussian process model (LOO R²: 90.9%)</span></span>
+<span><span class="co">#&gt; ℹ Generating 5000 candidates.</span></span>
+<span><span class="co">#&gt; i mtry=9, trees=280, min_n=2, tree_depth=15, learn_rate=0.0118,</span></span>
+<span><span class="co">#&gt;   loss_reduction=6.79e-05, sample_size=0.584</span></span>
 <span><span class="co">#&gt; i Estimating performance</span></span>
 <span><span class="co">#&gt; ✓ Estimating performance</span></span>
-<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08023 (+/-0.00593)</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08028 (+/-0.00528)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Iteration 38 ─────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; i Current best:      brier_class=0.07782 (@iter 14)</span></span>
-<span><span class="co">#&gt; i Gaussian process model</span></span>
-<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
-<span><span class="co">#&gt; i Predicted candidates</span></span>
-<span><span class="co">#&gt; i mtry=15, trees=480, min_n=2, tree_depth=14, learn_rate=0.0137, loss_reduction=2.84,</span></span>
-<span><span class="co">#&gt;   sample_size=0.987</span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07691 (@iter 20)</span></span>
+<span><span class="co">#&gt; ✔ Gaussian process model (LOO R²: 91%)</span></span>
+<span><span class="co">#&gt; ℹ Generating 5000 candidates.</span></span>
+<span><span class="co">#&gt; i mtry=9, trees=241, min_n=2, tree_depth=15, learn_rate=0.0655,</span></span>
+<span><span class="co">#&gt;   loss_reduction=1.14e-10, sample_size=0.769</span></span>
 <span><span class="co">#&gt; i Estimating performance</span></span>
 <span><span class="co">#&gt; ✓ Estimating performance</span></span>
-<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.07926 (+/-0.00564)</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08426 (+/-0.007)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Iteration 39 ─────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; i Current best:      brier_class=0.07782 (@iter 14)</span></span>
-<span><span class="co">#&gt; i Gaussian process model</span></span>
-<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
-<span><span class="co">#&gt; i Predicted candidates</span></span>
-<span><span class="co">#&gt; i mtry=10, trees=10, min_n=3, tree_depth=9, learn_rate=0.0851, loss_reduction=0.299,</span></span>
-<span><span class="co">#&gt;   sample_size=0.651</span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07691 (@iter 20)</span></span>
+<span><span class="co">#&gt; ✔ Gaussian process model (LOO R²: 91%)</span></span>
+<span><span class="co">#&gt; ℹ Generating 5000 candidates.</span></span>
+<span><span class="co">#&gt; i mtry=14, trees=495, min_n=7, tree_depth=6, learn_rate=0.051, loss_reduction=9.42e-08,</span></span>
+<span><span class="co">#&gt;   sample_size=0.745</span></span>
 <span><span class="co">#&gt; i Estimating performance</span></span>
 <span><span class="co">#&gt; ✓ Estimating performance</span></span>
-<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.1219 (+/-0.0032)</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08749 (+/-0.00588)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Iteration 40 ─────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; i Current best:      brier_class=0.07782 (@iter 14)</span></span>
-<span><span class="co">#&gt; i Gaussian process model</span></span>
-<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
-<span><span class="co">#&gt; i Predicted candidates</span></span>
-<span><span class="co">#&gt; i mtry=7, trees=42, min_n=3, tree_depth=13, learn_rate=0.28, loss_reduction=0.000151,</span></span>
-<span><span class="co">#&gt;   sample_size=0.811</span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07691 (@iter 20)</span></span>
+<span><span class="co">#&gt; ✔ Gaussian process model (LOO R²: 91.1%)</span></span>
+<span><span class="co">#&gt; ℹ Generating 5000 candidates.</span></span>
+<span><span class="co">#&gt; i mtry=15, trees=395, min_n=2, tree_depth=15, learn_rate=0.0101,</span></span>
+<span><span class="co">#&gt;   loss_reduction=1.33e-10, sample_size=0.615</span></span>
 <span><span class="co">#&gt; i Estimating performance</span></span>
 <span><span class="co">#&gt; ✓ Estimating performance</span></span>
-<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.0846 (+/-0.00556)</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.07819 (+/-0.00588)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Iteration 41 ─────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; i Current best:      brier_class=0.07782 (@iter 14)</span></span>
-<span><span class="co">#&gt; i Gaussian process model</span></span>
-<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
-<span><span class="co">#&gt; i Predicted candidates</span></span>
-<span><span class="co">#&gt; i mtry=4, trees=81, min_n=2, tree_depth=6, learn_rate=0.0801, loss_reduction=1.06e-05,</span></span>
-<span><span class="co">#&gt;   sample_size=0.941</span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07691 (@iter 20)</span></span>
+<span><span class="co">#&gt; ✔ Gaussian process model (LOO R²: 91.2%)</span></span>
+<span><span class="co">#&gt; ℹ Generating 5000 candidates.</span></span>
+<span><span class="co">#&gt; i mtry=11, trees=282, min_n=3, tree_depth=12, learn_rate=0.0192, loss_reduction=0.538,</span></span>
+<span><span class="co">#&gt;   sample_size=0.831</span></span>
 <span><span class="co">#&gt; i Estimating performance</span></span>
 <span><span class="co">#&gt; ✓ Estimating performance</span></span>
-<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08575 (+/-0.00556)</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.0776 (+/-0.00634)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Iteration 42 ─────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; i Current best:      brier_class=0.07782 (@iter 14)</span></span>
-<span><span class="co">#&gt; i Gaussian process model</span></span>
-<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
-<span><span class="co">#&gt; i Predicted candidates</span></span>
-<span><span class="co">#&gt; i mtry=14, trees=19, min_n=7, tree_depth=13, learn_rate=0.285, loss_reduction=2.99,</span></span>
-<span><span class="co">#&gt;   sample_size=0.736</span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07691 (@iter 20)</span></span>
+<span><span class="co">#&gt; ✔ Gaussian process model (LOO R²: 91%)</span></span>
+<span><span class="co">#&gt; ℹ Generating 5000 candidates.</span></span>
+<span><span class="co">#&gt; i mtry=14, trees=376, min_n=2, tree_depth=13, learn_rate=0.0161,</span></span>
+<span><span class="co">#&gt;   loss_reduction=0.00251, sample_size=0.55</span></span>
 <span><span class="co">#&gt; i Estimating performance</span></span>
 <span><span class="co">#&gt; ✓ Estimating performance</span></span>
-<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08382 (+/-0.00539)</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.07929 (+/-0.00636)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Iteration 43 ─────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; i Current best:      brier_class=0.07782 (@iter 14)</span></span>
-<span><span class="co">#&gt; i Gaussian process model</span></span>
-<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
-<span><span class="co">#&gt; i Predicted candidates</span></span>
-<span><span class="co">#&gt; i mtry=12, trees=286, min_n=37, tree_depth=2, learn_rate=0.00148,</span></span>
-<span><span class="co">#&gt;   loss_reduction=0.00801, sample_size=0.959</span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07691 (@iter 20)</span></span>
+<span><span class="co">#&gt; ✔ Gaussian process model (LOO R²: 90.9%)</span></span>
+<span><span class="co">#&gt; ℹ Generating 5000 candidates.</span></span>
+<span><span class="co">#&gt; i mtry=11, trees=290, min_n=6, tree_depth=12, learn_rate=0.0294, loss_reduction=0.042,</span></span>
+<span><span class="co">#&gt;   sample_size=0.963</span></span>
 <span><span class="co">#&gt; i Estimating performance</span></span>
 <span><span class="co">#&gt; ✓ Estimating performance</span></span>
-<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.1874 (+/-0.00267)</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08255 (+/-0.00633)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Iteration 44 ─────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; i Current best:      brier_class=0.07782 (@iter 14)</span></span>
-<span><span class="co">#&gt; i Gaussian process model</span></span>
-<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
-<span><span class="co">#&gt; i Predicted candidates</span></span>
-<span><span class="co">#&gt; i mtry=15, trees=461, min_n=25, tree_depth=2, learn_rate=0.00868, loss_reduction=4.16,</span></span>
-<span><span class="co">#&gt;   sample_size=0.955</span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07691 (@iter 20)</span></span>
+<span><span class="co">#&gt; ✔ Gaussian process model (LOO R²: 91.2%)</span></span>
+<span><span class="co">#&gt; ℹ Generating 5000 candidates.</span></span>
+<span><span class="co">#&gt; i mtry=9, trees=177, min_n=2, tree_depth=12, learn_rate=0.0237,</span></span>
+<span><span class="co">#&gt;   loss_reduction=5.67e-10, sample_size=0.679</span></span>
 <span><span class="co">#&gt; i Estimating performance</span></span>
 <span><span class="co">#&gt; ✓ Estimating performance</span></span>
-<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.103 (+/-0.0046)</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.07918 (+/-0.006)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Iteration 45 ─────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; i Current best:      brier_class=0.07782 (@iter 14)</span></span>
-<span><span class="co">#&gt; i Gaussian process model</span></span>
-<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
-<span><span class="co">#&gt; i Predicted candidates</span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07691 (@iter 20)</span></span>
+<span><span class="co">#&gt; ✔ Gaussian process model (LOO R²: 91.3%)</span></span>
+<span><span class="co">#&gt; ℹ Generating 5000 candidates.</span></span>
 <span><span class="co">#&gt; i mtry=8, trees=10, min_n=3, tree_depth=6, learn_rate=0.285, loss_reduction=0.238,</span></span>
 <span><span class="co">#&gt;   sample_size=0.613</span></span>
 <span><span class="co">#&gt; i Estimating performance</span></span>
@@ -1344,77 +1305,72 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Iteration 46 ─────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; i Current best:      brier_class=0.07782 (@iter 14)</span></span>
-<span><span class="co">#&gt; i Gaussian process model</span></span>
-<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
-<span><span class="co">#&gt; i Predicted candidates</span></span>
-<span><span class="co">#&gt; i mtry=4, trees=332, min_n=4, tree_depth=3, learn_rate=0.0503, loss_reduction=7.35e-10,</span></span>
-<span><span class="co">#&gt;   sample_size=0.816</span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07691 (@iter 20)</span></span>
+<span><span class="co">#&gt; ✔ Gaussian process model (LOO R²: 90.4%)</span></span>
+<span><span class="co">#&gt; ℹ Generating 5000 candidates.</span></span>
+<span><span class="co">#&gt; i mtry=15, trees=30, min_n=2, tree_depth=12, learn_rate=0.122, loss_reduction=7.86e-06,</span></span>
+<span><span class="co">#&gt;   sample_size=0.839</span></span>
 <span><span class="co">#&gt; i Estimating performance</span></span>
 <span><span class="co">#&gt; ✓ Estimating performance</span></span>
-<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.0846 (+/-0.00523)</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.07964 (+/-0.0062)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Iteration 47 ─────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; i Current best:      brier_class=0.07782 (@iter 14)</span></span>
-<span><span class="co">#&gt; i Gaussian process model</span></span>
-<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
-<span><span class="co">#&gt; i Predicted candidates</span></span>
-<span><span class="co">#&gt; i mtry=5, trees=50, min_n=3, tree_depth=2, learn_rate=0.146, loss_reduction=5.88e-08,</span></span>
-<span><span class="co">#&gt;   sample_size=0.521</span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07691 (@iter 20)</span></span>
+<span><span class="co">#&gt; ✔ Gaussian process model (LOO R²: 90.6%)</span></span>
+<span><span class="co">#&gt; ℹ Generating 5000 candidates.</span></span>
+<span><span class="co">#&gt; i mtry=12, trees=19, min_n=3, tree_depth=10, learn_rate=0.0894, loss_reduction=0.00279,</span></span>
+<span><span class="co">#&gt;   sample_size=0.528</span></span>
 <span><span class="co">#&gt; i Estimating performance</span></span>
 <span><span class="co">#&gt; ✓ Estimating performance</span></span>
-<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.09574 (+/-0.00484)</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.09271 (+/-0.00423)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Iteration 48 ─────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; i Current best:      brier_class=0.07782 (@iter 14)</span></span>
-<span><span class="co">#&gt; i Gaussian process model</span></span>
-<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
-<span><span class="co">#&gt; i Predicted candidates</span></span>
-<span><span class="co">#&gt; i mtry=4, trees=16, min_n=4, tree_depth=4, learn_rate=0.052, loss_reduction=13.1,</span></span>
-<span><span class="co">#&gt;   sample_size=0.963</span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07691 (@iter 20)</span></span>
+<span><span class="co">#&gt; ✔ Gaussian process model (LOO R²: 90.5%)</span></span>
+<span><span class="co">#&gt; ℹ Generating 5000 candidates.</span></span>
+<span><span class="co">#&gt; i mtry=10, trees=14, min_n=4, tree_depth=14, learn_rate=0.0818, loss_reduction=0.00635,</span></span>
+<span><span class="co">#&gt;   sample_size=0.802</span></span>
 <span><span class="co">#&gt; i Estimating performance</span></span>
 <span><span class="co">#&gt; ✓ Estimating performance</span></span>
-<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.2087 (+/-0.00302)</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.1052 (+/-0.00365)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Iteration 49 ─────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; i Current best:      brier_class=0.07782 (@iter 14)</span></span>
-<span><span class="co">#&gt; i Gaussian process model</span></span>
-<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
-<span><span class="co">#&gt; i Predicted candidates</span></span>
-<span><span class="co">#&gt; i mtry=12, trees=34, min_n=5, tree_depth=5, learn_rate=0.11, loss_reduction=6.25e-05,</span></span>
-<span><span class="co">#&gt;   sample_size=0.971</span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07691 (@iter 20)</span></span>
+<span><span class="co">#&gt; ✔ Gaussian process model (LOO R²: 89.3%)</span></span>
+<span><span class="co">#&gt; ℹ Generating 5000 candidates.</span></span>
+<span><span class="co">#&gt; i mtry=14, trees=120, min_n=3, tree_depth=13, learn_rate=0.312,</span></span>
+<span><span class="co">#&gt;   loss_reduction=3.88e-09, sample_size=0.662</span></span>
 <span><span class="co">#&gt; i Estimating performance</span></span>
 <span><span class="co">#&gt; ✓ Estimating performance</span></span>
-<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08104 (+/-0.00564)</span></span>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.09184 (+/-0.00841)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; ── Iteration 50 ─────────────────────────────────────────────────────────────────────</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; i Current best:      brier_class=0.07782 (@iter 14)</span></span>
-<span><span class="co">#&gt; i Gaussian process model</span></span>
-<span><span class="co">#&gt; i Generating 5000 candidates</span></span>
-<span><span class="co">#&gt; i Predicted candidates</span></span>
-<span><span class="co">#&gt; i mtry=8, trees=468, min_n=2, tree_depth=5, learn_rate=0.0233, loss_reduction=1.46,</span></span>
-<span><span class="co">#&gt;   sample_size=0.627</span></span>
+<span><span class="co">#&gt; i Current best:      brier_class=0.07691 (@iter 20)</span></span>
+<span><span class="co">#&gt; ✔ Gaussian process model (LOO R²: 84.9%)</span></span>
+<span><span class="co">#&gt; ℹ Generating 5000 candidates.</span></span>
+<span><span class="co">#&gt; i mtry=15, trees=445, min_n=13, tree_depth=14, learn_rate=0.041,</span></span>
+<span><span class="co">#&gt;   loss_reduction=0.000314, sample_size=0.976</span></span>
 <span><span class="co">#&gt; i Estimating performance</span></span>
 <span><span class="co">#&gt; ✓ Estimating performance</span></span>
-<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.07841 (+/-0.00608)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span><span class="co">#&gt; ⓧ Newest results:    brier_class=0.08787 (+/-0.00557)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The same helper functions are used to interrogate the results and to create diagnostic plots:</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://tune.tidymodels.org/reference/show_best.html">show_best</a></span><span class="op">(</span><span class="va">bo_res</span>, metric <span class="op">=</span> <span class="st">"brier_class"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">.estimator</span>, <span class="op">-</span><span class="va">.config</span>, <span class="op">-</span><span class="va">.metric</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://tune.tidymodels.org/reference/show_best.html">show_best</a></span><span class="op">(</span><span class="va">bo_res</span>, metric <span class="op">=</span> <span class="st">"brier_class"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">.estimator</span>, <span class="op">-</span><span class="va">.config</span>, <span class="op">-</span><span class="va">.metric</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">relocate</span><span class="op">(</span><span class="va">mean</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 5 × 11</span></span>
 <span><span class="co">#&gt;      mean  mtry trees min_n tree_depth learn_rate loss_reduction sample_size     n</span></span>
 <span><span class="co">#&gt;     &lt;dbl&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt;      &lt;int&gt;      &lt;dbl&gt;          &lt;dbl&gt;       &lt;dbl&gt; &lt;int&gt;</span></span>
-<span><span class="co">#&gt; 1 0.07782    12   355     2          9   0.01710       1.034e- 3      0.5029    10</span></span>
-<span><span class="co">#&gt; 2 0.07815    11   353     2         14   0.01256       4.519e- 2      0.6071    10</span></span>
-<span><span class="co">#&gt; 3 0.07827    12   349     2          6   0.01176       2.741e- 6      0.7432    10</span></span>
-<span><span class="co">#&gt; 4 0.07841     8   468     2          5   0.02333       1.464e+ 0      0.6269    10</span></span>
-<span><span class="co">#&gt; 5 0.07842    15   485     3          6   0.009056      3.087e-10      0.6000    10</span></span>
+<span><span class="co">#&gt; 1 0.07691    14   435     2         14    0.01122      1.069e- 9      0.6182    10</span></span>
+<span><span class="co">#&gt; 2 0.07760    11   282     3         12    0.01918      5.379e- 1      0.8315    10</span></span>
+<span><span class="co">#&gt; 3 0.07815    11   353     2         14    0.01256      4.519e- 2      0.6071    10</span></span>
+<span><span class="co">#&gt; 4 0.07816    13   455     2         13    0.01089      6.857e- 6      0.6846    10</span></span>
+<span><span class="co">#&gt; 5 0.07819    15   395     2         15    0.01008      1.327e-10      0.6148    10</span></span>
 <span><span class="co">#&gt; # ℹ 2 more variables: std_err &lt;dbl&gt;, .iter &lt;int&gt;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>These results are about the same as those of the SA search. We can plot the data and see that some parameters (number of trees, learning rate, minimum node size, and the sampling proportion) appear to converge to specific values:</p>

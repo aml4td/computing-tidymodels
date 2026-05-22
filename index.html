@@ -2,12 +2,15 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.8.26">
+<meta name="generator" content="quarto-1.9.36">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <meta name="author" content="Max Kuhn">
-<meta name="dcterms.date" content="2026-01-26">
+<meta name="dcterms.date" content="2026-05-22">
 <title>Tidymodels Computing Supplement</title>
 <style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -31,15 +34,14 @@ ul.task-list li input[type="checkbox"] {
 <link href="./chapters/news.html" rel="next">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="site_libs/quarto-html/anchor.min.js"></script>
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-845c23b38eaddc0f92fda52bfe77a8c8.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-7c647e586662db48eb79d76466712003.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light"><script id="quarto-search-options" type="application/json">{
+<link href="site_libs/bootstrap/bootstrap-cca14224007e87b3f770119fd179b404.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light"><script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
   "collapse-after": 3,
@@ -288,6 +290,18 @@ ul.task-list li input[type="checkbox"] {
  <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Complex Nonlinear Boundaries</span></span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./chapters/cls-neural-nets.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Neural Network Classifiers</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./chapters/cls-trees.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">Classification using Trees and Rules</span></span></a>
+  </div>
+</li>
       </ul>
 </li>
         <li class="sidebar-item sidebar-item-section">
@@ -341,7 +355,7 @@ ul.task-list li input[type="checkbox"] {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">2026-01-26</p>
+      <p class="date">2026-05-22</p>
     </div>
   </div>
   
@@ -359,7 +373,7 @@ ul.task-list li input[type="checkbox"] {
   title = {{Tidymodels Computing Supplement to Applied Machine Learning for Tabular Data}},
   year = {2023},
   url = { https://tidymodels.aml4td.org},
-  urldate = {2026-01-26}
+  urldate = {2026-05-22}
 }</code></pre>
 <section id="license" class="level2 unnumbered"><h2 class="unnumbered anchored" data-anchor-id="license">License</h2>
 <p xmlns:cc="http://creativecommons.org/ns#">
@@ -380,19 +394,21 @@ This work is licensed under <a href="http://creativecommons.org/licenses/by-sa/4
 <p><a href="https://quarto.org/">Quarto</a> was used to compile and render the materials</p>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
-<pre><code>Quarto 1.8.26
+<pre><code>Quarto 1.9.36
 [✓] Checking environment information...
 [✓] Checking versions of quarto binary dependencies...
-      Pandoc version 3.6.3: OK
+      Pandoc version 3.8.3: OK
       Dart Sass version 1.87.0: OK
-      Deno version 2.3.1: OK
-      Typst version 0.13.0: OK
+      Deno version 2.4.5: OK
+      Typst version 0.14.2: OK
 [✓] Checking versions of quarto dependencies......OK
 [✓] Checking Quarto installation......OK
-      Version: 1.8.26
+      Version: 1.9.36
 [✓] Checking tools....................OK
       TinyTeX: (external install)
       Chromium: (not installed)
+      Chrome Headless Shell: (not installed)
+      VeraPDF: (not installed)
 [✓] Checking LaTeX....................OK
       Using: TinyTex
       Version: 2025
@@ -400,24 +416,25 @@ This work is licensed under <a href="http://creativecommons.org/licenses/by-sa/4
       Using: Chrome found on system
       Source: MacOS known location
 [✓] Checking basic markdown render....OK
-[✓] Checking Python 3 installation....OK
-      Version: 3.12.12
-      Jupyter: (None)
-      Jupyter is not available in this Python installation.
 [✓] Checking R installation...........OK
       Version: 4.5.2
       LibPaths:
       knitr: 1.51
-      rmarkdown: 2.30
-[✓] Checking Knitr engine render......OK</code></pre>
+      rmarkdown: 2.31.1
+[✓] Checking Knitr engine render......OK
+[✓] Checking Python 3 installation....OK
+      Version: 3.12.12
+      Jupyter: (None)
+      Jupyter is not available in this Python installation.
+[✓] Checking Julia installation...</code></pre>
 </div>
 </div>
-<p><a href="https://en.wikipedia.org/wiki/R_(programming_language)">R version 4.5.2 (2025-10-31)</a> was used for the majority of the computations. <a href="https://en.wikipedia.org/wiki/Torch_(machine_learning)">torch</a> 2.7.1 was also used. The versions of the primary R modeling and visualization packages used here are:</p>
+<p><a href="https://en.wikipedia.org/wiki/R_(programming_language)">R version 4.5.2 (2025-10-31)</a> was used for the majority of the computations. <a href="https://en.wikipedia.org/wiki/Torch_(machine_learning)">torch</a> 2.8.0 was also used. The versions of the primary R modeling and visualization packages used here are:</p>
 <table class="table">
 <colgroup>
-<col style="width: 32%">
+<col style="width: 31%">
 <col style="width: 33%">
-<col style="width: 33%">
+<col style="width: 34%">
 </colgroup>
 <tbody>
 <tr class="odd">
@@ -432,9 +449,9 @@ This work is licensed under <a href="http://creativecommons.org/licenses/by-sa/4
 <td style="text-align: left;">
 <code>betacal</code> (0.1.0)</td>
 <td style="text-align: left;">
-<code>broom</code> (1.0.11)</td>
+<code>broom</code> (1.0.13)</td>
 <td style="text-align: left;">
-<code>broom.mixed</code> (0.2.9.6)</td>
+<code>broom.mixed</code> (0.2.9.7)</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">
@@ -442,19 +459,19 @@ This work is licensed under <a href="http://creativecommons.org/licenses/by-sa/4
 <td style="text-align: left;">
 <code>C50</code> (0.2.0)</td>
 <td style="text-align: left;">
-<code>car</code> (3.1-3)</td>
+<code>car</code> (3.1-5)</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">
 <code>caret</code> (7.0-1)</td>
 <td style="text-align: left;">
-<code>Cubist</code> (0.5.1)</td>
+<code>Cubist</code> (0.6.0)</td>
 <td style="text-align: left;">
 <code>DALEXtra</code> (2.3.1)</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">
-<code>dials</code> (1.4.2)</td>
+<code>dials</code> (1.4.3)</td>
 <td style="text-align: left;">
 <code>dimRed</code> (0.2.7)</td>
 <td style="text-align: left;">
@@ -466,7 +483,7 @@ This work is licensed under <a href="http://creativecommons.org/licenses/by-sa/4
 <td style="text-align: left;">
 <code>downlit</code> (0.4.5.9000)</td>
 <td style="text-align: left;">
-<code>dplyr</code> (1.1.4)</td>
+<code>dplyr</code> (1.2.1)</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">
@@ -474,61 +491,61 @@ This work is licensed under <a href="http://creativecommons.org/licenses/by-sa/4
 <td style="text-align: left;">
 <code>earth</code> (5.3.5)</td>
 <td style="text-align: left;">
-<code>embed</code> (1.2.1)</td>
+<code>embed</code> (1.2.2)</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">
-<code>emmeans</code> (2.0.1)</td>
+<code>emmeans</code> (2.0.3)</td>
 <td style="text-align: left;">
 <code>fastICA</code> (1.2-7)</td>
 <td style="text-align: left;">
-<code>finetune</code> (1.2.1)</td>
+<code>finetune</code> (1.3.0)</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">
 <code>forested</code> (0.2.0)</td>
 <td style="text-align: left;">
-<code>future.mirai</code> (0.10.1)</td>
-<td style="text-align: left;">
 <code>GA</code> (3.2.5)</td>
+<td style="text-align: left;">
+<code>ggplot2</code> (4.0.3)</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">
-<code>ggplot2</code> (4.0.1)</td>
+<code>glmnet</code> (5.0)</td>
 <td style="text-align: left;">
-<code>glmnet</code> (4.1-10)</td>
+<code>gt</code> (1.3.0)</td>
 <td style="text-align: left;">
-<code>gt</code> (1.2.0)</td>
+<code>hardhat</code> (1.4.3.9000)</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">
-<code>hardhat</code> (1.4.2)</td>
-<td style="text-align: left;">
 <code>hstats</code> (1.2.2)</td>
 <td style="text-align: left;">
-<code>igraph</code> (2.2.1)</td>
-</tr>
-<tr class="even">
+<code>igraph</code> (2.3.1)</td>
 <td style="text-align: left;">
 <code>important</code> (0.2.1)</td>
+</tr>
+<tr class="even">
 <td style="text-align: left;">
 <code>janitor</code> (2.2.1)</td>
 <td style="text-align: left;">
 <code>kknn</code> (1.4.1)</td>
+<td style="text-align: left;">
+<code>klaR</code> (1.7-4)</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">
-<code>klaR</code> (1.7-3)</td>
-<td style="text-align: left;">
-<code>lme4</code> (1.1-38)</td>
+<code>lme4</code> (2.0-1)</td>
 <td style="text-align: left;">
 <code>Matrix</code> (1.7-4)</td>
+<td style="text-align: left;">
+<code>mda</code> (0.5-5)</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">
-<code>mda</code> (0.5-5)</td>
+<code>mirai</code> (2.7.0)</td>
 <td style="text-align: left;">
-<code>mixOmics</code> (6.32.0)</td>
+<code>mixOmics</code> (6.35.1)</td>
 <td style="text-align: left;">
 <code>modeldata</code> (1.5.1)</td>
 </tr>
@@ -536,15 +553,15 @@ This work is licensed under <a href="http://creativecommons.org/licenses/by-sa/4
 <td style="text-align: left;">
 <code>modeldatatoo</code> (0.3.0)</td>
 <td style="text-align: left;">
-<code>multcomp</code> (1.4-29)</td>
+<code>multcomp</code> (1.4-30)</td>
 <td style="text-align: left;">
 <code>naniar</code> (1.1.0)</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">
-<code>parsnip</code> (1.4.1)</td>
+<code>parsnip</code> (1.6.0)</td>
 <td style="text-align: left;">
-<code>partykit</code> (1.2-24)</td>
+<code>partykit</code> (1.2-27)</td>
 <td style="text-align: left;">
 <code>patchwork</code> (1.3.2)</td>
 </tr>
@@ -552,37 +569,37 @@ This work is licensed under <a href="http://creativecommons.org/licenses/by-sa/4
 <td style="text-align: left;">
 <code>probably</code> (1.2.0)</td>
 <td style="text-align: left;">
-<code>purrr</code> (1.2.1)</td>
+<code>purrr</code> (1.2.2)</td>
 <td style="text-align: left;">
 <code>QSARdata</code> (1.3)</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">
-<code>ragg</code> (1.5.0)</td>
+<code>ragg</code> (1.5.2)</td>
 <td style="text-align: left;">
-<code>ranger</code> (0.17.0)</td>
+<code>ranger</code> (0.18.0)</td>
 <td style="text-align: left;">
 <code>RANN</code> (2.6.2)</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">
-<code>recipes</code> (1.3.1)</td>
+<code>recipes</code> (1.3.2)</td>
 <td style="text-align: left;">
-<code>rmarkdown</code> (2.30)</td>
+<code>rmarkdown</code> (2.31.1)</td>
 <td style="text-align: left;">
-<code>rsample</code> (1.3.1)</td>
+<code>rsample</code> (1.3.2)</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">
 <code>RSpectra</code> (0.16-2)</td>
 <td style="text-align: left;">
-<code>rstudioapi</code> (0.17.1)</td>
+<code>rstudioapi</code> (0.18.0)</td>
 <td style="text-align: left;">
-<code>rules</code> (1.0.2)</td>
+<code>rules</code> (1.0.3)</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">
-<code>sf</code> (1.0-24)</td>
+<code>sf</code> (1.1-1)</td>
 <td style="text-align: left;">
 <code>sfd</code> (0.1.0)</td>
 <td style="text-align: left;">
@@ -598,7 +615,7 @@ This work is licensed under <a href="http://creativecommons.org/licenses/by-sa/4
 </tr>
 <tr class="odd">
 <td style="text-align: left;">
-<code>tidymodels</code> (1.4.1)</td>
+<code>tidymodels</code> (1.5.0)</td>
 <td style="text-align: left;">
 <code>tidyposterior</code> (1.0.2)</td>
 <td style="text-align: left;">
@@ -608,29 +625,29 @@ This work is licensed under <a href="http://creativecommons.org/licenses/by-sa/4
 <td style="text-align: left;">
 <code>tidysdm</code> (1.0.4)</td>
 <td style="text-align: left;">
-<code>torch</code> (0.16.3)</td>
+<code>torch</code> (0.17.0)</td>
 <td style="text-align: left;">
-<code>tune</code> (2.0.1)</td>
+<code>tune</code> (2.1.0.9000)</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">
-<code>usethis</code> (3.2.1)</td>
+<code>usethis</code> (3.2.1.9000)</td>
 <td style="text-align: left;">
 <code>viridis</code> (0.6.5)</td>
 <td style="text-align: left;">
-<code>workflows</code> (1.3.0)</td>
+<code>workflows</code> (1.3.0.9000)</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">
 <code>workflowsets</code> (1.1.1)</td>
 <td style="text-align: left;">
-<code>xgboost</code> (3.1.3.1)</td>
+<code>xgboost</code> (3.2.1.1)</td>
 <td style="text-align: left;">
-<code>xml2</code> (1.5.1)</td>
+<code>xml2</code> (1.5.2)</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">
-<code>yardstick</code> (1.3.2)</td>
+<code>yardstick</code> (1.4.0)</td>
 <td style="text-align: left;"></td>
 <td style="text-align: left;"></td>
 </tr>

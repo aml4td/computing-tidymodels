@@ -2,10 +2,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.8.26">
+<meta name="generator" content="quarto-1.9.36">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <title>10&nbsp; Measuring Performance with Resampling – Tidymodels Computing Supplement</title>
 <style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -65,15 +68,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../chapters/overfitting.html" rel="prev">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-845c23b38eaddc0f92fda52bfe77a8c8.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-7c647e586662db48eb79d76466712003.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-cca14224007e87b3f770119fd179b404.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <link href="../site_libs/quarto-contrib/fontawesome6-1.2.0/all.min.css" rel="stylesheet">
 <link href="../site_libs/quarto-contrib/fontawesome6-1.2.0/latex-fontsize.css" rel="stylesheet"><script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
@@ -101,7 +103,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-submit-button-title": "Submit",
     "search-label": "Search"
   }
-}</script><script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script><script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script><script type="text/javascript">
+}</script><script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script><script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script><script type="text/javascript">
 const typesetMath = (el) => {
   if (window.MathJax) {
     // MathJax Typeset
@@ -349,6 +351,18 @@ window.Quarto = {
  <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Complex Nonlinear Boundaries</span></span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/cls-neural-nets.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Neural Network Classifiers</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../chapters/cls-trees.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">Classification using Trees and Rules</span></span></a>
+  </div>
+</li>
       </ul>
 </li>
         <li class="sidebar-item sidebar-item-section">
@@ -416,16 +430,17 @@ window.Quarto = {
 <section id="requirements" class="level2" data-number="10.1"><h2 data-number="10.1" class="anchored" data-anchor-id="requirements">
 <span class="header-section-number">10.1</span> Requirements</h2>
 <p>We will use the <code>ames</code>, <code>concrete</code>, and <code>Chicago</code> data sets from the <span class="pkg"><a href="https://cran.r-project.org/package=modeldata">modeldata</a></span> package (which is automatically loaded below) to illustrate some of the methods. The other data, <code>Orthodont</code>, can be obtained in the <span class="pkg"><a href="https://cran.r-project.org/package=nlme">nlme</a></span> package which comes with each R installation.</p>
-<p>You’ll need 8 packages (<span class="pkg"><a href="https://cran.r-project.org/package=Cubist">Cubist</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=future.mirai">future.mirai</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=parallelly">parallelly</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=probably">probably</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=rules">rules</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=spatialsample">spatialsample</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=tidymodels">tidymodels</a></span>, and <span class="pkg"><a href="https://cran.r-project.org/package=tidysdm">tidysdm</a></span>) for this chapter. You can install them via:</p>
+<p>You’ll need 8 packages (<span class="pkg"><a href="https://cran.r-project.org/package=Cubist">Cubist</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=mirai">mirai</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=parallelly">parallelly</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=probably">probably</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=rules">rules</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=spatialsample">spatialsample</a></span>, <span class="pkg"><a href="https://cran.r-project.org/package=tidymodels">tidymodels</a></span>, and <span class="pkg"><a href="https://cran.r-project.org/package=tidysdm">tidysdm</a></span>) for this chapter. You can install them via:</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">req_pkg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Cubist"</span>, <span class="st">"future.mirai"</span>, <span class="st">"parallelly"</span>, <span class="st">"probably"</span>, <span class="st">"rules"</span>, <span class="st">"spatialsample"</span>, </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># fmt: skip</span></span>
+<span><span class="va">req_pkg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Cubist"</span>, <span class="st">"mirai"</span>, <span class="st">"parallelly"</span>, <span class="st">"probably"</span>, <span class="st">"rules"</span>, <span class="st">"spatialsample"</span>, </span>
 <span>             <span class="st">"tidymodels"</span>, <span class="st">"tidysdm"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Check to see if they are installed: </span></span>
+<span><span class="co"># Check to see if they are installed:</span></span>
 <span><span class="va">pkg_installed</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">vapply</a></span><span class="op">(</span><span class="va">req_pkg</span>, <span class="fu">rlang</span><span class="fu">::</span><span class="va"><a href="https://rlang.r-lib.org/reference/is_installed.html">is_installed</a></span>, <span class="fu"><a href="https://rdrr.io/r/base/logical.html">logical</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Install missing packages: </span></span>
-<span><span class="kw">if</span> <span class="op">(</span> <span class="fu"><a href="https://rdrr.io/r/base/any.html">any</a></span><span class="op">(</span><span class="op">!</span><span class="va">pkg_installed</span><span class="op">)</span> <span class="op">)</span> <span class="op">{</span></span>
+<span><span class="co"># Install missing packages:</span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/any.html">any</a></span><span class="op">(</span><span class="op">!</span><span class="va">pkg_installed</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">install_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">pkg_installed</span><span class="op">)</span><span class="op">[</span><span class="op">!</span><span class="va">pkg_installed</span><span class="op">]</span></span>
 <span>  <span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html">pak</a></span><span class="op">(</span><span class="va">install_list</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -469,7 +484,7 @@ window.Quarto = {
 <p>The object has two additional classes <code>bootstraps</code> and <code>rset</code> that differentiate it from a standard tibble.</p>
 <p>This collection of splits is called an <code>"rset"</code> and has specific rules. The object above is defined as a set of five bootstrap samples. If we delete a row, it breaks that definition, and the class drops back down to a basic tibble:</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">concrete_rs</span><span class="op">[</span><span class="op">-</span><span class="fl">1</span>,<span class="op">]</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">concrete_rs</span><span class="op">[</span><span class="op">-</span><span class="fl">1</span>, <span class="op">]</span></span>
 <span><span class="co">#&gt; # A tibble: 4 × 2</span></span>
 <span><span class="co">#&gt;   splits             id        </span></span>
 <span><span class="co">#&gt;   &lt;list&gt;             &lt;chr&gt;     </span></span>
@@ -494,7 +509,7 @@ window.Quarto = {
 <span><span class="co">#&gt; &lt;Analysis/Assess/Total&gt;</span></span>
 <span><span class="co">#&gt; &lt;1030/355/1030&gt;</span></span>
 <span></span>
-<span><span class="fu">analysis</span><span class="op">(</span><span class="va">ex_split</span><span class="op">)</span>   <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/dim.html">dim</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="fu">analysis</span><span class="op">(</span><span class="va">ex_split</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/dim.html">dim</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 1030    9</span></span>
 <span><span class="fu">assessment</span><span class="op">(</span><span class="va">ex_split</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/dim.html">dim</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 355   9</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -555,9 +570,9 @@ window.Quarto = {
 <span><span class="co">#&gt; 2 &lt;split [741/83]&gt; Resample2</span></span>
 <span><span class="co">#&gt; 3 &lt;split [741/83]&gt; Resample3</span></span>
 <span></span>
-<span><span class="co"># or </span></span>
+<span><span class="co"># or</span></span>
 <span></span>
-<span><span class="fu">mc_cv</span><span class="op">(</span><span class="va">concrete_tr</span>, times <span class="op">=</span> <span class="fl">2</span>, prop <span class="op">=</span> <span class="fl">2</span> <span class="op">/</span>  <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="fu">mc_cv</span><span class="op">(</span><span class="va">concrete_tr</span>, times <span class="op">=</span> <span class="fl">2</span>, prop <span class="op">=</span> <span class="fl">2</span> <span class="op">/</span> <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # Monte Carlo cross-validation (0.67/0.33) with 2 resamples </span></span>
 <span><span class="co">#&gt; # A tibble: 2 × 2</span></span>
 <span><span class="co">#&gt;   splits            id       </span></span>
@@ -640,21 +655,21 @@ window.Quarto = {
 <p>The data set has a column with the <code>Date</code> class. We can use this to partition the data in case there is an unequal number of data points in our 30-day period. The <code>sliding_period()</code> can be used with a date or date/time input, while <code>sliding_index()</code> can be used for equally spaced data.</p>
 <p>Let’s use <code>sliding_period()</code> for this example, annotate the argument logic in comments, and then compute a few columns for the start/stop dates for the analysis and assessment sets (for illustration):</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">chi_rs</span> <span class="op">&lt;-</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">chi_rs</span> <span class="op">&lt;-</span></span>
 <span>  <span class="fu">sliding_period</span><span class="op">(</span></span>
 <span>    <span class="va">chi_tr</span>,</span>
 <span>    index <span class="op">=</span> <span class="va">date</span>,</span>
-<span>    period <span class="op">=</span> <span class="st">"day"</span>,   <span class="co"># Could be "year", "quarter", "month", "week", or "day"</span></span>
-<span>    lookback <span class="op">=</span> <span class="fl">5000</span>,  <span class="co"># 5000 days in the analysis sets</span></span>
+<span>    period <span class="op">=</span> <span class="st">"day"</span>, <span class="co"># Could be "year", "quarter", "month", "week", or "day"</span></span>
+<span>    lookback <span class="op">=</span> <span class="fl">5000</span>, <span class="co"># 5000 days in the analysis sets</span></span>
 <span>    assess_start <span class="op">=</span> <span class="fl">1</span>, <span class="co"># Start the assessment set 1 day after analysis set</span></span>
 <span>    assess_stop <span class="op">=</span> <span class="fl">30</span>, <span class="co"># Stop the assessment set 20 days after analysis set</span></span>
-<span>    step <span class="op">=</span> <span class="fl">30</span>         <span class="co"># Jump ahead 30 days between resamples; no assessment overlap in assessments</span></span>
-<span>  <span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    step <span class="op">=</span> <span class="fl">30</span> <span class="co"># Jump ahead 30 days between resamples; no assessment overlap in assessments</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">mutate</span><span class="op">(</span></span>
-<span>    fit_start <span class="op">=</span>  <span class="fu">map_vec</span><span class="op">(</span><span class="va">splits</span>, <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span><span class="op">(</span><span class="fu">analysis</span><span class="op">(</span><span class="va">.x</span><span class="op">)</span><span class="op">$</span><span class="va">date</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>    fit_stop <span class="op">=</span>   <span class="fu">map_vec</span><span class="op">(</span><span class="va">splits</span>, <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="fu">analysis</span><span class="op">(</span><span class="va">.x</span><span class="op">)</span><span class="op">$</span><span class="va">date</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    fit_start <span class="op">=</span> <span class="fu">map_vec</span><span class="op">(</span><span class="va">splits</span>, <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span><span class="op">(</span><span class="fu">analysis</span><span class="op">(</span><span class="va">.x</span><span class="op">)</span><span class="op">$</span><span class="va">date</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    fit_stop <span class="op">=</span> <span class="fu">map_vec</span><span class="op">(</span><span class="va">splits</span>, <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="fu">analysis</span><span class="op">(</span><span class="va">.x</span><span class="op">)</span><span class="op">$</span><span class="va">date</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>    perf_start <span class="op">=</span> <span class="fu">map_vec</span><span class="op">(</span><span class="va">splits</span>, <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span><span class="op">(</span><span class="fu">assessment</span><span class="op">(</span><span class="va">.x</span><span class="op">)</span><span class="op">$</span><span class="va">date</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>    perf_stop <span class="op">=</span>  <span class="fu">map_vec</span><span class="op">(</span><span class="va">splits</span>, <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="fu">assessment</span><span class="op">(</span><span class="va">.x</span><span class="op">)</span><span class="op">$</span><span class="va">date</span><span class="op">)</span><span class="op">)</span></span>
+<span>    perf_stop <span class="op">=</span> <span class="fu">map_vec</span><span class="op">(</span><span class="va">splits</span>, <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="fu">assessment</span><span class="op">(</span><span class="va">.x</span><span class="op">)</span><span class="op">$</span><span class="va">date</span><span class="op">)</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="va">chi_rs</span></span>
 <span><span class="co">#&gt; # Sliding period resampling </span></span>
@@ -673,10 +688,18 @@ window.Quarto = {
 <p>For the second resample, the analysis and assessment sets both start 30 days later.</p>
 <p>Here is a visualization of the date periods defined by the resampling scheme that illustrates why the method is sometimes called rolling origin forecast resampling. The figure also shows that the assessment sets are very small compared to the analysis sets.</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">chi_rs</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu">ggplot</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>y <span class="op">=</span> <span class="va">id</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> </span>
-<span>  <span class="fu">geom_segment</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">fit_start</span>,  xend <span class="op">=</span> <span class="va">fit_stop</span>,  yend <span class="op">=</span> <span class="va">id</span><span class="op">)</span>, col <span class="op">=</span> <span class="st">"grey"</span>, linewidth <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">geom_segment</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">perf_start</span>, xend <span class="op">=</span> <span class="va">perf_stop</span>, yend <span class="op">=</span> <span class="va">id</span><span class="op">)</span>, col <span class="op">=</span> <span class="st">"red"</span>, linewidth <span class="op">=</span> <span class="fl">3</span><span class="op">)</span> <span class="op">+</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">chi_rs</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">ggplot</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>y <span class="op">=</span> <span class="va">id</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">geom_segment</span><span class="op">(</span></span>
+<span>    <span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">fit_start</span>, xend <span class="op">=</span> <span class="va">fit_stop</span>, yend <span class="op">=</span> <span class="va">id</span><span class="op">)</span>,</span>
+<span>    col <span class="op">=</span> <span class="st">"grey"</span>,</span>
+<span>    linewidth <span class="op">=</span> <span class="fl">1</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">geom_segment</span><span class="op">(</span></span>
+<span>    <span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">perf_start</span>, xend <span class="op">=</span> <span class="va">perf_stop</span>, yend <span class="op">=</span> <span class="va">id</span><span class="op">)</span>,</span>
+<span>    col <span class="op">=</span> <span class="st">"red"</span>,</span>
+<span>    linewidth <span class="op">=</span> <span class="fl">3</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">labs</span><span class="op">(</span>y <span class="op">=</span> <span class="cn">NULL</span>, x <span class="op">=</span> <span class="st">"Date"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
@@ -687,22 +710,22 @@ window.Quarto = {
 </div>
 <p>One variation of this approach is to cumulately increase the analysis set by keeping the starting date the same (inside of sliding/rolling). For this, we can make the “lookback” infinite but use the <code>skip</code> argument to remove the large number of resamples that contain fewer than 5,000 days in the analysis sets:</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">chi_rs</span> <span class="op">&lt;-</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">chi_rs</span> <span class="op">&lt;-</span></span>
 <span>  <span class="fu">sliding_period</span><span class="op">(</span></span>
 <span>    <span class="va">chi_tr</span>,</span>
 <span>    index <span class="op">=</span> <span class="va">date</span>,</span>
-<span>    period <span class="op">=</span> <span class="st">"day"</span>, </span>
-<span>    lookback <span class="op">=</span> <span class="cn">Inf</span>,   <span class="co"># Use all data before assessment</span></span>
+<span>    period <span class="op">=</span> <span class="st">"day"</span>,</span>
+<span>    lookback <span class="op">=</span> <span class="cn">Inf</span>, <span class="co"># Use all data before assessment</span></span>
 <span>    assess_start <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>    assess_stop <span class="op">=</span> <span class="fl">30</span>,</span>
 <span>    step <span class="op">=</span> <span class="fl">30</span>,</span>
-<span>    skip <span class="op">=</span> <span class="fl">5000</span>       <span class="co"># Drop first 5000 results so assessment starts at same time </span></span>
-<span>  <span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    skip <span class="op">=</span> <span class="fl">5000</span> <span class="co"># Drop first 5000 results so assessment starts at same time</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">mutate</span><span class="op">(</span></span>
-<span>    fit_start <span class="op">=</span>  <span class="fu">map_vec</span><span class="op">(</span><span class="va">splits</span>, <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span><span class="op">(</span><span class="fu">analysis</span><span class="op">(</span><span class="va">.x</span><span class="op">)</span><span class="op">$</span><span class="va">date</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>    fit_stop <span class="op">=</span>   <span class="fu">map_vec</span><span class="op">(</span><span class="va">splits</span>, <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="fu">analysis</span><span class="op">(</span><span class="va">.x</span><span class="op">)</span><span class="op">$</span><span class="va">date</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    fit_start <span class="op">=</span> <span class="fu">map_vec</span><span class="op">(</span><span class="va">splits</span>, <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span><span class="op">(</span><span class="fu">analysis</span><span class="op">(</span><span class="va">.x</span><span class="op">)</span><span class="op">$</span><span class="va">date</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    fit_stop <span class="op">=</span> <span class="fu">map_vec</span><span class="op">(</span><span class="va">splits</span>, <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="fu">analysis</span><span class="op">(</span><span class="va">.x</span><span class="op">)</span><span class="op">$</span><span class="va">date</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>    perf_start <span class="op">=</span> <span class="fu">map_vec</span><span class="op">(</span><span class="va">splits</span>, <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span><span class="op">(</span><span class="fu">assessment</span><span class="op">(</span><span class="va">.x</span><span class="op">)</span><span class="op">$</span><span class="va">date</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>    perf_stop <span class="op">=</span>  <span class="fu">map_vec</span><span class="op">(</span><span class="va">splits</span>, <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="fu">assessment</span><span class="op">(</span><span class="va">.x</span><span class="op">)</span><span class="op">$</span><span class="va">date</span><span class="op">)</span><span class="op">)</span></span>
+<span>    perf_stop <span class="op">=</span> <span class="fu">map_vec</span><span class="op">(</span><span class="va">splits</span>, <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="fu">assessment</span><span class="op">(</span><span class="va">.x</span><span class="op">)</span><span class="op">$</span><span class="va">date</span><span class="op">)</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="va">chi_rs</span></span>
 <span><span class="co">#&gt; # Sliding period resampling </span></span>
@@ -719,11 +742,19 @@ window.Quarto = {
 </div>
 <p>Note that the values in the <code>fit_stop</code> column are the same. Visually:</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">chi_rs</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu">ggplot</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>y <span class="op">=</span> <span class="va">id</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> </span>
-<span>  <span class="fu">geom_segment</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">fit_start</span>,  xend <span class="op">=</span> <span class="va">fit_stop</span>,  yend <span class="op">=</span> <span class="va">id</span><span class="op">)</span>, col <span class="op">=</span> <span class="st">"grey"</span>, linewidth <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">geom_segment</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">perf_start</span>, xend <span class="op">=</span> <span class="va">perf_stop</span>, yend <span class="op">=</span> <span class="va">id</span><span class="op">)</span>, col <span class="op">=</span> <span class="st">"red"</span>, linewidth <span class="op">=</span> <span class="fl">3</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">labs</span><span class="op">(</span>y <span class="op">=</span> <span class="cn">NULL</span>, x <span class="op">=</span> <span class="st">"Date"</span><span class="op">)</span> </span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">chi_rs</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">ggplot</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>y <span class="op">=</span> <span class="va">id</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">geom_segment</span><span class="op">(</span></span>
+<span>    <span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">fit_start</span>, xend <span class="op">=</span> <span class="va">fit_stop</span>, yend <span class="op">=</span> <span class="va">id</span><span class="op">)</span>,</span>
+<span>    col <span class="op">=</span> <span class="st">"grey"</span>,</span>
+<span>    linewidth <span class="op">=</span> <span class="fl">1</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">geom_segment</span><span class="op">(</span></span>
+<span>    <span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">perf_start</span>, xend <span class="op">=</span> <span class="va">perf_stop</span>, yend <span class="op">=</span> <span class="va">id</span><span class="op">)</span>,</span>
+<span>    col <span class="op">=</span> <span class="st">"red"</span>,</span>
+<span>    linewidth <span class="op">=</span> <span class="fl">3</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">labs</span><span class="op">(</span>y <span class="op">=</span> <span class="cn">NULL</span>, x <span class="op">=</span> <span class="st">"Date"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure"><p><img src="resampling_files/figure-html/cumulative-analysis-1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:80.0%"></p>
@@ -748,13 +779,14 @@ window.Quarto = {
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">318</span><span class="op">)</span></span>
 <span><span class="va">ames_block_buff_split</span> <span class="op">&lt;-</span></span>
 <span>  <span class="fu"><a href="https://evolecolgroup.github.io/tidysdm/reference/spatial_initial_split.html">spatial_initial_split</a></span><span class="op">(</span></span>
-<span>    <span class="va">ames_sf</span>, </span>
-<span>    prop <span class="op">=</span> <span class="fl">0.2</span>, </span>
+<span>    <span class="va">ames_sf</span>,</span>
+<span>    prop <span class="op">=</span> <span class="fl">0.2</span>,</span>
 <span>    strategy <span class="op">=</span> <span class="va">spatial_block_cv</span>,</span>
 <span>    method <span class="op">=</span> <span class="st">"continuous"</span>,</span>
-<span>    n <span class="op">=</span> <span class="fl">25</span>, </span>
+<span>    n <span class="op">=</span> <span class="fl">25</span>,</span>
 <span>    square <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>    buffer <span class="op">=</span> <span class="fl">250</span><span class="op">)</span></span>
+<span>    buffer <span class="op">=</span> <span class="fl">250</span></span>
+<span>  <span class="op">)</span></span>
 <span></span>
 <span><span class="va">ames_tr</span> <span class="op">&lt;-</span> <span class="fu">training</span><span class="op">(</span><span class="va">ames_block_buff_split</span><span class="op">)</span></span>
 <span><span class="va">ames_te</span> <span class="op">&lt;-</span> <span class="fu">testing</span><span class="op">(</span><span class="va">ames_block_buff_split</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -764,12 +796,13 @@ window.Quarto = {
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">652</span><span class="op">)</span></span>
 <span><span class="va">ames_rs</span> <span class="op">&lt;-</span></span>
 <span>  <span class="fu"><a href="https://spatialsample.tidymodels.org/reference/spatial_block_cv.html">spatial_block_cv</a></span><span class="op">(</span></span>
-<span>    <span class="va">ames_tr</span>, </span>
+<span>    <span class="va">ames_tr</span>,</span>
 <span>    v <span class="op">=</span> <span class="fl">10</span>,</span>
 <span>    method <span class="op">=</span> <span class="st">"continuous"</span>,</span>
-<span>    n <span class="op">=</span> <span class="fl">25</span>, </span>
+<span>    n <span class="op">=</span> <span class="fl">25</span>,</span>
 <span>    square <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>    buffer <span class="op">=</span> <span class="fl">250</span><span class="op">)</span></span>
+<span>    buffer <span class="op">=</span> <span class="fl">250</span></span>
+<span>  <span class="op">)</span></span>
 <span><span class="va">ames_rs</span></span>
 <span><span class="co">#&gt; #  10-fold spatial block cross-validation </span></span>
 <span><span class="co">#&gt; # A tibble: 10 × 2</span></span>
@@ -819,14 +852,16 @@ window.Quarto = {
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb25"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://vctrs.r-lib.org/">vctrs</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Subjects in the training set: </span></span>
+<span><span class="co"># Subjects in the training set:</span></span>
 <span><span class="fu"><a href="https://vctrs.r-lib.org/reference/vec_unique.html">vec_unique_count</a></span><span class="op">(</span><span class="va">orth_tr</span><span class="op">$</span><span class="va">Subject</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 18</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">714</span><span class="op">)</span></span>
-<span><span class="va">orth_rs</span> <span class="op">&lt;-</span> </span>
-<span>  <span class="fu">group_vfold_cv</span><span class="op">(</span><span class="va">orth_tr</span>, group <span class="op">=</span> <span class="va">Subject</span>, v <span class="op">=</span> <span class="fl">10</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu">mutate</span><span class="op">(</span>num_subjects <span class="op">=</span> <span class="fu">map_int</span><span class="op">(</span><span class="va">splits</span>, <span class="op">~</span> <span class="fu"><a href="https://vctrs.r-lib.org/reference/vec_unique.html">vec_unique_count</a></span><span class="op">(</span><span class="fu"><a href="https://rsample.tidymodels.org/reference/as.data.frame.rsplit.html">assessment</a></span><span class="op">(</span><span class="va">.x</span><span class="op">)</span><span class="op">$</span><span class="va">Subject</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">orth_rs</span> <span class="op">&lt;-</span></span>
+<span>  <span class="fu">group_vfold_cv</span><span class="op">(</span><span class="va">orth_tr</span>, group <span class="op">=</span> <span class="va">Subject</span>, v <span class="op">=</span> <span class="fl">10</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">mutate</span><span class="op">(</span></span>
+<span>    num_subjects <span class="op">=</span> <span class="fu">map_int</span><span class="op">(</span><span class="va">splits</span>, <span class="op">~</span> <span class="fu"><a href="https://vctrs.r-lib.org/reference/vec_unique.html">vec_unique_count</a></span><span class="op">(</span><span class="fu"><a href="https://rsample.tidymodels.org/reference/as.data.frame.rsplit.html">assessment</a></span><span class="op">(</span><span class="va">.x</span><span class="op">)</span><span class="op">$</span><span class="va">Subject</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
 <span></span>
 <span><span class="va">orth_rs</span></span>
 <span><span class="co">#&gt; # Group 10-fold cross-validation </span></span>
@@ -872,7 +907,11 @@ window.Quarto = {
 <p>From here, we can run <code>fit_resamples()</code>. Note that the Cubist model does not use any random numbers. If it did, we would probably want to set the random number seed before using <code>fit_resamples()</code>.</p>
 <p>Our code:</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb28"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">concrete_res</span> <span class="op">&lt;-</span> <span class="fu">fit_resamples</span><span class="op">(</span><span class="va">rules_spec</span>, <span class="va">compressive_strength</span> <span class="op">~</span> <span class="va">.</span>, resamples <span class="op">=</span> <span class="va">concrete_rs</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb28"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">concrete_res</span> <span class="op">&lt;-</span> <span class="fu">fit_resamples</span><span class="op">(</span></span>
+<span>  <span class="va">rules_spec</span>,</span>
+<span>  <span class="va">compressive_strength</span> <span class="op">~</span> <span class="va">.</span>,</span>
+<span>  resamples <span class="op">=</span> <span class="va">concrete_rs</span></span>
+<span><span class="op">)</span></span>
 <span><span class="va">concrete_res</span></span>
 <span><span class="co">#&gt; # Resampling results</span></span>
 <span><span class="co">#&gt; # 10-fold cross-validation </span></span>
@@ -894,8 +933,8 @@ window.Quarto = {
 <span><span class="co">#&gt; # A tibble: 2 × 6</span></span>
 <span><span class="co">#&gt;   .metric .estimator   mean     n std_err .config        </span></span>
 <span><span class="co">#&gt;   &lt;chr&gt;   &lt;chr&gt;       &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;          </span></span>
-<span><span class="co">#&gt; 1 rmse    standard   6.504     10 0.2386  pre0_mod0_post0</span></span>
-<span><span class="co">#&gt; 2 rsq     standard   0.8517    10 0.01168 pre0_mod0_post0</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span><span class="co">#&gt; 1 rmse    standard   6.503     10 0.2396  pre0_mod0_post0</span></span>
+<span><span class="co">#&gt; 2 rsq     standard   0.8517    10 0.01170 pre0_mod0_post0</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Note the <code>n</code> and <code>std_err</code> columns. To get the per-resample estimates:</p>
 <div class="cell" data-layout-align="center">
@@ -930,11 +969,10 @@ window.Quarto = {
 <span><span class="fu">parallelly</span><span class="fu">::</span><span class="fu"><a href="https://parallelly.futureverse.org/reference/availableCores.html">availableCores</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://future.futureverse.org/reference/plan.html">plan</a></span><span class="op">(</span><span class="va">multisession</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>Alternatively, the more recent mirai “engine” for parallel processing can also be used for additional efficiency.</p>
+<p>Alternatively, the more recent <span class="pkg"><a href="https://cran.r-project.org/package=mirai">mirai</a></span> package for parallel processing can also be used for additional efficiency.</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb32"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://future.mirai.futureverse.org">future.mirai</a></span><span class="op">)</span></span>
-<span><span class="co">#&gt; Loading required package: future</span></span>
-<span><span class="fu"><a href="https://future.futureverse.org/reference/plan.html">plan</a></span><span class="op">(</span><span class="va">mirai_multisession</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb32"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://mirai.r-lib.org">mirai</a></span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://mirai.r-lib.org/reference/daemons.html">daemons</a></span><span class="op">(</span><span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html">detectCores</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>This will generally increase the efficiency of the resampling process.</p>
 </section><section id="sec-function-arguments" class="level3" data-number="10.11.2"><h3 data-number="10.11.2" class="anchored" data-anchor-id="sec-function-arguments">
@@ -977,10 +1015,10 @@ window.Quarto = {
 <span><span class="co">#&gt; # A tibble: 4 × 6</span></span>
 <span><span class="co">#&gt;   .metric .estimator   mean     n  std_err .config        </span></span>
 <span><span class="co">#&gt;   &lt;chr&gt;   &lt;chr&gt;       &lt;dbl&gt; &lt;int&gt;    &lt;dbl&gt; &lt;chr&gt;          </span></span>
-<span><span class="co">#&gt; 1 ccc     standard   0.9198    10 0.006739 pre0_mod0_post0</span></span>
-<span><span class="co">#&gt; 2 mae     standard   4.630     10 0.1616   pre0_mod0_post0</span></span>
-<span><span class="co">#&gt; 3 rmse    standard   6.504     10 0.2386   pre0_mod0_post0</span></span>
-<span><span class="co">#&gt; 4 rsq     standard   0.8517    10 0.01168  pre0_mod0_post0</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span><span class="co">#&gt; 1 ccc     standard   0.9198    10 0.006753 pre0_mod0_post0</span></span>
+<span><span class="co">#&gt; 2 mae     standard   4.621     10 0.1657   pre0_mod0_post0</span></span>
+<span><span class="co">#&gt; 3 rmse    standard   6.503     10 0.2396   pre0_mod0_post0</span></span>
+<span><span class="co">#&gt; 4 rsq     standard   0.8517    10 0.01170  pre0_mod0_post0</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Notice that there is now a column named <code>.predictions</code>. The number of rows in the tibbles matches the sizes of the assessment sets shown in the <code>splits</code> column; these are the held-out predicted values.</p>
 <p>To obtain these values, there are <code><a href="https://tune.tidymodels.org/reference/collect_predictions.html">collect_predictions()</a></code> and <code><a href="https://generics.r-lib.org/reference/augment.html">augment()</a></code>:</p>
@@ -1001,17 +1039,17 @@ window.Quarto = {
 <span><span class="co"># Same but merges them with the original training data</span></span>
 <span><span class="fu"><a href="https://generics.r-lib.org/reference/augment.html">augment</a></span><span class="op">(</span><span class="va">concrete_opts_res</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 772 × 11</span></span>
-<span><span class="co">#&gt;    .pred    .resid cement blast_furnace_slag fly_ash water superplasticizer</span></span>
-<span><span class="co">#&gt;    &lt;dbl&gt;     &lt;dbl&gt;  &lt;dbl&gt;              &lt;dbl&gt;   &lt;dbl&gt; &lt;dbl&gt;            &lt;dbl&gt;</span></span>
-<span><span class="co">#&gt; 1 45.54  -12.69     168                 42.1   163.8 121.8              5.7</span></span>
-<span><span class="co">#&gt; 2 54.82   -1.131    190                190       0   228                0  </span></span>
-<span><span class="co">#&gt; 3 32.77    0.07400  160                188     146   203               11  </span></span>
-<span><span class="co">#&gt; 4  9.688   2.862    190.3                0     125.2 166.6              9.9</span></span>
-<span><span class="co">#&gt; 5 47.36  -10.09     218.9                0     124.1 158.5             11.3</span></span>
-<span><span class="co">#&gt; 6 16.93   -9.526    168.9               42.2   124.3 158.3             10.8</span></span>
+<span><span class="co">#&gt;   compressive_strength  .pred    .resid cement blast_furnace_slag fly_ash water</span></span>
+<span><span class="co">#&gt;                  &lt;dbl&gt;  &lt;dbl&gt;     &lt;dbl&gt;  &lt;dbl&gt;              &lt;dbl&gt;   &lt;dbl&gt; &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1                32.85 45.54  -12.69     168                 42.1   163.8 121.8</span></span>
+<span><span class="co">#&gt; 2                53.69 54.82   -1.131    190                190       0   228  </span></span>
+<span><span class="co">#&gt; 3                32.84 32.77    0.07400  160                188     146   203  </span></span>
+<span><span class="co">#&gt; 4                12.55  9.688   2.862    190.3                0     125.2 166.6</span></span>
+<span><span class="co">#&gt; 5                37.27 47.36  -10.09     218.9                0     124.1 158.5</span></span>
+<span><span class="co">#&gt; 6                 7.4  16.93   -9.526    168.9               42.2   124.3 158.3</span></span>
 <span><span class="co">#&gt; # ℹ 766 more rows</span></span>
-<span><span class="co">#&gt; # ℹ 4 more variables: coarse_aggregate &lt;dbl&gt;, fine_aggregate &lt;dbl&gt;, age &lt;int&gt;,</span></span>
-<span><span class="co">#&gt; #   compressive_strength &lt;dbl&gt;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span><span class="co">#&gt; # ℹ 4 more variables: superplasticizer &lt;dbl&gt;, coarse_aggregate &lt;dbl&gt;,</span></span>
+<span><span class="co">#&gt; #   fine_aggregate &lt;dbl&gt;, age &lt;int&gt;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>From here, we can do exploratory data analysis to understand where our model can be improved.</p>
 <p>One other option: the <span class="pkg"><a href="https://cran.r-project.org/package=probably">probably</a></span> package has a simple interface for obtaining plots of the observed and predicted values (i.e., a regression “calibration” plot):</p>
@@ -1032,7 +1070,7 @@ window.Quarto = {
 <p>For example, a <code><a href="https://generics.r-lib.org/reference/tidy.html">tidy()</a></code> method for Cubist models will save information on the rules, the regression function for each rule, and various statistics. To get this, we need to pull the Cubist model out of the workflow and then run the tidy method on it. Here is an example of that:</p>
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb38"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">extract_rules</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">x</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="va">x</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="https://hardhat.tidymodels.org/reference/hardhat-extract.html">extract_fit_engine</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html">tidy</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -1043,10 +1081,12 @@ window.Quarto = {
 </div>
 <p>and pass it into <code>fit_resamples()</code>:</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb40"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">concrete_ext_res</span> <span class="op">&lt;-</span> <span class="fu">fit_resamples</span><span class="op">(</span><span class="va">rules_spec</span>,</span>
-<span>                                  <span class="va">compressive_strength</span> <span class="op">~</span> <span class="va">.</span>,</span>
-<span>                                  resamples <span class="op">=</span> <span class="va">concrete_rs</span>,</span>
-<span>                                  control <span class="op">=</span> <span class="va">ctrl</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb40"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">concrete_ext_res</span> <span class="op">&lt;-</span> <span class="fu">fit_resamples</span><span class="op">(</span></span>
+<span>  <span class="va">rules_spec</span>,</span>
+<span>  <span class="va">compressive_strength</span> <span class="op">~</span> <span class="va">.</span>,</span>
+<span>  resamples <span class="op">=</span> <span class="va">concrete_rs</span>,</span>
+<span>  control <span class="op">=</span> <span class="va">ctrl</span></span>
+<span><span class="op">)</span></span>
 <span><span class="va">concrete_ext_res</span></span>
 <span><span class="co">#&gt; # Resampling results</span></span>
 <span><span class="co">#&gt; # 10-fold cross-validation </span></span>
@@ -1092,8 +1132,8 @@ window.Quarto = {
 </div>
 <p>To “flatten out” these results, we’ll <code>unnest()</code> the column of extracted results:</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb43"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">rule_extract</span> <span class="op">&lt;-</span> </span>
-<span>  <span class="fu">collect_extracts</span><span class="op">(</span><span class="va">concrete_ext_res</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb43"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">rule_extract</span> <span class="op">&lt;-</span></span>
+<span>  <span class="fu">collect_extracts</span><span class="op">(</span><span class="va">concrete_ext_res</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">unnest</span><span class="op">(</span>col <span class="op">=</span> <span class="va">.extracts</span><span class="op">)</span></span>
 <span><span class="va">rule_extract</span></span>
 <span><span class="co">#&gt; # A tibble: 124 × 7</span></span>
@@ -1123,14 +1163,14 @@ window.Quarto = {
 <p>has 6 conditions.</p>
 <p>We can use a <code>mutate()</code> and a <code>map_int()</code> to pull out the frequency of terms included in the rules (captured by the <code>num_conditions</code> column).</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb46"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">conditions</span> <span class="op">&lt;-</span> </span>
-<span>  <span class="va">rule_extract</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu">mutate</span><span class="op">(</span>conditions <span class="op">=</span> <span class="fu">map_int</span><span class="op">(</span><span class="va">statistic</span>, <span class="op">~</span> <span class="va">.x</span><span class="op">$</span><span class="va">num_conditions</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb46"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">conditions</span> <span class="op">&lt;-</span></span>
+<span>  <span class="va">rule_extract</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">mutate</span><span class="op">(</span>conditions <span class="op">=</span> <span class="fu">map_int</span><span class="op">(</span><span class="va">statistic</span>, <span class="op">~</span> <span class="va">.x</span><span class="op">$</span><span class="va">num_conditions</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">select</span><span class="op">(</span><span class="va">id</span>, <span class="va">rule_num</span>, <span class="va">conditions</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Here is the distribution of the number of logical conditions that make up the rules:</p>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb47"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">conditions</span> <span class="op">|&gt;</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb47"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">conditions</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">count</span><span class="op">(</span><span class="va">conditions</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 6 × 2</span></span>
 <span><span class="co">#&gt;   conditions     n</span></span>

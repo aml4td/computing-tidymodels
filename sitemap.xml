@@ -6,78 +6,86 @@
   </url>
   <url>
     <loc>https://tidymodels.aml4td.org/chapters/news.html</loc>
-    <lastmod>2025-11-24T02:16:59.299Z</lastmod>
+    <lastmod>2026-05-22T11:17:12.544Z</lastmod>
   </url>
   <url>
     <loc>https://tidymodels.aml4td.org/chapters/contributing.html</loc>
-    <lastmod>2025-11-24T02:16:59.298Z</lastmod>
+    <lastmod>2026-05-22T11:19:06.698Z</lastmod>
   </url>
   <url>
     <loc>https://tidymodels.aml4td.org/chapters/introduction.html</loc>
-    <lastmod>2026-01-23T13:16:23.191Z</lastmod>
+    <lastmod>2026-05-22T11:19:06.854Z</lastmod>
   </url>
   <url>
     <loc>https://tidymodels.aml4td.org/chapters/whole-game.html</loc>
-    <lastmod>2026-01-23T13:16:23.881Z</lastmod>
+    <lastmod>2026-05-22T11:19:07.092Z</lastmod>
   </url>
   <url>
     <loc>https://tidymodels.aml4td.org/chapters/initial-data-splitting.html</loc>
-    <lastmod>2026-01-26T15:33:29.282Z</lastmod>
+    <lastmod>2026-05-22T11:19:06.818Z</lastmod>
   </url>
   <url>
     <loc>https://tidymodels.aml4td.org/chapters/missing-data.html</loc>
-    <lastmod>2026-01-26T15:33:29.283Z</lastmod>
+    <lastmod>2026-05-22T11:19:06.914Z</lastmod>
   </url>
   <url>
     <loc>https://tidymodels.aml4td.org/chapters/numeric-predictors.html</loc>
-    <lastmod>2026-01-26T15:33:29.283Z</lastmod>
+    <lastmod>2026-05-22T11:19:06.950Z</lastmod>
   </url>
   <url>
     <loc>https://tidymodels.aml4td.org/chapters/categorical-predictors.html</loc>
-    <lastmod>2026-01-26T15:33:29.258Z</lastmod>
+    <lastmod>2026-05-22T11:19:06.472Z</lastmod>
   </url>
   <url>
     <loc>https://tidymodels.aml4td.org/chapters/embeddings.html</loc>
-    <lastmod>2026-01-26T15:33:29.281Z</lastmod>
+    <lastmod>2026-05-22T11:19:06.726Z</lastmod>
   </url>
   <url>
     <loc>https://tidymodels.aml4td.org/chapters/interactions-nonlinear.html</loc>
-    <lastmod>2026-01-26T15:33:29.282Z</lastmod>
+    <lastmod>2026-05-22T11:19:06.844Z</lastmod>
   </url>
   <url>
     <loc>https://tidymodels.aml4td.org/chapters/overfitting.html</loc>
-    <lastmod>2026-01-26T15:33:29.283Z</lastmod>
+    <lastmod>2026-05-22T11:19:06.975Z</lastmod>
   </url>
   <url>
     <loc>https://tidymodels.aml4td.org/chapters/resampling.html</loc>
-    <lastmod>2026-01-26T15:33:29.283Z</lastmod>
+    <lastmod>2026-05-22T11:19:07.029Z</lastmod>
   </url>
   <url>
     <loc>https://tidymodels.aml4td.org/chapters/grid.html</loc>
-    <lastmod>2026-01-26T15:33:29.282Z</lastmod>
+    <lastmod>2026-05-22T11:19:06.791Z</lastmod>
   </url>
   <url>
     <loc>https://tidymodels.aml4td.org/chapters/iterative-search.html</loc>
-    <lastmod>2026-01-26T15:33:29.283Z</lastmod>
+    <lastmod>2026-05-22T11:19:06.887Z</lastmod>
   </url>
   <url>
     <loc>https://tidymodels.aml4td.org/chapters/feature-selection.html</loc>
-    <lastmod>2026-01-26T15:33:29.282Z</lastmod>
+    <lastmod>2026-05-22T11:19:06.765Z</lastmod>
   </url>
   <url>
     <loc>https://tidymodels.aml4td.org/chapters/comparing-models.html</loc>
-    <lastmod>2026-01-26T15:33:29.280Z</lastmod>
+    <lastmod>2026-05-22T11:19:06.689Z</lastmod>
   </url>
   <url>
     <loc>https://tidymodels.aml4td.org/chapters/cls-metrics.html</loc>
-    <lastmod>2026-01-26T15:33:29.280Z</lastmod>
+    <lastmod>2026-05-22T11:19:06.575Z</lastmod>
   </url>
   <url>
     <loc>https://tidymodels.aml4td.org/chapters/cls-linear.html</loc>
-    <lastmod>2026-01-26T16:12:49.055Z</lastmod>
+    <lastmod>2026-05-22T11:19:06.530Z</lastmod>
   </url>
   <url>
     <loc>https://tidymodels.aml4td.org/chapters/cls-nonlinear.html</loc>
-    <lastmod>2026-01-26T15:48:38.889Z</lastmod>
+    <lastmod>2026-05-22T11:19:06.620Z</lastmod>
+  </url>
+  <url>
+    <loc>https://tidymodels.aml4td.org/chapters/cls-neural-nets.html</loc>
+    <lastmod>2026-05-22T11:19:06.593Z</lastmod>
+  </url>
+  <url>
+    <loc>https://tidymodels.aml4td.org/chapters/cls-trees.html</loc>
+    <lastmod>2026-05-22T16:49:26.581Z</lastmod>
   </url>
 </urlset>
