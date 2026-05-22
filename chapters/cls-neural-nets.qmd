@@ -249,4 +249,4 @@ forest_mlp_res |>
 
 ## Foundational Models {#sec-cls-foundational}
 
-`r r_comp("cls-neural-nets.html#sec-cls-foundational")`
+`r back("cls-neural-nets.html#sec-cls-foundational")`
