@@ -9,7 +9,6 @@ knitr:
 ```{r}
 #| label: cls-tree-knitr-setup
 #| include: false
-
 knitr::opts_chunk$set(
   comment = "#>",
   collapse = TRUE,
@@ -50,7 +49,6 @@ You'll need `r length(req_pkg)` packages (`r req_pkg_fmt`) for this chapter:
 #| label: cls-trees-installs
 #| eval: false
 #| echo: true
-
 # fmt: skip
 req_pkg <- 
   c("aorsf", "bonsai", "evtree", "partykit", "rpart", "rules",
@@ -73,7 +71,6 @@ Let's load the meta package and manage some between-package function conflicts.
 #| results: hide
 #| message: false
 #| warning: false
-
 library(tidymodels)
 library(spatialsample)
 library(bonsai)
@@ -99,12 +96,10 @@ As before, we'll load the objects that were already computed for the forestation
 
 ```{r}
 #| label: data-load
-
 "https://raw.githubusercontent.com/aml4td/website/main/RData/forested_data.RData" |>
   url() |>
   load()
 ```
-
 
 ## Specific Tree-Based Models {#sec-cls-tree-models}
 
@@ -172,9 +167,9 @@ Using tidymodels, `r pkg(partykit)` is the default engine for `decision_tree()`.
 ```{r}
 #| label: rpart-tm-fit
 library(tidymodels)
-cart_fit <- 
-  decision_tree(cost_complexity = 0.001, min_n = 50) |> 
-  set_mode("classification") |> 
+cart_fit <-
+  decision_tree(cost_complexity = 0.001, min_n = 50) |>
+  set_mode("classification") |>
   fit(class ~ ., data = forested_train)
 cart_fit
 ```
@@ -222,13 +217,12 @@ For example:
 #| out-width: 70%
 #| fig-width: 6.25
 #| fig-height: 4
-
-c5_res <- 
-  decision_tree(engine = "C5.0", min_n = tune()) |> 
-  set_mode("classification") |> 
+c5_res <-
+  decision_tree(engine = "C5.0", min_n = tune()) |>
+  set_mode("classification") |>
   tune_grid(
-    class ~ ., 
-    resamples = forested_rs, 
+    class ~ .,
+    resamples = forested_rs,
     grid = tibble(min_n = 2:20)
   )
 
@@ -248,7 +242,6 @@ There is one limitation for this model:
 ```{r}
 #| label: cit-fit-fail
 #| error: true
-
 length(levels(forested_train$county))
 
 library(partykit)
@@ -263,32 +256,30 @@ To use this method via `r pkg(tidymodels)`, install and load the `r pkg(bonsai)`
 #| label: cit-fit
 library(bonsai)
 
-ctree_rec <- 
-  recipe(class ~ ., data = forested_train) |> 
+ctree_rec <-
+  recipe(class ~ ., data = forested_train) |>
   step_other(county, threshold = 0.025) #<- determined by trying a few values
 
-ctree_fit <- 
+ctree_fit <-
   workflow(
     ctree_rec,
     # Let's deliberately make a very shallow tree
     decision_tree(mode = "classification", engine = "partykit", min_n = 1500)
-  ) |> 
+  ) |>
   fit(forested_train)
 ctree_fit
 ```
 
 The `r pkg(partykit)` package has an excellent visualization tool
 
-
 ```{r}
 #| label: ctree-plot
 #| out-width: 100%
 #| fig-width: 12
 #| fig-height: 6
-
-ctree_fit |> 
-  extract_fit_engine() |> 
-  # Use an option to vertically offset the labels so that they 
+ctree_fit |>
+  extract_fit_engine() |>
+  # Use an option to vertically offset the labels so that they
   # do not overlap
   plot(ep_args = list(justmin = 15))
 ```
@@ -330,7 +321,6 @@ Visually:
 #| out-width: 100%
 #| fig-width: 12
 #| fig-height: 6
-
 plot(ga_tree, ep_args = list(justmin = 15))
 ```
 
@@ -352,8 +342,8 @@ obl_tree <- orsf(class ~ ., data = forested_train, n_tree = 1)
 
 # Via Tidymodels, also requires the bonsai package:
 set.seed(82)
-obl_tm_tree <- 
-  rand_forest(mode = "classification", engine = "aorsf", trees = 1) |> 
+obl_tm_tree <-
+  rand_forest(mode = "classification", engine = "aorsf", trees = 1) |>
   fit(class ~ ., data = forested_train)
 obl_tree
 ```
@@ -362,9 +352,9 @@ There is no interface for printing or plotting a single tree, although we can ch
 
 ```{r}
 #| label: obl-imp
-obl_tree |> 
-  orsf_vi() |> 
-  tibble::enframe() |> 
+obl_tree |>
+  orsf_vi() |>
+  tibble::enframe() |>
   print(n = 16)
 ```
 

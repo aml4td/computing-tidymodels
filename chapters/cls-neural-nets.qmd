@@ -9,7 +9,6 @@ knitr:
 ```{r}
 #| label: cls-nnet-knitr-setup
 #| include: false
-
 knitr::opts_chunk$set(
   comment = "#>",
   collapse = TRUE,
@@ -48,7 +47,6 @@ You'll need `r length(req_pkg)` packages (`r req_pkg_fmt`) for this chapter:
 #| label: cls-nnet-installs
 #| eval: false
 #| echo: true
-
 # fmt: skip
 req_pkg <- 
   c("bestNormalize", "brulee", "embed", "mirai", "nnet", "probably",
@@ -71,7 +69,6 @@ Let's load the meta package and manage some between-package function conflicts.
 #| results: hide
 #| message: false
 #| warning: false
-
 library(tidymodels)
 library(spatialsample)
 library(embed)
@@ -99,7 +96,6 @@ As before, we'll load the objects that were already computed for the forestation
 
 ```{r}
 #| label: data-load
-
 # "https://raw.githubusercontent.com/aml4td/website/main/RData/forested_data.RData" |>
 #   url() |>
 #   load()
@@ -146,7 +142,6 @@ Our model specification will tune numrous parameters:
 
 ```{r}
 #| label: mlp-spec
-
 mlp_spec <-
   mlp(
     hidden_units = tune(),
@@ -172,7 +167,6 @@ tidymodels is well-versed in each of these parameters and can default to sensibl
 
 ```{r}
 #| label: mlp-param
-
 mlp_param <-
   mlp_flow |>
   extract_parameter_set_dials() |>
@@ -196,7 +190,6 @@ A space-filling design is used to tune:
 ```{r}
 #| label: mlp-tune
 #| cache: true
-
 set.seed(872)
 forest_mlp_res <-
   mlp_flow |>
@@ -218,7 +211,6 @@ We can write some custom code to approximate what we would get from `autoplot()`
 #| out-width: 100%
 #| fig-width: 9
 #| fig-height: 3.5
-
 forest_mlp_res |>
   collect_metrics() |>
   filter(.metric == "brier_class") |>
@@ -243,7 +235,7 @@ forest_mlp_res |>
 
 `r back("cls-neural-nets.html#sec-cls-nnet")`
 
-## Special Tabular Network Models  {#sec-cls-tab-net}
+## Special Tabular Network Models {#sec-cls-tab-net}
 
 ### Batch Normalization {#sec-cls-batchnorm}
 
@@ -263,7 +255,6 @@ forest_mlp_res |>
 
 `r back("cls-neural-nets.html#sec-cls-masking")`
 
-## Foundational Models  {#sec-cls-foundational}
+## Foundational Models {#sec-cls-foundational}
 
 `r back("cls-neural-nets.html#sec-cls-foundational")`
-

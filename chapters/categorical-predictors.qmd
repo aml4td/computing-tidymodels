@@ -9,7 +9,6 @@ knitr:
 ```{r}
 #| label: categorical-predictors-knitr-setup
 #| include: false
-
 knitr::opts_chunk$set(
   comment = "#>",
   collapse = TRUE,
@@ -45,7 +44,6 @@ Like the previous chapter, we do most calculations with the `r pkg(recipes)` pac
 #| label: numeric-transformations-installs
 #| eval: false
 #| echo: true
-
 req_pkg <- c("embed", "text2vec", "textrecipes", "tidymodels", "rpart")
 
 # Check to see if they are installed:
@@ -65,7 +63,6 @@ Let's load the meta package and manage some between-package function conflicts.
 #| results: hide
 #| message: false
 #| warning: false
-
 library(tidymodels)
 tidymodels_prefer()
 theme_set(theme_bw())
@@ -77,7 +74,6 @@ The hotel rate data are used for most examples in the chapter. The original vers
 
 ```{r}
 #| label: hotel-setup
-
 data(hotel_rates, package = "modeldata")
 
 # Make the initial split
@@ -101,7 +97,6 @@ Base R's formula method, discussed previously in @sec-r-formulas, automatically 
 
 ```{r}
 #| label: base-r-indicators
-
 customer_types <-
   hotel_rate_train |>
   distinct(customer_type) |>
@@ -120,7 +115,6 @@ When the factor has missing values, the default behavior is _to remove the offen
 
 ```{r}
 #| label: base-r-indicators-missing-gone
-
 lvls <- levels(hotel_rate_train$customer_type)
 
 with_missing <-
@@ -138,7 +132,6 @@ A [family of functions](https://rdrr.io/r/stats/na.fail.html) can be used to dic
 
 ```{r}
 #| label: na-action
-
 options()$na.action
 ```
 
@@ -146,7 +139,6 @@ To keep the number of rows intact, you can set the global option to be `na.pass`
 
 ```{r}
 #| label: keep-na
-
 orig_options <- options()
 options(na.action = 'na.pass')
 
@@ -163,7 +155,6 @@ In R, the word "contrast" refers to the algorithm used to create different types
 
 ```{r}
 #| label: default-contrasts
-
 options()$contrast
 
 # with possible options:
@@ -178,7 +169,6 @@ We can also use a recipe to do this (with more functionality):
 
 ```{r}
 #| label: ind-rec
-
 ind_rec <-
   recipe(~customer_type, data = customer_types) |>
   step_dummy(all_factor_predictors()) |>
@@ -202,7 +192,6 @@ When we think the recipe or model will encounter new values of a factor predicto
 
 ```{r}
 #| label: novel-rec
-
 recipe(avg_price_per_room ~ customer_type, data = hotel_rate_train) |>
   step_novel(customer_type) |>
   prep() |>
@@ -221,7 +210,6 @@ We can also determine infrequently occurring categories (in the training set) an
 
 ```{r}
 #| label: other-rec
-
 length(levels(hotel_rate_train$agent))
 
 recipe(avg_price_per_room ~ agent, data = hotel_rate_train) |>
@@ -245,7 +233,6 @@ The recipe step is in the `r pkg(textrecipes)` package, so we must load it first
 
 ```{r}
 #| label: hashing-rec
-
 library(textrecipes)
 
 recipe(avg_price_per_room ~ agent, data = hotel_rate_train) |>
@@ -270,7 +257,6 @@ We'll use the "mixed" function^[For this function, we all need the `r pkg(lme4)`
 
 ```{r}
 #| label: mixed-encoding
-
 library(embed)
 
 encoded_agent_rec <-
@@ -288,7 +274,6 @@ To see the actual effect estimates, use the `tidy()` method:
 
 ```{r}
 #| label: tidy-mixed-encoding
-
 tidy(encoded_agent_rec, id = "effect")
 
 # The estimate for new agents:
@@ -300,7 +285,6 @@ When the recipe is applied to new data, the `agent` column is converted to a num
 
 ```{r}
 #| label: new-mixed-encoding
-
 bake(encoded_agent_rec, hotel_rate_test) |>
   bind_cols(hotel_rate_test |> select(original_col = agent))
 ```
@@ -317,7 +301,6 @@ For example:
 
 ```{r}
 #| label: collapse-encoding
-
 # Also needs the embed package loaded (and rpart installed)
 library(embed)
 
@@ -336,7 +319,6 @@ The step converts `r length(unique(collapse_agent_rec$steps[[1]]$results$agent$a
 
 ```{r}
 #| label: tidy-collapse-encoding
-
 tidy(collapse_agent_rec, id = "collapse")
 
 tidy(collapse_agent_rec, id = "collapse") |>
@@ -358,7 +340,6 @@ As reported in [the section on ordinal data](https://aml4td.org/chapters/categor
 
 ```{r}
 #| label: ordinal-poly
-
 quality_vals <- c('excellent', 'fair', 'good', 'typical', 'poor')
 quality <- tibble(quality = ordered(quality_vals, levels = quality_vals))
 str(quality)
@@ -373,7 +354,6 @@ We can convert the ordered factor to an unordered factor:
 
 ```{r}
 #| label: ordinal-unorder
-
 recipe(~quality, data = quality) |>
   step_unorder(quality) |>
   step_dummy(quality) |>
@@ -385,7 +365,6 @@ Another strategy is mapping the ordinal factor levels to a set of numeric values
 
 ```{r}
 #| label: ordinal-score
-
 convert_to_prime <- function(x) {
   primes <- c(2, 3, 7, 11, 13)
   primes[as.numeric(x)]

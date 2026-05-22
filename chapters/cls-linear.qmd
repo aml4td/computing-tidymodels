@@ -9,7 +9,6 @@ knitr:
 ```{r}
 #| label: cls-linear-knitr-setup
 #| include: false
-
 knitr::opts_chunk$set(
   comment = "#>",
   collapse = TRUE,
@@ -50,7 +49,6 @@ You'll need `r length(req_pkg)` packages (`r req_pkg_fmt`) for this chapter:
 #| label: cls-linear-installs
 #| eval: false
 #| echo: true
-
 # fmt: skip
 req_pkg <- 
   c("bestNormalize", "car", "DALEXtra", "embed", "glmnet", "mirai", 
@@ -73,7 +71,6 @@ Let's load the meta package and manage some between-package function conflicts.
 #| results: hide
 #| message: false
 #| warning: false
-
 library(tidymodels)
 library(spatialsample)
 library(embed)
@@ -96,7 +93,6 @@ The forestation data have already been split and resampled. The results are cont
 
 ```{r}
 #| label: data-load
-
 "https://raw.githubusercontent.com/aml4td/website/main/RData/forested_data.RData" |>
   url() |>
   load()
@@ -106,7 +102,6 @@ We have already precomputed some H-statistics for these data using a boosted tre
 
 ```{r}
 #| label: int-load
-
 "https://raw.githubusercontent.com/aml4td/website/main/RData/forested_interactions.RData" |>
   url() |>
   load()
@@ -118,7 +113,6 @@ The code for the exploratory data analysis plot is shown here. We'll need to tak
 #| label: vert-forest
 #| include: false
 #| cache: true
-
 vert_forest <-
   forested_train |>
   pivot_longer(
@@ -140,7 +134,6 @@ The first data plot shows the predictors by their _percentiles_, so we should co
 #| label: num-unique
 #| include: false
 #| cache: true
-
 num_unique <-
   vert_forest |>
   select(-class, -county) |>
@@ -197,7 +190,6 @@ Finally, we create the plot:
 #| out-width: 80%
 #| fig-width: 8
 #| fig-height: 6
-
 percentiles |>
   ggplot(aes(pctl, estimate)) +
   geom_line() +
@@ -214,7 +206,6 @@ For the county data, we compute `binom.test()` for each county, pull out the res
 
 ```{r}
 #| label: conf-int
-
 obs_rates <-
   forested_train |>
   summarize(
@@ -242,7 +233,6 @@ Here is the plot code:
 #| out-width: 40%
 #| fig-width: 4
 #| fig-height: 6
-
 obs_rates |>
   ggplot(aes(y = county, col = `# Locations`)) +
   geom_point(aes(x = rate)) +
@@ -259,7 +249,6 @@ From our interaction analysis, which used H-statistics, `r nrow(forested_hstats_
 #| out-width: 90%
 #| fig-width: 8
 #| fig-height: 4.5
-
 forested_hstats_text |>
   slice_max(mean_score, n = 25) |>
   ggplot(aes(y = term)) +
@@ -276,7 +265,6 @@ We'll use the top five interactions in our model. A precomputed formula for thos
 
 ```{r}
 #| label: precompute-interactions
-
 forested_int_form
 ```
 
@@ -292,7 +280,6 @@ In R, the function to produce logistic regression models is one of the most well
 
 ```{r}
 #| label: glm-forest-basic
-
 lr_fit <- glm(class ~ ., data = forested_train, family = binomial)
 lr_fit
 ```
@@ -305,7 +292,6 @@ There is a summary method for `glm()` that gives more information regarding the 
 
 ```{r}
 #| label: glm-forest-summary
-
 summary(lr_fit)
 ```
 
@@ -313,7 +299,6 @@ If you would like the model estimates in a more computationally-friendly format,
 
 ```{r}
 #| label: glm-forest-tidy
-
 lr_coefs <- tidy(lr_fit)
 lr_coefs
 ```
@@ -323,7 +308,6 @@ The `predict()` method is very limited. Using `type = "response"`, get the estim
 ```{r}
 #| label: glm-forest-augment
 #| warning: false
-
 augment(lr_fit, newdata = forested_train[1:2, ], type.predict = "response") |>
   relocate(.fitted)
 ```
@@ -332,7 +316,6 @@ The object contains a fair amount of excess data. We can use the `r pkg(butcher)
 
 ```{r}
 #| label: glm-forest-weigh
-
 library(butcher)
 weigh(lr_fit) |> print(n = 10)
 ```
@@ -341,7 +324,6 @@ The `qr.qr` element contains some crucial matrix algebra data, but there are man
 
 ```{r}
 #| label: glm-forest-trim
-
 # In MB:
 weigh(lr_fit) |> select(size) |> colSums()
 lr_fit <- butcher(lr_fit)
@@ -352,7 +334,6 @@ When using `r pkg(parsnip)` there is slightly more work:
 
 ```{r}
 #| label: parsnip-forest-lr
-
 lr_fit <- logistic_reg() |> fit(class ~ ., data = forested_train)
 lr_fit
 ```
@@ -371,7 +352,6 @@ If odds ratios are of interest, the `tidy()` method includes an option to expone
 ```{r}
 #| label: tidy-or
 #| warning: false
-
 tidy(lr_fit, conf.int = TRUE, conf.level = 0.90, exponentiate = TRUE) |>
   filter(grepl("county", term))
 ```
@@ -390,7 +370,6 @@ To get started, we create a basic recipe that contains dummy indicators for `cou
 
 ```{r}
 #| label: forested-recipe-basic
-
 bare_rec <-
   recipe(class ~ ., data = forested_train) |>
   step_dummy(county) |>
@@ -403,7 +382,6 @@ Now we add a step that uses the orderNorm transformation to ensure numeric predi
 
 ```{r}
 #| label: forested-recipe-symm
-
 transformed_rec <-
   recipe(class ~ ., data = forested_train) |>
   step_orderNorm(all_numeric_predictors()) |>
@@ -415,7 +393,6 @@ Next, we will swap the step that generates dummy variables with an effect encodi
 
 ```{r}
 #| label: forested-recipe-encoding
-
 forest_rec <-
   recipe(class ~ ., data = forested_train) |>
   step_orderNorm(all_numeric_predictors()) |>
@@ -426,7 +403,6 @@ As previously mentioned, we precomputed a set of potential interaction effects v
 
 ```{r}
 #| label: forested-recipe-interactions
-
 forest_int_rec <-
   forest_rec |>
   step_interact(!!forested_int_form)
@@ -440,7 +416,6 @@ Additionally, as we will describe shortly, `step_lincomb()` is used to eliminate
 
 ```{r}
 #| label: forest-logistic-elements
-
 forest_spline_rec <-
   forest_int_rec |>
   step_spline_natural(
@@ -460,7 +435,6 @@ Let's also create a metric set for a few performance measures:
 
 ```{r}
 #| label: forested-metric
-
 cls_mtr <- metric_set(brier_class, roc_auc, pr_auc, mn_log_loss)
 ```
 
@@ -468,7 +442,6 @@ Now that everything is prepared, let's create the grid of workflows and then res
 
 ```{r}
 #| label: forested-wflow-set
-
 forest_set <-
   workflow_set(
     preproc = list(
@@ -486,7 +459,6 @@ To resample them, we apply `workflow_map()` and add several options that are pas
 
 ```{r}
 #| label: forest-logistic-run
-
 forest_res <-
   forest_set |>
   workflow_map(
@@ -501,7 +473,6 @@ Printing out the results isn't very informative.
 
 ```{r}
 #| label: forest-logistic-print
-
 forest_res
 ```
 
@@ -515,7 +486,6 @@ Let's rank by the Brier score:
 
 ```{r}
 #| label: forest-logistic-rank
-
 ranked <-
   rank_results(forest_res, rank_metric = "brier_class") |>
   filter(.metric == "brier_class") |>
@@ -527,7 +497,6 @@ Let's get the final model for the highest ranked workflow:
 
 ```{r}
 #| label: forest-logistic-rank-fit
-
 lr_best <-
   forest_res |>
   extract_workflow(forest_res, id = ranked$wflow_id[1]) |>
@@ -539,7 +508,6 @@ The main text computed a few more statistics related to model performance. First
 ```{r}
 #| label: forest-logistic-best
 #| cache: true
-
 set.seed(799)
 lr_best_int <-
   forest_res |>
@@ -552,7 +520,6 @@ Also, we can estimate the no-information rate for the Brier score: how bad could
 
 ```{r}
 #| label: forest-logistic-nir
-
 assessment_pred <-
   forest_res |>
   extract_workflow_set_result(id = ranked$wflow_id[1]) |>
@@ -586,7 +553,6 @@ For calibration, we can use the `cal_plot_windowed()` function from the `r pkg(p
 ```{r}
 #| label: forest-cal-easy
 #| eval: false
-
 forest_res |>
   extract_workflow_set_result(id = ranked$wflow_id[1]) |>
   cal_plot_windowed(step_size = 0.02)
@@ -602,7 +568,6 @@ This code chunk creates two visualizations that are based on `r pkg(ggplot2)`. W
 #| out-width: 80%
 #| fig-width: 8
 #| fig-height: 4
-
 logitic_cal <-
   assessment_pred |>
   cal_plot_windowed(
@@ -632,7 +597,6 @@ Here is a `r pkg(dplyr)` pipeline to compute them for any model that has predict
 
 ```{r}
 #| label: deviance-residuals
-
 logistic_resdiduals <-
   assessment_pred |>
   mutate(
@@ -658,7 +622,6 @@ We can plot these for our model:
 #| out-width: 60%
 #| fig-width: 6
 #| fig-height: 4.25
-
 logistic_resdiduals |>
   ggplot(aes(longitude, deviance, col = class)) +
   geom_point(alpha = 1 / 2) +
@@ -678,7 +641,6 @@ To begin, we have to create an _explainer_ object that contains the model fit an
 ```{r}
 #| label: logistic-pdp-cal
 #| warning: false
-
 explainer_logistic <-
   explain_tidymodels(
     lr_best,
@@ -694,7 +656,6 @@ Now that we have this object, we can produce partial dependence plots (PDPs) for
 
 ```{r}
 #| label: logistic-pdp-profiles
-
 set.seed(1805)
 pdp_longitude <- model_profile(
   explainer_logistic,
@@ -712,7 +673,6 @@ There is a `plot()` method for this object, but we've created a `r pkg(ggplot2)`
 #| fig-height: 4
 #| fig-align: center
 #| warning: false
-
 ggplot_pdp <- function(obj, x) {
   p <-
     # Convert the "aggregated profiles" to a tibble
@@ -760,7 +720,6 @@ To diagnose multicollinearity in a generalized linear model, the `r pkg(car)` pa
 
 ```{r}
 #| label: glm-vif
-
 lr_best |>
   extract_fit_engine() |>
   car::vif() |>
@@ -784,7 +743,6 @@ Let's show how to fit a single glmnet model with parsnip. The main changes refle
 
 ```{r}
 #| label: glnmet-spec
-
 glmn_pen <- 10^seq(-6, -1, length.out = 50)
 
 glmn_spec <-
@@ -799,7 +757,6 @@ From here, we can create a workflow with a recipe and then `fit()`:
 
 ```{r}
 #| label: glnmet-tune
-
 glmn_wflow <- workflow(forest_spline_rec, glmn_spec)
 glmn_fit <- glmn_wflow |> fit(forested_train)
 ```
@@ -808,7 +765,6 @@ There are two extra niceties for this model. First, there is the `tidy()` method
 
 ```{r}
 #| label: glmnet-tidy-parsnip
-
 # One penalty only:
 tidy(glmn_fit)
 
@@ -828,7 +784,6 @@ The second nicety is the `autoplot()` function:
 #| out-width: 60%
 #| fig-width: 6
 #| fig-height: 3.5
-
 # Pull the parsnip fit out of the workflow
 glmn_fit |>
   extract_fit_parsnip() |>
@@ -852,7 +807,6 @@ The code used to tune the glmnet model using the more complex recipe was:
 ```{r}
 #| label: glmnet-tune
 #| eval: false
-
 # Path and regular grid:
 glmn_pen <- 10^seq(-6, -1, length.out = 50)
 glmn_grid <- crossing(penalty = glmn_pen, mixture = c(0:4) / 4)
@@ -905,7 +859,6 @@ Bayesian estimation can be computationally expensive. To demonstrate, let's recr
 
 ```{r}
 #| label: mcmc-example
-
 # We'll simulate a single point prior:
 true_means <- c(1.0, -1.5)
 num_samples <- 100
@@ -927,7 +880,6 @@ To get started, let's fit the model using default (wide Gaussian) priors, using 
 
 ```{r}
 #| label: mcmc-simple
-
 set.seed(282)
 example_fit <-
   logistic_reg() |>
@@ -946,7 +898,6 @@ The predictions are based on the posterior mean. The simplest way to get the pos
 #| out-width: 50%
 #| fig-width: 5
 #| fig-height: 5
-
 rstanrm_fit <-
   example_fit |>
   extract_fit_engine()

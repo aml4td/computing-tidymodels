@@ -9,7 +9,6 @@ knitr:
 ```{r}
 #| label: cls-metrics-knitr-setup
 #| include: false
-
 knitr::opts_chunk$set(
   comment = "#>",
   collapse = TRUE,
@@ -49,7 +48,6 @@ You'll need `r length(req_pkg)` packages (`r req_pkg_fmt`) for this chapter:
 #| label: cls-metrics-installs
 #| eval: false
 #| echo: true
-
 # fmt: skip
 req_pkg <- c("betacal", "discrim", "desirability2", "klaR", "mgcv", "patchwork", 
              "probably", "rpart", "tidymodels")
@@ -71,7 +69,6 @@ Let's load the meta package and manage some between-package function conflicts.
 #| results: hide
 #| message: false
 #| warning: false
-
 library(tidymodels) # <- includes yardstick
 library(discrim)
 library(probably)
@@ -88,7 +85,6 @@ For tidymodels, functions to compute performance metrics are largely in the `r p
 
 ```{r}
 #| label: example-metrics
-
 accuracy
 roc_auc
 ```
@@ -103,7 +99,6 @@ For example, for the positive predictive value:
 
 ```{r}
 #| label: class-metrics-usage
-
 # example data:
 two_class_example |> str()
 
@@ -118,7 +113,6 @@ For example, to compute the area under the precision-recall curve:
 
 ```{r}
 #| label: prob-metrics-usage
-
 levels(two_class_example$truth)
 two_class_example |> pr_auc(truth, Class1)
 ```
@@ -131,7 +125,6 @@ Metric functions are also "group-aware" so that you can get statistics for an ar
 
 ```{r}
 #| label: group-aware
-
 two_class_example |>
   mutate(group = rep(letters[1:4], each = 125)) |>
   group_by(group) |>
@@ -151,7 +144,6 @@ Metrics sets are functions to compute multiple metrics, perhaps of different typ
 
 ```{r}
 #| label: metric-set-def
-
 cls_mtr <- metric_set(roc_auc, brier_class, sensitivity, specificity)
 cls_mtr
 ```
@@ -160,7 +152,6 @@ Since it contains _both_ types of classification metrics, we need to use the `es
 
 ```{r}
 #| label: metric-set-usage
-
 two_class_example |> cls_mtr(truth, estimate = predicted, Class1)
 ```
 
@@ -169,7 +160,6 @@ You can mix metric types within the same model mode. You can't mix between modes
 ```{r}
 #| label: mixed-mode
 #| error: true
-
 metric_set(rmse, accuracy)
 ```
 
@@ -186,7 +176,6 @@ It is worth discussing that, for these data, there is enough data to do a four-w
 ```{r}
 #| label: mushroom-splits
 #| eval: false
-
 # Make a three-way split into train/validation/"test" where "test" will have
 # rows for the calibration data and the actual test data
 
@@ -211,7 +200,6 @@ Now let's load the finished products:
 
 ```{r}
 #| label: real-data-import
-
 "https://github.com/aml4td/website/raw/refs/heads/main/RData/mushrooms.RData" |>
   url() |>
   load()
@@ -225,7 +213,6 @@ The text used a naive Bayes model. For the computations, we'll use the `klaR::Na
 #| label: naive-bayes-rs
 #| warning: false
 #| cache: true
-
 # fmt: skip
 cls_mtr <-
   metric_set(brier_class, mn_log_loss, pr_auc, roc_auc, accuracy)
@@ -247,7 +234,6 @@ We'll also generate the trained model using `fit_best()`:
 #| label: naive-bayes-fit
 #| warning: false
 #| cache: true
-
 nb_fit <- fit_best(nb_res)
 ```
 
@@ -261,7 +247,6 @@ As seen previously, we can extract the metrics estimates from the resampling obj
 
 ```{r}
 #| label: naive-bayes-metrics
-
 collect_metrics(nb_res)
 ```
 
@@ -271,7 +256,6 @@ Let's also extract the out-of-sample predictions:
 
 ```{r}
 #| label: naive-bayes-predictions
-
 val_pred <- collect_predictions(nb_res)
 val_pred
 ```
@@ -288,7 +272,6 @@ The `r pkg(yardstick)` package website has a [list of classification metrics for
 
 ```{r}
 #| label: accuracy
-
 val_pred |> accuracy(class, estimate = .pred_class)
 
 # Kappa statistic
@@ -299,7 +282,6 @@ There is also a function for confusion matrices:
 
 ```{r}
 #| label: confusion-mat
-
 confusing <- val_pred |> conf_mat(class, .pred_class)
 confusing
 ```
@@ -312,7 +294,6 @@ This object has an `autoplot()` method to produce a [mosaic plot](https://en.wik
 #| fig-height: 4.5
 #| fig-align: "center"
 #| out-width: "50%"
-
 autoplot(confusing)
 ```
 
@@ -324,7 +305,6 @@ or a heatmap:
 #| fig-height: 4.5
 #| fig-align: "center"
 #| out-width: "50%"
-
 autoplot(confusing, type = "heatmap")
 ```
 
@@ -346,7 +326,6 @@ As mentioned in the text, there are methods for computing metrics for binary out
 
 ```{r}
 #| label: weighted-metrics
-
 hpc_mtr <- metric_set(sensitivity, specificity, pr_auc, roc_auc)
 modeldata::hpc_cv |>
   hpc_mtr(obs, estimate = pred, VF:L)
@@ -358,7 +337,6 @@ If you want to use one of the other weighting schemes, you can create a new metr
 
 ```{r}
 #| label: macro-weighted
-
 # See example in ?metric_set examples
 sensitivity_macro_wt <- function(data, truth, estimate, na_rm = TRUE, ...) {
   sensitivity(
@@ -388,7 +366,6 @@ As previously mentioned, there is no need to use the `estimate` argument; just l
 ```{r}
 #| label: cross-entropy
 #| error: true
-
 val_pred |> mn_log_loss(class, .pred_poisonous)
 
 # Pass both to get an error
@@ -403,7 +380,6 @@ Here's an example:
 
 ```{r}
 #| label: class-costs
-
 lvls <- levels(val_pred$class)
 unique_vals <- factor(lvls, levels = lvls)
 
@@ -438,7 +414,6 @@ Each has an `autoplot()` method and is group-aware. The first two plots show dif
 #| fig-height: 4
 #| fig-align: "center"
 #| out-width: "90%"
-
 (val_pred |>
   gain_curve(class, .pred_poisonous) |>
   autoplot() +
@@ -463,7 +438,6 @@ The visualization functions that have names that match the pattern `cal_plot_*()
 #| fig-height: 4.5
 #| fig-align: "center"
 #| out-width: "50%"
-
 # No spline terms:
 val_pred |>
   cal_plot_logistic(truth = class, estimate = .pred_poisonous, smooth = FALSE)
@@ -477,7 +451,6 @@ The default is to use splines to get a more nuanced pattern:
 #| fig-height: 4.5
 #| fig-align: "center"
 #| out-width: "50%"
-
 val_pred |>
   cal_plot_logistic(truth = class, estimate = .pred_poisonous)
 ```
@@ -490,7 +463,6 @@ There are functions for the windowed/binned estimates of calibration. For exampl
 #| fig-height: 4.5
 #| fig-align: "center"
 #| out-width: "50%"
-
 val_pred |>
   cal_plot_windowed(
     truth = class,
@@ -516,7 +488,6 @@ We'll demonstrate using the Beta calibration method of [Kull, Silva Filho, and F
 ```{r}
 #| label: beta-estimate
 #| warning: false
-
 cal_pred <- augment(nb_fit, new_data = shroom_cal)
 beta_cal <- cal_pred |> cal_estimate_beta(truth = class)
 
@@ -527,7 +498,6 @@ If we don't have a validation set, we can take the out-of-sample predictions, re
 
 ```{r}
 #| label: beta-validate
-
 set.seed(453)
 val_pred |>
   vfold_cv() |>
@@ -539,7 +509,6 @@ This is probably a real improvement that has a very small effect on the results.
 
 ```{r}
 #| label: beta-apply
-
 val_recal_pred <-
   val_pred |>
   cal_apply(beta_cal)
@@ -554,7 +523,6 @@ R has a specialized factor class called `ordered()` that can be used to model or
 
 ```{r}
 #| label: load-wordle
-
 "https://github.com/aml4td/website/raw/refs/heads/main/RData/wordle_results.RData" |>
   url() |>
   load()
@@ -571,7 +539,6 @@ For weighted Kappa estimates, there is an option to `yardstick::kap()` called `w
 
 ```{r}
 #| label: kappa-wts
-
 bind_rows(
   rule_oob_pred |> kap(tries, .pred_class),
   rule_oob_pred |> kap(tries, .pred_class, weighting = "linear"),
@@ -590,7 +557,6 @@ To demonstrate, let's tune a single CART tree over two tuning parameters using g
 ```{r}
 #| label: tuned-model
 #| cache: true
-
 cls_mtr <- metric_set(brier_class, mn_log_loss, pr_auc, roc_auc)
 
 cart_spec <-
@@ -613,7 +579,6 @@ We'll select different candidates when we optimize for a single metric:
 
 ```{r}
 #| label: selections
-
 show_best(cart_res, metric = "brier_class")
 show_best(cart_res, metric = "pr_auc")
 ```
@@ -622,7 +587,6 @@ The additional ranking functions take an object produced by one of the tuning fu
 
 ```{r}
 #| label: select-desirability
-
 cart_desire <-
   show_best_desirability(
     cart_res,
@@ -636,7 +600,6 @@ Here are the top five metric values:
 
 ```{r}
 #| label: cart-metrics
-
 cart_desire |> dplyr::select(-starts_with(".d_"))
 ```
 
@@ -644,7 +607,6 @@ and their corresponding desirability scores plus the overall desirability:
 
 ```{r}
 #| label: cart-desirability
-
 cart_desire |> dplyr::select(cost_complexity, min_n, starts_with(".d_"))
 ```
 

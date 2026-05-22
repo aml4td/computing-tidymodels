@@ -9,7 +9,6 @@ knitr:
 ```{r}
 #| label: comparing-models-knitr-setup
 #| include: false
-
 knitr::opts_chunk$set(
   comment = "#>",
   collapse = TRUE,
@@ -51,7 +50,6 @@ This book's chapter involved taking models that have been fit or resampled and u
 #| label: comparing-models-installs
 #| eval: false
 #| echo: true
-
 # fmt: skip
 req_pkg <- c("bestNormalize", "broom.mixed", "C50", "discrim", "embed", 
              "glmnet", "klaR", "lme4", "multcomp", "rstanarm", "rules", 
@@ -74,7 +72,6 @@ Let's load the meta package and manage some between-package function conflicts. 
 #| results: hide
 #| message: false
 #| warning: false
-
 library(tidymodels)
 tidymodels_prefer()
 theme_set(theme_bw())
@@ -107,7 +104,6 @@ We'll use the forestation data just as in the book. These data have already been
 
 ```{r}
 #| label: load-forested-data-files
-
 # Loads the training and test set data
 load(url(
   "https://github.com/aml4td/website/raw/refs/heads/main/RData/forested_data.RData"
@@ -123,7 +119,6 @@ The first file contains these relevant objects:
 
 ```{r}
 #| label: show-forested-data
-
 forested_split
 
 forested_train
@@ -137,7 +132,6 @@ The second file has this important formula object that contains what we think ar
 
 ```{r}
 #| label: show-forested-interaction
-
 forested_int_form
 ```
 
@@ -150,7 +144,6 @@ First, we load some additional packages and create some preliminaries:
 ```{r}
 #| label: prelim
 #| results: hide
-
 # For resampling the models
 ctrl_rs <-
   control_resamples(
@@ -167,7 +160,6 @@ We start by resampling the boosted tree with the tuning parameter values that we
 ```{r}
 #| label: forested-boosting
 #| cache: true
-
 boost_spec <-
   C5_rules(trees = 60, min_n = 20) |>
   set_engine("C5.0", control = C50::C5.0Control(seed = 864))
@@ -202,7 +194,6 @@ The model is a full ridge regression model since `mixture = 0`.
 ```{r}
 #| label: forested-logistic
 #| cache: true
-
 logistic_rec <-
   recipe(class ~ ., data = forested_train) |>
   # standardize numeric predictors
@@ -256,7 +247,6 @@ Now, the naive Bayes model. There is no need for feature engineering and not muc
 #| label: forested-naive-bayes
 #| cache: true
 #| warning: false
-
 nb_rec <-
   recipe(class ~ ., data = forested_train) |>
   step_orderNorm(all_numeric_predictors())
@@ -289,7 +279,6 @@ Another method for resampling or tuning a series of preprocessors and/or models 
 
 ```{r}
 #| label: as-workflow-set
-
 forested_wflow_set <- as_workflow_set(
   Boosting = boost_res,
   Logistic = logistic_res,
@@ -314,7 +303,6 @@ We'll also plot the data to show that it is similar to the one in the main text.
 #| fig-height: 3.5
 #| fig-align: "center"
 #| out-width: "70%"
-
 accuracy_df <-
   boost_metrics |>
   full_join(logistic_metrics, by = "id") |>
@@ -345,7 +333,6 @@ We'll start with the Frequentist perspective.
 ```{r}
 #| label: levels
 #| echo: false
-
 lvls <- cli::format_inline(
   "{.code {levels(factor(accuracy_long_df$pipeline))}}"
 )
@@ -365,7 +352,6 @@ The results are:
 
 ```{r}
 #| label: freq-mixed
-
 freq_mixed_mod <- lmer(accuracy ~ pipeline + (1 | id), data = accuracy_long_df)
 
 freq_mixed_mod |> tidy()
@@ -379,7 +365,6 @@ We'll show the  `r pkg(multicomp)` package but first we will define contrasts of
 
 ```{r}
 #| label: freq-mixed-raw-contrasts
-
 # Coefficients for the estimates to create differences in accuracies.
 comparisons <-
   rbind(
@@ -393,7 +378,6 @@ We'll use the `multcomp::glht()` function^["GLHT" stands for "General Linear Hyp
 
 ```{r}
 #| label: freq-mixed-raw
-
 raw_res <- NULL
 for (i in 1:nrow(comparisons)) {
   raw_res <-
@@ -421,7 +405,6 @@ To compute the Bonferroni or FDR adjustments, we can use the `stats::p.adjust()`
 
 ```{r}
 #| label: cran-fdr-search
-
 tools::CRAN_package_db() |>
   as_tibble() |>
   filter(grepl("(fdr)|(false discovery rate)", tolower(Description))) |>
@@ -434,7 +417,6 @@ and even more on [Bioconductor](https://bioconductor.org/):
 ```{r}
 #| label: bioc-fdr-search
 #| warning: false
-
 BiocManager::available("(fdr)|(false discovery rate)")
 ```
 
@@ -442,7 +424,6 @@ BiocManager::available("(fdr)|(false discovery rate)")
 
 ```{r}
 #| label: freq-mixed-post-hoc
-
 raw_res |>
   mutate(
     Bonnferoni = p.adjust(raw_pvalue, method = "bonferroni"),
@@ -455,7 +436,6 @@ For Tukey's HSD, we can use `glht()` again:
 
 ```{r}
 #| label: freq-mixed-tukey
-
 freq_mixed_mod |>
   glht(linfct = mcp(pipeline = "Tukey")) |>
   summary() |>
@@ -471,7 +451,6 @@ We'll conduct the Two One-Sided Test (TOST) procedure by computing the confidenc
 
 ```{r}
 #| label: freq-mixed-diff-tukey
-
 # The defaults that mcp() uses has the opposite order from the books' main
 # test uses (e.g. Logistic - Boosting instead of Boosting - Logistic)
 difference_int <-
@@ -491,7 +470,6 @@ From these data, we can create the same plot as the main text:
 #| out-width: "70%"
 #| message: false
 #| warning: false
-
 difference_int |>
   ggplot(aes(x = contrast, y = -estimate)) +
   geom_point(size = 2) +
@@ -512,7 +490,6 @@ When the resampled performance estimates are in a data frame, it should be in th
 
 ```{r}
 #| label: perf-mod-df-basic
-
 set.seed(101)
 basic_bayes_mod <- perf_mod(accuracy_df, refresh = 0)
 basic_bayes_mod
@@ -527,7 +504,6 @@ The `r pkg(broom.mixed)` package's `tidy()` method can also be used:
 
 ```{r}
 #| label: perf-mod-df-basic-tidy
-
 basic_bayes_mod |>
   pluck("stan") |>
   tidy()
@@ -537,7 +513,6 @@ basic_bayes_mod |>
 
 ```{r}
 #| label: tp-tidy
-
 set.seed(185)
 basic_bayes_post <-
   basic_bayes_mod |>
@@ -550,7 +525,6 @@ This object also has a summary object to get credible intervals:
 
 ```{r}
 #| label: tp-tidy-ci
-
 summary(basic_bayes_post, prob = 0.9)
 ```
 
@@ -562,7 +536,6 @@ and an `autoplot()` method:
 #| fig-height: 3.5
 #| fig-align: "center"
 #| out-width: "70%"
-
 autoplot(basic_bayes_post)
 ```
 
@@ -570,7 +543,6 @@ To take a look at pairwise differences, there is `tidyposterior::contrast_models
 
 ```{r}
 #| label: tp-compare
-
 set.seed(185)
 basic_bayes_diff_post <-
   basic_bayes_mod |>
@@ -583,7 +555,6 @@ There is an `autoplot()` method, but the `summary()` method is more interesting 
 
 ```{r}
 #| label: tp-compare-summary
-
 summary(basic_bayes_diff_post)
 ```
 
@@ -591,7 +562,6 @@ Using the `size` argument enables a ROPE analysis:
 
 ```{r}
 #| label: tp-compare-rope
-
 summary(basic_bayes_diff_post, size = 0.03) |>
   select(contrast, starts_with("pract"))
 ```
@@ -623,7 +593,6 @@ We previously created `forested_wflow_set` to house our resampling results. Here
 ```{r}
 #| label: wfs-compare-rope
 #| cache: true
-
 set.seed(24)
 forested_wflow_set |>
   perf_mod(
@@ -653,7 +622,6 @@ As an example, _if_ we were using a validation set, we could produce the 90% boo
 #| label: boot-bt-ci
 #| eval: false
 #| mesage: false
-
 int_pctl(boost_res, times = 2000, alpha = 0.1)
 ```
 
@@ -664,7 +632,6 @@ For a test set, we encourage users to use `last_fit()`. Let's suppose that we st
 ```{r}
 #| label: last-fits
 #| cache: true
-
 boost_final_res <-
   last_fit(boost_wflow, split = forested_split, metrics = cls_mtr)
 
@@ -679,7 +646,6 @@ then use:
 #| cache: true
 #| message: false
 #| warning: false
-
 set.seed(885)
 int_pctl(boost_final_res, times = 2000, alpha = 0.1)
 
@@ -691,7 +657,6 @@ To compute intervals on differences, there is no current interface. However, you
 
 ```{r}
 #| label: pair-predictions
-
 paired_class_pred <-
   logistic_final_res |>
   collect_predictions() |>
@@ -709,7 +674,6 @@ then create bootstrap samples:
 
 ```{r}
 #| label: pair-predictions-boot
-
 set.seed(649)
 paired_class_bt <-
   paired_class_pred |>
@@ -721,7 +685,6 @@ We can write a function to get the difference:
 ```{r}
 #| label: bt-function
 #| cache: true
-
 metric_diff <- function(split) {
   # Get the bootstrap sample:
   est <-

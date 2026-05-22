@@ -9,7 +9,6 @@ knitr:
 ```{r}
 #| label: cls-nonlinear-knitr-setup
 #| include: false
-
 knitr::opts_chunk$set(
   comment = "#>",
   collapse = TRUE,
@@ -49,7 +48,6 @@ You'll need `r length(req_pkg)` packages (`r req_pkg_fmt`) for this chapter:
 #| label: cls-nonlinear-installs
 #| eval: false
 #| echo: true
-
 # fmt: skip
 req_pkg <- 
   c("bestNormalize", "discrim", "earth", "embed", "important", 
@@ -73,7 +71,6 @@ Let's load the meta package and manage some between-package function conflicts.
 #| results: hide
 #| message: false
 #| warning: false
-
 library(tidymodels)
 library(spatialsample)
 library(embed)
@@ -101,7 +98,6 @@ As before, we'll load the objects that were already computed for the forestation
 
 ```{r}
 #| label: data-load
-
 # "https://raw.githubusercontent.com/aml4td/website/main/RData/forested_data.RData" |>
 #   url() |>
 #   load()
@@ -120,7 +116,6 @@ The main text mentioned that removing potentially irrelevant predictors can bene
 
 ```{r}
 #| label: forested-filter
-
 filter_rec <-
   recipe(class ~ ., data = forested_train) |>
   step_predictor_best(all_predictors(), score = "imp_rf", prop_terms = tune())
@@ -130,7 +125,6 @@ We tune over the proportion of predictors retained using candidate values of 20%
 
 ```{r}
 #| label: forested-nb-tune
-
 nb_wflow <- workflow(filter_rec, naive_Bayes(smoothness = tune(), Laplace = 1))
 
 nb_grid <- crossing(
@@ -144,7 +138,6 @@ After this, we'll resample our models and compute performance for each candidate
 ```{r}
 #| label: forested-nb
 #| warning: false
-
 set.seed(872)
 forest_nb_res <-
   nb_wflow |>
@@ -163,7 +156,6 @@ We can use the `autoplot()` method to get a quick assessment of the patterns of 
 #| out-width: 70%
 #| fig-width: 6.5
 #| fig-height: 4
-
 autoplot(forest_nb_res, metric = "brier_class")
 ```
 
@@ -189,7 +181,6 @@ One helpful engine-specific parameter is `nk`. This is the number of initial MAR
 
 ```{r}
 #| label: forested-fda-wflow
-
 fda_spec <-
   discrim_flexible(
     num_terms = tune(),
@@ -206,7 +197,6 @@ For the grid, another regular grid was used that crossed all three parameters. W
 ```{r}
 #| label: forested-fda-computations
 #| cache: true
-
 shears <- c("backward", "forward")
 fda_grid <- crossing(num_terms = 2:50, prod_degree = 1:2, prune_method = shears)
 
@@ -228,7 +218,6 @@ Another quick visualization tells us what happened:
 #| out-width: 70%
 #| fig-width: 6.5
 #| fig-height: 3
-
 autoplot(forest_fda_res, metric = "brier_class")
 ```
 
@@ -238,7 +227,6 @@ To demonstrate how to visualize predictive profiles for additive models, let's f
 
 ```{r}
 #| label: fda-additive
-
 fda_fit <-
   fda_wflow |>
   finalize_workflow(
@@ -257,7 +245,6 @@ We'll create a vector of names for the numeric predictors and get their constant
 
 ```{r}
 #| label: fda-static
-
 numeric_pred_nms <- setdiff(names(forested_train), c("class", "county"))
 numeric_pred <-
   forested_train |>
@@ -274,7 +261,6 @@ We also create a representative grid for each predictor using quantiles (with a 
 
 ```{r}
 #| label: fda-seq
-
 col_seqs <- map(numeric_pred, ~ unique(quantile(.x, probs = (0:100) / 100)))
 ```
 
@@ -282,7 +268,6 @@ We create a placeholder object, `profiles`, to contain all of the results, then 
 
 ```{r}
 #| label: fda-profiles
-
 profiles <- NULL
 
 for (i in seq_along(numeric_pred_nms)) {
@@ -308,7 +293,6 @@ Now we can create a plot of profiles:
 #| out-width: 70%
 #| fig-width: 7
 #| fig-height: 7
-
 profiles |>
   ggplot(aes(Value, Probability)) +
   geom_line() +
@@ -337,7 +321,6 @@ We'll recycle the recipes from @sec-naive-bayes that used a random forest import
 
 ```{r}
 #| label: forested-knn-wflow
-
 knn_spec <-
   nearest_neighbor(
     neighbors = tune(),
@@ -358,7 +341,6 @@ For a grid, we'll set the range of neighbors to 50 locations, and use five diffe
 
 ```{r}
 #| label: forested-knn-param
-
 kern_vals <- c("rectangular", "triangular", "cos", "gaussian", "inv")
 
 knn_param <-
@@ -375,7 +357,6 @@ Now we tune the model with the familiar syntax:
 ```{r}
 #| label: forested-knn-tune
 #| cache: true
-
 set.seed(872)
 forest_knn_res <-
   knn_wflow |>
@@ -395,7 +376,6 @@ Once again, `autoplot()` is used to discover how each parameter affects model pe
 #| out-width: 70%
 #| fig-width: 6.5
 #| fig-height: 3
-
 autoplot(forest_knn_res, metric = "brier_class")
 ```
 

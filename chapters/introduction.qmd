@@ -9,7 +9,6 @@ knitr:
 ```{r}
 #| label: introduction-silent-setup
 #| include: false
-
 knitr::opts_chunk$set(
   comment = "#>",
   collapse = TRUE,
@@ -63,7 +62,6 @@ We suggest using the `r pkg(pak)` package for installation. To do this, first in
 ```{r}
 #| label: introduction-installs
 #| eval: false
-
 install.packages("pak")
 
 # check that it is installed then use it to install tidymodels
@@ -78,7 +76,6 @@ Once you do that, load `r pkg(tidymodels)`:
 
 ```{r}
 #| label: introduction-tidymodels
-
 library(tidymodels)
 ```
 
@@ -108,6 +105,5 @@ At the end of each session, we'll show which packages were loaded and used:
 
 ```{r}
 #| label: introduction-si
-
 sessioninfo::session_info()
 ```

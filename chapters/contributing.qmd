@@ -3,7 +3,6 @@
 ```{r}
 #| label: setup
 #| include: false
-
 source("../R/_common.R")
 ```
 
@@ -162,7 +161,6 @@ Once you have everything installed, we recommend installing the underlying torch
 ```{r}
 #| label: contrib-list
 #| include: false
-
 use_tidy_contrib <- function(
   repo_spec = "https://github.com/aml4td/computing-tidymodels",
   from = NULL,

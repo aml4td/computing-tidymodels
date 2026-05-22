@@ -13,7 +13,6 @@ This [chapter on the main website](https://aml4td.org/chapters/whole-game.html) 
 ```{r}
 #| label: whole-game-knitr-setup
 #| include: false
-
 knitr::opts_chunk$set(
   comment = "#>",
   collapse = TRUE,
@@ -45,7 +44,6 @@ req_pkg <- c("brulee", "Cubist", "mirai", "patchwork", "scales",
 #| label: whole-game-installs
 #| eval: false
 #| echo: true
-
 # fmt: skip
 req_pkg <- c("brulee", "Cubist", "mirai", "patchwork", "scales", 
              "splines2", "probably", "rules", "tidymodels")
@@ -68,7 +66,6 @@ Let's run some code to get started:
 
 ```{r}
 #| label: whole-game-load
-
 library(tidymodels)
 library(probably)
 library(patchwork)
@@ -93,13 +90,11 @@ The data set is pre-compiled into a binary format R uses (called "RData format" 
 ```{r}
 #| label: whole-game-get-data
 #| eval: false
-
 load("RData/deliveries.RData")
 ```
 ```{r}
 #| label: whole-game-now-really-get-data
 #| echo: false
-
 load("../RData/deliveries.RData")
 ```
 
@@ -107,7 +102,6 @@ There are a lot of ways that you can examine the contents of an object. `View()`
 
 ```{r}
 #| label: whole-game-str
-
 glimpse(deliveries)
 ```
 
@@ -121,7 +115,6 @@ To create the histograms of the delivery times, we used this code to create each
 
 ```{r}
 #| label: whole-game-hist-1
-
 # Setup some fancy code for the axes:
 log_2_breaks <- scales::trans_breaks("log2", function(x) 2^x)
 log_2_labs <- scales::trans_format("log2", scales::math_format(2^.x))
@@ -147,7 +140,6 @@ You don't need to assign the plots to objects; you can just print each. We did t
 ```{r}
 #| label: whole-game-hists
 #| fig-height: 4
-
 delivery_hist + delivery_log_hist
 ```
 
@@ -181,7 +173,6 @@ We used a value of 991 to set the seed^[If you are wondering how we get the seed
 
 ```{r}
 #| label: whole-game-split
-
 set.seed(991)
 delivery_split <-
   initial_validation_split(
@@ -200,7 +191,6 @@ To get the data frames with the correct rows, use these three eponymous function
 
 ```{r}
 #| label: whole-game-split-data
-
 delivery_train <- training(delivery_split)
 delivery_test <- testing(delivery_split)
 delivery_val <- validation(delivery_split)
@@ -216,7 +206,6 @@ We mostly used `r pkg(ggplot2)` and `r pkg(patchwork)` to create these graphics:
 
 ```{r}
 #| label: delivery-predictors-code
-
 # Make specific colors for each day
 # fmt: skip
 day_cols <-  c("#000000FF", "#24FF24FF", "#009292FF",  "#B66DFFFF", 
@@ -270,7 +259,6 @@ delivery_time_day <-
 #| fig-height: 6
 #| out-width: "80%"
 #| warning: false
-
 # Row 1
 (delivery_dist + delivery_time) /
   # Row 2
@@ -289,7 +277,6 @@ First, we make a function that takes some data and [computes our statistics of i
 
 ```{r}
 #| label: delivery-time-ratios
-
 time_ratios <- function(x) {
   x %>%
     # The items are in columns; we'll stack these columns on one another.
@@ -320,7 +307,6 @@ When run in the training set:
 
 ```{r}
 #| label: delivery-time-ratio-train
-
 time_ratios(delivery_train)
 ```
 
@@ -332,7 +318,6 @@ We are using random numbers again, so let's reset the seed^[Why are we doing thi
 
 ```{r}
 #| label: delivery-bootstraps
-
 set.seed(624)
 resampled_data <-
   delivery_train %>%
@@ -349,7 +334,6 @@ The `splits` column contains the information on each bootstrap sample. To get a 
 ```{r}
 #| label: delivery-bootstrap-ratios
 #| cache: true
-
 resampled_ratios <-
   resampled_data %>%
   mutate(stats = map(splits, ~ time_ratios(analysis(.x))))
@@ -364,7 +348,6 @@ resampled_ratios$stats[[1]]
 
 ```{r}
 #| label: delivery-bootstrap-intervals
-
 resampled_intervals <-
   resampled_ratios %>%
   int_pctl(stats, alpha = 0.1)
@@ -379,7 +362,6 @@ Here's our plot:
 #| fig-width: 5
 #| fig-height: 7
 #| out-width: "50%"
-
 resampled_intervals %>%
   # Convert the folds to percentages and make the item values
   # a little cleaner:
@@ -408,7 +390,6 @@ Before we get started, we need to specify how to measure model effectiveness. Th
 
 ```{r}
 #| label: mae
-
 reg_metrics <- metric_set(mae)
 ```
 
@@ -428,7 +409,6 @@ We can initialize a recipe using a simple formula method:
 
 ```{r}
 #| label: recipe-start
-
 spline_rec <- recipe(time_to_delivery ~ ., data = delivery_train)
 ```
 
@@ -441,7 +421,6 @@ Let's add to the recipe by converting `day` to indicator columns. We do this by 
 
 ```{r}
 #| label: recipe-dummy
-
 spline_rec <-
   recipe(time_to_delivery ~ ., data = delivery_train) %>%
   step_dummy(all_factor_predictors())
@@ -457,7 +436,6 @@ The next recipe step is probably unnecessary for this data set but automatically
 
 ```{r}
 #| label: recipe-zv
-
 spline_rec <-
   recipe(time_to_delivery ~ ., data = delivery_train) %>%
   step_dummy(all_factor_predictors()) %>%
@@ -468,7 +446,6 @@ Now, we can address the nonlinear effects. We'll use a spline basis expansion (d
 
 ```{r}
 #| label: recipe-spline
-
 spline_rec <-
   recipe(time_to_delivery ~ ., data = delivery_train) %>%
   step_dummy(all_factor_predictors()) %>%
@@ -484,7 +461,6 @@ Finally, we can create interactions. In base R, an interaction between variables
 
 ```{r}
 #| label: recipe-final
-
 spline_rec <-
   recipe(time_to_delivery ~ ., data = delivery_train) %>%
   step_dummy(all_factor_predictors()) %>%
@@ -511,7 +487,6 @@ To specify the linear regression model, we use one of the functions from the `r 
 
 ```{r}
 #| label: lm
-
 # This creates a model specification:
 lm_spec <- linear_reg()
 lm_spec
@@ -523,7 +498,6 @@ How do we combine the recipe and the model specifications? The best approach is 
 
 ```{r}
 #| label: lm-wflow
-
 lin_reg_wflow <-
   workflow() %>%
   add_model(lm_spec) %>%
@@ -534,7 +508,6 @@ We can use the `fit()` function to fit the workflow to the training set. This ex
 
 ```{r}
 #| label: lm-fit
-
 lin_reg_fit <- fit(lin_reg_wflow, data = delivery_train)
 ```
 
@@ -553,7 +526,6 @@ One helpful function is `tidy()`. It is designed to return the object results ra
 
 ```{r}
 #| label: lm-tidy
-
 tidy(lin_reg_fit)
 ```
 
@@ -563,7 +535,6 @@ Another valuable supporting function is `augment()`. It can take a model object 
 
 ```{r}
 #| label: lm-augment
-
 lm_reg_val_pred <- augment(lin_reg_fit, new_data = delivery_val)
 names(lm_reg_val_pred)
 ```
@@ -572,7 +543,6 @@ What is our MAE? This is where we use our metric set `reg_metrics`. Note that th
 
 ```{r}
 #| label: lm-mae
-
 lm_reg_val_pred %>%
   reg_metrics(truth = time_to_delivery, estimate = .pred)
 ```
@@ -585,7 +555,6 @@ Let's take a minor distraction that will pay off a bit later. The main page ment
 
 ```{r}
 #| label: rset
-
 delivery_rs <- validation_set(delivery_split)
 
 class(delivery_rs)
@@ -600,7 +569,6 @@ Since we are treating this as if it were resampling, we can use the `fit_resampl
 ```{r}
 #| label: lm-resample
 #| warning: false
-
 ctrl_rs <- control_resamples(save_pred = TRUE, save_workflow = TRUE)
 lin_reg_res <-
   fit_resamples(
@@ -615,7 +583,6 @@ The benefit here is that there are a lot of _helper_ functions to simplify your 
 
 ```{r}
 #| label: lm-resample-collects
-
 collect_metrics(lin_reg_res)
 
 collect_predictions(lin_reg_res)
@@ -628,7 +595,6 @@ The `r pkg(probably)` package also has a nice helper to check the calibration of
 #| fig-width: 6
 #| fig-height: 6
 #| out-width: "50%"
-
 cal_plot_regression(lin_reg_res)
 ```
 
@@ -642,7 +608,6 @@ We'll create a model specification that has an enselmble size of 100:
 
 ```{r}
 #| label: rules
-
 library(rules)
 
 # A model specification:
@@ -653,7 +618,6 @@ One advantage of rule-based models is that very little preprocessing is required
 
 ```{r}
 #| label: rules-wflow
-
 cb_wflow <-
   workflow() %>%
   add_model(cb_spec) %>%
@@ -665,7 +629,6 @@ Let's go straight to `fit_resamples()`:
 ```{r}
 #| label: rules-resample-fit
 #| warning: false
-
 cb_res <-
   fit_resamples(
     cb_wflow,
@@ -684,7 +647,6 @@ The calibration plot:
 #| fig-width: 6
 #| fig-height: 6
 #| out-width: "50%"
-
 cal_plot_regression(cb_res)
 ```
 
@@ -694,7 +656,6 @@ To get the model fit, we previously used `fit()`. With resampling objects (and t
 
 ```{r}
 #| label: cb-fit
-
 cb_fit <- fit_best(cb_res)
 
 cb_fit
@@ -704,7 +665,6 @@ The `tidy()` method is also helpful here. It contains all of the rules and corre
 
 ```{r}
 #| label: cb-tidy
-
 rule_details <- tidy(cb_fit)
 
 rule_details %>%
@@ -726,7 +686,6 @@ The model function for this type of model is `parsnip::mlp()` (MLP is short for 
 
 ```{r}
 #| label: mlp-engines
-
 show_engines("mlp")
 ```
 
@@ -734,7 +693,6 @@ We'll use the `r pkg(brulee)` package. This uses the `torch` software to fit the
 
 ```{r}
 #| label: mlp-spec
-
 nnet_spec <-
   mlp(
     hidden_units = tune(),
@@ -758,7 +716,6 @@ This model requires the conversion to dummy variables but does not require featu
 
 ```{r}
 #| label: mlp-rec
-
 norm_rec <-
   recipe(time_to_delivery ~ ., data = delivery_train) %>%
   step_dummy(all_factor_predictors()) %>%
@@ -779,7 +736,6 @@ Finally, we'll use another control function:
 #| label: mlp-tune
 #| warning: false
 #| cache: true
-
 # The main materials used 2:100
 nnet_grid <- tibble(hidden_units = 2:10)
 
@@ -801,7 +757,6 @@ There are some additional helper functions for model tuning. For example, we can
 
 ```{r}
 #| label: mlp-show
-
 show_best(nnet_res, metric = "mae")
 ```
 
@@ -809,7 +764,6 @@ We can also return the parameter with the numerically best results^[As impressiv
 
 ```{r}
 #| label: mlp-select
-
 best_hidden_units <- select_best(nnet_res, metric = "mae")
 best_hidden_units
 ```
@@ -821,7 +775,6 @@ The `autoplot()` method can visualize the relationship between the tuning parame
 #| fig-width: 6
 #| fig-height: 4.25
 #| out-width: "70%"
-
 autoplot(nnet_res, metric = "mae")
 ```
 
@@ -834,7 +787,6 @@ autoplot(nnet_res, metric = "mae")
 #| fig-width: 6
 #| fig-height: 6
 #| out-width: "50%"
-
 cal_plot_regression(nnet_res)
 ```
 
@@ -843,7 +795,6 @@ There are two options if we need a model fit on the training set. If the numeric
 ```{r}
 #| label: nnet-final-fit
 #| warning: false
-
 set.seed(814)
 nnet_fit <-
   nnet_wflow %>%
@@ -862,7 +813,6 @@ To do so, tidymodels requires you to specify a _parallel backend_. There are sev
 ```{r}
 #| label: parallel-start
 #| eval: false
-
 cores <- parallel::detectCores(logical = FALSE)
 library(mirai)
 daemons(cores)
@@ -878,7 +828,6 @@ We must estimate the trend with the validation set. If we use our object `lin_re
 
 ```{r}
 #| label: cal-linear-est
-
 lin_reg_cal <- cal_estimate_linear(lin_reg_res)
 lin_reg_cal
 ```
@@ -898,7 +847,6 @@ The more manual approach is to fit the model on the training set, use `predict()
 #| fig-width: 6
 #| fig-height: 6
 #| out-width: "50%"
-
 lin_reg_fit <- fit(lin_reg_wflow, delivery_train)
 lin_reg_test_pred <- augment(lin_reg_fit, delivery_test)
 
@@ -914,7 +862,6 @@ There is a shortcut for the first three commands. `tune::last_fit()` takes our i
 
 ```{r}
 #| label: last-fit
-
 lin_reg_test_res <-
   lin_reg_wflow %>%
   last_fit(delivery_split, metrics = reg_metrics)
@@ -924,7 +871,6 @@ We can pull out the elements we need from this object using some `extract_*()` a
 
 ```{r}
 #| label: last-fit-stuff
-
 # Test set metrics:
 collect_metrics(lin_reg_test_res)
 
@@ -944,7 +890,6 @@ Now let's calibrate and compute performance:
 #| fig-width: 6
 #| fig-height: 6
 #| out-width: "50%"
-
 # apply calibration
 lin_reg_test_pred_cal <-
   lin_reg_test_pred %>%

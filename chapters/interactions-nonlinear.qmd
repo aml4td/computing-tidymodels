@@ -9,7 +9,6 @@ knitr:
 ```{r}
 #| label: interactions-nonlinear-knitr-setup
 #| include: false
-
 knitr::opts_chunk$set(
   comment = "#>",
   collapse = TRUE,
@@ -43,7 +42,6 @@ This chapter is focused on how predictors can enter the model in a nonlinear fas
 #| label: interactions-nonlinear-installs
 #| eval: false
 #| echo: true
-
 req_pkg <- c("aorsf", "embed", "gt", "hstats", "tidymodels")
 
 # Check to see if they are installed:
@@ -63,7 +61,6 @@ Let's load the meta package and manage some between-package function conflicts.
 #| results: hide
 #| message: false
 #| warning: false
-
 library(tidymodels)
 library(embed)
 tidymodels_prefer()
@@ -99,7 +96,6 @@ Let's make a small example to demonstrate:
 
 ```{r}
 #| label: interaction-examples
-
 library(gt)
 
 interaction_example <-
@@ -115,7 +111,6 @@ For two numeric predictors:
 
 ```{r}
 #| label: quant-quant-int
-
 model.matrix(~ hour + distance + hour:distance, interaction_example) |>
   as_tibble() |>
   select(-`(Intercept)`) |>
@@ -126,7 +121,6 @@ One numeric and one factor predictor:
 
 ```{r}
 #| label: quant-qual-int
-
 model.matrix(~ day + distance + day:distance, interaction_example) |>
   as_tibble() |>
   select(-`(Intercept)`) |>
@@ -139,7 +133,6 @@ If you want to make all possible interactions, you can use the dot and exponent 
 ```{r}
 #| label: int-dots
 #| eval: false
-
 # All possible two-way interactions:
 model.matrix(~ (.)^2, interaction_example)
 
@@ -160,7 +153,6 @@ For continuous/continuous interactions:
 
 ```{r}
 #| label: quant-quant-int-rec
-
 recipe(~ hour + distance, data = interaction_example) |>
   step_interact(~ hour:distance) |>
   prep() |>
@@ -172,7 +164,6 @@ For categorical/continuous combinations, we use `step_dummy()` first and then a 
 
 ```{r}
 #| label: qual-quant-int-rec
-
 recipe(~ day + hour, data = interaction_example) |>
   step_dummy(all_factor_predictors()) |>
   step_interact(~ starts_with("day_"):hour) |>
@@ -199,7 +190,6 @@ For this chapter, we fit an oblique random forest model to compute the $H$-stati
 
 ```{r}
 #| label: orf-fit
-
 library(aorsf)
 
 p <- ncol(delivery_train) - 1
@@ -218,7 +208,6 @@ _Any_ ML model can be used with the `r pkg(hstats)` package. We'll use the valid
 ```{r}
 #| label: orf-hstats
 #| cache: true
-
 library(hstats)
 
 set.seed(218)
@@ -256,7 +245,6 @@ We can pass the columns of interest to each step:
 
 ```{r}
 #| label: poly-step
-
 recipe(time_to_delivery ~ ., data = delivery_train) |>
   step_poly(hour, degree = 4) |>
   prep() |>
@@ -280,7 +268,6 @@ If we would like different polynomial degrees for different columns, we would ca
 
 ```{r}
 #| label: list-splines
-
 apropos("step_spline")
 ```
 
@@ -288,7 +275,6 @@ The syntax is almost identical to the polynomial steps. For example, for natural
 
 ```{r}
 #| label: natural-spline-step
-
 recipe(time_to_delivery ~ ., data = delivery_train) |>
   step_spline_natural(hour, deg_free = 4) |>
   prep() |>
@@ -307,7 +293,6 @@ For unsupervised binning:
 
 ```{r}
 #| label: unsuper-bin
-
 basic_binning <-
   recipe(time_to_delivery ~ ., data = delivery_train) |>
   step_discretize(hour, num_breaks = 4) |>
@@ -322,7 +307,6 @@ To understand where the breakpoints reside, the `tidy()` method will show them:
 
 ```{r}
 #| label: unsuper-bin-tidy
-
 tidy(basic_binning, number = 1)
 
 # note:
@@ -339,7 +323,6 @@ The format of the results is very similar though:
 
 ```{r}
 #| label: super-bin
-
 library(embed)
 cart_binning <-
   recipe(time_to_delivery ~ ., data = delivery_train) |>

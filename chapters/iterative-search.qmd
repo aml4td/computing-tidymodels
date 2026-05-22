@@ -9,7 +9,6 @@ knitr:
 ```{r}
 #| label: iterative-knitr-setup
 #| include: false
-
 knitr::opts_chunk$set(
   comment = "#>",
   collapse = TRUE,
@@ -46,7 +45,6 @@ This chapter requires `r length(req_pkg)` packages (`r req_pkg_fmt`). To install
 #| label: iterative-installs
 #| eval: false
 #| echo: true
-
 req_pkg <- c("finetune", "GA", "probably", "tidymodels", "xgboost")
 
 # Check to see if they are installed:
@@ -62,7 +60,6 @@ if (any(!pkg_installed)) {
 ```{r}
 #| label: sshhh-startup
 #| include: false
-
 library(GA)
 library(tidymodels)
 library(finetune)
@@ -74,7 +71,6 @@ Let's load the packages and set some preferences:
 
 ```{r}
 #| label: startup
-
 library(GA)
 library(tidymodels)
 library(finetune)
@@ -90,7 +86,6 @@ To reduce the complexity of the example, we'll use a simulated classification da
 
 ```{r}
 #| label: get-sim-data
-
 set.seed(2783)
 sim_dat <- sim_classification(1000)
 
@@ -105,7 +100,6 @@ We'll tune a boosted classification model using the `r pkg(xgboost)` package, de
 
 ```{r}
 #| label: sim-spec
-
 bst_spec <-
   boost_tree(
     mtry = tune(),
@@ -124,7 +118,6 @@ Tree-based models require little to no preprocessing so we will use a simple R f
 
 ```{r}
 #| label: sim-worflow
-
 bst_wflow <- workflow(class ~ ., bst_spec)
 ```
 
@@ -132,7 +125,6 @@ From the workflow, we create a _parameters_ object and set the ranges for two pa
 
 ```{r}
 #| label: sim-param
-
 bst_param <-
   bst_wflow |>
   extract_parameter_set_dials() |>
@@ -147,7 +139,6 @@ We can now fit and/or tune models. We'll declare what metrics should be collecte
 ```{r}
 #| label: initial
 #| cache: true
-
 cls_mtr <- metric_set(brier_class, roc_auc)
 
 init_grid <- grid_space_filling(bst_param, size = 6)
@@ -167,7 +158,6 @@ From these six candidates, the smallest Brier score was `r round(show_best(initi
 
 ```{r}
 #| label: initial-res
-
 show_best(initial_res, metric = "brier_class") |>
   select(-.estimator, -.config, -.metric) |>
   relocate(mean)
@@ -193,7 +183,6 @@ Here's some example code:
 ```{r}
 #| label: s-sim-anneal
 #| cache: true
-
 set.seed(381)
 sa_res <-
   bst_wflow |>
@@ -219,7 +208,6 @@ The Brier score has been reduced from the initial value of `r round(show_best(in
 ```{r}
 #| label: sa-intervals
 #| cache: true
-
 show_best(sa_res, metric = "brier_class") |>
   select(-.estimator, -.config, -.metric) |>
   relocate(mean)
@@ -232,7 +220,6 @@ There are several ways to use `autoplot()` to investigate the results. The defau
 #| fig-width: 7
 #| fig-height: 6
 #| out-width: 65%
-
 autoplot(sa_res, metric = "brier_class")
 ```
 
@@ -243,7 +230,6 @@ Next, we can see how the parameter values change over the search by adding `type
 #| fig-width: 7
 #| fig-height: 6
 #| out-width: 65%
-
 autoplot(sa_res, metric = "brier_class", type = "parameters")
 ```
 
@@ -254,7 +240,6 @@ Finally, a plot of performance metrics can be used via `type = "performance"`:
 #| fig-width: 6
 #| fig-height: 3.75
 #| out-width: 65%
-
 autoplot(sa_res, metric = "brier_class", type = "performance")
 ```
 
@@ -275,7 +260,6 @@ To get started, let's work with the parameter object named `bst_param`. We can u
 
 ```{r}
 #| label: ga-prep
-
 min_vals <- map_dbl(bst_param$object, ~ .x$range[[1]])
 max_vals <- map_dbl(bst_param$object, ~ .x$range[[2]])
 ```
@@ -284,7 +268,6 @@ The remainder of the tasks should occur within the GA's processing. This functio
 
 ```{r}
 #| label: ga-fitness
-
 yardstick_fitness <- function(values, wflow, param_info, metrics, ...) {
   # Quietly load required packages if run in parallel
   shhh <- purrr::quietly(require)
@@ -352,7 +335,6 @@ Now, let's initialize the search using a space-filling design (with 10 candidate
 
 ```{r}
 #| label: ga-initial-pop
-
 pop_size <- 10
 # `original = FALSE` means that the parameters are in a transformed units
 grid_ga <- grid_space_filling(bst_param, size = pop_size, original = FALSE)
@@ -363,7 +345,6 @@ Now we can run `GA::ga()` to begin the process:
 ```{r}
 #| label: ga-execute
 #| cache: true
-
 set.seed(158)
 ga_res <-
   ga(
@@ -395,7 +376,6 @@ Here is a plot of the best results per population and the mean result (both are 
 #| fig-width: 6
 #| fig-height: 3.75
 #| out-width: 65%
-
 # Negate the fitness value since the Brier score should be minimized.
 -attr(ga_res, "summary") |>
   as_tibble() |>
@@ -411,7 +391,6 @@ The best results are in a slot called `solution`. Let's remap that to the origin
 
 ```{r}
 #| label: ga-best
-
 ga_best <-
   # There could be multiple solutions for the same fitness; we take the first.
   ga_res@solution[1, ] |>
@@ -454,7 +433,6 @@ The `r pkg(tune)` package contains `tune_bayes()` for Bayesian optimization. The
 ```{r}
 #| label: sa-bayes
 #| cache: true
-
 set.seed(221)
 bo_res <- bst_wflow |>
   tune_bayes(
@@ -477,7 +455,6 @@ The same helper functions are used to interrogate the results and to create diag
 ```{r}
 #| label: bo-intervals
 #| cache: true
-
 show_best(bo_res, metric = "brier_class") |>
   select(-.estimator, -.config, -.metric) |>
   relocate(mean)
@@ -490,7 +467,6 @@ These results are about the same as those of the SA search. We can plot the data
 #| fig-width: 7
 #| fig-height: 6
 #| out-width: 65%
-
 autoplot(bo_res, metric = "brier_class")
 ```
 
@@ -501,7 +477,6 @@ Here we see that the learning rate and the minumum node size reach a steady-stat
 #| fig-width: 7
 #| fig-height: 6
 #| out-width: 65%
-
 autoplot(bo_res, metric = "brier_class", type = "parameters")
 ```
 
@@ -512,7 +487,6 @@ A plot of the overall progress:
 #| fig-width: 6
 #| fig-height: 3.75
 #| out-width: 65%
-
 autoplot(bo_res, metric = "brier_class", type = "performance")
 ```
 
